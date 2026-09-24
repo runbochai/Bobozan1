@@ -1,6 +1,7 @@
 // src/data/skills.ts
-import { Card } from '../types';
+import type { Card } from '../types';
 
+// --- SKILL DATABASE ---
 export const SKILL_DB: Card[] = [
   // Lvl 0
   { id: 'charge', name: { zh: '攒', en: 'Charge' }, cost: 0, type: 'CHARGE', levelRequired: 0, tier: 0, description: { zh: '获得 2 费', en: 'Gain 2 Energy' } },
@@ -14,8 +15,8 @@ export const SKILL_DB: Card[] = [
   { id: 'kajisuper', name: { zh: '咔叽超粉', en: 'Super KaJi' }, cost: 10, type: 'ULTIMATE', levelRequired: 0, tier: 6, description: { zh: '必杀技', en: 'SUPER' } },
   
   // Special
-  { id: 'ascend', name: { zh: '升天', en: 'Ascend' }, cost: 0, type: 'SPECIAL', levelRequired: 0, tier: 0, description: { zh: '永久上升一层', en: 'Go UP 1 Layer (Perm)' }, tags: ['layer_up'] },
-  { id: 'descend', name: { zh: '遁地', en: 'Descend' }, cost: 0, type: 'SPECIAL', levelRequired: 0, tier: 0, description: { zh: '永久下降一层', en: 'Go DOWN 1 Layer (Perm)' }, tags: ['layer_down'] },
+  { id: 'ascend', name: { zh: '升天', en: 'Ascend' }, cost: 0, type: 'SPECIAL', levelRequired: 0, tier: 0, description: { zh: '上升一层', en: 'Go UP 1 Layer' }, tags: ['layer_up'] },
+  { id: 'descend', name: { zh: '遁地', en: 'Descend' }, cost: 0, type: 'SPECIAL', levelRequired: 0, tier: 0, description: { zh: '下降一层', en: 'Go DOWN 1 Layer' }, tags: ['layer_down'] },
 
   // Lvl 1
   { id: 'pegasus', name: { zh: '天马', en: 'Pegasus' }, cost: 1, type: 'ATTACK', levelRequired: 1, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
@@ -41,7 +42,7 @@ export const SKILL_DB: Card[] = [
   { id: 'bigfly', name: { zh: '大飞', en: 'Big Fly' }, cost: 0, type: 'DEFEND', levelRequired: 5, tier: 0, description: { zh: '本回合暂时上升两层 (克小飞)', en: 'Temp UP 2 Layers' }, tags: ['layer_up_2_temp'] },
 
   // Lvl 6
-  { id: 'absorb', name: { zh: '锐吸', en: 'Sharp Absorb' }, cost: 1, type: 'ABSORB', levelRequired: 6, tier: 0, description: { zh: '吸收5倍其他玩家打出的技能 (若被轰击中则被淘汰)', en: 'Absorb 5x (Countered by Blast)' }, tags: ['sharp_absorb'] },
+  { id: 'absorb', name: { zh: '锐吸', en: 'Sharp Absorb' }, cost: 1, type: 'ABSORB', levelRequired: 6, tier: 0, description: { zh: '吸收1倍其他玩家打出的技能 (若被轰击中则被淘汰)', en: 'Absorb 1x (Countered by Blast)' }, tags: ['sharp_absorb'] },
 
   // Lvl 7
   { id: 'gun', name: { zh: '定枪', en: 'Pistol' }, cost: 1, type: 'ATTACK', levelRequired: 7, tier: 2, description: { zh: '穿透一半基础防御', en: 'Pierce Basic Def' }, tags: ['pierce_basic'] },
@@ -57,7 +58,7 @@ export const SKILL_DB: Card[] = [
 
   // Lvl 10
   { id: 'handatk', name: { zh: '手盔攻', en: 'Hand Atk' }, cost: 1, type: 'ATTACK', levelRequired: 10, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
-  { id: 'shatter', name: { zh: '破碎', en: 'Shatter' }, cost: 2, type: 'SPECIAL', levelRequired: 10, tier: 3, description: { zh: '封印其他玩家的技能，且可抵消普通终极技能', en: 'Disable Skill, Block Ult' }, tags: ['counter_ult', 'disable_skill'] },
+  { id: 'shatter', name: { zh: '破碎', en: 'Shatter' }, cost: 2, type: 'SPECIAL', levelRequired: 10, tier: 3, description: { zh: '抵消并封印 T4 及以下技能', en: 'Block & Disable Skills (Max T4)' }, tags: ['counter_ult', 'disable_skill'] },
   { id: 'handdef', name: { zh: '手盔防', en: 'Hand Def' }, cost: 0, type: 'DEFEND', levelRequired: 10, tier: 0, description: { zh: '手盔防御', en: 'Hand Defense' } },
 
   // Lvl 11
@@ -66,7 +67,7 @@ export const SKILL_DB: Card[] = [
   { id: 'footdef', name: { zh: '脚盔防', en: 'Foot Def' }, cost: 0, type: 'DEFEND', levelRequired: 11, tier: 0, description: { zh: '脚盔防御', en: 'Foot Defense' } },
 
   // Lvl 12
-  { id: 'aoxi', name: { zh: '奥吸', en: 'Ultra Absorb' }, cost: 1, type: 'ABSORB', levelRequired: 12, tier: 0, description: { zh: '吸收10倍其他玩家打出的技能 (若被六克击中则被淘汰)', en: 'Absorb 10x (Countered by 6g)' }, tags: ['ao_absorb'] },
+  { id: 'aoxi', name: { zh: '奥吸', en: 'Ultra Absorb' }, cost: 1, type: 'ABSORB', levelRequired: 12, tier: 0, description: { zh: '吸收2倍其他玩家打出的技能 (若被六克击中则被淘汰)', en: 'Absorb 2x (Countered by 6g)' }, tags: ['ao_absorb'] },
 
   // Lvl 13
   { id: 'oneg', name: { zh: '一克', en: '1g' }, cost: 1, type: 'ATTACK', levelRequired: 13, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
@@ -115,5 +116,3 @@ export const SKILL_DB: Card[] = [
   { id: 'allbomb', name: { zh: '轰天轰地轰', en: 'Omni-Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 100, tier: 3, description: { zh: '联合: 攻击任意层玩家', en: 'Combo: Hit All Layers' }, tags: ['combo', 'hit_all'] },
   { id: 'heartpoison', name: { zh: '诛心毒气', en: 'Heart Poison' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 与更高等级3费终极技能以及咔叽粉相抵', en: 'Can Tie with Higher Tier Ult and Super Kaji' }, tags: ['combo'] },
 ];
-
-
