@@ -1,5 +1,6 @@
 // --- GAME CONSTANTS ---
 import { SKILL_DB } from './skills';
+import type { Card } from '../types';
 
 export const FINAL_LEVEL = 23;
 
@@ -10,7 +11,7 @@ export const MAX_PLAYERS = 8;
 export const MIN_PLAYERS = 2;
 
 export const BACKGROUND_CARDS = (() => {
-  const items: any[] = [];
+  const items: { id: number; card: Card; top: number; left: number; rX: number; rY: number; rZ: number; z: number; scale: number; duration: number; delay: number; effect: string | null }[] = [];
   const MAX_CARDS = 20;   
   const MIN_DIST = 15;
   

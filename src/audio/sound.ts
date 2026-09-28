@@ -1,5 +1,5 @@
 // --- SOUND SYSTEM ---
-export const AudioContextClass = (window.AudioContext || (window as any).webkitAudioContext);
+export const AudioContextClass = (window.AudioContext || (window as Window & { webkitAudioContext?: typeof AudioContext }).webkitAudioContext);
 export let audioCtx: AudioContext | null = null;
 export const soundThrottle: Record<string, number> = {};
 
