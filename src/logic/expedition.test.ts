@@ -146,8 +146,8 @@ test('applyIronhide：每场战斗首次受伤 -0.5，之后不再减', () => {
   assert.equal(r4.hp, 2);
 });
 
-test('关卡配置合法：16 关，含一打三，双 Boss，敌人等级有高低', () => {
-  assert.equal(EXPEDITION_STAGES.length, 16);
+test('关卡配置合法：17 关，含一打三，双 Boss，敌人等级有高低', () => {
+  assert.equal(EXPEDITION_STAGES.length, 17);
   for (const s of EXPEDITION_STAGES) {
     assert.ok(s.enemies.length >= 1 && s.enemies.length <= 3, `${s.id}: bad enemy count`);
     for (const e of s.enemies) {
@@ -169,10 +169,19 @@ test('关卡配置合法：16 关，含一打三，双 Boss，敌人等级有高
     const tiers = s.enemies.map((e) => Math.max(...e.inventory));
     assert.ok(new Set(tiers).size >= 2, `${s.id}: triple enemies should have mixed tiers`);
   }
-  const boss = EXPEDITION_STAGES[14].enemies[0];
-  assert.ok(boss.boss, 'last stage must be a boss');
+  const boss = EXPEDITION_STAGES[15].enemies[0];
+  assert.ok(boss.boss, 'stage 16 must be a boss');
   assert.ok(boss.hp >= 4, 'boss should have extra HP');
   assert.ok((boss.passive?.startEnergy ?? 0) > 0, 'boss should have an energy aura');
+  const finalBoss = EXPEDITION_STAGES[16].enemies[0];
+  assert.ok(finalBoss.boss, 'stage 17 must be a boss');
+  // 新精英：诈唬大师（第 15 关，虚假意图）
+  const blufferStage = EXPEDITION_STAGES[14];
+  assert.ok(blufferStage.name.zh.includes('诈唬大师'), 'stage 15 should be the Bluff Master');
+  const bluffer = blufferStage.enemies[0];
+  assert.ok(bluffer.elite, 'bluffer must be elite');
+  assert.ok(bluffer.passive?.deceiver, 'bluffer must have the deceiver passive');
+  assert.ok(bluffer.inventory.length >= 4, 'bluffer should have a decent deck');
   const elites = EXPEDITION_STAGES.flatMap((s) => s.enemies).filter((e) => e.elite);
   assert.ok(elites.length >= 3, `expected >=3 elites, got ${elites.length}`);
 });
@@ -241,7 +250,7 @@ test('商城：4 件商品（2 卡 + 1 装备 + 疗伤药），装备不重复�
 });
 
 test('Boss1 塔主波赞：4 血 + 锐吸/奥吸 + 狂暴/护甲', () => {
-  const s14 = EXPEDITION_STAGES.find((s) => s.id === 's14')!;
+  const s14 = EXPEDITION_STAGES.find((s) => s.id === 's15')!; // Boss1 塔主波赞（诈唬大师关卡插入后顺延）
   const boss = s14.enemies[0];
   assert.equal(boss.hp, 4);
   assert.ok(boss.inventory.includes(6), 'has 锐吸');
@@ -251,8 +260,8 @@ test('Boss1 塔主波赞：4 血 + 锐吸/奥吸 + 狂暴/护甲', () => {
 });
 
 test('Boss2 远古塔魂：5 血 + 头盔/手盔/脚盔 + 护甲', () => {
-  const s15 = EXPEDITION_STAGES.find((s) => s.id === 's15')!;
-  const boss = s15.enemies[0];
+  const s16 = EXPEDITION_STAGES.find((s) => s.id === 's16')!; // Boss2 远古塔魂（顺延）
+  const boss = s16.enemies[0];
   assert.equal(boss.boss, true);
   assert.equal(boss.hp, 5);
   assert.ok(boss.inventory.includes(8), 'has 头盔');

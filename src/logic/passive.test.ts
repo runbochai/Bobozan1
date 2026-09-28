@@ -57,7 +57,23 @@ test('intentTaunt：显示时按类型给台词，隐藏时不泄露', () => {
   assert.ok(['呵呵，猜猜看？', '……', '你猜我要干嘛？'].includes(h1));
 });
 
-test('passiveBadges：三种新被动都有徽章和说明', () => {
+test('intentTaunt：诈唬大师的虚假意图', () => {
+  const attackPool = ['吃我一击！', '我要打你！', '看招！', '小心我这一招！'];
+  const chargePool = ['攒点能量先！', '先积攒能量……', '蓄力中，别打扰我！'];
+  // 隐藏时：攒能量却喊打喊杀（诈唬），真攻击也喊打喊杀（无法区分）
+  const bluff = intentTaunt('CHARGE', false, 'bluffer1', 3, 14, 'zh', true);
+  assert.ok(attackPool.includes(bluff), `bluff should threaten, got: ${bluff}`);
+  const honest = intentTaunt('ATTACK', false, 'bluffer1', 3, 14, 'zh', true);
+  assert.ok(attackPool.includes(honest));
+  // 显示时（看穿）：攒能量就老实说攒能量
+  const seen = intentTaunt('CHARGE', true, 'bluffer1', 3, 14, 'zh', true);
+  assert.ok(chargePool.includes(seen), `revealed charge should be honest, got: ${seen}`);
+  // 非诈唬敌人不受影响：隐藏时仍是通用台词
+  const h = intentTaunt('CHARGE', false, 'e1', 3, 14, 'zh');
+  assert.ok(['呵呵，猜猜看？', '……', '你猜我要干嘛？'].includes(h));
+});
+
+test('passiveBadges：诈唬被动有徽章和说明', () => {
   const badges = passiveBadges({ pierce: true, energyDrain: 1, attackBonus: 0.5 }, 'zh');
   assert.equal(badges.length, 3);
   assert.ok(badges.some(b => b.key === 'pierce' && b.desc.includes('无视')));

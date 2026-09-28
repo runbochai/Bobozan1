@@ -105,8 +105,8 @@ const TAUNTS: Record<string, { zh: string[]; en: string[] }> = {
     en: ['Charging up first!', 'Storing energy...', 'Powering up, do not disturb!'],
   },
   ATTACK: {
-    zh: ['吃我一击！', '我要打你！', '看招！'],
-    en: ['Take this!', "I'm coming for you!", 'Watch out!'],
+    zh: ['吃我一击！', '我要打你！', '看招！', '小心我这一招！'],
+    en: ['Take this!', "I'm coming for you!", 'Watch out!', 'Watch my next move!'],
   },
   DEFEND: {
     zh: ['先防一回合。', '你打不着我。', '龟缩一下。'],
@@ -130,12 +130,15 @@ const HIDDEN_TAUNTS = {
   en: ['Hehe, guess?', '...', 'Care to guess my move?'],
 };
 
-/** 意图气泡台词：显示时按真实意图类型给嘲讽，隐藏时给通用台词（不泄露） */
+/** 意图气泡台词：显示时按真实意图类型给嘲讽，隐藏时给通用台词（不泄露）。
+ *  诈唬（deceiver）：意图隐藏时喊打喊杀——可能真要动手，也可能只是在攒能量（虚假意图）。 */
 export function intentTaunt(
   cardType: string | undefined, revealed: boolean,
   enemyId: string, turn: number, stageIdx: number, lang: 'zh' | 'en' = 'zh',
+  deceiver = false,
 ): string {
-  const pool = revealed ? (TAUNTS[cardType ?? ''] ?? TAUNTS.SPECIAL) : HIDDEN_TAUNTS;
+  const threaten = !revealed && deceiver && (cardType === 'ATTACK' || cardType === 'CHARGE');
+  const pool = threaten ? TAUNTS.ATTACK : revealed ? (TAUNTS[cardType ?? ''] ?? TAUNTS.SPECIAL) : HIDDEN_TAUNTS;
   const arr = pool[lang];
   return arr[hashStr(`${enemyId}|${turn}|${stageIdx}`) % arr.length];
 }
@@ -149,6 +152,7 @@ export function passiveBadges(pv: ExpeditionEnemyDef['passive'], lang: 'zh' | 'e
   const zh = lang === 'zh';
   const badges: PassiveBadge[] = [];
   if (pv.pierce) badges.push({ key: 'pierce', icon: '🏹', title: zh ? '穿透' : 'Pierce', desc: zh ? '攻击无视对方的防御，直接命中' : 'Attacks ignore defense and hit directly' });
+  if (pv.deceiver) badges.push({ key: 'deceiver', icon: '🎭', title: zh ? '诈唬' : 'Bluff', desc: zh ? '满嘴跑火车：它喊"我要打你"时，可能真要动手，也可能只是在攒能量——你猜' : 'Full of bluffs: when it shouts "I\'m coming for you", it may mean it — or be secretly charging. Your call' });
   if (pv.energyDrain) badges.push({ key: 'drain', icon: '🌀', title: zh ? '吸能' : 'Energy Drain', desc: zh ? `命中时吸取目标 ${pv.energyDrain} 点能量` : `Drains ${pv.energyDrain} energy from the target on hit` });
   if (pv.attackBonus) badges.push({ key: 'fury', icon: '🗡️', title: zh ? '狂战' : 'Fury', desc: zh ? `攻击伤害 +${pv.attackBonus}` : `Attack damage +${pv.attackBonus}` });
   if (pv.armorPerTurn) badges.push({ key: 'armor', icon: '🛡️', title: zh ? '护甲' : 'Armor', desc: zh ? `每回合第一次受到的伤害 -${pv.armorPerTurn}` : `First damage taken each turn -${pv.armorPerTurn}` });

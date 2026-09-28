@@ -47,6 +47,7 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
+import type { ExpeditionEnemyDef } from './data/expedition';
 import { EXPEDITION_EQUIPMENTS, EXPEDITION_RELICS, EXPEDITION_STAGES, EXPEDITION_TUTORIALS } from './data/expedition';
 import { drawGachaCard } from './data/expedition';
 import {
@@ -396,7 +397,7 @@ export default function BobozanOnline() {
   const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] as { cardId: string; usesLeft: number }[], gold: 0, equipment: [] as string[] });
   const expeditionBusyRef = useRef(false);
   const expeditionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const expPassivesRef = useRef<Record<string, { startEnergy?: number; energyPerTurn?: number; enrageEnergy?: number; enrageDmg?: number; armorPerTurn?: number }>>({});
+  const expPassivesRef = useRef<Record<string, ExpeditionEnemyDef['passive']>>({});
   const expBossEnragedRef = useRef(false);
   const expMaxHpRef = useRef<Record<string, number>>({});
   const expIronShirtUsedRef = useRef(false);
@@ -3460,7 +3461,7 @@ const expYpjUsedRef = useRef(false);
                     {isExpedition && !isMe && !p.isDead && expPhase === 'battle' && gameState.status === 'PLAYING' && expIntents[p.id] && (() => {
                       const revealed = shouldRevealIntent(p.id);
                       const card = SKILL_DB.find(c => c.id === expIntents[p.id]);
-                      const taunt = intentTaunt(card?.type, revealed, p.id, gameState.turn, expRunRef.current.stageIdx, lang);
+                      const taunt = intentTaunt(card?.type, revealed, p.id, gameState.turn, expRunRef.current.stageIdx, lang, !!expPassivesRef.current[p.id]?.deceiver);
                       const badges = passiveBadges(expPassivesRef.current[p.id], lang);
                       const dismissed = intentDismissed.has(p.id);
                       const toRight = pos.x < 50; // 气泡朝桌心方向，不挡上面的头像

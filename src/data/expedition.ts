@@ -26,6 +26,7 @@ armorPerTurn?: number; // 护甲：每回合第一次受到的伤害 -armorPerTu
 attackBonus?: number; // 狂战：攻击伤害 +N
 energyDrain?: number; // 吸能：命中时吸取目标 N 点能量
 pierce?: boolean; // 穿透：攻击无视对方防御，直接命中
+deceiver?: boolean; // 诈唬：意图隐藏时喊打喊杀，可能是真打也可能只是在攒能量
 };
 elite?: boolean;
 boss?: boolean;
@@ -84,7 +85,7 @@ id: 's3', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
 name: { zh: '第 4 关 · 史莱姆', en: 'Stage 4 · Slime'},
 rewardTier: 1,
 enemies: [{
-id: 'slime', name: { zh: '🟢 史莱姆', en: '🟢 Slime'}, hp: 1, inventory: [0],
+id: 'slime', name: { zh: '🟢 史莱姆', en: '🟢 Slime'}, hp: 1.5, inventory: [0],
 personality: P(0.4, 0.3, 0.5, 0.2),
 intro: { zh: '一只野生的史莱姆跳了出来！', en: 'A wild Slime appeared!'},
 }],
@@ -96,7 +97,7 @@ rewardTier: 1,
 tip: { zh: '一对二！打倒一个会触发状态重置，趁机喘息', en: 'One vs two! Knocking one out resets everyone — catch your breath'},
 enemies: [
 {
-id: 'slime_a', name: { zh: '🟢 史莱姆兄', en: '🟢 Slime Bro'}, hp: 1, inventory: [0],
+id: 'slime_a', name: { zh: '🟢 史莱姆兄', en: '🟢 Slime Bro'}, hp: 1.5, inventory: [0],
 personality: P(0.45, 0.25, 0.5, 0.2),
 intro: { zh: '我们兄弟同心！', en: 'Brothers fight as one!'},
 },
@@ -112,7 +113,7 @@ id: 's5', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
 name: { zh: '第 6 关 · 精英：铁壁', en: 'Stage 6 · Elite: Iron Wall'},
 rewardTier: 1,
 enemies: [{
-id: 'ironwall', name: { zh: '🦍 铁壁阿强', en: '🦍 Iron Wall Qiang'}, hp: 1.5, inventory: [0],
+id: 'ironwall', name: { zh: '🦍 铁壁阿强', en: '🦍 Iron Wall Qiang'}, hp: 3, inventory: [0],
 personality: P(0.25, 0.85, 0.4, 0.3), elite: true,
 passive: { attackBonus: 0.5 },
 intro: { zh: '阿强：我的防守，固若金汤！', en: 'Qiang: my defense is impenetrable!'},
@@ -124,7 +125,7 @@ id: 's6', chapter: { zh: '第二章 · 云雾道馆', en: 'Ch.2 · Mist Dojo'},
 name: { zh: '第 7 关 · 疾风狼', en: 'Stage 7 · Gale Wolf'},
 rewardTier: 2,
 enemies: [{
-id: 'wolf', name: { zh: '🐺 疾风狼', en: '🐺 Gale Wolf'}, hp: 1, inventory: [0, 1],
+id: 'wolf', name: { zh: '🐺 疾风狼', en: '🐺 Gale Wolf'}, hp: 2, inventory: [0, 1],
 personality: P(0.7, 0.2, 0.4, 0.4),
 intro: { zh: '疾风狼露出了天马般的獠牙……', en: 'The wolf bares its Pegasus fangs…'},
 }],
@@ -135,12 +136,12 @@ name: { zh: '第 8 关 · 双头怪', en: 'Stage 8 · Two Heads'},
 rewardTier: 2,
 enemies: [
 {
-id: 'head_a', name: { zh: '👹 左头', en: '👹 Left Head'}, hp: 1, inventory: [0, 2],
+id: 'head_a', name: { zh: '👹 左头', en: '👹 Left Head'}, hp: 2, inventory: [0, 2],
 personality: P(0.75, 0.2, 0.35, 0.5),
 intro: { zh: '左头：我先来！', en: 'Left Head: I go first!'},
 },
 {
-id: 'head_b', name: { zh: '👹 右头', en: '👹 Right Head'}, hp: 1, inventory: [0],
+id: 'head_b', name: { zh: '👹 右头', en: '👹 Right Head'}, hp: 1.5, inventory: [0],
 personality: P(0.4, 0.4, 0.6, 0.3),
 intro: { zh: '右头：我也来！', en: 'Right Head: me too!'},
 },
@@ -152,7 +153,7 @@ name: { zh: '第 9 关 · 精英：龙爪长老', en: 'Stage 9 · Elite: Dragon 
 rewardTier: 2,
 tip: { zh: '同类技能对拼，高等级压制低等级——小心他的龙爪！', en: 'In a clash, higher level wins — beware his Dragon Claw!'},
 enemies: [{
-id: 'dragon_elder', name: { zh: '🐉 龙爪长老', en: '🐉 Dragon Elder'}, hp: 1.5, inventory: [0, 3],
+id: 'dragon_elder', name: { zh: '🐉 龙爪长老', en: '🐉 Dragon Elder'}, hp: 3, inventory: [0, 3],
 personality: P(0.75, 0.25, 0.35, 0.7), elite: true,
 passive: { pierce: true },
 intro: { zh: '长老：感受龙爪的等级压制吧！', en: 'Elder: feel the pressure of the Dragon Claw!'},
@@ -164,7 +165,7 @@ id: 's9', chapter: { zh: '第三章 · 黑风岭', en: 'Ch.3 · Black Wind Ridge
 name: { zh: '第 10 关 · 寒冰法师', en: 'Stage 10 · Frost Mage'},
 rewardTier: 3,
 enemies: [{
-id: 'frost', name: { zh: '🧊 寒冰法师', en: '🧊 Frost Mage'}, hp: 1.5, inventory: [0, 2],
+id: 'frost', name: { zh: '🧊 寒冰法师', en: '🧊 Frost Mage'}, hp: 2, inventory: [0, 2],
 personality: P(0.55, 0.4, 0.35, 0.6),
 intro: { zh: '法师：冰剑无情，小心你的走位。', en: 'Mage: the ice sword is merciless. Watch your step.'},
 }],
@@ -175,17 +176,17 @@ name: { zh: '第 11 关 · 暗影三煞', en: 'Stage 11 · Shadow Trio'},
 rewardTier: 3,
 enemies: [
 {
-id: 'shadow_a', name: { zh: '🌑 影兄', en: '🌑 Shadow Bro'}, hp: 1.5, inventory: [0, 3],
+id: 'shadow_a', name: { zh: '🌑 影兄', en: '🌑 Shadow Bro'}, hp: 2, inventory: [0, 3],
 personality: P(0.75, 0.3, 0.3, 0.7),
 intro: { zh: '影兄：黑风岭可不是好闯的。', en: 'Shadow Bro: this ridge shows no mercy.'},
 },
 {
-id: 'shadow_b', name: { zh: '🌑 影中', en: '🌑 Shadow Mid'}, hp: 1, inventory: [0, 2],
+id: 'shadow_b', name: { zh: '🌑 影中', en: '🌑 Shadow Mid'}, hp: 1.5, inventory: [0, 2],
 personality: P(0.6, 0.35, 0.4, 0.6),
 intro: { zh: '影中：三打一，优势在我！', en: 'Shadow Mid: three on one!'},
 },
 {
-id: 'shadow_c', name: { zh: '🌑 影弟', en: '🌑 Shadow Lil'}, hp: 1, inventory: [0, 1],
+id: 'shadow_c', name: { zh: '🌑 影弟', en: '🌑 Shadow Lil'}, hp: 1.5, inventory: [0, 1],
 personality: P(0.45, 0.45, 0.5, 0.5),
 intro: { zh: '影弟：一起上！', en: 'Shadow Lil: together!'},
 },
@@ -197,7 +198,7 @@ name: { zh: '第 12 关 · 精英：吊死鬼', en: 'Stage 12 · Elite: Hangman'
 rewardTier: 3,
 tip: { zh: '必杀技可以压制常规终极技能，注意他的起手！', en: 'SUPERs beat normal Ults — watch his opener!'},
 enemies: [{
-id: 'hangman', name: { zh: '👻 吊死鬼', en: '👻 Hangman'}, hp: 2, inventory: [0, 5],
+id: 'hangman', name: { zh: '👻 吊死鬼', en: '👻 Hangman'}, hp: 3.5, inventory: [0, 5],
 personality: P(0.65, 0.3, 0.35, 0.8), elite: true,
 passive: { energyDrain: 1 },
 intro: { zh: '吊死鬼：终极？我的更终极。', en: 'Hangman: ultimate? Mine is more ultimate.'},
@@ -209,7 +210,7 @@ id: 's12', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
 name: { zh: '第 13 关 · 马甸骑士', en: 'Stage 13 · Madian Knight'},
 rewardTier: 3,
 enemies: [{
-id: 'knight', name: { zh: '🐎 马甸骑士', en: '🐎 Madian Knight'}, hp: 1.5, inventory: [0, 5],
+id: 'knight', name: { zh: '🐎 马甸骑士', en: '🐎 Madian Knight'}, hp: 2.5, inventory: [0, 5],
 personality: P(0.8, 0.2, 0.3, 0.7),
 intro: { zh: '骑士：塔主座下，最后一道防线！', en: 'Knight: the last line before the Tower Lord!'},
 }],
@@ -220,17 +221,17 @@ name: { zh: '第 14 关 · 塔卫三煞', en: 'Stage 14 · Triple Guards'},
 rewardTier: 3,
 enemies: [
 {
-id: 'guard_a', name: { zh: '💂 塔卫·左', en: '💂 Guard Left'}, hp: 1.5, inventory: [0, 5],
+id: 'guard_a', name: { zh: '💂 塔卫·左', en: '💂 Guard Left'}, hp: 2, inventory: [0, 5],
 personality: P(0.8, 0.25, 0.25, 0.85),
 intro: { zh: '左卫：止步！', en: 'Left Guard: halt!'},
 },
 {
-id: 'guard_b', name: { zh: '💂 塔卫·中', en: '💂 Guard Mid'}, hp: 1.5, inventory: [0, 3],
+id: 'guard_b', name: { zh: '💂 塔卫·中', en: '💂 Guard Mid'}, hp: 2, inventory: [0, 3],
 personality: P(0.65, 0.35, 0.35, 0.75),
 intro: { zh: '中卫：擅闯者死！', en: 'Mid Guard: trespassers die!'},
 },
 {
-id: 'guard_c', name: { zh: '💂 塔卫·右', en: '💂 Guard Right'}, hp: 1.5, inventory: [0, 2],
+id: 'guard_c', name: { zh: '💂 塔卫·右', en: '💂 Guard Right'}, hp: 2, inventory: [0, 2],
 personality: P(0.5, 0.5, 0.45, 0.6),
 intro: { zh: '右卫：塔主不容打扰！', en: 'Right Guard: the Lord must not be disturbed!'},
 },
@@ -238,7 +239,19 @@ intro: { zh: '右卫：塔主不容打扰！', en: 'Right Guard: the Lord must n
 },
 {
 id: 's14', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
-name: { zh: '第 15 关 · Boss：塔主波赞', en: 'Stage 15 · Boss: Lord Bozan'},
+name: { zh: '第 15 关 · 精英：诈唬大师', en: 'Stage 15 · Elite: Bluff Master'},
+rewardTier: 3,
+tip: { zh: '诈唬大师满嘴跑火车：它喊"我要打你"时，可能真要动手，也可能只是在攒能量——别全信，也别全不信', en: 'The Bluff Master is full of lies: when it shouts "I\'m coming for you", it may mean it — or be secretly charging. Trust, but verify' },
+enemies: [{
+id: 'bluffer', name: { zh: '🎭 诈唬大师', en: '🎭 Bluff Master'}, hp: 3.5, inventory: [0, 3, 5, 7],
+personality: P(0.5, 0.35, 0.6, 0.55), elite: true,
+passive: { deceiver: true },
+intro: { zh: '诈唬大师：我的话，你敢信吗？', en: 'Bluff Master: dare you believe a word I say?'},
+}],
+},
+{
+id: 's15', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
+name: { zh: '第 16 关 · Boss：塔主波赞', en: 'Stage 16 · Boss: Lord Bozan'},
 rewardTier: 3,
 tip: { zh: '塔主 4 血、每回合护甲 0.5 点，半血狂暴（能量+2、伤害+0.5），还会锐吸/奥吸收你的技能——速战速决！', en: 'Lord: 4 HP, 0.5 armor/turn, enrages at half HP, absorbs skills — end it fast!'},
 enemies: [{
@@ -249,8 +262,8 @@ intro: { zh: '波赞：能爬到这里，值得我亲自出手。半血之后，
 }],
 },
 {
-id: 's15', chapter: { zh: '终章 · 塔心', en: 'Finale · Tower Heart'},
-name: { zh: '第 16 关 · Boss：远古塔魂', en: 'Stage 16 · Boss: Ancient Tower Soul'},
+id: 's16', chapter: { zh: '终章 · 塔心', en: 'Finale · Tower Heart'},
+name: { zh: '第 17 关 · Boss：远古塔魂', en: 'Stage 17 · Boss: Ancient Tower Soul'},
 rewardTier: 3,
 tip: { zh: '塔魂披挂头盔/手盔/脚盔攻防，每回合护甲 0.5 点、能量 +1，攻击无视防御——它即是塔本身！', en: 'The Soul wields helm/hand/foot arms, 0.5 armor & +1 energy per turn, attacks pierce defense — it IS the tower!'},
 enemies: [{
@@ -270,11 +283,11 @@ highlight?: string; // 高亮手牌：卡牌 id，或 'ULTIMATE' 表示任意终
 export const EXPEDITION_TUTORIALS: Record<string, ExpeditionTutorialStep[]> = {
 s0: [
 { text: { zh: '👆 点「攒」：每次 +2 能量，能量是出牌的燃料', en: 'Tap [Charge]: +2 Energy each time — the fuel for every move' }, highlight: 'charge' },
-{ text: { zh: '⚡ 有能量了！点「轰」进攻——训练假人只有 2 ❤️', en: 'Got energy! Tap [Blast] to attack — the dummy has only 2 HP' }, highlight: 'hong' },
+{ text: { zh: '⚡ 有能量了！点「轰」进攻——训练假人只有 1 ❤️', en: 'Got energy! Tap [Blast] to attack — the dummy has only 1 HP' }, highlight: 'hong' },
 { text: { zh: '❤️ 看对手血条：打空 1 血就赢了，继续进攻！', en: 'Watch its HP bar: empty its 1 HP to win. Keep attacking!' }, highlight: 'hong' },
 ],
 s1: [
-{ text: { zh: '🪵 胆小木桩 2 ❤️，但它会还手！先看它能量', en: 'The cowardly post has 2 HP — but it fights back! Watch its energy' } },
+{ text: { zh: '🪵 胆小木桩 1 ❤️，但它会还手！先看它能量', en: 'The cowardly post has 1 HP — but it fights back! Watch its energy' } },
 { text: { zh: '🛡️ 它能量 ≥2 就要打你：点「防」挡住伤害', en: 'When its energy ≥ 2 it will hit you: tap [Defend] to block' }, highlight: 'defend' },
 { text: { zh: '⚔️ 它没能量时，就是你大胆「轰」它的好机会', en: 'When it has no energy, [Blast] it without fear' }, highlight: 'hong' },
 ],
