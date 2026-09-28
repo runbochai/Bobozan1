@@ -593,6 +593,11 @@ export default function BobozanOnline() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [toastMsg, setToastMsg] = useState('');
+
+  // --- 阶段重置过场：有人被淘汰 → 幸存者状态重置时闪一下提示 ---
+  const [resetFlash, setResetFlash] = useState(false);
+  const lastResetSeqRef = useRef<number | null>(null);
+  const resetFlashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [authError, setAuthError] = useState<unknown>(firebaseInitError);
   const [authLoading, setAuthLoading] = useState(firebaseConfigured);
   const connectionMessage = authError ? firebaseErrorMessage(authError, lang) : authLoading
@@ -606,6 +611,22 @@ export default function BobozanOnline() {
     logs: [],
     hostId: '',
   });
+
+  // 阶段重置过场：gameState.resetSeq 增加（有人被淘汰、幸存者状态重置）时闪一下提示
+  useEffect(() => {
+    const seq = gameState.resetSeq ?? 0;
+    // 第一次见到该房间的状态只记下计数，不闪（避免中途加入房间时误触发）
+    if (lastResetSeqRef.current === null) { lastResetSeqRef.current = seq; return; }
+    if (seq > lastResetSeqRef.current) {
+      lastResetSeqRef.current = seq;
+      if (view === 'GAME') {
+        playSound('death', muted);
+        setResetFlash(true);
+        if (resetFlashTimer.current) clearTimeout(resetFlashTimer.current);
+        resetFlashTimer.current = setTimeout(() => setResetFlash(false), 1100);
+      }
+    }
+  }, [gameState.resetSeq, view, muted]);
 
   const t = TEXT[lang]; 
   const [emojiMenuOpen, setEmojiMenuOpen] = useState(false);
@@ -3704,6 +3725,48 @@ export default function BobozanOnline() {
               </div>
 
            </div>
+        </div>
+      )}
+
+      {/* --- 阶段重置过场：有人被淘汰，幸存者状态重置（约1秒闪过，不拦截操作） --- */}
+      {resetFlash && (
+        <div className="fixed inset-0 z-[95] flex items-center justify-center pointer-events-none">
+          <style>{`
+            @keyframes reset-flash-bg {
+              0% { opacity: 0; }
+              15% { opacity: 1; }
+              75% { opacity: 1; }
+              100% { opacity: 0; }
+            }
+            @keyframes reset-flash-pop {
+              0% { opacity: 0; transform: scale(0.7); }
+              15% { opacity: 1; transform: scale(1.08); }
+              30% { transform: scale(1); }
+              75% { opacity: 1; transform: scale(1); }
+              100% { opacity: 0; transform: scale(1.02); }
+            }
+          `}</style>
+          {/* 红色闪光背景 */}
+          <div
+            className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.35)_0%,rgba(0,0,0,0.55)_70%)]"
+            style={{ animation: 'reset-flash-bg 1.1s ease-out forwards' }}
+          />
+          {/* 中央提示 */}
+          <div
+            className="relative flex flex-col items-center gap-2 px-10 py-6"
+            style={{ animation: 'reset-flash-pop 1.1s ease-out forwards' }}
+          >
+            <div className="text-6xl filter drop-shadow-[0_0_25px_rgba(220,38,38,0.9)]">💥</div>
+            <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-300 via-red-500 to-orange-400 tracking-widest whitespace-nowrap drop-shadow-lg">
+              {lang === 'zh' ? '有人被淘汰!' : 'ELIMINATION!'}
+            </div>
+            <div className="text-lg md:text-xl font-bold text-white tracking-wider">
+              {lang === 'zh' ? '幸存者状态重置 · 重新开战' : 'Survivors reset · Fight again'}
+            </div>
+            <div className="text-xs md:text-sm text-slate-300 font-mono tracking-[0.25em] bg-black/50 px-4 py-1 rounded-full border border-red-500/30">
+              {lang === 'zh' ? '血量 / 能量 / 层数已重置' : 'HP / ENERGY / LAYERS RESET'}
+            </div>
+          </div>
         </div>
       )}
       

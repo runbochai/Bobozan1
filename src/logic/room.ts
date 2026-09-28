@@ -64,5 +64,7 @@ export function settleRoom(room: GameState, uid: string, round: RoundId, lang: L
     logs: [...result.logs, ...room.logs].slice(0, 300),
     status: result.isGameOver ? 'GAMEOVER' : 'PLAYING',
     turn: result.isGameOver ? room.turn : room.turn + 1,
+    // 有人被淘汰且游戏继续：幸存者重置计数 +1，客户端据此播放“阶段重置”过场
+    ...(result.survivorReset ? { resetSeq: (room.resetSeq ?? 0) + 1 } : {}),
   };
 }

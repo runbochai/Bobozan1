@@ -313,7 +313,7 @@ export const calculateTurnOutcome = (
   turn: number,
   matchCount: number,
   lang: Lang
-): { players: Player[]; logs: LogEntry[]; isGameOver: boolean; winner?: Player } => {
+): { players: Player[]; logs: LogEntry[]; isGameOver: boolean; winner?: Player; survivorReset: boolean } => {
   const logs: LogEntry[] = [];
 
   const survivors = currentPlayers
@@ -602,7 +602,9 @@ export const calculateTurnOutcome = (
   // Survivor Reset logic...
   const newlyDeadCount = survivors.filter((p) => p.isDead).length;
   const activeSurvivors = survivors.filter((p) => !p.isDead);
+  let survivorReset = false;
   if (newlyDeadCount > 0 && activeSurvivors.length > 1) {
+    survivorReset = true;
     activeSurvivors.forEach((p) => {
       p.hp = MAX_HP;
       p.energy = 0;
@@ -669,7 +671,7 @@ export const calculateTurnOutcome = (
     }
   }
 
-  return { players: finalPlayers, logs, isGameOver, winner };
+  return { players: finalPlayers, logs, isGameOver, winner, survivorReset };
 };
 
 export const getBotMove = (bot: Player, allPlayers: Player[]) => {

@@ -139,3 +139,40 @@ test('winning awards inventory without mutating the input inventory', () => {
 test('malformed card data raises a meaningful error instead of dereferencing undefined', () => {
   assert.throws(() => calculateTurnOutcome([player('a', { selectedCardId: 'invalid' })], 1, 1, 'zh'), /Invalid card for player a/);
 });
+
+test('elimination with multiple survivors resets the phase and bumps resetSeq', () => {
+  const players = [
+    player('a', { hp: 1, selectedCardId: 'charge' }),
+    player('b', { selectedCardId: 'hong' }),
+    player('c', { selectedCardId: 'defend' }),
+  ];
+  const result = calculateTurnOutcome(players, 1, 1, 'zh');
+  assert.equal(result.survivorReset, true);
+  assert.equal(result.isGameOver, false);
+  assert.equal(result.players.find(p => p.id === 'a')!.isDead, true);
+  // 幸存者状态被重置
+  for (const id of ['b', 'c']) {
+    const s = result.players.find(p => p.id === id)!;
+    assert.equal(s.hp, 2);
+    assert.equal(s.energy, 0);
+    assert.equal(s.layer, 0);
+  }
+
+  const state = room({ status: 'SHOWDOWN', players, resetSeq: 4 });
+  const patch = settleRoom(state, 'a', state, 'zh');
+  assert.equal(patch?.resetSeq, 5);
+});
+
+test('final elimination ends the game without bumping resetSeq', () => {
+  const players = [
+    player('a', { hp: 1, selectedCardId: 'charge' }),
+    player('b', { selectedCardId: 'hong' }),
+  ];
+  const result = calculateTurnOutcome(players, 1, 1, 'zh');
+  assert.equal(result.survivorReset, false);
+  assert.equal(result.isGameOver, true);
+
+  const state = room({ status: 'SHOWDOWN', players });
+  const patch = settleRoom(state, 'a', state, 'zh');
+  assert.equal(patch?.resetSeq, undefined);
+});

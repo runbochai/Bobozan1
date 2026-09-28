@@ -61,4 +61,6 @@ export interface GameState {
   logs: LogEntry[];
   hostId: string;
   revengeMode?: boolean;
+  /** 幸存者重置计数：有人被淘汰导致阶段重置时 +1，UI 据此播放过场动画 */
+  resetSeq?: number;
 }
