@@ -3263,6 +3263,7 @@ const expYpjUsedRef = useRef(false);
              return gameState.players.map((p, i) => {
                const pos = getPlayerPosition(i, totalPlayers, myIndex);
                const isMe = p.id === user?.uid;
+               const effLayer = (p.layer ?? 0) + (p.tempLayerMod ?? 0);
                const animClass = activeAnimations[p.id] === 'shake' ? 'animate-[shake_0.5s_ease-in-out]' : '';
                const damageVal = damageNumbers[p.id];
 
@@ -3485,15 +3486,17 @@ const expYpjUsedRef = useRef(false);
                     <div className="mt-6 flex flex-col items-center gap-2 z-10 transition-opacity duration-300">
                         
                         {/* 3a. STATS (Always visible here for everyone) */}
-                        <div className="flex gap-2">
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/70 border border-yellow-500/30 backdrop-blur-sm shadow-sm">
-                            <Zap size={16} className="text-yellow-400" fill="currentColor" />
-                            <span className="text-base font-black text-yellow-300 font-mono leading-none pt-0.5">{p.energy}</span>
+                        <div className="flex gap-2 items-center">
+                          <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-black/70 border-2 border-yellow-400/60 backdrop-blur-sm shadow-[0_0_18px_rgba(250,204,21,0.35)]">
+                            <Zap size={22} className="text-yellow-400" fill="currentColor" />
+                            <span className="text-2xl font-black text-yellow-300 font-mono leading-none pt-0.5 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]">{p.energy}</span>
                           </div>
-                          <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/70 border border-sky-500/30 backdrop-blur-sm shadow-sm">
-                            <ArrowUp size={16} className="text-sky-400" />
-                            <span className="text-base font-black text-sky-300 font-mono leading-none pt-0.5">{p.layer}</span>
-                          </div>
+                          {effLayer > 0 && (
+                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/70 border border-sky-500/30 backdrop-blur-sm shadow-sm animate-in zoom-in duration-200">
+                              <ArrowUp size={16} className="text-sky-400" />
+                              <span className="text-base font-black text-sky-300 font-mono leading-none pt-0.5">{effLayer}</span>
+                            </div>
+                          )}
                         </div>
                         <div className="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/5 shadow-sm">
                           <Heart size={16} className="text-red-500" fill="currentColor" />
