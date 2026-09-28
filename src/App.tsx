@@ -3026,10 +3026,10 @@ const expYpjUsedRef = useRef(false);
         {isExpedition && expPhase === 'battle' && (
           <div className="absolute top-3 left-3 z-50 pointer-events-none">
             <div className="bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-xl px-3 py-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
-              <div className="text-xs font-bold text-amber-300">
+              <div className="text-sm font-bold text-amber-300">
                 {EXPEDITION_STAGES[expStageIdx].chapter[lang]} · {EXPEDITION_STAGES[expStageIdx].name[lang]}
               </div>
-              <div className="text-[10px] font-bold text-slate-400 tracking-widest">
+              <div className="text-xs font-bold text-slate-400 tracking-widest">
                 {lang === 'zh' ? `第 ${gameState.turn} 回合` : `TURN ${gameState.turn}`}
               </div>
             </div>
@@ -3854,7 +3854,8 @@ const expYpjUsedRef = useRef(false);
             </div>
            )}
 
-          {/* 🟢 UPDATED: KILL LEADERBOARD (Draggable + Minimizable) */}
+          {/* 🟢 UPDATED: KILL LEADERBOARD（远征模式隐藏） (Draggable + Minimizable) */}
+          {!isExpedition && (
            <div
                ref={leaderboardRef}
                className="fixed z-50 animate-in slide-in-from-left-10 duration-500 pointer-events-none" 
@@ -3964,6 +3965,7 @@ const expYpjUsedRef = useRef(false);
                    )}
                </div>
            </div>
+          )}
           </div>
 
         {/* 3. 手牌区 */}
