@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "node --import tsx --test src/logic/*.test.ts"
+    "test": "node --import tsx --test src/logic/*.test.ts src/config/*.test.ts src/audio/*.test.ts",
+    "check:config": "node --import tsx scripts/check-firebase-config.ts",
+    "build:deploy": "npm run check:config && npm run build"
   },
   "dependencies": {
     "firebase": "^12.6.0",

@@ -1,9 +1,3 @@
-// Public assets must respect GitHub Pages' project subdirectory.
-export function assetUrl(path: string) {
-  return `${import.meta.env.BASE_URL}${path.replace(/^\/+/, '')}`;
-}
-
-export function avatarUrl(path: string) {
-  // Rooms created before this fix can still contain root-relative avatar paths.
-  return path.startsWith('/avatars/') ? assetUrl(path) : path;
-}
+import { publicAssetUrl, resolveAvatarUrl } from './config/assetPaths';
+export const assetUrl = (path: string) => publicAssetUrl(path, import.meta.env.BASE_URL);
+export const avatarUrl = (path: string) => resolveAvatarUrl(path, import.meta.env.BASE_URL);

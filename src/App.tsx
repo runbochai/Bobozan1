@@ -60,7 +60,9 @@ import {
   getPlayerCards,
 } from './logic/combat';
 import { initAudio, playSound } from './audio/sound';
-import { auth, db, firebaseConfigured } from './firebase';
+import { auth, db, firebaseConfigured, firebaseInitError } from './firebase';
+import { firebaseErrorMessage } from './config/firebaseConfig';
+import { useBackgroundMusic } from './audio/useBackgroundMusic';
 import { assetUrl, avatarUrl } from './assets';
 import { mutateRoom, createUniqueRoom } from './services/rooms';
 import { advanceRoom, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './logic/room';
@@ -526,61 +528,7 @@ export default function BobozanOnline() {
   // --- Global Event Listeners ---
   const [musicVolume, setMusicVolume] = useState(0.15); // Default 15%
 
-  // Import audio ref
-  const bgmRef = useRef<HTMLAudioElement | null>(null);
-
-  // Initialize and Control BGM
-  useEffect(() => {
-    // 1. Initialize Audio Object
-    if (!bgmRef.current) {
-      console.log(" initializing BGM..."); 
-      bgmRef.current = new Audio(assetUrl('music/bgm.mp3'));
-      bgmRef.current.loop = true;
-      bgmRef.current.preload = 'none';
-    }
-
-    const bgm = bgmRef.current;
-
-    // 2. Sync Volume & Mute immediately
-    // Note: HTML Audio volume is 0.0 to 1.0. 
-    // If your slider sends 0-100, divide by 100 here. If 0-1, keep as is.
-    bgm.volume = musicVolume; 
-    bgm.muted = muted;
-
-    // 3. Play Logic
-    if (view === 'GAME') {
-      console.log("Attempting to play BGM...");
-      
-      const playPromise = bgm.play();
-      
-      if (playPromise !== undefined) {
-        playPromise
-          .then(() => {
-            console.log("BGM playing successfully!");
-          })
-          .catch((error) => {
-            // 🔴 THIS IS USUALLY WHERE IT FAILS
-            console.error("BGM Autoplay prevented:", error);
-            if (error.name === 'NotAllowedError') {
-                // Browser blocked it. We need a click interaction.
-                // We can set a flag to try playing on the next click.
-            }
-          });
-      }
-    } else {
-      bgm.pause();
-      if (view === 'HOME' || view === 'LOBBY') {
-          bgm.currentTime = 0; // Reset song
-      }
-    }
-
-    // Cleanup not strictly necessary for ref, but good practice
-    return () => {
-      // Don't pause on unmount immediately if we want continuous play, 
-      // but since we depend on [view], this effect re-runs. 
-      // We rely on the logic above to decide play/pause.
-    };
-  }, [view, muted, musicVolume]);
+  const music = useBackgroundMusic(assetUrl('music/bgm.mp3'), view === 'GAME', muted, musicVolume);
 
   useEffect(() => {
     // Set initial position based on Bottom-Left if not already set (only runs once)
@@ -647,7 +595,10 @@ export default function BobozanOnline() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [toastMsg, setToastMsg] = useState('');
-  const configError = !firebaseConfigured;
+  const [authError, setAuthError] = useState<unknown>(firebaseInitError);
+  const [authLoading, setAuthLoading] = useState(firebaseConfigured);
+  const connectionMessage = authError ? firebaseErrorMessage(authError, lang) : authLoading
+    ? (lang === 'zh' ? '正在连接联机服务…' : 'Connecting to online play…') : '';
 
   const [gameState, setGameState] = useState<GameState>({
     status: 'LOBBY',
@@ -718,28 +669,31 @@ export default function BobozanOnline() {
   }, [gameState.status, view, muted]);
 
   useEffect(() => {
-    if (!firebaseConfigured) return;
+    const firebaseAuth = auth;
+    if (!firebaseAuth) return;
+    let cancelled = false;
     const initAuth = async () => {
       try {
         const token = (globalThis as typeof globalThis & { __initial_auth_token?: string }).__initial_auth_token;
         if (token) {
-          await signInWithCustomToken(auth, token);
+          await signInWithCustomToken(firebaseAuth, token);
         } else {
-          await signInAnonymously(auth);
+          await signInAnonymously(firebaseAuth);
         }
       } catch (err) {
         console.error('Auth failed', err);
-        setErrorMsg(TEXT.zh.firebaseError);
-      }
+        if (!cancelled) setAuthError(err);
+      } finally { if (!cancelled) setAuthLoading(false); }
     };
-    initAuth();
-    const unsub = onAuthStateChanged(auth, (u) => {
+    void initAuth();
+    const unsub = onAuthStateChanged(firebaseAuth, (u) => {
       setUser(u);
+      if (u) { setAuthError(null); setAuthLoading(false); }
       const params = new URLSearchParams(window.location.search);
       const urlRoom = params.get('room');
       if (urlRoom && urlRoom.length === 6) setRoomCode(urlRoom);
     });
-    return () => unsub();
+    return () => { cancelled = true; unsub(); };
   }, []);
 
   useEffect(() => {
@@ -972,7 +926,7 @@ export default function BobozanOnline() {
         await mutateRoom(roomCode, room => leavePlayer(room, user.uid));
       } catch (error) {
         console.error('Unable to leave room', error);
-        setToastMsg(t.firebaseError);
+        setToastMsg(firebaseErrorMessage(error, lang));
         return;
       }
     }
@@ -980,7 +934,7 @@ export default function BobozanOnline() {
   };
 
   useEffect(() => {
-    if (!isOnline || !roomCode || !user) return;
+    if (!isOnline || !roomCode || !user || !db) return;
     return onSnapshot(doc(db, 'rooms', `${APP_ID}_${roomCode.trim().toUpperCase()}`), snapshot => {
       if (!snapshot.exists()) {
         resetRoom();
@@ -999,15 +953,15 @@ export default function BobozanOnline() {
         if (active.length <= 1 || active.every(p => p.isBot || p.selectedCardId)) {
           void mutateRoom(roomCode, room => advanceRoom(room, user.uid)).catch(error => {
             console.error('Unable to advance round', error);
-            setToastMsg(t.firebaseError);
+            setToastMsg(firebaseErrorMessage(error, lang));
           });
         }
       }
     }, error => {
       console.error('Room subscription failed', error);
-      setToastMsg(t.firebaseError);
+      setToastMsg(firebaseErrorMessage(error, lang));
     });
-  }, [isOnline, roomCode, user, resetRoom, t.roomNotFound, t.firebaseError]);
+  }, [isOnline, roomCode, user, resetRoom, t.roomNotFound, lang]);
 
   useEffect(() => {
     if (isTutorial || !isOnline || gameState.status !== 'SHOWDOWN' || gameState.hostId !== user?.uid) return;
@@ -1015,11 +969,11 @@ export default function BobozanOnline() {
     const timer = setTimeout(() => {
       void mutateRoom(roomCode, room => settleRoom(room, user.uid, round, lang)).catch(error => {
         console.error('Unable to settle round', error);
-        setToastMsg(t.firebaseError);
+        setToastMsg(firebaseErrorMessage(error, lang));
       });
     }, 2000);
     return () => clearTimeout(timer);
-  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, user, roomCode, lang, isTutorial, isOnline, t.firebaseError]);
+  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, user, roomCode, lang, isTutorial, isOnline]);
 
   useEffect(() => {
   if (muted || gameState.logs.length === 0) return;
@@ -1092,7 +1046,7 @@ export default function BobozanOnline() {
       setView('LOBBY');
     } catch (err) {
       console.error(err);
-      setErrorMsg(t.firebaseError);
+      setErrorMsg(firebaseErrorMessage(err, lang));
     } finally {
       setLoading(false);
     }
@@ -1133,7 +1087,7 @@ export default function BobozanOnline() {
       setView('LOBBY');
     } catch (error) {
       const key = error instanceof Error ? error.message : '';
-      setErrorMsg(key === 'roomFull' ? t.roomFull : key === 'gameStarted' ? t.gameStarted : key === 'roomNotFound' ? t.roomNotFound : t.firebaseError);
+      setErrorMsg(key === 'roomFull' ? t.roomFull : key === 'gameStarted' ? t.gameStarted : key === 'roomNotFound' ? t.roomNotFound : firebaseErrorMessage(error, lang));
     } finally { setLoading(false); }
   };
 
@@ -1144,7 +1098,7 @@ export default function BobozanOnline() {
       await mutateRoom(roomCode, room => startRoom(room, user.uid, lang));
       playSound('confirm', muted);
     } catch (error) {
-      setToastMsg(error instanceof Error && error.message === 'needPlayers' ? `${t.needPlayers} (${MIN_PLAYERS}+)` : t.firebaseError);
+      setToastMsg(error instanceof Error && error.message === 'needPlayers' ? `${t.needPlayers} (${MIN_PLAYERS}+)` : firebaseErrorMessage(error, lang));
     }
   };
 
@@ -1183,7 +1137,7 @@ export default function BobozanOnline() {
         if (room.hostId !== user.uid || room.status !== 'LOBBY') return null;
         return joinPlayer(room, newBot);
       });
-    } catch { setToastMsg(t.firebaseError); }
+    } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
 
   const removeBot = async () => {
@@ -1194,7 +1148,7 @@ export default function BobozanOnline() {
         const bot = room.players.filter(p => p.isBot).at(-1);
         return bot ? { players: room.players.filter(p => p.id !== bot.id) } : null;
       });
-    } catch { setToastMsg(t.firebaseError); }
+    } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
 
   const handleDiscardSkill = async (discardLvl: number) => {
@@ -1210,7 +1164,7 @@ export default function BobozanOnline() {
         });
       });
       playSound('click', muted);
-    } catch { setToastMsg(t.firebaseError); }
+    } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
 
   const toggleShare = async () => {
@@ -1219,7 +1173,7 @@ export default function BobozanOnline() {
       await mutateRoom(roomCode, room => patchPlayer(room, user.uid, p =>
         p.inventory.includes(3) || p.inventory.includes(18) ? { ...p, isShared: !p.isShared } : p));
       playSound('click', muted);
-    } catch { setToastMsg(t.firebaseError); }
+    } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
 
   const movePendingRef = useRef(false);
@@ -1246,7 +1200,7 @@ export default function BobozanOnline() {
     const emojiAt = Date.now();
     try {
       await mutateRoom(roomCode, room => patchPlayer(room, user.uid, p => ({ ...p, emoji, emojiAt })));
-    } catch { setToastMsg(t.firebaseError); }
+    } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
 
   const toggleRevengeMode = async () => {
@@ -1254,7 +1208,7 @@ export default function BobozanOnline() {
     try {
       await mutateRoom(roomCode, room => room.hostId === user.uid && room.status === 'LOBBY'
         ? { revengeMode: !(room.revengeMode ?? true) } : null);
-    } catch { setToastMsg(t.firebaseError); }
+    } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
 
   const nextMatchHost = async () => {
@@ -1567,7 +1521,6 @@ export default function BobozanOnline() {
   const categories: HandCategory[] = ['CHARGE', 'ATTACK', 'DEFEND', 'ULTIMATE', 'SPECIAL'];
 
   // --- RENDER LOGIC ---
-  if (configError) return ( <div className="min-h-screen w-screen bg-black text-red-500 flex items-center justify-center p-4 text-center"><div><AlertTriangle size={48} className="mx-auto mb-4" /><h1 className="text-2xl font-bold mb-2">{t.firebaseError}</h1><p>{t.checkEnv}</p></div></div> );
 
   if (view === 'NAME_INPUT') return (
     <div className="min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
@@ -1971,7 +1924,7 @@ export default function BobozanOnline() {
                   {/* 🎨 CHANGED: Profile Circle Gradient (Orange -> Red) */}
                   <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-xl shadow-orange-500/30 overflow-hidden">
                     {playerAvatar ? (
-                      <img src={playerAvatar} className="w-full h-full object-cover" alt="Me" />
+                      <img src={avatarUrl(playerAvatar)} className="w-full h-full object-cover" alt="Me" />
                     ) : (
                       <User size={48} className="text-white drop-shadow-md" />
                     )}
@@ -1990,7 +1943,7 @@ export default function BobozanOnline() {
             {/* Actions */}
             <div className="space-y-6">
               {/* 🎨 CHANGED: Create Button (Orange/Red Theme) */}
-              <button onClick={createRoom} disabled={loading} className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 p-[1px] transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-orange-500/25 disabled:opacity-50 disabled:pointer-events-none">
+              <button onClick={createRoom} disabled={loading || !user || !firebaseConfigured} className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 p-[1px] transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-orange-500/25 disabled:opacity-50 disabled:pointer-events-none">
                   <div className="absolute inset-0 bg-white/20 group-hover:translate-x-full transition-transform duration-700 ease-in-out -skew-x-12 origin-left" />
                   <div className="relative bg-slate-900/60 h-full rounded-2xl p-5 flex items-center justify-center gap-4 backdrop-blur-sm group-hover:bg-transparent transition-colors">
                     {loading ? <Loader className="animate-spin text-white" /> : <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white/20 transition-colors"><Users size={28} className="text-orange-100" /></div>}
@@ -2010,15 +1963,15 @@ export default function BobozanOnline() {
                     />
                   </div>
                   {/* 🎨 CHANGED: Join Button Hover (Orange) */}
-                  <button onClick={joinRoom} disabled={loading || roomCode.length < 6} className="aspect-square h-auto bg-slate-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center group">
+                  <button onClick={joinRoom} disabled={loading || !user || !firebaseConfigured || roomCode.length < 6} className="aspect-square h-auto bg-slate-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center group">
                     {loading ? <Loader className="animate-spin" size={24} /> : <ArrowUp className="rotate-90 group-hover:translate-x-1 transition-transform" size={28} />}
                   </button>
               </div>
               
-              {errorMsg && (
+              {(connectionMessage || errorMsg) && (
                 <div className="flex items-center gap-3 text-red-300 text-xs font-bold bg-red-950/40 p-3 rounded-xl border border-red-900/50 animate-in slide-in-from-top-2">
                     <AlertTriangle size={16} className="text-red-500 shrink-0" />
-                    {errorMsg}
+                    {connectionMessage || errorMsg}
                 </div>
               )}
             </div>
@@ -2748,7 +2701,7 @@ export default function BobozanOnline() {
                                     </div>
                                 ) : p.avatar ? (
                                     <img 
-                                      src={p.avatar} 
+                                      src={avatarUrl(p.avatar)}
                                       alt={p.name} 
                                       className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500" 
                                     />
@@ -2968,6 +2921,15 @@ export default function BobozanOnline() {
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl font-black text-white/5 animate-pulse">VS</div>
            )}
 
+           {(music.status === 'blocked' || music.status === 'error') && (
+             <button type="button" onClick={music.retry}
+               className="fixed top-20 right-4 z-[100] rounded-xl bg-slate-900/95 border border-amber-500/60 px-4 py-2 text-sm text-amber-200">
+               {music.status === 'blocked'
+                 ? (lang === 'zh' ? '点击播放背景音乐' : 'Play background music')
+                 : (lang === 'zh' ? '音乐加载失败，点击重试' : 'Music failed to load. Retry')}
+             </button>
+           )}
+
            {/* GAME OVER OVERLAY */}
            {gameState.status === 'GAMEOVER' && winnerPlayer && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-500 overflow-hidden">
@@ -3012,7 +2974,7 @@ export default function BobozanOnline() {
                                    <div className="relative w-32 h-32 bg-slate-800 rounded-full border-4 border-yellow-400 flex items-center justify-center shadow-lg z-10 overflow-hidden">
                                       {displayWinner.avatar ? (
                                           <img 
-                                            src={displayWinner.avatar} 
+                                            src={avatarUrl(displayWinner.avatar)}
                                             alt={displayWinner.name} 
                                             className="w-full h-full object-cover" 
                                           />

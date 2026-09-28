@@ -13,7 +13,7 @@ cp .env.example .env.local
 npm run dev
 ```
 
-在 Firebase 项目中启用匿名登录、创建 Firestore 数据库，并将实际站点域名加入 Authentication 的授权域名。`VITE_*` 配置会进入浏览器构建产物；它们不是服务端密钥，数据库访问必须由 Firestore Security Rules 控制。不要填入服务账号私钥。
+在 Firebase 项目中启用匿名登录、创建 Firestore 数据库，并将实际站点域名加入 Authentication 的授权域名（GitHub Pages 为 `runbochai.github.io`）。`VITE_*` 配置会进入浏览器构建产物；它们不是服务端密钥，数据库访问必须由 Firestore Security Rules 控制。不要填入服务账号私钥。
 
 ```sh
 npm run lint -- --max-warnings 0
@@ -45,7 +45,28 @@ CI 自动执行以上检查（preview 除外）。单元测试验证状态转换
 
 `vite.config.ts` 的 `base` 为 `/Bobozan1/`。构建时提供上述 Firebase 环境变量，然后把 `dist/` 发布到 Pages。若更换仓库名称、使用自定义域名或部署到根路径，请修改 `base` 后重新构建。应用中的头像、标题和音乐通过 `import.meta.env.BASE_URL` 生成 URL。
 
-此仓库的 CI 只验证代码，不会自动发布站点。
+### 发布修正后的版本
+
+合并 PR 只更新源码，`Check application` 只验证代码；它不会更新现有 Pages 网站。
+
+1. 在 GitHub 仓库 Settings → Secrets and variables → Actions 的 Variables 或 Secrets 中填入 Firebase Web App 配置。支持 `.env.example` 中的旧名称，也支持 `VITE_FIREBASE_API_KEY`、`VITE_FIREBASE_PROJECT_ID` 等名称。
+2. `VITE_FIREBASE_API_KEY` 和 `VITE_FIREBASE_PROJECT_ID` 必填。未指定 `authDomain` 时会使用 `<projectId>.firebaseapp.com`；自定义认证域名应显式配置。建议填入 Firebase 提供的完整 Web App 配置。
+3. 在 Settings → Pages 将 Source 设为 GitHub Actions。
+4. 在 Actions 选择 **Deploy GitHub Pages**，点击 **Run workflow**，选择 `main`。
+5. 等部署成功后刷新网站。工作流会从 `dist/` 发布完整的 HTML、JS、图片和 MP3。
+
+部署会先执行 `npm run build:deploy`，缺少必要配置或仍然使用示例占位符时直接失败，不会替换正在运行的网站。配置变更后必须重新构建和部署；只修改 GitHub 变量或本地 `.env` 不会改变已发布的 JS。
+
+若本地手动部署，请运行 `npm run build:deploy` 后发布 `dist/`。`npm run build` 仍允许无 Firebase 配置的本地教程预览。
+
+### 错误排查
+
+- 联机服务尚未配置：检查构建时是否注入真实 Firebase 项目的 Web 配置。缺少配置时仍可进入教程，但联机按钮不可用。
+- 匿名登录未启用：在 Firebase Authentication 中启用 Anonymous 提供方。
+- 域名未授权：将网站域名加入 Authentication 的 Authorized domains。
+- 数据库拒绝访问：检查 Firestore Security Rules，而不是替换 API key；不要简单将所有读写设为公开。
+- 网络失败：检查网络并刷新重试。
+- 浏览器拦截背景音乐：点击页面或“点击播放背景音乐”；媒体加载失败时可点击重试。
 
 ## 上线前需要确认的限制
 

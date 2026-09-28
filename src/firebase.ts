@@ -1,17 +1,34 @@
 import { initializeApp } from 'firebase/app';
+import type { FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
+import type { Auth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
+import type { Firestore } from 'firebase/firestore';
+import { readFirebaseConfig } from './config/firebaseConfig';
 
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_API_KEY || '你的API_KEY',
-  authDomain: import.meta.env.VITE_AUTH_DOMAIN || '你的PROJECT_ID.firebaseapp.com',
-  projectId: import.meta.env.VITE_PROJECT_ID || '你的PROJECT_ID',
-  storageBucket: import.meta.env.VITE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_APP_ID,
-};
+const { options, missing } = readFirebaseConfig(import.meta.env);
+export const missingFirebaseConfig = missing;
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
+let db: Firestore | null = null;
+let firebaseInitError: unknown = missing.length ? { code: 'config/missing' } : null;
 
-export const firebaseConfigured = Boolean(import.meta.env.VITE_API_KEY && import.meta.env.VITE_PROJECT_ID && import.meta.env.VITE_AUTH_DOMAIN);
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+if (!missing.length) {
+  try {
+    app = initializeApp(options);
+    auth = getAuth(app);
+    db = getFirestore(app);
+  } catch (error) {
+    // Keep the tutorial usable; online actions report the actual initialization error.
+    firebaseInitError = error;
+    console.error('Firebase initialization failed', error);
+  }
+}
+
+export const firebaseConfigured = !!auth && !!db && !firebaseInitError;
+export { app, auth, db, firebaseInitError };
+
+export function requireDatabase(): Firestore {
+  if (!db || firebaseInitError) throw firebaseInitError ?? { code: 'config/missing' };
+  return db;
+}
