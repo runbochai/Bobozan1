@@ -378,6 +378,7 @@ export default function BobozanOnline() {
   const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
   const [intentDismissed, setIntentDismissed] = useState<Set<string>>(new Set()); // 本回合手动点掉的意图
+  const [intentOffset, setIntentOffset] = useState({ x: 0, y: 0 }); // 意图面板拖动偏移
   const [shopShake, setShopShake] = useState<number | null>(null); // 商城买不起抖动
   const [expEquipment, setExpEquipment] = useState<string[]>([]);
   const [expGachaCardId, setExpGachaCardId] = useState<string | null>(null);
@@ -2135,14 +2136,6 @@ const expYpjUsedRef = useRef(false);
           <h1 className="text-7xl md:text-9xl font-black tracking-wider super-title select-none scale-110 md:scale-125 relative z-10">
             {t.title}
           </h1>
-          <p className="text-slate-400 text-xs md:text-sm font-bold tracking-[0.35em] mt-3 select-none">
-            {lang === 'zh' ? '⚡ 卡牌心理战 · 远征十六关 · 在线多人' : '⚡ CARD MIND GAMES · 16-STAGE EXPEDITION · ONLINE MULTIPLAYER'}
-          </p>
-          {expBest > 0 && (
-            <div className="mt-2 text-xs text-amber-300/90 font-bold tracking-widest bg-amber-500/10 border border-amber-500/30 rounded-full px-3 py-1">
-              {lang === 'zh' ? `🏆 历史最佳：第 ${expBest} 关` : `🏆 Best: Stage ${expBest}`}
-            </div>
-          )}
         </div>
 
         {/* --- INPUT AREA --- */}
@@ -2243,6 +2236,11 @@ const expYpjUsedRef = useRef(false);
                 <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
               </button>
             </div>
+            {expBest > 0 && (
+              <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
+                {lang === 'zh' ? `🏆 历史最佳：第 ${expBest} 关` : `🏆 Best: Stage ${expBest}`}
+              </div>
+            )}
 
 
         </div>
@@ -3257,8 +3255,30 @@ const expYpjUsedRef = useRef(false);
              if (foes.length === 0) return null;
              const iconMap: Record<string, string> = { ATTACK: '⚔️', DEFEND: '🛡️', CHARGE: '⚡', ULTIMATE: '💥', ABSORB: '🌀', SPECIAL: '✨' };
              return (
-               <div className="absolute left-2 top-[38%] -translate-y-1/2 z-40 flex flex-col items-center gap-2 bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl px-2 py-3 shadow-xl max-w-[4.5rem]">
-                 <div className="text-[10px] font-black text-slate-400 tracking-widest">{lang === 'zh' ? '意图' : 'INTENT'}</div>
+               <div
+                 className="absolute z-40 flex flex-col items-center gap-2 bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl px-2 py-3 shadow-xl max-w-[4.5rem] select-none cursor-grab active:cursor-grabbing touch-none"
+                 style={{ left: `calc(0.5rem + ${intentOffset.x}px)`, top: `calc(55% + ${intentOffset.y}px)`, transform: 'translateY(-50%)' }}
+                 onPointerDown={(e) => {
+                   // 6px 阈值：小幅移动算点击（不影响里面按钮），大幅移动算拖拽
+                   const startX = e.clientX, startY = e.clientY;
+                   const baseX = intentOffset.x, baseY = intentOffset.y;
+                   let dragging = false;
+                   const onMove = (ev: PointerEvent) => {
+                     if (!dragging && Math.hypot(ev.clientX - startX, ev.clientY - startY) < 6) return;
+                     dragging = true;
+                     setIntentOffset({ x: baseX + (ev.clientX - startX), y: baseY + (ev.clientY - startY) });
+                   };
+                   const onUp = () => {
+                     window.removeEventListener('pointermove', onMove);
+                     window.removeEventListener('pointerup', onUp);
+                     window.removeEventListener('pointercancel', onUp);
+                   };
+                   window.addEventListener('pointermove', onMove);
+                   window.addEventListener('pointerup', onUp);
+                   window.addEventListener('pointercancel', onUp);
+                 }}
+               >
+                 <div className="text-[10px] font-black text-slate-400 tracking-widest">{lang === 'zh' ? '意图 · 可拖' : 'INTENT · DRAG'}</div>
                  {foes.map(foe => {
                    const card = SKILL_DB.find(c => c.id === expIntents[foe.id]);
                    const revealed = shouldRevealIntent(foe.id);
