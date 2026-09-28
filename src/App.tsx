@@ -217,8 +217,6 @@ const TiltCard = ({
 
     setRotate({ x: rotateX, y: rotateY });
     setGlare({ x: (mouseX / width) * 100, y: (mouseY / height) * 100, opacity: 1 });
-    
-    if (onMouseEnter) onMouseEnter(e);
   };
 
   const handleLeave = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -801,7 +799,11 @@ export default function BobozanOnline() {
   }, [myTempSkills]);
 
   const handleMouseEnter = (e: React.MouseEvent, cardId: string) => {
-    const rect = e.currentTarget.getBoundingClientRect();
+    // 手牌外层包了一层静止的 hover 容器（防闪烁），提示框按内层卡牌定位；摊牌卡没有包装，直接量自身
+    const innerCard = e.currentTarget.classList.contains('hand-card')
+      ? e.currentTarget
+      : e.currentTarget.querySelector('.hand-card');
+    const rect = (innerCard ?? e.currentTarget).getBoundingClientRect();
     const x = rect.left + rect.width / 2;
     const y = rect.top - 70;
 
@@ -1469,6 +1471,16 @@ export default function BobozanOnline() {
           return a.cost - b.cost;
         })
       : filteredHand;
+
+  // 兜底：手牌重渲染把悬停卡片的 DOM 换掉时，可能收不到 mouseleave，
+  // 悬停的卡若已不在手牌里，直接清除提示状态，避免提示框永久卡住
+  useEffect(() => {
+    if (hoveredCard && !orderedHand.some(c => c.id === hoveredCard)) {
+      if (hoverTimer.current) clearTimeout(hoverTimer.current);
+      setHoveredCard(null);
+      setTooltipPos(null);
+    }
+  }, [orderedHand, hoveredCard]);
 
   const getCategoryIcon = (cat: HandCategory) => {
     switch (cat) {
@@ -3426,9 +3438,24 @@ export default function BobozanOnline() {
                                     if (c.type === 'SPECIAL' || c.type === 'ABSORB') glareColor = '#34d399'; // Emerald-400 
                                     if (c.tags?.includes('combo')) glareColor = '#fbbf24'; // Amber-400 
 
+                                    const isHovered = hoveredCard === c.id;
                                     return (
-                                       <TiltCard
+                                      <div
                                           key={`${c.id}-${index}`}
+                                          className="absolute w-36"
+                                          style={{
+                                            zIndex: isHovered ? 999 : index,
+                                            bottom: '30px',
+                                            transform: `translateX(${translateX}px) translateY(${translateY}px)`,
+                                            // 隐形 hover 保护区：卡片上浮时光标仍停留在容器内，
+                                            // 不会误触发 mouseleave，提示框就不会反复闪烁
+                                            paddingTop: '90px',
+                                            marginTop: '-90px',
+                                          }}
+                                          onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => handleMouseEnter(e, c.id)}
+                                          onMouseLeave={handleMouseLeave}
+                                      >
+                                       <TiltCard
                                           glareColor={glareColor}
                                           onClick={() => {
                                             const disabled = (myPlayer?.disabledSkills || []).includes(c.id);
@@ -3440,11 +3467,9 @@ export default function BobozanOnline() {
                                               }
                                             }
                                           }}
-                                          onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => handleMouseEnter(e, c.id)}
-                                          onMouseLeave={handleMouseLeave}
                                           disabled={isDisabled || !canAfford}
                                           className={`
-                                            absolute w-36 h-56 rounded-2xl border-4 ${borderClass}
+                                            relative w-36 h-56 rounded-2xl border-4 ${borderClass}
                                             shadow-2xl
                                             ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''}
                                             origin-bottom
@@ -3456,14 +3481,11 @@ export default function BobozanOnline() {
                                             }
                                           `}
                                           style={{
-                                            zIndex: hoveredCard === c.id ? 999 : index,
-                                            bottom: '30px',
                                             backgroundColor: '#1a1a1a',
-                                            // We keep the fan layout (translateX/Y and rotate), but TiltCard adds the 3D rotation on top
-                                            transform:
-                                              hoveredCard === c.id
-                                                ? `translateX(${translateX}px) translateY(${translateY - 60}px) scale(1.1)` // Pop up higher on hover
-                                                : `translateX(${translateX}px) translateY(${translateY}px) rotate(${rotateDeg}deg)`,
+                                            // 悬停只做视觉上浮（容器不动），hover 判定区保持稳定
+                                            transform: isHovered
+                                              ? 'translateY(-60px) scale(1.1)' // Pop up higher on hover
+                                              : `rotate(${rotateDeg}deg)`,
                                           }}
                                         >
                                           {/* 1. Background Gradient */}
@@ -3558,6 +3580,7 @@ export default function BobozanOnline() {
                                           <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 pointer-events-none z-30 transition-colors"/>
                                           
                                        </TiltCard>
+                                      </div>
                                     );
                                  })
                               )}
