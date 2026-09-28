@@ -3728,64 +3728,51 @@ export default function BobozanOnline() {
         </div>
       )}
 
-      {/* --- 阶段重置过场：左右黑板闪入会合 → 停顿 → 闪走（约1.2秒，不拦截操作） --- */}
+      {/* --- 阶段重置过场：两条横线从左右闪入 → 中央减速会合 → 快速闪回两边（约1.2秒，不拦截操作） --- */}
       {resetFlash && (
         <div className="fixed inset-0 z-[95] pointer-events-none overflow-hidden">
           <style>{`
-            @keyframes reset-panel-left {
-              0% { transform: translateX(-102%); }
-              20% { transform: translateX(2.5%); }
-              28% { transform: translateX(0); }
-              62% { transform: translateX(0); }
+            @keyframes reset-hline-left {
+              0% { transform: translateX(-102%); animation-timing-function: cubic-bezier(0.16,1,0.3,1); }
+              32% { transform: translateX(0); }
+              60% { transform: translateX(0); animation-timing-function: cubic-bezier(0.7,0,0.84,0); }
               100% { transform: translateX(-102%); }
             }
-            @keyframes reset-panel-right {
-              0% { transform: translateX(102%); }
-              20% { transform: translateX(-2.5%); }
-              28% { transform: translateX(0); }
-              62% { transform: translateX(0); }
+            @keyframes reset-hline-right {
+              0% { transform: translateX(102%); animation-timing-function: cubic-bezier(0.16,1,0.3,1); }
+              32% { transform: translateX(0); }
+              60% { transform: translateX(0); animation-timing-function: cubic-bezier(0.7,0,0.84,0); }
               100% { transform: translateX(102%); }
             }
             @keyframes reset-text-line {
-              0%, 15% { opacity: 0; transform: scale(0.8); }
-              30% { opacity: 1; transform: scale(1.06); }
-              40% { transform: scale(1); }
-              48% { transform: scale(1.045); }
-              56% { transform: scale(1); }
-              64% { opacity: 1; transform: scale(1); }
-              80%, 100% { opacity: 0; transform: scale(1.05); }
-            }
-            @keyframes reset-seam {
-              0%, 20% { opacity: 0; }
-              30%, 62% { opacity: 1; }
-              75%, 100% { opacity: 0; }
+              0%, 18% { opacity: 0; transform: scale(0.85); }
+              34% { opacity: 1; transform: scale(1.05); }
+              44% { transform: scale(1); }
+              52% { transform: scale(1.03); }
+              60% { transform: scale(1); opacity: 1; }
+              78%, 100% { opacity: 0; transform: scale(1.04); }
             }
           `}</style>
-          {/* 左黑板 */}
+          {/* 左横线：从左边闪入，中央减速停住 */}
           <div
-            className="absolute top-0 left-0 h-full w-[51%] bg-gradient-to-r from-black via-[#120606] to-[#1a0808] border-r-2 border-red-500/80 shadow-[4px_0_30px_rgba(220,38,38,0.45)]"
-            style={{ animation: 'reset-panel-left 1.2s cubic-bezier(0.22,1,0.36,1) forwards' }}
+            className="absolute left-0 w-[52%] h-[3px] bg-gradient-to-r from-transparent via-red-500/70 to-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)]"
+            style={{ top: 'calc(50% - 1.5px)', animation: 'reset-hline-left 1.2s forwards' }}
           />
-          {/* 右黑板 */}
+          {/* 右横线：从右边闪入，中央减速停住 */}
           <div
-            className="absolute top-0 right-0 h-full w-[51%] bg-gradient-to-l from-black via-[#120606] to-[#1a0808] border-l-2 border-red-500/80 shadow-[-4px_0_30px_rgba(220,38,38,0.45)]"
-            style={{ animation: 'reset-panel-right 1.2s cubic-bezier(0.22,1,0.36,1) forwards' }}
+            className="absolute right-0 w-[52%] h-[3px] bg-gradient-to-l from-transparent via-red-500/70 to-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)]"
+            style={{ top: 'calc(50% - 1.5px)', animation: 'reset-hline-right 1.2s forwards' }}
           />
-          {/* 中央接缝高光 */}
-          <div
-            className="absolute top-0 bottom-0 left-1/2 w-[3px] -translate-x-1/2 bg-red-500 shadow-[0_0_25px_rgba(239,68,68,0.9)]"
-            style={{ animation: 'reset-seam 1.2s ease-out forwards' }}
-          />
-          {/* 一行字 */}
+          {/* 一行字，压在横线上 */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div
-              className="text-4xl md:text-6xl font-black text-white tracking-[0.3em] whitespace-nowrap select-none"
+              className="text-4xl md:text-6xl font-black text-white tracking-[0.3em] whitespace-nowrap select-none bg-black/50 px-8 py-3 rounded-full"
               style={{
                 animation: 'reset-text-line 1.2s ease-out forwards',
                 textShadow: '0 0 30px rgba(239,68,68,0.9), 0 0 60px rgba(239,68,68,0.5), 0 2px 10px rgba(0,0,0,0.8)',
               }}
             >
-              ⚡ 战争已重置
+              ⚡ 状态已重置
             </div>
           </div>
         </div>
