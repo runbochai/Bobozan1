@@ -1,11 +1,10 @@
 import { SKILL_DB} from '../data/skills';
 import {
 EXPEDITION_RELICS,
-EXPEDITION_STAGES,
-REWARD_LEVEL_POOL,
+EXPEDITION_TEMP_SKILLS,
 type ExpeditionPersonality,
 } from '../data/expedition';
-import type { LocalizedText, Player} from '../types';
+import type { Player} from '../types';
 
 export const EXPEDITION_BEST_KEY = 'bobozan-expedition-best';
 
@@ -45,7 +44,13 @@ c.type !== 'SPECIAL',
 const affordable = allKnown.filter((c) => enemy.energy >= c.cost);
 if (affordable.length === 0) return 'charge';
 
-const player = players.find((p) => p.id === playerId);
+// 多方混战：盯威胁最大的活着的对手（能量最高者），不再只盯玩家
+const opponents = players.filter((p) => p.id !== enemy.id &&!p.isDead);
+const threat =
+opponents.length > 0
+? [...opponents].sort((a, b) => b.energy - a.energy || (b.hp ?? 0) - (a.hp ?? 0))[0]
+: players.find((p) => p.id === playerId);
+const player = threat;
 const playerCharged = (player?.energy?? 0) >= 3;
 const playerLastType = player?.lastCardId? cardTypeOf(player.lastCardId): null;
 
@@ -79,12 +84,14 @@ scored.sort((a, b) => b.w - a.w);
 return scored[0].id;
 }
 
-// ============ 战后三选一 ============
+// ============ 战后奖励：治疗 / 血量上限 / 限次秘技 / 遗物 / 蓄势 ============
 
 export type RewardOption =
-| { kind: 'level'; level: number}
+| { kind: 'heal'; amount: number}
+| { kind: 'maxhp'}
+| { kind: 'temp'; cardId: string; uses: number}
 | { kind: 'relic'; relicId: string}
-| { kind: 'heal'};
+| { kind: 'burst'};
 
 function shuffle<T>(arr: T[]): T[] {
 const a = [...arr];
@@ -95,44 +102,45 @@ const j = Math.floor(Math.random() * (i + 1));
 return a;
 }
 
-/** 某个等级是否能帮玩家凑出联合技 */
-export function comboHintFor(level: number, inventory: number[]): LocalizedText | null {
-const has = (l: number) => inventory.includes(l) || l === level;
-if (has(2) && has(5)) {
-return { zh: '✨ 可解锁联合技「双翼」', en: '✨ Unlocks combo [Double Wing]'};
-}
-if (has(1) && has(2) && has(3)) {
-return { zh: '✨ 可解锁联合技「天龙」', en: '✨ Unlocks combo [Sky Dragon]'};
-}
-return null;
-}
-
 export function genRewardOptions(
 stageIdx: number,
-inventory: number[],
+hp: number,
+maxHp: number,
 relicIds: string[],
 optionCount = 3,
 ): RewardOption[] {
-const stage = EXPEDITION_STAGES[stageIdx];
-const pool = (REWARD_LEVEL_POOL[stage?.rewardTier?? 1] as number[]).filter(
-(l) =>!inventory.includes(l),
-);
-
-const options: RewardOption[] = [];
-for (const level of shuffle(pool).slice(0, 2)) {
-options.push({ kind: 'level', level});
+const rest: RewardOption[] = [];
+// 体魄：血量上限 +1（当前血量也 +1）
+rest.push({ kind: 'maxhp'});
+// 秘技：按进度解锁的限次高阶卡
+const tempPool = EXPEDITION_TEMP_SKILLS.filter((t) => stageIdx >= t.minStage);
+if (tempPool.length > 0) {
+const t = tempPool[Math.floor(Math.random() * tempPool.length)];
+const uses = t.uses[0] + Math.floor(Math.random() * (t.uses[1] - t.uses[0] + 1));
+rest.push({ kind: 'temp', cardId: t.id, uses});
 }
-
+// 遗物：还有没拿到的才出现
 const relicPool = shuffle(EXPEDITION_RELICS.filter((r) =>!relicIds.includes(r.id)));
-if (relicPool.length > 0 && options.length < optionCount) {
-options.push({ kind: 'relic', relicId: relicPool[0].id});
+if (relicPool.length > 0) rest.push({ kind: 'relic', relicId: relicPool[0].id});
+// 蓄势：下一关开局 +2 能量（一次性）
+rest.push({ kind: 'burst'});
+// 受伤时治疗必出，其余随机
+const injured = hp < maxHp;
+const options = shuffle(rest).slice(0, Math.max(0, optionCount - (injured ? 1 : 0)));
+if (injured) options.push({ kind: 'heal', amount: 2});
+return shuffle(options);
 }
-if (options.length < optionCount) {
-options.push({ kind: 'heal'});
+
+// ============ 遗物：硬皮甲（每场战斗首次受伤 -1） ============
+
+export function applyIronhide(
+hpBefore: number,
+hpAfter: number,
+maxHp: number,
+alreadyUsed: boolean,
+): { hp: number; triggered: boolean} {
+if (!alreadyUsed && hpAfter < hpBefore) {
+return { hp: Math.min(maxHp, hpAfter + 1), triggered: true};
 }
-// 实在不够（理论上不会），用治疗凑满
-while (options.length < optionCount) {
-options.push({ kind: 'heal'});
-}
-return shuffle(options).slice(0, optionCount);
+return { hp: hpAfter, triggered: alreadyUsed};
 }

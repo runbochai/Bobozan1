@@ -127,13 +127,13 @@ name: { zh: '第 8 关 · 双头怪', en: 'Stage 8 · Two Heads'},
 rewardTier: 2,
 enemies: [
 {
-id: 'head_a', name: { zh: '👹 左头', en: '👹 Left Head'}, hp: 2, inventory: [0, 1],
-personality: P(0.6, 0.25, 0.4, 0.4),
+id: 'head_a', name: { zh: '👹 左头', en: '👹 Left Head'}, hp: 2, inventory: [0, 2],
+personality: P(0.75, 0.2, 0.35, 0.5),
 intro: { zh: '左头：我先来！', en: 'Left Head: I go first!'},
 },
 {
-id: 'head_b', name: { zh: '👹 右头', en: '👹 Right Head'}, hp: 2, inventory: [0, 1],
-personality: P(0.6, 0.25, 0.4, 0.4),
+id: 'head_b', name: { zh: '👹 右头', en: '👹 Right Head'}, hp: 2, inventory: [0],
+personality: P(0.4, 0.4, 0.6, 0.3),
 intro: { zh: '右头：我也来！', en: 'Right Head: me too!'},
 },
 ],
@@ -162,18 +162,23 @@ intro: { zh: '法师：冰剑无情，小心你的走位。', en: 'Mage: the ice
 },
 {
 id: 's10', chapter: { zh: '第三章 · 黑风岭', en: 'Ch.3 · Black Wind Ridge'},
-name: { zh: '第 11 关 · 暗影双子', en: 'Stage 11 · Shadow Twins'},
+name: { zh: '第 11 关 · 暗影三煞', en: 'Stage 11 · Shadow Trio'},
 rewardTier: 3,
 enemies: [
 {
-id: 'shadow_a', name: { zh: '🌑 影兄', en: '🌑 Shadow Bro'}, hp: 3, inventory: [0, 2],
-personality: P(0.6, 0.35, 0.35, 0.6),
+id: 'shadow_a', name: { zh: '🌑 影兄', en: '🌑 Shadow Bro'}, hp: 3, inventory: [0, 3],
+personality: P(0.75, 0.3, 0.3, 0.7),
 intro: { zh: '影兄：黑风岭可不是好闯的。', en: 'Shadow Bro: this ridge shows no mercy.'},
 },
 {
-id: 'shadow_b', name: { zh: '🌑 影弟', en: '🌑 Shadow Sis'}, hp: 3, inventory: [0, 2],
-personality: P(0.6, 0.35, 0.35, 0.6),
-intro: { zh: '影弟：一起上！', en: 'Shadow Sis: together!'},
+id: 'shadow_b', name: { zh: '🌑 影中', en: '🌑 Shadow Mid'}, hp: 2, inventory: [0, 2],
+personality: P(0.6, 0.35, 0.4, 0.6),
+intro: { zh: '影中：三打一，优势在我！', en: 'Shadow Mid: three on one!'},
+},
+{
+id: 'shadow_c', name: { zh: '🌑 影弟', en: '🌑 Shadow Lil'}, hp: 2, inventory: [0, 1],
+personality: P(0.45, 0.45, 0.5, 0.5),
+intro: { zh: '影弟：一起上！', en: 'Shadow Lil: together!'},
 },
 ],
 },
@@ -201,17 +206,22 @@ intro: { zh: '骑士：塔主座下，最后一道防线！', en: 'Knight: the l
 },
 {
 id: 's13', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
-name: { zh: '第 14 关 · 塔卫双煞', en: 'Stage 14 · Twin Guards'},
+name: { zh: '第 14 关 · 塔卫三煞', en: 'Stage 14 · Triple Guards'},
 rewardTier: 3,
 enemies: [
 {
-id: 'guard_a', name: { zh: '💂 塔卫·左', en: '💂 Guard Left'}, hp: 3, inventory: [0, 3, 5],
-personality: P(0.7, 0.3, 0.3, 0.8),
+id: 'guard_a', name: { zh: '💂 塔卫·左', en: '💂 Guard Left'}, hp: 3, inventory: [0, 5],
+personality: P(0.8, 0.25, 0.25, 0.85),
 intro: { zh: '左卫：止步！', en: 'Left Guard: halt!'},
 },
 {
-id: 'guard_b', name: { zh: '💂 塔卫·右', en: '💂 Guard Right'}, hp: 3, inventory: [0, 3, 5],
-personality: P(0.7, 0.3, 0.3, 0.8),
+id: 'guard_b', name: { zh: '💂 塔卫·中', en: '💂 Guard Mid'}, hp: 3, inventory: [0, 3],
+personality: P(0.65, 0.35, 0.35, 0.75),
+intro: { zh: '中卫：擅闯者死！', en: 'Mid Guard: trespassers die!'},
+},
+{
+id: 'guard_c', name: { zh: '💂 塔卫·右', en: '💂 Guard Right'}, hp: 3, inventory: [0, 2],
+personality: P(0.5, 0.5, 0.45, 0.6),
 intro: { zh: '右卫：塔主不容打扰！', en: 'Right Guard: the Lord must not be disturbed!'},
 },
 ],
@@ -242,9 +252,9 @@ icon: string;
 
 export const EXPEDITION_RELICS: RelicDef[] = [
 {
-id: 'jqd', icon: '💊', rarity: 'common',
-name: { zh: '聚气丹', en: 'Focus Pill'},
-desc: { zh: '每回合开始 +1 能量', en: '+1 Energy at the start of every turn'},
+id: 'ypj', icon: '🛡️', rarity: 'common',
+name: { zh: '硬皮甲', en: 'Ironhide'},
+desc: { zh: '每场战斗第一次受到伤害时，伤害 -1', en: 'First damage taken each battle reduced by 1'},
 },
 {
 id: 'rxyd', icon: '🥋', rarity: 'common',
@@ -303,3 +313,19 @@ export const REWARD_LEVEL_POOL: Record<1 | 2 | 3, number[]> = {
 2: [2, 3, 5],
 3: [3, 5, 8],
 };
+
+// 临时秘技卡池：多人模式的高阶卡，远征里限次使用
+export interface TempSkillDef { id: string; minStage: number; uses: [number, number] }
+export const EXPEDITION_TEMP_SKILLS: TempSkillDef[] = [
+{ id: 'icesword', minStage: 0, uses: [2, 3] },
+{ id: 'smallfly', minStage: 0, uses: [2, 3] },
+{ id: 'dragonclaw', minStage: 2, uses: [2, 3] },
+{ id: 'dragondef', minStage: 2, uses: [2, 3] },
+{ id: 'iceult', minStage: 3, uses: [1, 2] },
+{ id: 'fireclaw', minStage: 4, uses: [1, 2] },
+{ id: 'hotmilk', minStage: 6, uses: [2, 3] },
+{ id: 'boiler', minStage: 7, uses: [1, 2] },
+{ id: 'bigfly', minStage: 8, uses: [1, 2] },
+{ id: 'madian', minStage: 10, uses: [2, 3] },
+{ id: 'hangman', minStage: 11, uses: [1, 2] },
+];

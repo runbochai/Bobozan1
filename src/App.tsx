@@ -46,9 +46,9 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
-import { EXPEDITION_RELICS, EXPEDITION_STAGES, LEVEL_REWARD_INFO } from './data/expedition';
+import { EXPEDITION_RELICS, EXPEDITION_STAGES } from './data/expedition';
 import {
-  comboHintFor,
+  applyIronhide,
   expeditionBotMove,
   genRewardOptions,
   loadExpeditionBest,
@@ -345,13 +345,15 @@ export default function BobozanOnline() {
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
   // 远征 run 真值：timeout 回调里读 ref，避免闭包拿到旧 state
-  const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP });
+  const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] as { cardId: string; usesLeft: number }[], energyBoost: 0 });
   const expeditionBusyRef = useRef(false);
   const expeditionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const expPassivesRef = useRef<Record<string, { startEnergy?: number; energyPerTurn?: number }>>({});
+  const expMaxHpRef = useRef<Record<string, number>>({});
   const expIronShirtUsedRef = useRef(false);
   const expWhetstoneUsedRef = useRef(false);
   const expAdrenalineUsedRef = useRef(false);
+const expYpjUsedRef = useRef(false);
   const clearExpeditionTimers = () => {
     expeditionTimersRef.current.forEach(t => clearTimeout(t));
     expeditionTimersRef.current = [];
@@ -360,7 +362,7 @@ export default function BobozanOnline() {
 
   const expMyId = () => user?.uid || 'exp_me';
 
-  // 回合开始能量：聚气丹（自己）/ 热身腰带（首回合）/ Boss 光环（敌人）
+  // 回合开始能量：热身腰带（首回合）/ Boss 光环（敌人）
   const applyExpTurnStartEnergy = (players: Player[], firstTurn: boolean): Player[] => {
     const relics = expRunRef.current.relics;
     const myId = expMyId();
@@ -368,7 +370,6 @@ export default function BobozanOnline() {
       if (p.isDead) return p;
       let e = p.energy;
       if (p.id === myId) {
-        if (relics.includes('jqd')) e += 1;
         if (firstTurn && relics.includes('rxyd')) e += 2;
       }
       const passive = expPassivesRef.current[p.id];
@@ -384,6 +385,7 @@ export default function BobozanOnline() {
     run.stageIdx = stageIdx;
     expWhetstoneUsedRef.current = false;
     expAdrenalineUsedRef.current = false;
+    expYpjUsedRef.current = false;
     expPassivesRef.current = {};
     const enemies: Player[] = stage.enemies.map(en => {
       const id = `exp_${stage.id}_${en.id}`;
@@ -426,11 +428,18 @@ export default function BobozanOnline() {
         disabledSkills: [],
         freeSkills: [],
         kills: 0,
-        tempSkills: [],
+        tempSkills: run.tempCards.map(t => t.cardId),
       },
       ...enemies,
     ];
     players = applyExpTurnStartEnergy(players, true);
+    expMaxHpRef.current = Object.fromEntries(players.map(pl => [pl.id, pl.id === myId ? run.maxHp : pl.hp]));
+    // 蓄势奖励：本关开局 +N 能量（一次性）
+    if (run.energyBoost > 0) {
+      const boost = run.energyBoost;
+      run.energyBoost = 0;
+      players = players.map(pl => (pl.id === myId ? { ...pl, energy: pl.energy + boost } : pl));
+    }
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
     setGameState({
@@ -450,7 +459,7 @@ export default function BobozanOnline() {
   const startExpedition = () => {
     playSound('confirm', muted);
     clearExpeditionTimers();
-    expRunRef.current = { stageIdx: 0, relics: [], inventory: [0], hp: MAX_HP };
+    expRunRef.current = { stageIdx: 0, relics: [], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [], energyBoost: 0 };
     expIronShirtUsedRef.current = false;
     setExpRelics([]);
     setIsExpedition(true);
@@ -536,8 +545,28 @@ export default function BobozanOnline() {
         expAdrenalineUsedRef.current = true;
         players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 2 } : p));
       }
+      // 遗物：硬皮甲（每场战斗第一次受伤 -1）
+      if (has('ypj') && !meFinal.isDead) {
+        const res = applyIronhide(myPreHp, meFinal.hp, run.maxHp, expYpjUsedRef.current);
+        if (res.triggered && !expYpjUsedRef.current) {
+          expYpjUsedRef.current = true;
+          players = players.map(pl => (pl.id === myId ? { ...pl, hp: res.hp } : pl));
+          logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 硬皮甲挡下了一点伤害！' : '🛡️ Ironhide blocked some damage!', type: 'info' as const }];
+        }
+      }
+      // 限次秘技：用一次少一次，用完从手牌移除
+      const mePost = players.find(pl => pl.id === myId)!;
+      const playedId = mePost.lastCardId ?? cardId;
+      const tIdx = run.tempCards.findIndex(t => t.cardId === playedId);
+      if (tIdx >= 0) {
+        run.tempCards[tIdx].usesLeft -= 1;
+        if (run.tempCards[tIdx].usesLeft <= 0) {
+          run.tempCards.splice(tIdx, 1);
+          players = players.map(pl => (pl.id === myId ? { ...pl, tempSkills: (pl.tempSkills ?? []).filter(id => id !== playedId) } : pl));
+        }
+      }
 
-      // 下回合开始能量（聚气丹 / Boss 光环）
+      // 下回合开始能量（Boss 光环）
       players = applyExpTurnStartEnergy(players, false);
 
       const enemiesAlive = players.some(p => p.id !== myId && !p.isDead);
@@ -549,8 +578,8 @@ export default function BobozanOnline() {
         setExpBest(loadExpeditionBest());
         setExpPhase('runover');
       } else if (!enemiesAlive) {
-        run.hp = Math.min(MAX_HP, meHp + (has('zstai') ? 1 : 0));
-        const opts = genRewardOptions(run.stageIdx, run.inventory, relics, has('cbt') ? 4 : 3);
+        run.hp = Math.min(run.maxHp, meHp + (has('zstai') ? 1 : 0));
+        const opts = genRewardOptions(run.stageIdx, run.hp, run.maxHp, relics, has('cbt') ? 4 : 3);
         logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🎉 通过${EXPEDITION_STAGES[run.stageIdx].name[lang]}！` : `🎉 Cleared ${EXPEDITION_STAGES[run.stageIdx].name[lang]}!`, type: 'win' as const }];
         setExpRewards(opts);
         setExpPhase('reward');
@@ -576,13 +605,20 @@ export default function BobozanOnline() {
   const claimExpeditionReward = (opt: RewardOption) => {
     playSound('confirm', muted);
     const run = expRunRef.current;
-    if (opt.kind === 'level' && !run.inventory.includes(opt.level)) {
-      run.inventory.push(opt.level);
+    if (opt.kind === 'heal') {
+      run.hp = Math.min(run.maxHp, run.hp + opt.amount);
+    } else if (opt.kind === 'maxhp') {
+      run.maxHp += 1;
+      run.hp = Math.min(run.maxHp, run.hp + 1);
+    } else if (opt.kind === 'temp') {
+      const ex = run.tempCards.find(t => t.cardId === opt.cardId);
+      if (ex) ex.usesLeft += opt.uses;
+      else run.tempCards.push({ cardId: opt.cardId, usesLeft: opt.uses });
     } else if (opt.kind === 'relic' && !run.relics.includes(opt.relicId)) {
       run.relics.push(opt.relicId);
       setExpRelics([...run.relics]);
-    } else if (opt.kind === 'heal') {
-      run.hp = MAX_HP;
+    } else if (opt.kind === 'burst') {
+      run.energyBoost += 2;
     }
     const next = run.stageIdx + 1;
     if (next >= EXPEDITION_STAGES.length) {
@@ -2730,6 +2766,18 @@ export default function BobozanOnline() {
                   })}
                 </div>
               )}
+              {expRunRef.current.tempCards.length > 0 && (
+                <div className="flex gap-1.5 mt-1.5">
+                  {expRunRef.current.tempCards.map(t => {
+                    const c = SKILL_DB.find(x => x.id === t.cardId);
+                    return (
+                      <span key={t.cardId} title={`${c ? c.name[lang] : t.cardId}：${lang === 'zh' ? `剩余 ${t.usesLeft} 次` : `${t.usesLeft} uses left`}`} className="text-[11px] font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 rounded-md px-1.5 py-0.5">
+                        🃏×{t.usesLeft}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -2747,20 +2795,32 @@ export default function BobozanOnline() {
               </p>
               <div className={`grid gap-3 ${expRewards.length >= 4 ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
                 {expRewards.map((opt, i) => {
-                  const key = opt.kind === 'level' ? `lv${opt.level}` : opt.kind === 'relic' ? opt.relicId : 'heal';
+                  const key = opt.kind === 'temp' ? opt.cardId : opt.kind === 'relic' ? opt.relicId : opt.kind;
                   let icon = '💖';
-                  let title: string = lang === 'zh' ? '回满血' : 'Full Heal';
-                  let sub: string = lang === 'zh' ? '下一关满血开战' : 'Start next battle at full HP';
-                  if (opt.kind === 'level') {
+                  let title = '';
+                  let sub = '';
+                  if (opt.kind === 'heal') {
+                    icon = '💖';
+                    title = lang === 'zh' ? `治疗 +${opt.amount}` : `Heal +${opt.amount}`;
+                    sub = lang === 'zh' ? '恢复自身血量' : 'Restore your HP';
+                  } else if (opt.kind === 'maxhp') {
+                    icon = '❤️‍🔥';
+                    title = lang === 'zh' ? '体魄 +1' : 'Vigor +1';
+                    sub = lang === 'zh' ? '血量上限 +1（本轮远征永久）' : '+1 max HP for this run';
+                  } else if (opt.kind === 'temp') {
+                    const c = SKILL_DB.find(x => x.id === opt.cardId);
                     icon = '🃏';
-                    title = LEVEL_REWARD_INFO[opt.level][lang];
-                    const hint = comboHintFor(opt.level, expRunRef.current.inventory);
-                    sub = hint ? hint[lang] : (lang === 'zh' ? '解锁新技能卡' : 'Unlock new skill cards');
+                    title = c ? c.name[lang] : opt.cardId;
+                    sub = lang === 'zh' ? `限次秘技：可用 ${opt.uses} 次` : `Limited skill: ${opt.uses} uses`;
                   } else if (opt.kind === 'relic') {
                     const r = EXPEDITION_RELICS.find(x => x.id === opt.relicId)!;
                     icon = r.icon;
                     title = r.name[lang];
                     sub = r.desc[lang];
+                  } else if (opt.kind === 'burst') {
+                    icon = '⚡';
+                    title = lang === 'zh' ? '蓄势' : 'Power Up';
+                    sub = lang === 'zh' ? '下一关开局能量 +2（一次性）' : '+2 energy at next battle start (one-time)';
                   }
                   return (
                     <button
@@ -3032,7 +3092,7 @@ export default function BobozanOnline() {
                           <Heart size={16} className="text-red-500" fill="currentColor" />
                           <div className="w-24 h-3 rounded-full bg-slate-800/80 overflow-hidden border border-white/10 relative">
                              <div className="absolute inset-0 bg-red-900/30" />
-                             <div className="h-full bg-gradient-to-r from-red-600 to-red-400" style={{ width: `${Math.max(0, Math.min(100, ((p.hp ?? 0) / (MAX_HP || 1)) * 100))}%`, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+                             <div className="h-full bg-gradient-to-r from-red-600 to-red-400" style={{ width: `${Math.max(0, Math.min(100, ((p.hp ?? 0) / ((isExpedition ? (expMaxHpRef.current[p.id] ?? MAX_HP) : MAX_HP) || 1)) * 100))}%`, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />
                           </div>
                           <span className="text-sm font-bold text-red-200 min-w-[1ch] pt-0.5">{p.hp}</span>
                         </div>
