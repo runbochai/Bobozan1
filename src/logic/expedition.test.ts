@@ -6,6 +6,7 @@ import {
   applyIronhide,
   expeditionBotMove,
   genRewardOptions,
+  pickThreat,
 } from './expedition';
 
 const enemy = (patch: Partial<Player> = {}): Player => ({
@@ -55,29 +56,25 @@ test('AI 出牌一定是自己买得起的牌', () => {
   }
 });
 
-test('混战 AI：盯能量最高的对手破防，而非只盯玩家', () => {
-  // smart 规则：威胁者龟缩时，终极权重 x1.7。e2 能量最高 → 威胁是 e2。
-  const e = enemy({ id: 'e1', energy: 6, inventory: [0, 3] });
-  const p = { aggression: 0.8, defense: 0.1, charge: 0.1, smart: 1 };
-  // A：玩家龟缩、e2 攒气 → 若只盯玩家，终极会更多
-  let ultA = 0;
-  for (let i = 0; i < 400; i++) {
-    const m = expeditionBotMove(e,
-      [me({ energy: 0, lastCardId: 'defend' }), e, enemy({ id: 'e2', energy: 6, lastCardId: 'charge' })],
-      p, 'me');
-    if (m === 'fireclaw') ultA++;
-  }
-  // B：玩家攒气、e2 龟缩 → 盯 e2 时终极更多
-  let ultB = 0;
-  for (let i = 0; i < 400; i++) {
-    const m = expeditionBotMove(e,
-      [me({ energy: 0, lastCardId: 'charge' }), e, enemy({ id: 'e2', energy: 6, lastCardId: 'defend' })],
-      p, 'me');
-    if (m === 'fireclaw') ultB++;
-  }
-  assert.ok(ultB > ultA + 30, `threat targeting not working: ultB=${ultB} ultA=${ultA}`);
+test('混战 AI：pickThreat 盯能量最高的活着对手', () => {
+  const e1 = enemy({ id: 'e1' });
+  const e2 = enemy({ id: 'e2', energy: 5, hp: 2 });
+  const e3 = enemy({ id: 'e3', energy: 3, hp: 3 });
+  const human = me({ energy: 1 });
+  // 能量最高者胜出
+  assert.equal(pickThreat('e1', [human, e1, e2, e3], 'me')?.id, 'e2');
+  // 死了的不算
+  assert.equal(pickThreat('e1', [human, e1, enemy({ id: 'e2', energy: 9, isDead: true }), e3], 'me')?.id, 'e3');
+  // 能量相同看血量
+  const a = enemy({ id: 'a', energy: 4, hp: 1 });
+  const b = enemy({ id: 'b', energy: 4, hp: 3 });
+  assert.equal(pickThreat('e1', [e1, a, b], 'me')?.id, 'b');
+  // 自己不被选中
+  assert.notEqual(pickThreat('e2', [human, e1, e2, e3], 'me')?.id, 'e2');
+  // 都死了回退到玩家
+  const dead = [human, e1].map((p) => ({ ...p, isDead: true }));
+  assert.equal(pickThreat('e1', dead, 'me')?.id, 'me');
 });
-
 test('奖励生成：选项不重复；受伤才有治疗；遗物拿完不再出现', () => {
   for (let i = 0; i < 50; i++) {
     const opts = genRewardOptions(5, 1, 3, ['ypj'], 3);

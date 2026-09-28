@@ -29,6 +29,13 @@ if (cleared > prev) localStorage.setItem(EXPEDITION_BEST_KEY, String(cleared));
 
 const cardTypeOf = (cardId: string) => SKILL_DB.find((c) => c.id === cardId)?.type;
 
+/** 多方混战：挑威胁最大的活着的对手（能量最高，能量相同看血量），不再只盯玩家 */
+export function pickThreat(enemyId: string, players: Player[], playerId: string): Player | undefined {
+const opponents = players.filter((p) => p.id !== enemyId &&!p.isDead);
+if (opponents.length === 0) return players.find((p) => p.id === playerId);
+return [...opponents].sort((a, b) => b.energy - a.energy || (b.hp ?? 0) - (a.hp ?? 0))[0];
+}
+
 export function expeditionBotMove(
 enemy: Player,
 players: Player[],
@@ -44,13 +51,7 @@ c.type !== 'SPECIAL',
 const affordable = allKnown.filter((c) => enemy.energy >= c.cost);
 if (affordable.length === 0) return 'charge';
 
-// 多方混战：盯威胁最大的活着的对手（能量最高者），不再只盯玩家
-const opponents = players.filter((p) => p.id !== enemy.id &&!p.isDead);
-const threat =
-opponents.length > 0
-? [...opponents].sort((a, b) => b.energy - a.energy || (b.hp ?? 0) - (a.hp ?? 0))[0]
-: players.find((p) => p.id === playerId);
-const player = threat;
+const player = pickThreat(enemy.id, players, playerId);
 const playerCharged = (player?.energy?? 0) >= 3;
 const playerLastType = player?.lastCardId? cardTypeOf(player.lastCardId): null;
 
