@@ -2901,51 +2901,10 @@ const expYpjUsedRef = useRef(false);
         {/* --- EXPEDITION HUD（左上：章节关卡 + 遗物） --- */}
         {isExpedition && expPhase === 'battle' && (
           <div className="absolute top-3 left-3 z-50 pointer-events-none">
-            <div className="bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-xl px-3 py-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+            <div className="bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-xl px-3 py-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
               <div className="text-xs font-bold text-amber-300">
                 {EXPEDITION_STAGES[expStageIdx].chapter[lang]} · {EXPEDITION_STAGES[expStageIdx].name[lang]}
               </div>
-              <div className="text-xs font-bold text-yellow-300 mt-1">
-                🪙 {expGold}
-              </div>
-              {expRelics.length > 0 && (
-                <div className="flex gap-1.5 mt-1.5">
-                  {expRelics.map(id => {
-                    const r = EXPEDITION_RELICS.find(x => x.id === id);
-                    if (!r) return null;
-                    return (
-                      <span key={id} title={`${r.name[lang]}：${r.desc[lang]}`} className="text-lg leading-none">
-                        {r.icon}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-              {expEquipment.length > 0 && (
-                <div className="flex gap-1.5 mt-1.5">
-                  {expEquipment.map(id => {
-                    const e = EXPEDITION_EQUIPMENTS.find(x => x.id === id);
-                    if (!e) return null;
-                    return (
-                      <span key={id} title={`${e.name[lang]}：${e.desc[lang]}`} className="text-lg leading-none">
-                        {e.icon}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
-              {expRunRef.current.tempCards.length > 0 && (
-                <div className="flex gap-1.5 mt-1.5">
-                  {expRunRef.current.tempCards.map(t => {
-                    const c = SKILL_DB.find(x => x.id === t.cardId);
-                    return (
-                      <span key={t.cardId} title={`${c ? c.name[lang] : t.cardId}：${lang === 'zh' ? `剩余 ${t.usesLeft} 次` : `${t.usesLeft} uses left`}`} className="text-[11px] font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 rounded-md px-1.5 py-0.5">
-                        🃏×{t.usesLeft}
-                      </span>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
         )}
@@ -3349,6 +3308,40 @@ const expYpjUsedRef = useRef(false);
                                 </div>
                             </div>
 
+                    {/* --- C2. 远征物品栏（金币/遗物/装备/限次技能，头像右侧） --- */}
+                    {isMe && isExpedition && expPhase === 'battle' && (
+                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-40">
+                        <div className="bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-xl px-2.5 py-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex items-center gap-2 whitespace-nowrap">
+                          <span className="text-xs font-black text-yellow-300">🪙 {expGold}</span>
+                          {expRelics.map(id => {
+                            const r = EXPEDITION_RELICS.find(x => x.id === id);
+                            if (!r) return null;
+                            return (
+                              <span key={id} title={`${r.name[lang]}：${r.desc[lang]}`} className="text-base leading-none">
+                                {r.icon}
+                              </span>
+                            );
+                          })}
+                          {expEquipment.map(id => {
+                            const e = EXPEDITION_EQUIPMENTS.find(x => x.id === id);
+                            if (!e) return null;
+                            return (
+                              <span key={id} title={`${e.name[lang]}：${e.desc[lang]}`} className="text-base leading-none">
+                                {e.icon}
+                              </span>
+                            );
+                          })}
+                          {expRunRef.current.tempCards.map(t => {
+                            const c = SKILL_DB.find(x => x.id === t.cardId);
+                            return (
+                              <span key={t.cardId} title={`${c ? c.name[lang] : t.cardId}：${lang === 'zh' ? `剩余 ${t.usesLeft} 次` : `${t.usesLeft} uses left`}`} className="text-[11px] font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 rounded-md px-1.5 py-0.5">
+                                🃏×{t.usesLeft}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
                         </div>
                     </div>
 
