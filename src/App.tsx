@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Shield,
   Music,
@@ -40,10 +40,7 @@ import {
 } from 'firebase/auth';
 import {
   doc,
-  updateDoc,
   onSnapshot,
-  getDoc,
-  setDoc,
 } from 'firebase/firestore';
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
@@ -60,12 +57,14 @@ import {
 import {
   getCardIcon,
   getShowdownWinner,
-  getBotMove,
   getPlayerCards,
-  calculateTurnOutcome,
 } from './logic/combat';
 import { initAudio, playSound } from './audio/sound';
-import { auth, db } from './firebase';
+import { auth, db, firebaseConfigured } from './firebase';
+import { assetUrl, avatarUrl } from './assets';
+import { mutateRoom, createUniqueRoom } from './services/rooms';
+import { advanceRoom, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './logic/room';
+import type { User as FirebaseUser } from 'firebase/auth';
 
 
 
@@ -74,12 +73,12 @@ import { auth, db } from './firebase';
 
 // Avatar Paths
 const AVATAR_OPTIONS = [
-  '/avatars/bdrag.png',
-  '/avatars/boy.png',
-  '/avatars/girl.png',
-  '/avatars/ntr.png',
-  '/avatars/pega.png',
-  '/avatars/rsn.png',
+  assetUrl('avatars/bdrag.png'),
+  assetUrl('avatars/boy.png'),
+  assetUrl('avatars/girl.png'),
+  assetUrl('avatars/ntr.png'),
+  assetUrl('avatars/pega.png'),
+  assetUrl('avatars/rsn.png'),
 ];
 
 
@@ -196,12 +195,12 @@ const TiltCard = ({
   style,
   disabled,
   glareColor = "#ffffff" // 👈 New Prop with default white
-}: any) => {
+}: React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean; glareColor?: string }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
   const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
 
-  const handleMove = (e: React.MouseEvent) => {
+  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (disabled || !cardRef.current) return;
 
     const rect = cardRef.current.getBoundingClientRect();
@@ -220,7 +219,7 @@ const TiltCard = ({
     if (onMouseEnter) onMouseEnter(e);
   };
 
-  const handleLeave = (e: any) => {
+  const handleLeave = (e: React.MouseEvent<HTMLDivElement>) => {
     setRotate({ x: 0, y: 0 });
     setGlare({ x: 50, y: 50, opacity: 0 });
     if (onMouseLeave) onMouseLeave(e);
@@ -263,7 +262,7 @@ const TiltCard = ({
 // --- MAIN COMPONENT ---
 
 export default function BobozanOnline() {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<FirebaseUser | null>(null);
   const [view, setView] = useState<'NAME_INPUT' | 'HOME' | 'LOBBY' | 'GAME'>('NAME_INPUT');
   const [playerName, setPlayerName] = useState('');
   const [lang, setLang] = useState<Lang>('zh'); 
@@ -273,7 +272,7 @@ export default function BobozanOnline() {
   const [leaderboardMode, setLeaderboardMode] = useState<'MINIMIZED' | 'TOP3' | 'EXPANDED'>('MINIMIZED');
 
   // Avatar State
-  const [playerAvatar, setPlayerAvatar] = useState('/avatars/bdrag.png'); // Default to first image
+  const [playerAvatar, setPlayerAvatar] = useState(assetUrl('avatars/bdrag.png')); // Default to first image
   const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
   
   const renderProfileAvatar = (avatar: string | undefined, size: number = 32) => {
@@ -284,7 +283,7 @@ export default function BobozanOnline() {
 
     return (
       <img 
-        src={avatar} 
+        src={avatarUrl(avatar)}
         alt="Avatar" 
         className="rounded-full object-cover shadow-md bg-slate-900 border border-white/10 select-none"
         style={{ 
@@ -305,7 +304,7 @@ export default function BobozanOnline() {
   // --- TUTORIAL LOGIC ---
   const [isTutorial, setIsTutorial] = useState(false);
   const [tutorialStep, setTutorialStep] = useState(0);
-  const [tutorialMsg, setTutorialMsg] = useState<any>({ 
+  const [tutorialMsg, setTutorialMsg] = useState<{ title: { zh: string; en: string }; sub: { zh: string; en: string } }>({
     title: { zh: "", en: "" }, 
     sub: { zh: "", en: "" } 
   });
@@ -404,10 +403,10 @@ export default function BobozanOnline() {
 
     // 4. WAIT FOR SLAM
     setTimeout(() => {
-        let nextStep = tutorialStep + 1;
+        const nextStep = tutorialStep + 1;
 
         // 🟢 LOCALIZED COMPLETION MESSAGE
-        let nextMsg = nextStep < TUTORIAL_STEPS.length 
+        const nextMsg = nextStep < TUTORIAL_STEPS.length
           ? TUTORIAL_STEPS[nextStep] 
           : { 
               title: { zh: "教程完成！", en: "Tutorial Complete!" }, 
@@ -535,8 +534,9 @@ export default function BobozanOnline() {
     // 1. Initialize Audio Object
     if (!bgmRef.current) {
       console.log(" initializing BGM..."); 
-      bgmRef.current = new Audio('/music/bgm.wav');
+      bgmRef.current = new Audio(assetUrl('music/bgm.mp3'));
       bgmRef.current.loop = true;
+      bgmRef.current.preload = 'none';
     }
 
     const bgm = bgmRef.current;
@@ -584,16 +584,14 @@ export default function BobozanOnline() {
 
   useEffect(() => {
     // Set initial position based on Bottom-Left if not already set (only runs once)
-    if (leaderboardRef.current && dragPosition.x === 25 && dragPosition.y === 50) {
+    if (leaderboardRef.current) {
        
        // Calculate Y: Window Height - Hand Deck Height (approx 260px) - Padding (20px) - Leaderboard Height
        const elementHeight = leaderboardRef.current.offsetHeight;
        const targetY = window.innerHeight - 280 - elementHeight;
 
-       setDragPosition({
-           x: 20, // 20px from left edge
-           y: Math.max(20, targetY) // Ensure it doesn't go off the top of the screen
-       });
+       setDragPosition(current => current.x === 25 && current.y === 50
+         ? { x: 20, y: Math.max(20, targetY) } : current);
     }
 
     const handleMouseMove = (e: MouseEvent) => {
@@ -649,7 +647,7 @@ export default function BobozanOnline() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [toastMsg, setToastMsg] = useState('');
-  const [configError] = useState(false);
+  const configError = !firebaseConfigured;
 
   const [gameState, setGameState] = useState<GameState>({
     status: 'LOBBY',
@@ -720,19 +718,18 @@ export default function BobozanOnline() {
   }, [gameState.status, view, muted]);
 
   useEffect(() => {
-    if (!auth) return;
+    if (!firebaseConfigured) return;
     const initAuth = async () => {
       try {
-        // @ts-ignore
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          // @ts-ignore
-          await signInWithCustomToken(auth, __initial_auth_token);
+        const token = (globalThis as typeof globalThis & { __initial_auth_token?: string }).__initial_auth_token;
+        if (token) {
+          await signInWithCustomToken(auth, token);
         } else {
           await signInAnonymously(auth);
         }
       } catch (err) {
         console.error('Auth failed', err);
-        setErrorMsg(t.firebaseError);
+        setErrorMsg(TEXT.zh.firebaseError);
       }
     };
     initAuth();
@@ -741,10 +738,9 @@ export default function BobozanOnline() {
       const params = new URLSearchParams(window.location.search);
       const urlRoom = params.get('room');
       if (urlRoom && urlRoom.length === 6) setRoomCode(urlRoom);
-      if (u && !playerName) setView('NAME_INPUT');
     });
     return () => unsub();
-  }, [lang]);
+  }, []);
 
   useEffect(() => {
     if (toastMsg) {
@@ -818,12 +814,12 @@ export default function BobozanOnline() {
 
   const [, setPoppingTemp] = useState<Record<string, boolean>>({});
   const prevTempCountsRef = useRef<Record<string, number>>({});
+  const myTempSkills = myPlayer?.tempSkills;
 
   useEffect(() => {
-    if (!myPlayer) return;
     
     const next: Record<string, number> = {};
-    (myPlayer.tempSkills ?? []).forEach((id) => {
+    (myTempSkills ?? []).forEach((id) => {
       next[id] = (next[id] ?? 0) + 1;
     });
 
@@ -848,7 +844,7 @@ export default function BobozanOnline() {
         });
       }, 180); 
     }
-  }, [myPlayer?.tempSkills]);
+  }, [myTempSkills]);
 
   const handleMouseEnter = (e: React.MouseEvent, cardId: string) => {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -961,116 +957,69 @@ export default function BobozanOnline() {
     }
   };
 
-  const leaveRoom = async (forced = false) => {
-    if (!user) return;
-    
-    // 1. 尝试从 Firebase 移除自己 (如果是强制退出或在线状态)
-    if (!forced && db && roomCode) {
+  const resetRoom = useCallback(() => {
+    setIsOnline(false);
+    setIsTutorial(false);
+    setRoomCode('');
+    setSubmittingMove(false);
+    setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, players: [], logs: [], hostId: '' });
+    setView('HOME');
+  }, []);
+
+  const leaveRoom = async () => {
+    if (user && isOnline && roomCode) {
       try {
-        const safeRoomCode = roomCode.trim().toUpperCase();
-        const roomRef = doc(db, 'rooms', `${APP_ID}_${safeRoomCode}`);
-        const snap = await getDoc(roomRef);
-        if (snap.exists()) {
-          const data = snap.data() as GameState;
-          const newPlayers = data.players.filter((p: Player) => p.id !== user.uid);
-          await updateDoc(roomRef, { players: newPlayers });
-        }
-      } catch (e) {
-        console.error(e);
+        await mutateRoom(roomCode, room => leavePlayer(room, user.uid));
+      } catch (error) {
+        console.error('Unable to leave room', error);
+        setToastMsg(t.firebaseError);
+        return;
       }
     }
-
-    // 2. 本地状态彻底重置 (Fix: 防止残留的 status 导致下一次建房时自动跳过 Lobby)
-    setIsOnline(false);
-    setRoomCode('');
-    
-    //重置游戏数据为初始状态
-    setGameState({
-      status: 'LOBBY',
-      turn: 1,
-      matchCount: 1,
-      players: [],
-      logs: [],
-      hostId: '',
-    });
-
-    setView('HOME');
+    resetRoom();
   };
 
   useEffect(() => {
-    if (!isOnline || !roomCode || !user || !db) return;
-    const safeRoomCode = roomCode.trim().toUpperCase();
-
-    const unsub = onSnapshot(
-      doc(db, 'rooms', `${APP_ID}_${safeRoomCode}`),
-      (snapshot) => {
-        if (snapshot.exists()) {
-          const data = snapshot.data() as GameState;
-          setGameState(data);
-          const me = data.players.find((p: Player) => p.id === user.uid);
-          if (!me?.selectedCardId) {
-             setSubmittingMove(false);
-          }
-
-          if (data.hostId === user.uid) {
-            if (data.status === 'PLAYING') {
-              const activePlayers = data.players.filter((p: Player) => !p.isDead);
-              const allHumansMoved = activePlayers.filter((p: Player) => !p.isBot).every((p: Player) => p.selectedCardId);
-
-              if (allHumansMoved && activePlayers.some((p: Player) => !p.selectedCardId)) {
-                const updatedPlayers = [...data.players];
-                updatedPlayers.forEach((p: Player) => {
-                  if (p.isBot && !p.isDead && !p.selectedCardId) {
-                    p.selectedCardId = getBotMove(p, updatedPlayers);
-                  }
-                });
-                updateDoc(doc(db, 'rooms', `${APP_ID}_${safeRoomCode}`), {
-                  players: updatedPlayers,
-                });
-              } else if (
-                allHumansMoved &&
-                activePlayers.every((p: Player) => p.selectedCardId)
-              ) {
-                updateDoc(doc(db, 'rooms', `${APP_ID}_${safeRoomCode}`), {
-                  status: 'SHOWDOWN',
-                });
-              }
-            }
-          }
-        } else {
-          if (isOnline) {
-            leaveRoom(true);
-            alert(t.roomNotFound);
-          }
+    if (!isOnline || !roomCode || !user) return;
+    return onSnapshot(doc(db, 'rooms', `${APP_ID}_${roomCode.trim().toUpperCase()}`), snapshot => {
+      if (!snapshot.exists()) {
+        resetRoom();
+        setErrorMsg(t.roomNotFound);
+        return;
+      }
+      const data = snapshot.data() as GameState;
+      if (!data.players.some(p => p.id === user.uid)) {
+        resetRoom();
+        return;
+      }
+      setGameState(data);
+      setSubmittingMove(!!data.players.find(p => p.id === user.uid)?.selectedCardId);
+      if (data.hostId === user.uid && data.status === 'PLAYING') {
+        const active = data.players.filter(p => !p.isDead);
+        if (active.length <= 1 || active.every(p => p.isBot || p.selectedCardId)) {
+          void mutateRoom(roomCode, room => advanceRoom(room, user.uid)).catch(error => {
+            console.error('Unable to advance round', error);
+            setToastMsg(t.firebaseError);
+          });
         }
-      },
-    );
-    return () => unsub();
-  }, [isOnline, roomCode, user, lang]);
+      }
+    }, error => {
+      console.error('Room subscription failed', error);
+      setToastMsg(t.firebaseError);
+    });
+  }, [isOnline, roomCode, user, resetRoom, t.roomNotFound, t.firebaseError]);
 
   useEffect(() => {
-    if (isTutorial) return;
-    if (gameState.status === 'SHOWDOWN' && gameState.hostId === user?.uid) {
-      // 3000ms animation + 1000ms pause
-      const timer = setTimeout(() => {
-        const result = calculateTurnOutcome(
-          gameState.players,
-          gameState.turn,
-          gameState.matchCount,
-          lang 
-        );
-        updateDoc(doc(db, 'rooms', `${APP_ID}_${roomCode.trim().toUpperCase()}`), {
-          players: result.players,
-          logs: [...result.logs, ...gameState.logs],
-          // This changes status to GAMEOVER after the delay
-          status: result.isGameOver ? 'GAMEOVER' : 'PLAYING', 
-          turn: result.isGameOver ? gameState.turn : gameState.turn + 1,
-        });
-      }, 2000); // 4 seconds total delay
-
-      return () => clearTimeout(timer);
-    }
-  }, [gameState.status, gameState.hostId, lang, isTutorial]);
+    if (isTutorial || !isOnline || gameState.status !== 'SHOWDOWN' || gameState.hostId !== user?.uid) return;
+    const round = { turn: gameState.turn, matchCount: gameState.matchCount };
+    const timer = setTimeout(() => {
+      void mutateRoom(roomCode, room => settleRoom(room, user.uid, round, lang)).catch(error => {
+        console.error('Unable to settle round', error);
+        setToastMsg(t.firebaseError);
+      });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, user, roomCode, lang, isTutorial, isOnline, t.firebaseError]);
 
   useEffect(() => {
   if (muted || gameState.logs.length === 0) return;
@@ -1105,7 +1054,6 @@ export default function BobozanOnline() {
     playSound('click', muted);
     setLoading(true);
     try {
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
       const newRoom: GameState = {
         status: 'LOBBY',
         turn: 1,
@@ -1116,7 +1064,7 @@ export default function BobozanOnline() {
         players: [
           {
             id: user.uid,
-            name: playerName || `Player ${code.slice(-2)}`,
+            name: playerName || `Player ${user.uid.slice(-4)}`,
             avatar: playerAvatar,
             isBot: false,
             hp: MAX_HP,
@@ -1138,7 +1086,7 @@ export default function BobozanOnline() {
           },
         ],
       };
-      await setDoc(doc(db, 'rooms', `${APP_ID}_${code}`), newRoom);
+      const code = await createUniqueRoom(newRoom);
       setRoomCode(code);
       setIsOnline(true);
       setView('LOBBY');
@@ -1152,30 +1100,11 @@ export default function BobozanOnline() {
 
   const joinRoom = async () => {
     const safeCode = roomCode.trim().toUpperCase();
-    if (!user || safeCode.length !== 6) {
-      setErrorMsg(t.roomPlaceholder);
-      return;
-    }
+    if (!user || !/^\d{6}$/.test(safeCode)) { setErrorMsg(t.roomPlaceholder); return; }
     initAudio();
     playSound('click', muted);
     setLoading(true);
     try {
-      const roomRef = doc(db, 'rooms', `${APP_ID}_${safeCode}`);
-      const snap = await getDoc(roomRef);
-      if (snap.exists()) {
-        const data = snap.data() as GameState;
-        if (data.status !== 'LOBBY') {
-          setErrorMsg(t.gameStarted);
-          setLoading(false);
-          return;
-        }
-        const existingPlayer = data.players.find((p: Player) => p.id === user.uid);
-        if (!existingPlayer) {
-          if (data.players.length >= MAX_PLAYERS) {
-            setErrorMsg(t.roomFull);
-            setLoading(false);
-            return;
-          }
           const newPlayer: Player = {
             id: user.uid,
             name: playerName || `Player ${user.uid.slice(-4)}`,
@@ -1198,23 +1127,27 @@ export default function BobozanOnline() {
             revengeObtainedAt: null,
             kills: 0,
           };
-          await updateDoc(roomRef, { players: [...data.players, newPlayer] });
-        }
-        setIsOnline(true);
-        setView('LOBBY');
-      } else {
-        setErrorMsg(t.roomNotFound);
-      }
-    } catch (err) {
-      setErrorMsg('Network error');
-    } finally {
-      setLoading(false);
-    }
+      await mutateRoom(safeCode, room => joinPlayer(room, newPlayer));
+      setErrorMsg('');
+      setIsOnline(true);
+      setView('LOBBY');
+    } catch (error) {
+      const key = error instanceof Error ? error.message : '';
+      setErrorMsg(key === 'roomFull' ? t.roomFull : key === 'gameStarted' ? t.gameStarted : key === 'roomNotFound' ? t.roomNotFound : t.firebaseError);
+    } finally { setLoading(false); }
   };
 
   const copyGameInvite = () => { playSound('click', muted); const currentUrl = window.location.href.split('?')[0]; const inviteUrl = `${currentUrl}?room=${roomCode}`; const text = `Bobozan ${t.roomCode}: ${roomCode}\n${inviteUrl}`; copyToClipboard(text, t.inviteCopied); };
-  const startGameHost = async () => { if (!isOnline) return; playSound('confirm', muted); if (gameState.players.length < MIN_PLAYERS) { setToastMsg(`${t.needPlayers} (${MIN_PLAYERS}+)`); return; } const safeCode = roomCode.trim().toUpperCase(); const roomRef = doc(db, 'rooms', `${APP_ID}_${safeCode}`); await updateDoc(roomRef, { status: 'PLAYING', logs: [{ turn: 1, text: lang === 'zh' ? '游戏开始!' : 'Game Started!', type: 'info' }, ...gameState.logs], }); setView('GAME'); };
-  
+  const startGameHost = async () => {
+    if (!isOnline || !user) return;
+    try {
+      await mutateRoom(roomCode, room => startRoom(room, user.uid, lang));
+      playSound('confirm', muted);
+    } catch (error) {
+      setToastMsg(error instanceof Error && error.message === 'needPlayers' ? `${t.needPlayers} (${MIN_PLAYERS}+)` : t.firebaseError);
+    }
+  };
+
   const addBot = async () => {
     if (!isOnline || gameState.status !== 'LOBBY') return;
     playSound('click', muted);
@@ -1222,8 +1155,6 @@ export default function BobozanOnline() {
       setToastMsg(t.roomFull);
       return;
     }
-    const safeCode = roomCode.trim().toUpperCase();
-    const roomRef = doc(db, 'rooms', `${APP_ID}_${safeCode}`);
     const botCount = gameState.players.filter((p: Player) => p.isBot).length;
     const newBot: Player = {
       id: `bot_${Date.now()}_${botCount}`,
@@ -1246,141 +1177,88 @@ export default function BobozanOnline() {
       revengeObtainedAt: null,
       kills: 0,
     };
-    await updateDoc(roomRef, { players: [...gameState.players, newBot] });
-  };
-
-  const removeBot = async () => { if (!isOnline || gameState.status !== 'LOBBY') return; playSound('click', muted); const bots = gameState.players.filter((p: Player) => p.isBot); if (bots.length === 0) return; const lastBotId = bots[bots.length - 1].id; const safeCode = roomCode.trim().toUpperCase(); const roomRef = doc(db, 'rooms', `${APP_ID}_${safeCode}`); const newPlayers = gameState.players.filter((p: Player) => p.id !== lastBotId); await updateDoc(roomRef, { players: newPlayers }); };
-  const handleDiscardSkill = async (discardLvl: number) => {
-    if (!isOnline || !user || !db || !myPlayer?.pendingLevel) return;
-
-    const safeCode = roomCode.trim().toUpperCase();
-    const roomRef = doc(db, 'rooms', `${APP_ID}_${safeCode}`);
-    const newPending = myPlayer.pendingLevel; // 刚赢回来的那个
-
-    // 复制玩家列表
-    const updatedPlayers = gameState.players.map((p) => {
-      if (p.id === user.uid) {
-        let newInv = [...p.inventory];
-        
-        // 如果玩家选择丢弃的是“刚才赢回来的新技能” (discardLvl === newPending)
-        // 那就什么都不做，直接把 pendingLevel 清空即可 (相当于放弃奖励)
-        
-        // 如果玩家选择丢弃的是“旧技能”
-        if (discardLvl !== newPending) {
-          // 1. 删掉旧的
-          newInv = newInv.filter(l => l !== discardLvl);
-          // 2. 加上新的
-          if (!newInv.includes(newPending)) {
-            newInv.push(newPending);
-          }
-        }
-
-        // 排序一下好看点
-        newInv.sort((a, b) => a - b);
-
-        return {
-          ...p,
-          inventory: newInv,
-          pendingLevel: null, // 清空暂存状态
-        };
-      }
-      return p;
-    });
-
-    await updateDoc(roomRef, { players: updatedPlayers });
-    playSound('click', muted);
-  };
-
-  // Toggle "Share" Mode
-  const toggleShare = async () => {
-    if (!isOnline || !user || !db || !roomCode) return;
-    // Check if player actually has the skills to share (Lv3 or Lv18)
-    if (!myPlayer || (!myPlayer.inventory.includes(3) && !myPlayer.inventory.includes(18))) return;
-
-    const safeCode = roomCode.trim().toUpperCase();
-    const roomRef = doc(db, 'rooms', `${APP_ID}_${safeCode}`);
-    
-    playSound('click', muted);
-
-    const updatedPlayers = gameState.players.map((p) => 
-      p.id === user.uid ? { ...p, isShared: !p.isShared } : p
-    );
-
+    if (!user) return;
     try {
-      await updateDoc(roomRef, { players: updatedPlayers });
-    } catch (e) {
-      console.error(e);
-    }
+      await mutateRoom(roomCode, room => {
+        if (room.hostId !== user.uid || room.status !== 'LOBBY') return null;
+        return joinPlayer(room, newBot);
+      });
+    } catch { setToastMsg(t.firebaseError); }
   };
 
-  const submitMove = async (cardId: string) => {
-    if (!isOnline || submittingMove) return;
+  const removeBot = async () => {
+    if (!isOnline || !user) return;
+    try {
+      await mutateRoom(roomCode, room => {
+        if (room.hostId !== user.uid || room.status !== 'LOBBY') return null;
+        const bot = room.players.filter(p => p.isBot).at(-1);
+        return bot ? { players: room.players.filter(p => p.id !== bot.id) } : null;
+      });
+    } catch { setToastMsg(t.firebaseError); }
+  };
 
-    // 1. 清理 Tooltip 和 Hover 状态
+  const handleDiscardSkill = async (discardLvl: number) => {
+    if (!isOnline || !user) return;
+    try {
+      await mutateRoom(roomCode, room => {
+        if (room.status !== 'GAMEOVER') return null;
+        return patchPlayer(room, user.uid, p => {
+          if (!p.pendingLevel || (discardLvl !== p.pendingLevel && !p.inventory.includes(discardLvl))) return p;
+          const inventory = discardLvl === p.pendingLevel ? [...p.inventory]
+            : [...new Set([...p.inventory.filter(l => l !== discardLvl), p.pendingLevel])].sort((a, b) => a - b);
+          return { ...p, inventory, pendingLevel: null };
+        });
+      });
+      playSound('click', muted);
+    } catch { setToastMsg(t.firebaseError); }
+  };
+
+  const toggleShare = async () => {
+    if (!isOnline || !user) return;
+    try {
+      await mutateRoom(roomCode, room => patchPlayer(room, user.uid, p =>
+        p.inventory.includes(3) || p.inventory.includes(18) ? { ...p, isShared: !p.isShared } : p));
+      playSound('click', muted);
+    } catch { setToastMsg(t.firebaseError); }
+  };
+
+  const movePendingRef = useRef(false);
+  const submitMove = async (cardId: string) => {
+    if (!isOnline || !user || submittingMove || movePendingRef.current) return;
     if (hoverTimer.current) clearTimeout(hoverTimer.current);
     setHoveredCard(null);
     setTooltipPos(null);
-
+    movePendingRef.current = true;
     setSubmittingMove(true);
     initAudio();
     playSound('draw', muted);
-
-    // 不等服务器返回，先在本地立即把状态改成“已出牌”，防止界面回弹/卡顿
-    setGameState(prev => ({
-      ...prev,
-      players: prev.players.map(p => 
-        p.id === user.uid ? { ...p, selectedCardId: cardId } : p
-      )
-    }));
-
-    // 2. 发送请求给 Firebase
-    const roomRef = doc(db, 'rooms', `${APP_ID}_${roomCode.trim().toUpperCase()}`);
-    
-    // 这里的 updatedPlayers 基于当前的 gameState 计算
-    const updatedPlayers = gameState.players.map((p: Player) =>
-      p.id === user.uid ? { ...p, selectedCardId: cardId } : p,
-    );
-
     try {
-      await updateDoc(roomRef, { players: updatedPlayers });
+      await mutateRoom(roomCode, room => submitPlayerMove(room, user.uid, cardId, gameState));
     } catch (error) {
-      console.error("Failed to submit move:", error);
-      setSubmittingMove(false); // 如果真的失败了，解开锁让玩家重试
+      console.error('Failed to submit move', error);
+      setSubmittingMove(false);
       setToastMsg(lang === 'zh' ? '出牌失败，请重试' : 'Move failed, try again');
-    }
+    } finally { movePendingRef.current = false; }
   };
+
   const sendEmoji = async (emoji: string) => {
-    if (!isOnline || !user || !db || !roomCode) return;
-
-    const safeCode = roomCode.trim().toUpperCase();
-    const roomRef = doc(db, 'rooms', `${APP_ID}_${safeCode}`);
-
-    // 把当前 players 映射一遍，只改自己那一位
-    const updatedPlayers = gameState.players.map((p: Player) =>
-      p.id === user.uid
-        ? { ...p, emoji, emojiAt: Date.now() }
-        : p
-    );
-
+    if (!isOnline || !user) return;
+    const emojiAt = Date.now();
     try {
-      await updateDoc(roomRef, { players: updatedPlayers });
-    } catch (e) {
-      console.error('sendEmoji failed', e);
-    }
+      await mutateRoom(roomCode, room => patchPlayer(room, user.uid, p => ({ ...p, emoji, emojiAt })));
+    } catch { setToastMsg(t.firebaseError); }
   };
 
   const toggleRevengeMode = async () => {
-    if (!isOnline || !db || !roomCode || gameState.hostId !== user?.uid) return;
-    const safeCode = roomCode.trim().toUpperCase();
-    const roomRef = doc(db, 'rooms', `${APP_ID}_${safeCode}`);
-    
-    // 切换状态 (如果 undefined 默认为 true，取反即为 false)
-    const currentMode = gameState.revengeMode ?? true;
-    await updateDoc(roomRef, { revengeMode: !currentMode });
-    playSound('click', muted);
+    if (!isOnline || !user) return;
+    try {
+      await mutateRoom(roomCode, room => room.hostId === user.uid && room.status === 'LOBBY'
+        ? { revengeMode: !(room.revengeMode ?? true) } : null);
+    } catch { setToastMsg(t.firebaseError); }
   };
 
   const nextMatchHost = async () => {
+    if (!isOnline || !user) return;
     // 1. Play Sound
     playSound('confirm', muted);
 
@@ -1392,16 +1270,21 @@ export default function BobozanOnline() {
       return pool[Math.floor(Math.random() * pool.length)];
     };
 
+    try {
+      const expectedMatch = gameState.matchCount;
+      await mutateRoom(roomCode, room => {
+        if (room.hostId !== user.uid || room.status !== 'GAMEOVER' || room.matchCount !== expectedMatch) return null;
+        if (room.players.some(p => p.pendingLevel)) throw new Error('Please finish choosing reward skills first');
     // 3. Reset Players Logic (with UNDEFINED protection)
-    const resetPlayers = gameState.players.map((p) => {
+    const resetPlayers = room.players.map((p) => {
       const isSurvivor = !p.isDead;
       const newLoseStreak = isSurvivor ? 0 : (p.loseStreak || 0) + 1;
 
-      let newTempSkills: string[] = [];
+      const newTempSkills: string[] = [];
       
-      let newRevengeTime = null; // 准备时间戳变量
+      const newRevengeTime = null; // 准备时间戳变量
 
-      const isRevengeOn = gameState.revengeMode ?? true; // 默认为开
+      const isRevengeOn = room.revengeMode ?? true; // 默认为开
 
       if (isRevengeOn && newLoseStreak >= 5) {
          const bonus = getRandomBonusCard();
@@ -1434,25 +1317,24 @@ export default function BobozanOnline() {
     });
 
     // 4. Update Firestore
-    try {
       const logText = lang === 'zh'
-        ? `--- 第 ${gameState.matchCount + 1} 局 ---`
-        : `--- MATCH ${gameState.matchCount + 1} ---`;
+        ? `--- 第 ${room.matchCount + 1} 局 ---`
+        : `--- MATCH ${room.matchCount + 1} ---`;
 
-      await updateDoc(doc(db, 'rooms', `${APP_ID}_${roomCode.trim().toUpperCase()}`), {
+      return {
         status: 'PLAYING',
-        matchCount: gameState.matchCount + 1,
+        matchCount: room.matchCount + 1,
         turn: 1,
         players: resetPlayers,
         logs: [
           { turn: 1, text: logText, type: 'info' },
-          ...gameState.logs,
-        ],
+          ...room.logs,
+        ].slice(0, 300) as GameState['logs'],
+      };
       });
     } catch (err) {
       console.error("Error starting next match:", err);
-      // Optional: Show error toast to user
-      // setToastMsg("Error starting next match. Check console.");
+      setToastMsg(lang === 'zh' ? '请先完成奖励技能选择；如仍失败，请检查网络后重试' : 'Finish choosing reward skills, then retry. Check your connection if the problem persists.');
     }
   };
 
@@ -1464,12 +1346,11 @@ export default function BobozanOnline() {
   const toggleLang = () => { playSound('click', muted); setLang(prev => prev === 'zh' ? 'en' : 'zh'); }
   const toggleMute = () => { setMuted(!muted); }
 
+  const myFreeSkills = myPlayer?.freeSkills;
   useEffect(() => {
-    if (!myPlayer) return;
-
     // build current counts of free skills
     const next: Record<string, number> = {};
-    (myPlayer.freeSkills ?? []).forEach((id) => {
+    (myFreeSkills ?? []).forEach((id) => {
       next[id] = (next[id] ?? 0) + 1;
     });
 
@@ -1503,7 +1384,7 @@ export default function BobozanOnline() {
         });
       }, 180); // 0.18s-ish “spring” pop
     }
-  }, [myPlayer?.freeSkills]);
+  }, [myFreeSkills]);
 
   const selectCategory = (cat: HandCategory) => {
     playSound('card_flip', muted);
@@ -1710,7 +1591,7 @@ export default function BobozanOnline() {
 
       {/* 🃏 3D EXPLODING CARDS BACKGROUND 🃏 */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ perspective: '1200px' }}>
-      {BACKGROUND_CARDS.map((item: any) => {
+      {BACKGROUND_CARDS.map((item) => {
         if (!item) return null;
 
         let borderColor = 'border-slate-600';
@@ -1874,7 +1755,7 @@ export default function BobozanOnline() {
         <div className="flex flex-col items-center relative group">
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-orange-500/10 blur-[60px] rounded-full pointer-events-none animate-pulse" />
           <img 
-            src="/babydragtitle.png" 
+            src={assetUrl('babydragtitle.png')}
             alt="Baby Dragon"
             className="w-[500px] h-[500px] md:w-[900px] md:h-[900px] object-contain relative z-20 mb-[-350px] pointer-events-none"
             style={{ 
@@ -2030,7 +1911,7 @@ export default function BobozanOnline() {
 
       {/* 3D Exploding Cards (Floating in background) */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ perspective: '1200px' }}>
-        {BACKGROUND_CARDS.map((item: any) => {
+        {BACKGROUND_CARDS.map((item) => {
           if (!item) return null;
           // Note: We keep original card colors (Red/Blue/Purple) to represent game mechanics
           let borderColor = 'border-slate-600';
@@ -2184,7 +2065,7 @@ export default function BobozanOnline() {
 
       {/* 3D Exploding Cards */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ perspective: '1200px' }}>
-        {BACKGROUND_CARDS.map((item: any) => {
+        {BACKGROUND_CARDS.map((item) => {
           if (!item) return null;
           let borderColor = 'border-slate-600';
           let bgGradient = 'bg-slate-800';
@@ -2529,7 +2410,7 @@ export default function BobozanOnline() {
 
       {/* 3D Exploding Cards (Background) */}
       <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ perspective: '1200px' }}>
-        {BACKGROUND_CARDS.slice(0, 6).map((item: any) => {
+        {BACKGROUND_CARDS.slice(0, 6).map((item) => {
           if (!item) return null;
           let borderColor = 'border-slate-600';
           let bgGradient = 'bg-slate-800';
@@ -2728,15 +2609,11 @@ export default function BobozanOnline() {
                   <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-yellow-400 to-transparent animate-pulse" />
                   
                   <h2 className="text-3xl font-black text-white uppercase tracking-wider mb-4 drop-shadow-md">
-                    {tutorialMsg?.title && typeof tutorialMsg.title === 'object' 
-                        ? (tutorialMsg.title as any)[lang] 
-                        : (tutorialMsg?.title || "")}
+                    {tutorialMsg.title[lang]}
                   </h2>
                   
                   <p className="text-lg text-yellow-100 font-medium leading-relaxed">
-                    {tutorialMsg?.sub && typeof tutorialMsg.sub === 'object' 
-                        ? (tutorialMsg.sub as any)[lang] 
-                        : (tutorialMsg?.sub || "")}
+                    {tutorialMsg.sub[lang]}
                   </p>
 
                   <div className="mt-6 flex items-center gap-4 border-t border-white/10 pt-5">
@@ -3033,7 +2910,7 @@ export default function BobozanOnline() {
                   // ANIMATION CONTROL
                   const transitionClass = isSlammingActive
                     ? 'transition-left transition-top duration-300' 
-                    : 'transition-all duration-[1200ms] cubic-bezier(0.34,1.56,0.64,1)';
+                    : 'transition-all [transition-duration:1200ms] cubic-bezier(0.34,1.56,0.64,1)';
 
                   const transformStyle = isSlammingActive
                      ? 'translate(-50%, -50%)' // Let CSS animation handle scale/rotate
@@ -3601,7 +3478,7 @@ export default function BobozanOnline() {
                                               }
                                             }
                                           }}
-                                          onMouseEnter={(e: any) => handleMouseEnter(e, c.id)}
+                                          onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => handleMouseEnter(e, c.id)}
                                           onMouseLeave={handleMouseLeave}
                                           disabled={isDisabled || !canAfford}
                                           className={`

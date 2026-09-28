@@ -1,4 +1,3 @@
-// --- FIREBASE SETUP ---
 import { initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
@@ -12,13 +11,7 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_APP_ID,
 };
 
-let app: any, auth: any, db: any;
-try {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-} catch (e) {
-  console.error('Firebase 初始化失败，请检查 .env 配置', e);
-}
-
-export { app, auth, db };
+export const firebaseConfigured = Boolean(import.meta.env.VITE_API_KEY && import.meta.env.VITE_PROJECT_ID && import.meta.env.VITE_AUTH_DOMAIN);
+export const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
+export const db = getFirestore(app);

@@ -314,13 +314,15 @@ export const calculateTurnOutcome = (
   matchCount: number,
   lang: Lang
 ): { players: Player[]; logs: LogEntry[]; isGameOver: boolean; winner?: Player } => {
-  let logs: LogEntry[] = [];
+  const logs: LogEntry[] = [];
 
   const survivors = currentPlayers
     .map((p) => ({
       ...p,
-      disabledSkills: p.disabledSkills || [],
-      freeSkills: p.freeSkills || [],
+      inventory: [...p.inventory],
+      disabledSkills: [...(p.disabledSkills || [])],
+      freeSkills: [...(p.freeSkills || [])],
+      tempSkills: [...(p.tempSkills || [])],
       kills: p.kills || 0, // Ensure kills exist
     }))
     .filter((p) => !p.isDead);
@@ -332,6 +334,7 @@ export const calculateTurnOutcome = (
   // 1. APPLY COSTS / LAYER TAGS
   survivors.forEach((p) => {
     const card = SKILL_DB.find((c) => c.id === p.selectedCardId)!;
+    if (!card) throw new Error(`Invalid card for player ${p.id}`);
     p.lastAction = card.name.en;
     p.lastCardId = card.id;
 
@@ -672,7 +675,7 @@ export const calculateTurnOutcome = (
 export const getBotMove = (bot: Player, allPlayers: Player[]) => {
   const allKnownCards = getPlayerCards(bot, allPlayers);
   const affordable = allKnownCards.filter(c => 
-    bot.energy >= c.cost && 
+    (bot.energy >= c.cost || bot.freeSkills?.includes(c.id)) &&
     !bot.disabledSkills?.includes(c.id) // 👈 机器人不能出被封印的牌
   );
   if (affordable.length === 0) return 'charge';
