@@ -6,8 +6,13 @@ import {
   applyIronhide,
   expeditionBotMove,
   genRewardOptions,
+  genShopItems,
+  goldForWin,
   pickThreat,
+  shopCardPrice,
 } from './expedition';
+import { EXPEDITION_GACHA_POOL, EXPEDITION_EQUIPMENTS, drawGachaCard } from '../data/expedition';
+import { SKILL_DB } from '../data/skills';
 
 const enemy = (patch: Partial<Player> = {}): Player => ({
   id: 'e1', name: 'enemy', isBot: true, hp: 2, energy: 0, isDead: false,
@@ -77,7 +82,7 @@ test('混战 AI：pickThreat 盯能量最高的活着对手', () => {
 });
 test('奖励生成：选项不重复；受伤才有治疗；遗物拿完不再出现', () => {
   for (let i = 0; i < 50; i++) {
-    const opts = genRewardOptions(5, 1, 3, ['ypj'], 3);
+    const opts = genRewardOptions(1, 3, ['ypj'], 3);
     assert.equal(opts.length, 3);
     const keys = opts.map((o) => (o.kind === 'temp' ? o.cardId : o.kind === 'relic' ? o.relicId : o.kind));
     assert.equal(new Set(keys).size, 3, `duplicate options: ${keys}`);
@@ -93,25 +98,25 @@ test('奖励生成：选项不重复；受伤才有治疗；遗物拿完不再�
   }
   // 满血：没有治疗选项
   for (let i = 0; i < 20; i++) {
-    const opts = genRewardOptions(5, 3, 3, [], 3);
+    const opts = genRewardOptions(3, 3, [], 3);
     assert.ok(opts.every((o) => o.kind !== 'heal'), 'full-hp player should not be offered heal');
   }
   // 遗物全拿：没有遗物选项
   const allRelics = EXPEDITION_RELICS.map((r) => r.id);
   for (let i = 0; i < 20; i++) {
-    const opts = genRewardOptions(5, 1, 3, allRelics, 3);
+    const opts = genRewardOptions(1, 3, allRelics, 3);
     assert.ok(opts.every((o) => o.kind !== 'relic'), 'no relic should be offered when all owned');
   }
 });
 
 test('藏宝图：奖励 4 选 1', () => {
-  const opts = genRewardOptions(5, 1, 3, [], 4);
+  const opts = genRewardOptions(1, 3, [], 4);
   assert.equal(opts.length, 4);
 });
 
 test('升级奖励：稳定 +1 级，满级后不再出现，无开局能量奖励', () => {
   for (let i = 0; i < 30; i++) {
-    const opts = genRewardOptions(5, 3, 3, [], 3, [0, 1]);
+    const opts = genRewardOptions(3, 3, [], 3, [0, 1]);
     const lv = opts.find((o) => o.kind === 'levelup');
     for (const o of opts) {
       assert.ok(['heal', 'levelup', 'maxhp', 'temp', 'relic'].includes(o.kind), `unexpected kind: ${o.kind}`);
@@ -120,7 +125,7 @@ test('升级奖励：稳定 +1 级，满级后不再出现，无开局能量奖�
   }
   // 满级（5 级）：不再出升级
   for (let i = 0; i < 20; i++) {
-    const opts = genRewardOptions(5, 3, 3, [], 3, [0, 1, 2, 3, 4, 5]);
+    const opts = genRewardOptions(3, 3, [], 3, [0, 1, 2, 3, 4, 5]);
     assert.ok(opts.every((o) => o.kind !== 'levelup'), 'no levelup at max level');
   }
 });
@@ -140,8 +145,8 @@ test('applyIronhide：每场战斗首次受伤 -1，之后不再减', () => {
   assert.equal(r4.hp, 3);
 });
 
-test('关卡配置合法：15 关，含一打三，敌人等级有高低', () => {
-  assert.equal(EXPEDITION_STAGES.length, 15);
+test('关卡配置合法：16 关，含一打三，双 Boss，敌人等级有高低', () => {
+  assert.equal(EXPEDITION_STAGES.length, 16);
   for (const s of EXPEDITION_STAGES) {
     assert.ok(s.enemies.length >= 1 && s.enemies.length <= 3, `${s.id}: bad enemy count`);
     for (const e of s.enemies) {
@@ -181,4 +186,95 @@ test('遗物配置合法：9 个，id 唯一，无聚气丹（太赖已砍）', 
     assert.ok(r.name.zh && r.desc.zh, `${r.id}: missing zh text`);
     assert.ok(['common', 'rare'].includes(r.rarity), `${r.id}: bad rarity`);
   }
+});
+
+test('抽卡池：45 张 1-99 级非攒气牌，攻/防/特殊/终极都有', () => {
+  assert.equal(EXPEDITION_GACHA_POOL.length, 45);
+  const types = new Set<string>();
+  for (const id of EXPEDITION_GACHA_POOL) {
+    const c = SKILL_DB.find((x) => x.id === id)!;
+    assert.ok(c, `card exists: ${id}`);
+    assert.ok(c.levelRequired >= 1 && c.levelRequired < 100, `tier ok: ${id}`);
+    assert.notEqual(c.type, 'CHARGE');
+    types.add(c.type);
+  }
+  for (const t of ['ATTACK', 'DEFEND', 'SPECIAL', 'ULTIMATE']) assert.ok(types.has(t), `has ${t}`);
+  for (let i = 0; i < 20; i++) {
+    const g = drawGachaCard();
+    assert.ok(EXPEDITION_GACHA_POOL.includes(g.cardId));
+    assert.ok(g.uses >= 1 && g.uses <= 3);
+  }
+});
+
+test('金币：基础 6+关卡，精英 +5，Boss +20', () => {
+  const plain = EXPEDITION_STAGES[0];
+  assert.equal(goldForWin(0, plain), 6);
+  assert.equal(goldForWin(5, plain), 11);
+  const elite = EXPEDITION_STAGES.find((st) => st.enemies.some((e) => e.elite))!;
+  const boss = EXPEDITION_STAGES.find((st) => st.enemies.some((e) => e.boss))!;
+  assert.equal(goldForWin(0, elite), 11);
+  assert.equal(goldForWin(0, boss), 26);
+});
+
+test('商城：4 件商品（2 卡 + 1 装备 + 疗伤药），装备不重复，售价合理', () => {
+  for (let i = 0; i < 20; i++) {
+    const items = genShopItems([], 0);
+    assert.equal(items.length, 4);
+    const eq = items.filter((x) => x.kind === 'equipment');
+    assert.ok(eq.length <= 1, 'at most one equipment per shop');
+    assert.ok(items.some((x) => x.kind === 'potion'), 'potion always offered');
+    for (const it of items) {
+      const price = it.kind === 'tempcard' ? it.price : it.kind === 'equipment' ? it.equipment.price : it.price;
+      assert.ok(price > 0 && price <= 60, `price sane: ${price}`);
+      if (it.kind === 'tempcard') assert.equal(price, shopCardPrice(it.cardId));
+    }
+  }
+  // 装备买完不再出现；升级徽章满级后不再出现
+  const all = EXPEDITION_EQUIPMENTS.map((e) => e.id);
+  for (let i = 0; i < 20; i++) {
+    const items = genShopItems(all, 5);
+    assert.ok(items.every((x) => x.kind !== 'equipment'), 'no equipment when all owned');
+  }
+  const noBadge = genShopItems([], 5);
+  assert.ok(noBadge.every((x) => x.kind !== 'equipment' || x.equipment.id !== 'levelbadge'), 'no level badge at max level');
+});
+
+test('Boss1 塔主波赞：8 血 + 锐吸/奥吸 + 狂暴/护甲', () => {
+  const s14 = EXPEDITION_STAGES.find((s) => s.id === 's14')!;
+  const boss = s14.enemies[0];
+  assert.equal(boss.hp, 8);
+  assert.ok(boss.inventory.includes(6), 'has 锐吸');
+  assert.ok(boss.inventory.includes(12), 'has 奥吸');
+  assert.equal(boss.passive?.enrageEnergy, 2);
+  assert.equal(boss.passive?.armorPerTurn, 1);
+});
+
+test('Boss2 远古塔魂：10 血 + 头盔/手盔/脚盔 + 护甲', () => {
+  const s15 = EXPEDITION_STAGES.find((s) => s.id === 's15')!;
+  const boss = s15.enemies[0];
+  assert.equal(boss.boss, true);
+  assert.equal(boss.hp, 10);
+  assert.ok(boss.inventory.includes(8), 'has 头盔');
+  assert.ok(boss.inventory.includes(10), 'has 手盔');
+  assert.ok(boss.inventory.includes(11), 'has 脚盔');
+  assert.equal(boss.passive?.armorPerTurn, 1);
+  assert.equal(boss.passive?.energyPerTurn, 1);
+});
+
+test('聪明的敌人更爱用吸收技能', () => {
+  const smartP = { aggression: 0.7, defense: 0.35, charge: 0.25, smart: 1.0 };
+  const dumbP = { aggression: 0.7, defense: 0.35, charge: 0.25, smart: 0.0 };
+  const mk = (): Player => ({
+    id: 'e', name: 'E', isBot: true, hp: 5, energy: 3, isDead: false,
+    inventory: [0, 1, 6], layer: 0, tempLayerMod: 0,
+    selectedCardId: null, lastCardId: null, lastAction: null,
+    disabledSkills: [], freeSkills: [], kills: 0, tempSkills: [],
+  });
+  const me: Player = { ...mk(), id: 'p', isBot: false, energy: 0 };
+  let smartAbsorb = 0, dumbAbsorb = 0;
+  for (let i = 0; i < 120; i++) {
+    if (expeditionBotMove(mk(), [mk(), me], smartP, 'p') === 'absorb') smartAbsorb++;
+    if (expeditionBotMove(mk(), [mk(), me], dumbP, 'p') === 'absorb') dumbAbsorb++;
+  }
+  assert.ok(smartAbsorb > dumbAbsorb * 2, `smart ${smartAbsorb} vs dumb ${dumbAbsorb}`);
 });

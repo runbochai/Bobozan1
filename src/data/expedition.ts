@@ -1,4 +1,5 @@
 import type { LocalizedText} from '../types';
+import { SKILL_DB } from './skills';
 
 // ============ 远征模式：关卡 / 敌人 / 遗物 / 剧情 ============
 
@@ -19,6 +20,9 @@ intro: LocalizedText; // 开场白
 passive?: {
 startEnergy?: number; // 开局能量（Boss 光环）
 energyPerTurn?: number; // 每回合开始回复能量
+enrageEnergy?: number; // 狂暴：hp <= 一半时每回合能量改为 +enrageEnergy
+enrageDmg?: number; // 狂暴：hp <= 一半时伤害 +enrageDmg
+armorPerTurn?: number; // 护甲：每回合第一次受到的伤害 -armorPerTurn
 };
 elite?: boolean;
 boss?: boolean;
@@ -230,12 +234,24 @@ intro: { zh: '右卫：塔主不容打扰！', en: 'Right Guard: the Lord must n
 id: 's14', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
 name: { zh: '第 15 关 · Boss：塔主波赞', en: 'Stage 15 · Boss: Lord Bozan'},
 rewardTier: 3,
-tip: { zh: '塔主每回合都会回复能量，且开局能量充沛——速战速决！', en: 'The Lord regenerates Energy every turn — end it fast!'},
+tip: { zh: '塔主 8 血、每回合护甲 1 点，半血狂暴（能量+2、伤害+1），还会锐吸/奥吸收你的技能——速战速决！', en: 'Lord: 8 HP, 1 armor/turn, enrages at half HP, absorbs skills — end it fast!'},
 enemies: [{
-id: 'lord_bozan', name: { zh: '👑 塔主波赞', en: '👑 Lord Bozan'}, hp: 5, inventory: [0, 3, 5],
+id: 'lord_bozan', name: { zh: '👑 塔主波赞', en: '👑 Lord Bozan'}, hp: 8, inventory: [0, 3, 5, 6, 12],
 personality: P(0.7, 0.35, 0.25, 1.0), boss: true,
-passive: { startEnergy: 2, energyPerTurn: 1},
-intro: { zh: '波赞：能爬到这里，值得我亲自出手。', en: 'Bozan: reaching my tower earns you my personal attention.'},
+passive: { startEnergy: 2, energyPerTurn: 1, enrageEnergy: 2, enrageDmg: 1, armorPerTurn: 1},
+intro: { zh: '波赞：能爬到这里，值得我亲自出手。半血之后，你会后悔的。', en: 'Bozan: reaching my tower earns you my personal attention. You will regret it once I enrage.'},
+}],
+},
+{
+id: 's15', chapter: { zh: '终章 · 塔心', en: 'Finale · Tower Heart'},
+name: { zh: '第 16 关 · Boss：远古塔魂', en: 'Stage 16 · Boss: Ancient Tower Soul'},
+rewardTier: 3,
+tip: { zh: '塔魂披挂头盔/手盔/脚盔攻防，每回合护甲 1 点、能量 +1——它即是塔本身！', en: 'The Soul wields helm/hand/foot arms, 1 armor & +1 energy per turn — it IS the tower!'},
+enemies: [{
+id: 'tower_soul', name: { zh: '🌑 远古塔魂', en: '🌑 Ancient Tower Soul'}, hp: 10, inventory: [0, 8, 10, 11],
+personality: P(0.55, 0.7, 0.3, 0.9), boss: true,
+passive: { startEnergy: 1, energyPerTurn: 1, armorPerTurn: 1},
+intro: { zh: '塔魂：波赞只是守门人。我，即是塔。', en: 'Soul: Bozan was merely the gatekeeper. I am the tower.'},
 }],
 },
 ];
@@ -314,18 +330,80 @@ export const REWARD_LEVEL_POOL: Record<1 | 2 | 3, number[]> = {
 3: [3, 5, 8],
 };
 
-// 临时秘技卡池：多人模式的高阶卡，远征里限次使用
-export interface TempSkillDef { id: string; minStage: number; uses: [number, number] }
-export const EXPEDITION_TEMP_SKILLS: TempSkillDef[] = [
-{ id: 'icesword', minStage: 0, uses: [2, 3] },
-{ id: 'smallfly', minStage: 0, uses: [2, 3] },
-{ id: 'dragonclaw', minStage: 2, uses: [2, 3] },
-{ id: 'dragondef', minStage: 2, uses: [2, 3] },
-{ id: 'iceult', minStage: 3, uses: [1, 2] },
-{ id: 'fireclaw', minStage: 4, uses: [1, 2] },
-{ id: 'hotmilk', minStage: 6, uses: [2, 3] },
-{ id: 'boiler', minStage: 7, uses: [1, 2] },
-{ id: 'bigfly', minStage: 8, uses: [1, 2] },
-{ id: 'madian', minStage: 10, uses: [2, 3] },
-{ id: 'hangman', minStage: 11, uses: [1, 2] },
+// 限次秘技卡池：从全部技能里随机抽（进攻 / 防守 / 特殊都有），类似复仇模式抽卡。
+// 排除 0 级基础牌（抽出来没意思）、攒气牌和系统保留牌（100 级）。
+export const EXPEDITION_GACHA_POOL: string[] = SKILL_DB.filter(
+(c) => c.levelRequired >= 1 && c.levelRequired < 100 && c.type !== 'CHARGE'
+).map((c) => c.id);
+
+/** 抽一张限次秘技：返回卡 id 与使用次数（1-3 次） */
+export function drawGachaCard(): { cardId: string; uses: number } {
+const cardId = EXPEDITION_GACHA_POOL[Math.floor(Math.random() * EXPEDITION_GACHA_POOL.length)];
+const uses = 1 + Math.floor(Math.random() * 3);
+return { cardId, uses };
+}
+
+// ============ 远征装备（商城购买，本轮远征永久有效，每件限购 1 件） ============
+export interface ExpeditionEquipment {
+id: string;
+icon: string;
+name: LocalizedText;
+desc: LocalizedText;
+price: number;
+}
+export const EXPEDITION_EQUIPMENTS: ExpeditionEquipment[] = [
+{
+id: 'waraxe', icon: '🗡️',
+name: { zh: '狂战斧', en: 'War Axe'},
+desc: { zh: '你的所有伤害 +1', en: '+1 to all damage you deal'},
+price: 30,
+},
+{
+id: 'bloodsword', icon: '🩸',
+name: { zh: '嗜血剑', en: 'Blood Sword'},
+desc: { zh: '每次击杀回复 1 点血量', en: 'Heal 1 HP on each kill'},
+price: 25,
+},
+{
+id: 'lifegem', icon: '❤️',
+name: { zh: '生命宝石', en: 'Life Gem'},
+desc: { zh: '血量上限 +2（并回复 2 点）', en: '+2 max HP (and heal 2)'},
+price: 20,
+},
+{
+id: 'luckydice', icon: '🎲',
+name: { zh: '幸运骰', en: 'Lucky Dice'},
+desc: { zh: '每场战斗开局随机抽一张限次卡', en: 'Draw a random limited card at each battle start'},
+price: 18,
+},
+{
+id: 'treasurepot', icon: '💰',
+name: { zh: '聚宝盆', en: 'Treasure Pot'},
+desc: { zh: '每次战斗胜利额外 +4 金币', en: '+4 gold on each victory'},
+price: 22,
+},
+{
+id: 'moneytree', icon: '🌱',
+name: { zh: '摇钱树', en: 'Money Tree'},
+desc: { zh: '每场战斗开始时，获得当前金币 10%（至少 1）', en: 'Gain 10% of your gold (min 1) at each battle start'},
+price: 28,
+},
+{
+id: 'doll', icon: '🛡️',
+name: { zh: '替身人偶', en: 'Stand-in Doll'},
+desc: { zh: '受到致命伤害时保留 1 点血（每轮限一次）', en: 'Survive lethal damage with 1 HP (once per run)'},
+price: 35,
+},
+{
+id: 'levelbadge', icon: '🎖️',
+name: { zh: '升级徽章', en: 'Level Badge'},
+desc: { zh: '永久升 1 级（上限 5 级）', en: 'Permanently gain 1 level (max Lv.5)'},
+price: 35,
+},
+{
+id: 'skillcharm', icon: '📿',
+name: { zh: '技能护符', en: 'Skill Charm'},
+desc: { zh: '随机一张卡变为本轮永久可用', en: 'A random card becomes permanently usable this run'},
+price: 40,
+},
 ];

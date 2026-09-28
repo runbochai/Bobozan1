@@ -368,6 +368,10 @@ export const calculateTurnOutcome = (
   });
 
   const damageMap: { [id: string]: number } = {};
+  // 攻击伤害加成（远征装备等）：dmgBonus 为空时行为与原来完全一致
+  const dealDamage = (attacker: Player, victimId: string, base: number) => {
+    damageMap[victimId] += base + (attacker.dmgBonus ?? 0);
+  };
   const disableMap: { [id: string]: string[] } = {};
   const absorbGainEnergy: { [id: string]: number } = {};
   const absorbGainSkills: { [id: string]: string[] } = {};
@@ -401,7 +405,7 @@ export const calculateTurnOutcome = (
       // EXCEPTION: Big Fly vs Small Fly
       if (card1.id === 'bigfly' && card2.id === 'smallfly') {
          if (getLayer(p1) > getLayer(p2)) {
-            damageMap[p2.id] += MAX_HP;
+            dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 大飞高空截杀 ${p2.name} (小飞)!` : `${p1.name} Big Fly intercepts ${p2.name} from above!`, type: 'combat' });
          }
@@ -431,14 +435,14 @@ export const calculateTurnOutcome = (
         if (card2.tags?.includes('sharp_absorb')) {
           const dangerousMoves = ['hong', 'hong2', 'hongtian', 'hongdi', 'wave'];
           if (card1.type === 'ATTACK' && dangerousMoves.includes(card1.id)) {
-            damageMap[p2.id] += MAX_HP;
+            dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 击杀 ${p2.name} (吸取失败)!` : `${p1.name} kills ${p2.name} (Absorb failed)!`, type: 'combat' });
             continue;
           }
         }
         if (card2.id === 'aoxi' && card1.id === 'liuke') {
-           damageMap[p2.id] += MAX_HP;
+           dealDamage(p1, p2.id, MAX_HP);
            recordKill(p1.id, p2.id); // 🟢 Kill Credit
            logs.push({ turn, text: lang === 'zh' ? `${p1.name} 六克击杀 ${p2.name} (奥吸失败)!` : `${p1.name} 6g Strike kills ${p2.name} (Ultra Absorb failed)!`, type: 'combat' });
            continue;
@@ -450,7 +454,7 @@ export const calculateTurnOutcome = (
           continue;
         }
         if (card1.type === 'ULTIMATE') {
-          damageMap[p2.id] += MAX_HP;
+          dealDamage(p1, p2.id, MAX_HP);
           recordKill(p1.id, p2.id); // 🟢 Kill Credit
           logs.push({ turn, text: lang === 'zh' ? `${p2.name} 被终极击杀 (吸收失败)!` : `${p2.name} is killed by an Ultimate (Absorb failed)!`, type: 'combat' });
           continue;
@@ -469,7 +473,7 @@ export const calculateTurnOutcome = (
 
       if (card1.id === 'shatter' && sameLayer) {
         if (card2.type === 'ULTIMATE' && card2.tier >= 5) {
-          damageMap[p1.id] += MAX_HP; 
+          dealDamage(p2, p1.id, MAX_HP);
           recordKill(p2.id, p1.id); // 🟢 Kill Credit (Reversed: p2 killed p1)
           logs.push({ turn, text: lang === 'zh' ? `${p2.name} 的 ${card2.name.zh} (T${card2.tier}) 击碎了破碎!` : `${p2.name}'s ${card2.name.en} (T${card2.tier}) broke through Shatter!`, type: 'combat' });
           continue; 
@@ -484,7 +488,7 @@ export const calculateTurnOutcome = (
       if (card1.type === 'ATTACK' || card1.type === 'ULTIMATE' || card1.type === 'SPECIAL') {
         if (card2.type === 'CHARGE') {
           if (card1.type === 'ATTACK' || card1.type === 'ULTIMATE') {
-            damageMap[p2.id] += MAX_HP;
+            dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 击杀 ${p2.name} (攒)!` : `${p1.name} kills ${p2.name} (Charging)!`, type: 'combat' });
           }
@@ -494,12 +498,12 @@ export const calculateTurnOutcome = (
              /* Dodged */
           } 
           else if (card1.id === 'machete' && card2.id === 'defend') {
-            damageMap[p2.id] += MAX_HP;
+            dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 砍刀击碎 ${p2.name}!` : `${p1.name} Machete shatters ${p2.name}!`, type: 'combat' });
           } 
           else if (card1.id === 'gun' && card2.id === 'defend') {
-            damageMap[p2.id] += 1;
+            dealDamage(p1, p2.id, 1);
             // Gun deals 1 dmg. Check if fatal. MaxHP is 2. If already dmg=1, this is fatal.
             // Simplified: We assume gun might kill if HP is low. We'll handle kill credit in "Apply Results" by checking damageMap? 
             // Actually, best to credit here provisionally. Gun usually isn't 1-hit kill unless injured.
@@ -510,13 +514,13 @@ export const calculateTurnOutcome = (
           else if (card1.id === 'wave') {
             const strongDefs = ['ninedef', 'bigfly', 'smallfly', 'fivedef', 'eightdef', 'handdef', 'footdef'];
             if (!strongDefs.includes(card2.id)) {
-              damageMap[p2.id] += MAX_HP;
+              dealDamage(p1, p2.id, MAX_HP);
               recordKill(p1.id, p2.id); // 🟢 Kill Credit
               logs.push({ turn, text: lang === 'zh' ? `${p1.name} 击溃 ${p2.name} 防御!` : `${p1.name} washes away ${p2.name}!`, type: 'combat' });
             }
           } 
           else if (card1.type === 'ULTIMATE') {
-            damageMap[p2.id] += MAX_HP;
+            dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 终极破防 ${p2.name}!` : `${p1.name} Ult breaks ${p2.name}!`, type: 'combat' });
           }
@@ -524,21 +528,21 @@ export const calculateTurnOutcome = (
         else if (card2.type === 'SPECIAL') {
           if (card2.id === 'shatter') {
             if (card1.type === 'ULTIMATE' && card1.tier >= 5) {
-              damageMap[p2.id] += MAX_HP;
+              dealDamage(p1, p2.id, MAX_HP);
               recordKill(p1.id, p2.id); // 🟢 Kill Credit
               logs.push({ turn, text: lang === 'zh' ? `${p1.name} 击碎了 ${p2.name} 的破碎!` : `${p1.name} shattered ${p2.name}'s Shatter!`, type: 'combat' });
             }
           }
           else if (card2.id === 'doublewing') {
             if (card1.type === 'ATTACK' || card1.type === 'ULTIMATE') {
-               damageMap[p2.id] += MAX_HP;
+               dealDamage(p1, p2.id, MAX_HP);
                recordKill(p1.id, p2.id); // 🟢 Kill Credit
                logs.push({ turn, text: lang === 'zh' ? `${p1.name} 的 ${card1.name.zh} 击落了 ${p2.name} (双翼)!` : `${p1.name}'s ${card1.name.en} shoots down ${p2.name} (Double Wing)!`, type: 'combat' });
             }
           }
           else if (card2.id === 'ascend' || card2.id === 'descend') {
             if (card1.type === 'ATTACK' || card1.type === 'ULTIMATE') {
-              damageMap[p2.id] += MAX_HP;
+              dealDamage(p1, p2.id, MAX_HP);
               recordKill(p1.id, p2.id); // 🟢 Kill Credit
               logs.push({ turn, text: lang === 'zh' ? `${p1.name} 预判了移动，击杀 ${p2.name}!` : `${p1.name} predicted the move and killed ${p2.name}!`, type: 'combat' });
             }
@@ -547,12 +551,12 @@ export const calculateTurnOutcome = (
         else if (card2.type === 'ATTACK' || card2.type === 'ULTIMATE') {
           const isRemoteOnly = card2.tags?.includes('hit_up') || card2.tags?.includes('hit_down');
           if (isRemoteOnly && sameLayer) {
-             damageMap[p2.id] += MAX_HP;
+             dealDamage(p1, p2.id, MAX_HP);
              recordKill(p1.id, p2.id); // 🟢 Kill Credit
              logs.push({ turn, text: lang === 'zh' ? `${p1.name} 趁虚而入，在同层击杀了无法回防的 ${p2.name}!` : `${p1.name} catches ${p2.name} off guard!`, type: 'combat' });
           }
           if (doesCard1Overpower(card1, card2)) {
-             damageMap[p2.id] += MAX_HP;
+             dealDamage(p1, p2.id, MAX_HP);
              recordKill(p1.id, p2.id); // 🟢 Kill Credit
              logs.push({ turn, text: lang === 'zh' ? `${p1.name} [${card1.name.zh}] 压制了 ${p2.name}!` : `${p1.name} [${card1.name.en}] overpowers ${p2.name}!`, type: 'combat' });
           }

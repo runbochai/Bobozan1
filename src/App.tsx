@@ -46,14 +46,20 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
-import { EXPEDITION_RELICS, EXPEDITION_STAGES } from './data/expedition';
+import { EXPEDITION_EQUIPMENTS, EXPEDITION_RELICS, EXPEDITION_STAGES } from './data/expedition';
+import { drawGachaCard } from './data/expedition';
 import {
   applyIronhide,
   expeditionBotMove,
   genRewardOptions,
+  EXPEDITION_MAX_LEVEL,
+  genShopItems,
+  goldForWin,
+  POTION_HEAL,
   loadExpeditionBest,
   saveExpeditionBest,
   type RewardOption,
+  type ShopItem,
 } from './logic/expedition';
 import {
   FINAL_LEVEL,
@@ -341,14 +347,19 @@ export default function BobozanOnline() {
   const [isExpedition, setIsExpedition] = useState(false);
   const [expStageIdx, setExpStageIdx] = useState(0);
   const [expRelics, setExpRelics] = useState<string[]>([]);
-  const [expPhase, setExpPhase] = useState<'battle' | 'reward' | 'runover' | 'clear'>('battle');
+  const [expPhase, setExpPhase] = useState<'battle' | 'reward' | 'shop' | 'runover' | 'clear'>('battle');
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
+  const [expShop, setExpShop] = useState<ShopItem[]>([]);
+  const [expGold, setExpGold] = useState(0);
+  const [expEquipment, setExpEquipment] = useState<string[]>([]);
+  const [expGachaCardId, setExpGachaCardId] = useState<string | null>(null);
   const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
   // 远征 run 真值：timeout 回调里读 ref，避免闭包拿到旧 state
-  const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] as { cardId: string; usesLeft: number }[] });
+  const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] as { cardId: string; usesLeft: number }[], gold: 0, equipment: [] as string[] });
   const expeditionBusyRef = useRef(false);
   const expeditionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const expPassivesRef = useRef<Record<string, { startEnergy?: number; energyPerTurn?: number }>>({});
+  const expPassivesRef = useRef<Record<string, { startEnergy?: number; energyPerTurn?: number; enrageEnergy?: number; enrageDmg?: number; armorPerTurn?: number }>>({});
+  const expBossEnragedRef = useRef(false);
   const expMaxHpRef = useRef<Record<string, number>>({});
   const expIronShirtUsedRef = useRef(false);
   const expWhetstoneUsedRef = useRef(false);
@@ -373,8 +384,20 @@ const expYpjUsedRef = useRef(false);
         if (firstTurn && relics.includes('rxyd')) e += 2;
       }
       const passive = expPassivesRef.current[p.id];
+      let dmgBonus = p.dmgBonus ?? 0;
       if (passive?.energyPerTurn) e += passive.energyPerTurn;
-      return { ...p, energy: e };
+      // Boss 狂暴：hp <= 一半时能量与伤害提升
+      if (passive?.enrageEnergy && !p.isDead) {
+        const maxHp = expMaxHpRef.current[p.id] ?? p.hp;
+        if (p.hp <= maxHp / 2) {
+          e += passive.enrageEnergy - (passive.energyPerTurn ?? 0);
+          dmgBonus = passive.enrageDmg ?? 0;
+          if (!expBossEnragedRef.current) {
+            expBossEnragedRef.current = true;
+          }
+        }
+      }
+      return { ...p, energy: e, dmgBonus };
     });
   };
 
@@ -410,6 +433,20 @@ const expYpjUsedRef = useRef(false);
         tempSkills: [],
       };
     });
+    // 装备：幸运骰 —— 每场战斗开局随机抽一张限次卡
+    if (run.equipment.includes('luckydice')) {
+      const g = drawGachaCard();
+      const ex = run.tempCards.find(t => t.cardId === g.cardId);
+      if (ex) ex.usesLeft += 1;
+      else run.tempCards.push({ cardId: g.cardId, usesLeft: 1 });
+    }
+    // 装备：摇钱树 —— 每场战斗开始时获得当前金币 10%（至少 1）
+    let moneyTreeBonus = 0;
+    if (run.equipment.includes('moneytree')) {
+      moneyTreeBonus = Math.max(1, Math.floor(run.gold / 10));
+      run.gold += moneyTreeBonus;
+      setExpGold(run.gold);
+    }
     let players: Player[] = [
       {
         id: myId,
@@ -428,12 +465,15 @@ const expYpjUsedRef = useRef(false);
         disabledSkills: [],
         freeSkills: [],
         kills: 0,
+        // 装备：狂战斧 —— 所有伤害 +1
+        dmgBonus: run.equipment.includes('waraxe') ? 1 : 0,
         tempSkills: run.tempCards.map(t => t.cardId),
       },
       ...enemies,
     ];
     players = applyExpTurnStartEnergy(players, true);
     expMaxHpRef.current = Object.fromEntries(players.map(pl => [pl.id, pl.id === myId ? run.maxHp : pl.hp]));
+    expBossEnragedRef.current = false;
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
     setGameState({
@@ -445,6 +485,7 @@ const expYpjUsedRef = useRef(false);
       logs: [
         { turn: 1, text: `${stage.chapter[lang]} · ${stage.name[lang]}`, type: 'info' },
         ...stage.enemies.map(en => ({ turn: 1, text: en.intro[lang], type: 'info' as const })),
+        ...(moneyTreeBonus > 0 ? [{ turn: 1, text: lang === 'zh' ? `🌱 摇钱树摇下 ${moneyTreeBonus} 金币！` : `🌱 Money Tree shook down ${moneyTreeBonus} gold!`, type: 'info' as const }] : []),
       ],
     });
     if (stage.tip) setToastMsg(stage.tip[lang]);
@@ -453,9 +494,12 @@ const expYpjUsedRef = useRef(false);
   const startExpedition = () => {
     playSound('confirm', muted);
     clearExpeditionTimers();
-    expRunRef.current = { stageIdx: 0, relics: [], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] };
+    expRunRef.current = { stageIdx: 0, relics: [], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [], gold: 0, equipment: [] };
     expIronShirtUsedRef.current = false;
     setExpRelics([]);
+    setExpGold(0);
+    setExpEquipment([]);
+    setExpShop([]);
     setIsExpedition(true);
     setupExpeditionBattle(0);
     setView('GAME');
@@ -517,7 +561,31 @@ const expYpjUsedRef = useRef(false);
           logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 铁布衫救了你一命！' : '🛡️ Iron Shirt saved you!', type: 'info' as const }];
         }
       }
-      const meFinal = players.find(p => p.id === myId)!;
+      // 装备：替身人偶 —— 致命伤害保留 1 点血（每轮限一次，用后消失）
+      let meAfterDoll = players.find(p => p.id === myId)!;
+      if (meAfterDoll.isDead && run.equipment.includes('doll')) {
+        const enemiesAlive = players.some(pp => pp.id !== myId && !pp.isDead);
+        if (enemiesAlive) {
+          run.equipment = run.equipment.filter(id => id !== 'doll');
+          setExpEquipment([...run.equipment]);
+          players = players.map(pl => (pl.id === myId ? { ...pl, isDead: false, hp: 1 } : pl));
+          logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 替身人偶替你挡下了致命一击！' : '🛡️ Stand-in Doll took the lethal hit!', type: 'info' as const }];
+          meAfterDoll = players.find(pp => pp.id === myId)!;
+        }
+      }
+      const meFinal = meAfterDoll;
+      // 装备：嗜血剑 —— 每次击杀回复 1 点血量
+      if (run.equipment.includes('bloodsword') && !meFinal.isDead) {
+        const preKills = playersWithMoves.find(pp => pp.id === myId)?.kills ?? 0;
+        const newKills = Math.max(0, (meFinal.kills ?? 0) - preKills);
+        if (newKills > 0) {
+          const healed = Math.min(newKills, run.maxHp - Math.min(run.maxHp, meFinal.hp));
+          if (healed > 0) {
+            players = players.map(pl => (pl.id === myId ? { ...pl, hp: pl.hp + healed } : pl));
+            logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🩸 嗜血剑汲取了 ${healed} 点血量！` : `🩸 Blood Sword drained ${healed} HP!`, type: 'info' as const }];
+          }
+        }
+      }
       const myCard = SKILL_DB.find(c => c.id === meFinal.lastCardId);
 
       // 遗物：反击拳套（防守成功 +1 能量）
@@ -548,6 +616,18 @@ const expYpjUsedRef = useRef(false);
           logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 硬皮甲挡下了一点伤害！' : '🛡️ Ironhide blocked some damage!', type: 'info' as const }];
         }
       }
+      // Boss 护甲：每回合第一次受到的伤害 -armorPerTurn
+      players = players.map(pl => {
+        const passive = expPassivesRef.current[pl.id];
+        const before = preHp.get(pl.id) ?? pl.hp;
+        if (passive?.armorPerTurn && !pl.isDead && pl.hp < before) {
+          const blocked = Math.min(passive.armorPerTurn, before - pl.hp);
+          const newHp = Math.min(expMaxHpRef.current[pl.id] ?? pl.hp, pl.hp + blocked);
+          logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🛡️ ${pl.name}的护甲抵挡了 ${blocked} 点伤害！` : `🛡️ ${pl.name}'s armor blocked ${blocked} damage!`, type: 'info' as const }];
+          return { ...pl, hp: newHp };
+        }
+        return pl;
+      });
       // 限次秘技：用一次少一次，用完从手牌移除
       const mePost = players.find(pl => pl.id === myId)!;
       const playedId = mePost.lastCardId ?? cardId;
@@ -573,7 +653,12 @@ const expYpjUsedRef = useRef(false);
         setExpPhase('runover');
       } else if (!enemiesAlive) {
         run.hp = Math.min(run.maxHp, meHp + (has('zstai') ? 1 : 0));
-        const opts = genRewardOptions(run.stageIdx, run.hp, run.maxHp, relics, has('cbt') ? 4 : 3, run.inventory);
+        let gold = goldForWin(run.stageIdx, EXPEDITION_STAGES[run.stageIdx]);
+        if (run.equipment.includes('treasurepot')) gold += 4;
+        run.gold += gold;
+        setExpGold(run.gold);
+        logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🪙 获得 ${gold} 金币！` : `🪙 Earned ${gold} gold!`, type: 'info' as const }];
+        const opts = genRewardOptions(run.hp, run.maxHp, relics, has('cbt') ? 4 : 3, run.inventory);
         logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🎉 通过${EXPEDITION_STAGES[run.stageIdx].name[lang]}！` : `🎉 Cleared ${EXPEDITION_STAGES[run.stageIdx].name[lang]}!`, type: 'win' as const }];
         setExpRewards(opts);
         setExpPhase('reward');
@@ -608,20 +693,81 @@ const expYpjUsedRef = useRef(false);
       const ex = run.tempCards.find(t => t.cardId === opt.cardId);
       if (ex) ex.usesLeft += opt.uses;
       else run.tempCards.push({ cardId: opt.cardId, usesLeft: opt.uses });
+      // 抽卡 reveal（仿复仇模式），点关闭后进商城
+      setExpGachaCardId(opt.cardId);
+      playSound('win', muted);
     } else if (opt.kind === 'relic' && !run.relics.includes(opt.relicId)) {
       run.relics.push(opt.relicId);
       setExpRelics([...run.relics]);
     } else if (opt.kind === 'levelup') {
       if (!run.inventory.includes(opt.level)) run.inventory = [...run.inventory, opt.level];
     }
+    enterExpShop();
+  };
+
+  /** 进入商城（或通关结算） */
+  const enterExpShop = () => {
+    const run = expRunRef.current;
     const next = run.stageIdx + 1;
     if (next >= EXPEDITION_STAGES.length) {
       saveExpeditionBest(EXPEDITION_STAGES.length);
       setExpBest(loadExpeditionBest());
       setExpPhase('clear');
     } else {
-      setupExpeditionBattle(next);
+      setExpShop(genShopItems(run.equipment, Math.max(0, ...run.inventory)));
+      setExpPhase('shop');
     }
+  };
+
+  /** 商城购买 */
+  const buyShopItem = (item: ShopItem, idx: number) => {
+    const run = expRunRef.current;
+    const price = item.kind === 'tempcard' ? item.price : item.kind === 'equipment' ? item.equipment.price : item.price;
+    if (run.gold < price) return;
+    run.gold -= price;
+    setExpGold(run.gold);
+    if (item.kind === 'tempcard') {
+      const ex = run.tempCards.find(t => t.cardId === item.cardId);
+      if (ex) ex.usesLeft += item.uses;
+      else run.tempCards.push({ cardId: item.cardId, usesLeft: item.uses });
+      playSound('draw', muted);
+    } else if (item.kind === 'potion') {
+      run.hp = Math.min(run.maxHp, run.hp + POTION_HEAL);
+      playSound('confirm', muted);
+    } else {
+      if (!run.equipment.includes(item.equipment.id)) {
+        run.equipment.push(item.equipment.id);
+        setExpEquipment([...run.equipment]);
+        // 生命宝石：立即生效
+        if (item.equipment.id === 'lifegem') {
+          run.maxHp += 2;
+          run.hp = Math.min(run.maxHp, run.hp + 2);
+        }
+        // 升级徽章：永久升 1 级（上限 5 级）
+        if (item.equipment.id === 'levelbadge') {
+          const curMax = Math.max(0, ...run.inventory);
+          if (curMax < EXPEDITION_MAX_LEVEL && !run.inventory.includes(curMax + 1)) {
+            run.inventory = [...run.inventory, curMax + 1];
+          }
+        }
+        // 技能护符：随机一张卡变为本轮永久可用
+        if (item.equipment.id === 'skillcharm') {
+          const g = drawGachaCard();
+          const ex = run.tempCards.find(t => t.cardId === g.cardId);
+          if (ex) ex.usesLeft = 99;
+          else run.tempCards.push({ cardId: g.cardId, usesLeft: 99 });
+        }
+      }
+      playSound('confirm', muted);
+    }
+    setExpShop(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  /** 离开商城，进入下一关 */
+  const leaveExpShop = () => {
+    playSound('confirm', muted);
+    setExpGachaCardId(null);
+    setupExpeditionBattle(expRunRef.current.stageIdx + 1);
   };
 
 
@@ -2747,6 +2893,9 @@ const expYpjUsedRef = useRef(false);
               <div className="text-xs font-bold text-amber-300">
                 {EXPEDITION_STAGES[expStageIdx].chapter[lang]} · {EXPEDITION_STAGES[expStageIdx].name[lang]}
               </div>
+              <div className="text-xs font-bold text-yellow-300 mt-1">
+                🪙 {expGold}
+              </div>
               {expRelics.length > 0 && (
                 <div className="flex gap-1.5 mt-1.5">
                   {expRelics.map(id => {
@@ -2755,6 +2904,19 @@ const expYpjUsedRef = useRef(false);
                     return (
                       <span key={id} title={`${r.name[lang]}：${r.desc[lang]}`} className="text-lg leading-none">
                         {r.icon}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+              {expEquipment.length > 0 && (
+                <div className="flex gap-1.5 mt-1.5">
+                  {expEquipment.map(id => {
+                    const e = EXPEDITION_EQUIPMENTS.find(x => x.id === id);
+                    if (!e) return null;
+                    return (
+                      <span key={id} title={`${e.name[lang]}：${e.desc[lang]}`} className="text-lg leading-none">
+                        {e.icon}
                       </span>
                     );
                   })}
@@ -2828,6 +2990,107 @@ const expYpjUsedRef = useRef(false);
                     </button>
                   );
                 })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- EXPEDITION SHOP（战后商城） --- */}
+        {isExpedition && expPhase === 'shop' && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-6 w-full max-w-2xl text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+              <div className="text-4xl mb-2">🏪</div>
+              <h2 className="text-xl font-black text-white mb-1">
+                {lang === 'zh' ? '远征商城' : 'Expedition Shop'}
+              </h2>
+              <p className="text-yellow-300 text-sm font-bold mb-5">
+                🪙 {expGold}
+              </p>
+              <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mb-6">
+                {expShop.map((item, i) => {
+                  const price = item.kind === 'tempcard' ? item.price : item.kind === 'equipment' ? item.equipment.price : item.price;
+                  const afford = expGold >= price;
+                  const card = item.kind === 'tempcard' ? SKILL_DB.find(x => x.id === item.cardId) : null;
+                  const icon = item.kind === 'tempcard' ? '🃏' : item.kind === 'equipment' ? item.equipment.icon : '🧪';
+                  const title = item.kind === 'tempcard'
+                    ? (card ? card.name[lang] : item.cardId)
+                    : item.kind === 'equipment' ? item.equipment.name[lang] : (lang === 'zh' ? '疗伤药' : 'Healing Potion');
+                  const sub = item.kind === 'tempcard'
+                    ? (lang === 'zh' ? `限次秘技：可用 ${item.uses} 次` : `Limited skill: ${item.uses} uses`)
+                    : item.kind === 'equipment' ? item.equipment.desc[lang] : (lang === 'zh' ? `立即回复 ${POTION_HEAL} 点血量` : `Restore ${POTION_HEAL} HP now`);
+                  return (
+                    <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center flex flex-col">
+                      <div className="text-4xl mb-2">{icon}</div>
+                      <div className="font-bold text-white text-sm mb-1">{title}</div>
+                      <div className="text-xs text-slate-400 mb-3 flex-1">{sub}</div>
+                      <button
+                        onClick={() => buyShopItem(item, i)}
+                        disabled={!afford}
+                        className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${afford ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:scale-105 active:scale-95' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
+                      >
+                        {lang === 'zh' ? `购买 · 🪙${price}` : `Buy · 🪙${price}`}
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+              <button onClick={leaveExpShop} className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
+                {lang === 'zh' ? `出战 · ${EXPEDITION_STAGES[Math.min(expStageIdx + 1, EXPEDITION_STAGES.length - 1)].name[lang]}` : 'Next Battle'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* --- EXPEDITION GACHA REVEAL（抽卡展示，仿复仇模式） --- */}
+        {isExpedition && expGachaCardId && (
+          <div
+            className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
+            onClick={() => { playSound('click', muted); setExpGachaCardId(null); }}
+          >
+            <style>{revengeStyle}</style>
+            <div className="relative w-full max-w-md md:max-w-lg mx-4 flex flex-col items-center gap-8 animate-in fade-in duration-500">
+              <div className="text-center space-y-2 z-10 animate-pulse">
+                <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 italic tracking-widest uppercase drop-shadow-lg">
+                  {lang === 'zh' ? '抽卡时刻' : 'GACHA TIME'}
+                </h2>
+                <p className="text-slate-400 text-sm font-mono uppercase tracking-widest">
+                  {lang === 'zh' ? '获得限次秘技' : 'Limited Skill Acquired'}
+                </p>
+              </div>
+              <div className="relative w-64 h-96 animate-card-reveal">
+                <div className="absolute inset-0 w-full h-full rounded-2xl bg-slate-800 border-4 border-slate-600 shadow-2xl flex items-center justify-center backface-hidden">
+                  <div className="absolute inset-2 border-2 border-dashed border-slate-600/50 rounded-xl" />
+                  <div className="text-8xl font-black text-slate-700 select-none">?</div>
+                </div>
+                {(() => {
+                  const card = SKILL_DB.find(c => c.id === expGachaCardId);
+                  if (!card) return null;
+                  let bgGradient = 'bg-slate-800';
+                  let borderClass = 'border-slate-600';
+                  if (card.type === 'ATTACK') { bgGradient = 'bg-gradient-to-b from-red-900 to-slate-900'; borderClass = 'border-red-500'; }
+                  if (card.type === 'DEFEND') { bgGradient = 'bg-gradient-to-b from-blue-900 to-slate-900'; borderClass = 'border-blue-500'; }
+                  if (card.type === 'ULTIMATE') { bgGradient = 'bg-gradient-to-b from-purple-900 to-slate-900'; borderClass = 'border-purple-500'; }
+                  if (card.type === 'SPECIAL') { bgGradient = 'bg-gradient-to-b from-emerald-900 to-slate-900'; borderClass = 'border-emerald-500'; }
+                  return (
+                    <div className={`absolute inset-0 w-full h-full rounded-2xl border-4 ${borderClass} shadow-[0_0_50px_rgba(34,211,238,0.5)] flex flex-col items-center justify-center bg-[#1a1a1a] overflow-hidden`}>
+                      <div className={`absolute inset-0 ${bgGradient} opacity-90`} />
+                      <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-cyan-600 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg animate-bounce z-20 whitespace-nowrap">
+                        {lang === 'zh' ? '限次可用' : 'LIMITED USE'}
+                      </div>
+                      <div className="relative z-10 flex flex-col items-center gap-4">
+                        <div className="text-lg font-mono text-yellow-500">Lv.{card.levelRequired}</div>
+                        <div className="scale-[2.0] drop-shadow-xl">{getCardIcon(card.id)}</div>
+                      </div>
+                      <div className="absolute bottom-0 w-full bg-black/80 p-4 text-center border-t border-white/10 z-10">
+                        <div className="text-xl font-bold text-white mb-1">{card.name[lang]}</div>
+                        <div className="text-xs text-slate-400 leading-tight">{card.description[lang]}</div>
+                      </div>
+                    </div>
+                  );
+                })()}
+              </div>
+              <div className="text-slate-500 text-xs animate-pulse mt-8">
+                {lang === 'zh' ? '点击任意处继续' : 'Click anywhere to continue'}
               </div>
             </div>
           </div>

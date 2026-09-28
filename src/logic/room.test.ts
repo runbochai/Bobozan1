@@ -176,3 +176,17 @@ test('final elimination ends the game without bumping resetSeq', () => {
   const patch = settleRoom(state, 'a', state, 'zh');
   assert.equal(patch?.resetSeq, undefined);
 });
+
+test('dmgBonus：狂战斧让攻击伤害 +1（3 血敌人被一击秒杀）', () => {
+  const atk = (patch: Partial<Player> = {}) => player('a', { selectedCardId: 'hong', ...patch });
+  const def = () => player('b', { hp: 3, selectedCardId: 'charge' });
+  // 无加成：轰造成 2 点，3 血敌人剩 1 血
+  let r = calculateTurnOutcome([atk(), def()], 1, 1, 'zh');
+  let b = r.players.find((p) => p.id === 'b')!;
+  assert.equal(b.hp, 1);
+  assert.equal(b.isDead, false);
+  // 有加成：3 点伤害直接秒杀
+  r = calculateTurnOutcome([atk({ dmgBonus: 1 }), def()], 1, 1, 'zh');
+  b = r.players.find((p) => p.id === 'b')!;
+  assert.equal(b.isDead, true);
+});
