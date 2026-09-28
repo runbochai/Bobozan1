@@ -79,6 +79,7 @@ import {
   getCardIcon,
   getShowdownWinner,
   getPlayerCards,
+  isOffensiveCard,
 } from './logic/combat';
 import { initAudio, playSound } from './audio/sound';
 import { auth, db, firebaseConfigured, firebaseInitError } from './firebase';
@@ -667,8 +668,9 @@ const expYpjUsedRef = useRef(false);
       }
       const myCard = SKILL_DB.find(c => c.id === meFinal.lastCardId);
 
-      // 遗物：反击拳套（防守成功 +1 能量）
-      if (has('fjqt') && !meFinal.isDead && myCard?.type === 'DEFEND' && meFinal.hp >= myPreHp) {
+      // 遗物：反击拳套 —— 只有真正挡下敌人的攻击才 +1 能量（没人打你时空防不给）
+      const enemyAttacked = playersWithMoves.some(pp => pp.id !== myId && !pp.isDead && pp.selectedCardId && isOffensiveCard(SKILL_DB.find(c => c.id === pp.selectedCardId)!));
+      if (has('fjqt') && !meFinal.isDead && myCard?.type === 'DEFEND' && enemyAttacked && meFinal.hp >= myPreHp) {
         players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 1 } : p));
       }
       // 遗物：处决令（有敌人被淘汰的回合 +2 能量）

@@ -216,14 +216,22 @@ test('抽卡池：45 张 1-99 级非攒气牌，攻/防/特殊/终极都有', ()
   }
 });
 
-test('金币：基础 6+关卡，精英 +5，Boss +20', () => {
+test('金币：随机掉落，精英/Boss 掉更多', () => {
   const plain = EXPEDITION_STAGES[0];
-  assert.equal(goldForWin(0, plain), 6);
-  assert.equal(goldForWin(5, plain), 11);
   const elite = EXPEDITION_STAGES.find((st) => st.enemies.some((e) => e.elite))!;
   const boss = EXPEDITION_STAGES.find((st) => st.enemies.some((e) => e.boss))!;
-  assert.equal(goldForWin(0, elite), 11);
-  assert.equal(goldForWin(0, boss), 26);
+  const seen = new Set<number>();
+  for (let i = 0; i < 50; i++) {
+    const g = goldForWin(0, plain);
+    assert.ok(g >= 4 && g <= 8, `plain gold in [4,8], got ${g}`);
+    seen.add(g);
+    const ge = goldForWin(0, elite);
+    assert.ok(ge >= 8 && ge <= 16, `elite gold in [8,16], got ${ge}`);
+    const gb = goldForWin(0, boss);
+    assert.ok(gb >= 19 && gb <= 33, `boss gold in [19,33], got ${gb}`);
+  }
+  assert.ok(seen.size > 1, 'gold should be random, not fixed');
+  assert.ok(goldForWin(5, plain) >= 9 && goldForWin(5, plain) <= 13, 'stage bonus still applies');
 });
 
 test('商城：4 件商品（2 卡 + 1 装备 + 疗伤药），装备不重复，售价合理', () => {

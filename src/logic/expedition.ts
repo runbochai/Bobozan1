@@ -228,11 +228,12 @@ return shuffle(options);
 
 // ============ 金币与商城 ============
 
-/** 胜利金币：基础 6 + 关卡数，精英关 +5，Boss 关 +20 */
+/** 胜利金币（随机掉落）：基础 4~8 + 关卡数，精英关多掉 4~8，Boss 关多掉 15~25 */
 export function goldForWin(stageIdx: number, stage: ExpeditionStage): number {
-let g = 6 + stageIdx;
-if (stage.enemies.some((e) => e.elite)) g += 5;
-if (stage.enemies.some((e) => e.boss)) g += 20;
+const rnd = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1));
+let g = rnd(4, 8) + stageIdx;
+if (stage.enemies.some((e) => e.elite)) g += rnd(4, 8);
+if (stage.enemies.some((e) => e.boss)) g += rnd(15, 25);
 return g;
 }
 
