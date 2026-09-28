@@ -153,7 +153,7 @@ test('elimination with multiple survivors resets the phase and bumps resetSeq', 
   // 幸存者状态被重置
   for (const id of ['b', 'c']) {
     const s = result.players.find(p => p.id === id)!;
-    assert.equal(s.hp, 2);
+    assert.equal(s.hp, 1);
     assert.equal(s.energy, 0);
     assert.equal(s.layer, 0);
   }
@@ -177,16 +177,16 @@ test('final elimination ends the game without bumping resetSeq', () => {
   assert.equal(patch?.resetSeq, undefined);
 });
 
-test('dmgBonus：狂战斧让攻击伤害 +1（3 血敌人被一击秒杀）', () => {
+test('dmgBonus：狂战斧让攻击伤害 +0.5（1.5 血敌人被一击秒杀）', () => {
   const atk = (patch: Partial<Player> = {}) => player('a', { selectedCardId: 'hong', ...patch });
-  const def = () => player('b', { hp: 3, selectedCardId: 'charge' });
-  // 无加成：轰造成 2 点，3 血敌人剩 1 血
+  const def = () => player('b', { hp: 1.5, selectedCardId: 'charge' });
+  // 无加成：轰造成 1 点，1.5 血敌人剩 0.5 血
   let r = calculateTurnOutcome([atk(), def()], 1, 1, 'zh');
   let b = r.players.find((p) => p.id === 'b')!;
-  assert.equal(b.hp, 1);
+  assert.equal(b.hp, 0.5);
   assert.equal(b.isDead, false);
-  // 有加成：3 点伤害直接秒杀
-  r = calculateTurnOutcome([atk({ dmgBonus: 1 }), def()], 1, 1, 'zh');
+  // 有加成：1.5 点伤害直接秒杀
+  r = calculateTurnOutcome([atk({ dmgBonus: 0.5 }), def()], 1, 1, 'zh');
   b = r.players.find((p) => p.id === 'b')!;
   assert.equal(b.isDead, true);
 });

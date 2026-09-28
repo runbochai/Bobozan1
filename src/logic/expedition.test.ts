@@ -93,7 +93,7 @@ test('奖励生成：选项不重复；受伤才有治疗；遗物拿完不再�
         assert.ok(o.uses >= 1 && o.uses <= 3, `bad uses: ${o.uses}`);
         assert.ok(o.cardId.length > 0);
       }
-      if (o.kind === 'heal') assert.equal(o.amount, 2);
+      if (o.kind === 'heal') assert.equal(o.amount, 1);
     }
     assert.ok(opts.some((o) => o.kind === 'heal'), 'injured player should be offered heal');
   }
@@ -131,19 +131,19 @@ test('升级奖励：稳定 +1 级，满级后不再出现，无开局能量奖�
   }
 });
 
-test('applyIronhide：每场战斗首次受伤 -1，之后不再减', () => {
-  const r1 = applyIronhide(2, 1, 3, false);
-  assert.equal(r1.hp, 2);
+test('applyIronhide：每场战斗首次受伤 -0.5，之后不再减', () => {
+  const r1 = applyIronhide(1, 0.5, 2, false);
+  assert.equal(r1.hp, 1);
   assert.equal(r1.triggered, true);
-  const r2 = applyIronhide(2, 1, 3, true);
-  assert.equal(r2.hp, 1);
+  const r2 = applyIronhide(1, 0.5, 2, true);
+  assert.equal(r2.hp, 0.5);
   assert.equal(r2.triggered, true);
-  const r3 = applyIronhide(2, 2, 3, false);
-  assert.equal(r3.hp, 2);
+  const r3 = applyIronhide(1, 1, 2, false);
+  assert.equal(r3.hp, 1);
   assert.equal(r3.triggered, false);
   // 不超过上限
-  const r4 = applyIronhide(3, 2, 3, false);
-  assert.equal(r4.hp, 3);
+  const r4 = applyIronhide(2, 1.5, 2, false);
+  assert.equal(r4.hp, 2);
 });
 
 test('关卡配置合法：16 关，含一打三，双 Boss，敌人等级有高低', () => {
@@ -151,7 +151,7 @@ test('关卡配置合法：16 关，含一打三，双 Boss，敌人等级有高
   for (const s of EXPEDITION_STAGES) {
     assert.ok(s.enemies.length >= 1 && s.enemies.length <= 3, `${s.id}: bad enemy count`);
     for (const e of s.enemies) {
-      assert.ok(e.hp >= 2, `${s.id}/${e.id}: hp too low`);
+      assert.ok(e.hp >= 1, `${s.id}/${e.id}: hp too low`);
       assert.ok(e.inventory.length > 0, `${s.id}/${e.id}: empty inventory`);
       const { aggression, defense, charge, smart } = e.personality;
       for (const v of [aggression, defense, charge, smart]) {
@@ -240,25 +240,25 @@ test('商城：4 件商品（2 卡 + 1 装备 + 疗伤药），装备不重复�
   assert.ok(noBadge.every((x) => x.kind !== 'equipment' || x.equipment.id !== 'levelbadge'), 'no level badge at max level');
 });
 
-test('Boss1 塔主波赞：8 血 + 锐吸/奥吸 + 狂暴/护甲', () => {
+test('Boss1 塔主波赞：4 血 + 锐吸/奥吸 + 狂暴/护甲', () => {
   const s14 = EXPEDITION_STAGES.find((s) => s.id === 's14')!;
   const boss = s14.enemies[0];
-  assert.equal(boss.hp, 8);
+  assert.equal(boss.hp, 4);
   assert.ok(boss.inventory.includes(6), 'has 锐吸');
   assert.ok(boss.inventory.includes(12), 'has 奥吸');
   assert.equal(boss.passive?.enrageEnergy, 2);
-  assert.equal(boss.passive?.armorPerTurn, 1);
+  assert.equal(boss.passive?.armorPerTurn, 0.5);
 });
 
-test('Boss2 远古塔魂：10 血 + 头盔/手盔/脚盔 + 护甲', () => {
+test('Boss2 远古塔魂：5 血 + 头盔/手盔/脚盔 + 护甲', () => {
   const s15 = EXPEDITION_STAGES.find((s) => s.id === 's15')!;
   const boss = s15.enemies[0];
   assert.equal(boss.boss, true);
-  assert.equal(boss.hp, 10);
+  assert.equal(boss.hp, 5);
   assert.ok(boss.inventory.includes(8), 'has 头盔');
   assert.ok(boss.inventory.includes(10), 'has 手盔');
   assert.ok(boss.inventory.includes(11), 'has 脚盔');
-  assert.equal(boss.passive?.armorPerTurn, 1);
+  assert.equal(boss.passive?.armorPerTurn, 0.5);
   assert.equal(boss.passive?.energyPerTurn, 1);
 });
 

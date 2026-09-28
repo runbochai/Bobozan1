@@ -474,7 +474,7 @@ const expYpjUsedRef = useRef(false);
       return {
         id,
         name: en.name[lang],
-        avatar: undefined,
+        avatar: `avatars/enemies/${en.id}.webp`,
         isBot: true,
         hp: en.hp,
         energy: en.passive?.startEnergy ?? 0,
@@ -527,7 +527,7 @@ const expYpjUsedRef = useRef(false);
         freeSkills: [],
         kills: 0,
         // 装备：狂战斧 —— 所有伤害 +1
-        dmgBonus: run.equipment.includes('waraxe') ? 1 : 0,
+        dmgBonus: run.equipment.includes('waraxe') ? 0.5 : 0,
         tempSkills: run.tempCards.map(t => t.cardId),
       },
       ...enemies,
@@ -635,7 +635,7 @@ const expYpjUsedRef = useRef(false);
         const enemiesAlive = players.some(p => p.id !== myId && !p.isDead);
         if (enemiesAlive) {
           expIronShirtUsedRef.current = true;
-          players = players.map(p => (p.id === myId ? { ...p, isDead: false, hp: 1 } : p));
+          players = players.map(p => (p.id === myId ? { ...p, isDead: false, hp: 0.5 } : p));
           logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 铁布衫救了你一命！' : '🛡️ Iron Shirt saved you!', type: 'info' as const }];
         }
       }
@@ -646,7 +646,7 @@ const expYpjUsedRef = useRef(false);
         if (enemiesAlive) {
           run.equipment = run.equipment.filter(id => id !== 'doll');
           setExpEquipment([...run.equipment]);
-          players = players.map(pl => (pl.id === myId ? { ...pl, isDead: false, hp: 1 } : pl));
+          players = players.map(pl => (pl.id === myId ? { ...pl, isDead: false, hp: 0.5 } : pl));
           logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 替身人偶替你挡下了致命一击！' : '🛡️ Stand-in Doll took the lethal hit!', type: 'info' as const }];
           meAfterDoll = players.find(pp => pp.id === myId)!;
         }
@@ -657,7 +657,7 @@ const expYpjUsedRef = useRef(false);
         const preKills = playersWithMoves.find(pp => pp.id === myId)?.kills ?? 0;
         const newKills = Math.max(0, (meFinal.kills ?? 0) - preKills);
         if (newKills > 0) {
-          const healed = Math.min(newKills, run.maxHp - Math.min(run.maxHp, meFinal.hp));
+          const healed = Math.min(newKills * 0.5, run.maxHp - Math.min(run.maxHp, meFinal.hp));
           if (healed > 0) {
             players = players.map(pl => (pl.id === myId ? { ...pl, hp: pl.hp + healed } : pl));
             logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🩸 嗜血剑汲取了 ${healed} 点血量！` : `🩸 Blood Sword drained ${healed} HP!`, type: 'info' as const }];
@@ -731,7 +731,7 @@ const expYpjUsedRef = useRef(false);
         setExpBest(loadExpeditionBest());
         setExpPhase('runover');
       } else if (!enemiesAlive) {
-        run.hp = Math.min(run.maxHp, meHp + (has('zstai') ? 1 : 0));
+        run.hp = Math.min(run.maxHp, meHp + (has('zstai') ? 0.5 : 0));
         let gold = goldForWin(run.stageIdx, EXPEDITION_STAGES[run.stageIdx]);
         if (run.equipment.includes('treasurepot')) gold += 4;
         run.gold += gold;
@@ -782,8 +782,8 @@ const expYpjUsedRef = useRef(false);
     if (opt.kind === 'heal') {
       run.hp = Math.min(run.maxHp, run.hp + opt.amount);
     } else if (opt.kind === 'maxhp') {
-      run.maxHp += 1;
-      run.hp = Math.min(run.maxHp, run.hp + 1);
+      run.maxHp += 0.5;
+      run.hp = Math.min(run.maxHp, run.hp + 0.5);
     } else if (opt.kind === 'temp') {
       const ex = run.tempCards.find(t => t.cardId === opt.cardId);
       if (ex) ex.usesLeft += opt.uses;
@@ -835,8 +835,8 @@ const expYpjUsedRef = useRef(false);
         setExpEquipment([...run.equipment]);
         // 生命宝石：立即生效
         if (item.equipment.id === 'lifegem') {
-          run.maxHp += 2;
-          run.hp = Math.min(run.maxHp, run.hp + 2);
+          run.maxHp += 1;
+          run.hp = Math.min(run.maxHp, run.hp + 1);
         }
         // 升级徽章：永久升 1 级（上限 5 级）
         if (item.equipment.id === 'levelbadge') {
@@ -3050,7 +3050,7 @@ const expYpjUsedRef = useRef(false);
                     sub = lang === 'zh' ? '恢复自身血量' : 'Restore your HP';
                   } else if (opt.kind === 'maxhp') {
                     icon = '❤️‍🔥';
-                    title = lang === 'zh' ? '体魄 +1' : 'Vigor +1';
+                    title = lang === 'zh' ? '体魄 +0.5' : 'Vigor +0.5';
                     sub = lang === 'zh' ? '血量上限 +1（本轮远征永久）' : '+1 max HP for this run';
                   } else if (opt.kind === 'temp') {
                     const c = SKILL_DB.find(x => x.id === opt.cardId);
@@ -3469,10 +3469,10 @@ const expYpjUsedRef = useRef(false);
                           <div className="flex flex-col gap-1 items-start">
                             <button
                               onClick={() => { playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(p.id)); }}
-                              className="relative bg-amber-50 text-slate-900 text-xs font-bold rounded-xl px-2.5 py-1.5 max-w-[8rem] text-left shadow-lg hover:scale-105 active:scale-95 transition-transform leading-snug"
+                              className="relative bg-amber-50 text-slate-900 text-2xl font-bold rounded-2xl px-4 py-2.5 max-w-[16rem] text-left shadow-lg hover:scale-105 active:scale-95 transition-transform leading-snug"
                             >
                               {taunt}
-                              <span className={`absolute top-1/2 -translate-y-1/2 w-2.5 h-2.5 bg-amber-50 rotate-45 ${toRight ? '-left-1' : '-right-1'}`} />
+                              <span className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-50 rotate-45 ${toRight ? '-left-2' : '-right-2'}`} />
                             </button>
                             {badges.length > 0 && (
                               <div className="relative flex gap-1">

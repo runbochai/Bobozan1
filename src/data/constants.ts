@@ -6,7 +6,7 @@ export const FINAL_LEVEL = 23;
 
 export const APP_ID = 'bobozan-v1';
 
-export const MAX_HP = 2;
+export const MAX_HP = 1;
 export const MAX_PLAYERS = 8;
 export const MIN_PLAYERS = 2;
 

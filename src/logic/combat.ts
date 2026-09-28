@@ -515,7 +515,7 @@ export const calculateTurnOutcome = (
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 砍刀击碎 ${p2.name}!` : `${p1.name} Machete shatters ${p2.name}!`, type: 'combat' });
           } 
           else if (card1.id === 'gun' && card2.id === 'defend') {
-            dealDamage(p1, p2.id, 1);
+            dealDamage(p1, p2.id, 0.5);
             // Gun deals 1 dmg. Check if fatal. MaxHP is 2. If already dmg=1, this is fatal.
             // Simplified: We assume gun might kill if HP is low. We'll handle kill credit in "Apply Results" by checking damageMap? 
             // Actually, best to credit here provisionally. Gun usually isn't 1-hit kill unless injured.

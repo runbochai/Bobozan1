@@ -218,7 +218,7 @@ if (relicPool.length > 0) rest.push({ kind: 'relic', relicId: relicPool[0].id});
 // 受伤时治疗必出，其余随机
 const injured = hp < maxHp;
 const options = shuffle(rest).slice(0, Math.max(0, optionCount - (injured ? 1 : 0)));
-if (injured) options.push({ kind: 'heal', amount: 2});
+if (injured) options.push({ kind: 'heal', amount: 1});
 return shuffle(options);
 }
 
@@ -240,7 +240,7 @@ export type ShopItem =
 /** 疗伤药售价 */
 export const POTION_PRICE = 10;
 /** 疗伤药回复量 */
-export const POTION_HEAL = 2;
+export const POTION_HEAL = 1;
 
 /**
  * 生成商城商品：2 张限次卡 + 1 件未拥有的装备 + 1 瓶疗伤药。
@@ -281,7 +281,7 @@ maxHp: number,
 alreadyUsed: boolean,
 ): { hp: number; triggered: boolean} {
 if (!alreadyUsed && hpAfter < hpBefore) {
-return { hp: Math.min(maxHp, hpAfter + 1), triggered: true};
+return { hp: Math.min(maxHp, hpAfter + 0.5), triggered: true};
 }
 return { hp: hpAfter, triggered: alreadyUsed};
 }
