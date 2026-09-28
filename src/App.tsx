@@ -47,10 +47,11 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
-import { pickUltCutin, type UltCutinPick } from './data/ultCutins';
+import { pickUltCutin, isLevelUltimate, type UltCutinPick } from './data/ultCutins';
 import UltCutin from './components/UltCutin';
+import InventoryBar from './components/InventoryBar';
 import type { ExpeditionEnemyDef } from './data/expedition';
-import { EXPEDITION_EQUIPMENTS, EXPEDITION_RELICS, EXPEDITION_STAGES, EXPEDITION_TUTORIALS } from './data/expedition';
+import { EXPEDITION_RELICS, EXPEDITION_STAGES, EXPEDITION_TUTORIALS } from './data/expedition';
 import { drawGachaCard } from './data/expedition';
 import {
   applyIronhide,
@@ -619,9 +620,12 @@ const expYpjUsedRef = useRef(false);
     const preDead = new Set(playersWithMoves.filter(p => p.isDead).map(p => p.id));
     setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN' }));
 
-    // 有人放必杀 → 延长 SHOWDOWN，给 cut-in 演出留出时间
-    const ultPlayed = playersWithMoves.some(p =>
-      !p.isDead && p.selectedCardId && SKILL_DB.find(c => c.id === p.selectedCardId)?.type === 'ULTIMATE');
+    // 有人放必杀（等级终极技）→ 延长 SHOWDOWN，给 cut-in 演出留出时间
+    const ultPlayed = playersWithMoves.some(p => {
+      if (p.isDead || !p.selectedCardId) return false;
+      const c = SKILL_DB.find(x => x.id === p.selectedCardId);
+      return !!c && isLevelUltimate(c);
+    });
     const showdownMs = ultPlayed && !reduceMotion ? 4300 : 1600;
 
     const timer = setTimeout(() => {
@@ -948,7 +952,7 @@ const expYpjUsedRef = useRef(false);
   const [showdownAnim, setShowdownAnim] = useState(false);
   const [slamAnim, setSlamAnim] = useState(false);
 
-  // 必杀技演出 overlay（SHOWDOWN 时有人放 ULTIMATE 则播）
+  // 必杀技演出 overlay（SHOWDOWN 时有人放等级终极技则播）
   const [ultCutin, setUltCutin] = useState<(UltCutinPick & { key: number }) | null>(null);
 
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -1116,10 +1120,10 @@ const expYpjUsedRef = useRef(false);
     }
   }, [gameState.status]);
 
-  // 必杀技演出：进入 SHOWDOWN 且有人放 ULTIMATE 时播 cut-in（2.7s 后自动收）
+  // 必杀技演出：进入 SHOWDOWN 且有人放等级终极技时播 cut-in（2.7s 后自动收）
   useEffect(() => {
     if (gameState.status === 'SHOWDOWN' && !reduceMotion) {
-      const pick: UltCutinPick | null = pickUltCutin(gameState.players, SKILL_DB);
+      const pick: UltCutinPick | null = pickUltCutin(gameState.players, SKILL_DB, lang);
       if (pick) {
         setUltCutin({ ...pick, key: gameState.turn });
         const t = setTimeout(() => setUltCutin(null), 2850);
@@ -1401,9 +1405,12 @@ const expYpjUsedRef = useRef(false);
   useEffect(() => {
     if (!isOnline || gameState.status !== 'SHOWDOWN' || gameState.hostId !== user?.uid) return;
     const round = { turn: gameState.turn, matchCount: gameState.matchCount };
-    // 有人放必杀 → 结算延迟，给 cut-in 演出留出时间（与远征一致）
-    const ultPlayed = gameState.players.some(p =>
-      !p.isDead && p.selectedCardId && SKILL_DB.find(c => c.id === p.selectedCardId)?.type === 'ULTIMATE');
+    // 有人放必杀（等级终极技）→ 结算延迟，给 cut-in 演出留出时间（与远征一致）
+    const ultPlayed = gameState.players.some(p => {
+      if (p.isDead || !p.selectedCardId) return false;
+      const c = SKILL_DB.find(x => x.id === p.selectedCardId);
+      return !!c && isLevelUltimate(c);
+    });
     const settleMs = ultPlayed && !reduceMotion ? 4700 : 2000;
     const timer = setTimeout(() => {
       void mutateRoom(roomCode, room => settleRoom(room, user.uid, round, lang)).catch(error => {
@@ -3442,35 +3449,14 @@ const expYpjUsedRef = useRef(false);
                     {/* --- C2. 远征物品栏（金币/遗物/装备/限次技能，头像右侧） --- */}
                     {isMe && isExpedition && expPhase === 'battle' && (
                       <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-40">
-                        <div className="bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-xl px-2.5 py-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] flex items-center gap-2 whitespace-nowrap">
-                          <span className="text-xs font-black text-yellow-300">🪙 {expGold}</span>
-                          {expRelics.map(id => {
-                            const r = EXPEDITION_RELICS.find(x => x.id === id);
-                            if (!r) return null;
-                            return (
-                              <span key={id} title={`${r.name[lang]}：${r.desc[lang]}`} className="text-base leading-none">
-                                {r.icon}
-                              </span>
-                            );
-                          })}
-                          {expEquipment.map(id => {
-                            const e = EXPEDITION_EQUIPMENTS.find(x => x.id === id);
-                            if (!e) return null;
-                            return (
-                              <span key={id} title={`${e.name[lang]}：${e.desc[lang]}`} className="text-base leading-none">
-                                {e.icon}
-                              </span>
-                            );
-                          })}
-                          {expRunRef.current.tempCards.map(t => {
-                            const c = SKILL_DB.find(x => x.id === t.cardId);
-                            return (
-                              <span key={t.cardId} title={`${c ? c.name[lang] : t.cardId}：${lang === 'zh' ? `剩余 ${t.usesLeft} 次` : `${t.usesLeft} uses left`}`} className="text-[11px] font-bold text-cyan-300 bg-cyan-950/70 border border-cyan-500/40 rounded-md px-1.5 py-0.5">
-                                🃏×{t.usesLeft}
-                              </span>
-                            );
-                          })}
-                        </div>
+                        <InventoryBar
+                          gold={expGold}
+                          relics={expRelics}
+                          equipment={expEquipment}
+                          tempCards={expRunRef.current.tempCards}
+                          lang={lang}
+                          playClick={() => playSound('click', muted)}
+                        />
                       </div>
                     )}
                         </div>

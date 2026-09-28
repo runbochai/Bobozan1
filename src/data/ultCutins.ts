@@ -78,34 +78,6 @@ export const ULT_CUTINS: Record<string, UltCutinDef> = {
     ['超级第一波！', '气功全开！'],
     ['Super First Wave!', 'Full power!'],
     'wave', '#60a5fa'),
-  ka: def('ka', 'ultcutins/ka.webp',
-    ['咔！'],
-    ['Ka!'],
-    'burst', '#f87171'),
-  ji: def('ji', 'ultcutins/ji.webp',
-    ['叽！'],
-    ['Ji!'],
-    'burst', '#60a5fa'),
-  kajifen: def('kajifen', 'ultcutins/kajifen.webp',
-    ['咔叽粉，参上！'],
-    ['KaJi, reporting in!'],
-    'burst', '#f9a8d4'),
-  kajisuper: def('kajisuper', 'ultcutins/kajisuper.webp',
-    ['超级咔叽，降临！'],
-    ['Super KaJi descends!'],
-    'burst', '#fde047'),
-  skydragon: def('skydragon', 'ultcutins/skydragon.webp',
-    ['天龙剑，出鞘！'],
-    ['Sky Dragon Sword, unsheathed!'],
-    'slash', '#38bdf8'),
-  vajra: def('vajra', 'ultcutins/vajra.webp',
-    ['三大金刚，护法！'],
-    ['Three Vajras, protect!'],
-    'burst', '#fbbf24'),
-  heartpoison: def('heartpoison', 'ultcutins/heartpoison.webp',
-    ['诛心毒气，弥漫！'],
-    ['Heart poison spreads!'],
-    'burst', '#4ade80'),
 };
 
 export interface UltCutinPick {
@@ -115,21 +87,29 @@ export interface UltCutinPick {
 }
 
 /**
- * 从本回合出牌中挑一个必杀做演出：只看活着的玩家出的 ULTIMATE，
+ * 只有“等级终极技”（levelRequired 1–99 的 ULTIMATE）才播必杀演出；
+ * 咔叽系（ka/ji/kajifen/kajisuper）与联合技（skydragon/vajra/heartpoison）不播。
+ */
+export function isLevelUltimate(card: Card): boolean {
+  return card.type === 'ULTIMATE' && card.levelRequired >= 1 && card.levelRequired < 100;
+}
+
+/**
+ * 从本回合出牌中挑一个必杀做演出：只看活着的玩家出的等级终极技，
  * 取 tier 最高者（并列取先出场的）。没有则返回 null。
  */
-export function pickUltCutin(players: Player[], skillDb: Card[]): UltCutinPick | null {
+export function pickUltCutin(players: Player[], skillDb: Card[], lang: 'zh' | 'en'): UltCutinPick | null {
   let best: UltCutinPick | null = null;
   let bestTier = -1;
   for (const p of players) {
     if (p.isDead || !p.selectedCardId) continue;
     const card = skillDb.find(c => c.id === p.selectedCardId);
-    if (!card || card.type !== 'ULTIMATE') continue;
+    if (!card || !isLevelUltimate(card)) continue;
     const cutin = ULT_CUTINS[card.id];
     if (!cutin) continue;
     if (card.tier > bestTier) {
       bestTier = card.tier;
-      best = { def: cutin, playerName: p.name, skillName: card.name.zh };
+      best = { def: cutin, playerName: p.name, skillName: card.name[lang] };
     }
   }
   return best;
