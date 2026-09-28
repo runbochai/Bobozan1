@@ -3744,6 +3744,20 @@ export default function BobozanOnline() {
               60% { transform: translateX(0); animation-timing-function: cubic-bezier(0.7,0,0.84,0); }
               100% { transform: translateX(102%); }
             }
+            @keyframes reset-dline-left {
+              0% { transform: translateX(-110%); opacity: 0; animation-timing-function: cubic-bezier(0.16,1,0.3,1); }
+              12% { opacity: 1; }
+              32% { transform: translateX(0); opacity: 1; }
+              60% { transform: translateX(0); opacity: 1; animation-timing-function: cubic-bezier(0.7,0,0.84,0); }
+              100% { transform: translateX(-110%); opacity: 1; }
+            }
+            @keyframes reset-dline-right {
+              0% { transform: translateX(110%); opacity: 0; animation-timing-function: cubic-bezier(0.16,1,0.3,1); }
+              12% { opacity: 1; }
+              32% { transform: translateX(0); opacity: 1; }
+              60% { transform: translateX(0); opacity: 1; animation-timing-function: cubic-bezier(0.7,0,0.84,0); }
+              100% { transform: translateX(110%); opacity: 1; }
+            }
             @keyframes reset-text-line {
               0%, 18% { opacity: 0; transform: scale(0.85); }
               34% { opacity: 1; transform: scale(1.05); }
@@ -3763,6 +3777,17 @@ export default function BobozanOnline() {
             className="absolute right-0 w-[52%] h-[3px] bg-gradient-to-l from-transparent via-red-500/70 to-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)]"
             style={{ top: 'calc(50% - 1.5px)', animation: 'reset-hline-right 1.2s forwards' }}
           />
+          {/* 斜对角45°：同一套横线整体旋转45°，左上闪入 + 右下闪入 */}
+          <div className="absolute inset-0" style={{ transform: 'rotate(45deg)' }}>
+            <div
+              className="absolute left-0 w-[52%] h-[3px] bg-gradient-to-r from-transparent via-red-500/70 to-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)]"
+              style={{ top: 'calc(50% - 1.5px)', animation: 'reset-dline-left 1.2s forwards' }}
+            />
+            <div
+              className="absolute right-0 w-[52%] h-[3px] bg-gradient-to-l from-transparent via-red-500/70 to-red-500 shadow-[0_0_20px_rgba(239,68,68,0.8)]"
+              style={{ top: 'calc(50% - 1.5px)', animation: 'reset-dline-right 1.2s forwards' }}
+            />
+          </div>
           {/* 一行字，压在横线上 */}
           <div className="absolute inset-0 flex items-center justify-center">
             <div
