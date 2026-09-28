@@ -46,7 +46,15 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
-import { TUTORIAL_STEPS } from './data/tutorial';
+import { EXPEDITION_RELICS, EXPEDITION_STAGES, LEVEL_REWARD_INFO } from './data/expedition';
+import {
+  comboHintFor,
+  expeditionBotMove,
+  genRewardOptions,
+  loadExpeditionBest,
+  saveExpeditionBest,
+  type RewardOption,
+} from './logic/expedition';
 import {
   FINAL_LEVEL,
   APP_ID,
@@ -56,6 +64,7 @@ import {
   BACKGROUND_CARDS,
 } from './data/constants';
 import {
+  calculateTurnOutcome,
   getCardIcon,
   getShowdownWinner,
   getPlayerCards,
@@ -328,225 +337,263 @@ export default function BobozanOnline() {
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 }); // Offset of mouse click within the element
   const leaderboardRef = useRef<HTMLDivElement>(null);
 
-  // --- TUTORIAL LOGIC ---
-  const [isTutorial, setIsTutorial] = useState(false);
-  const [tutorialStep, setTutorialStep] = useState(0);
-  const [tutorialMsg, setTutorialMsg] = useState<{ title: { zh: string; en: string }; sub: { zh: string; en: string } }>({
-    title: { zh: "", en: "" }, 
-    sub: { zh: "", en: "" } 
-  });
-  // 教程计时器与忙碌锁：防止结算期间连点导致状态错乱；退出教程时清理，避免幽灵跳转
-  const tutorialTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
-  const tutorialBusyRef = useRef(false);
-  const clearTutorialTimers = () => {
-    tutorialTimersRef.current.forEach(t => clearTimeout(t));
-    tutorialTimersRef.current = [];
-    tutorialBusyRef.current = false;
+  // --- EXPEDITION （单机远征：一命爬塔 + 章节剧情） ---
+  const [isExpedition, setIsExpedition] = useState(false);
+  const [expStageIdx, setExpStageIdx] = useState(0);
+  const [expRelics, setExpRelics] = useState<string[]>([]);
+  const [expPhase, setExpPhase] = useState<'battle' | 'reward' | 'runover' | 'clear'>('battle');
+  const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
+  const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
+  // 远征 run 真值：timeout 回调里读 ref，避免闭包拿到旧 state
+  const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP });
+  const expeditionBusyRef = useRef(false);
+  const expeditionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const expPassivesRef = useRef<Record<string, { startEnergy?: number; energyPerTurn?: number }>>({});
+  const expIronShirtUsedRef = useRef(false);
+  const expWhetstoneUsedRef = useRef(false);
+  const expAdrenalineUsedRef = useRef(false);
+  const clearExpeditionTimers = () => {
+    expeditionTimersRef.current.forEach(t => clearTimeout(t));
+    expeditionTimersRef.current = [];
+    expeditionBusyRef.current = false;
   };
 
-  const startTutorial = () => {
-    playSound('confirm', muted);
-    clearTutorialTimers();
-    setIsTutorial(true);
-    setTutorialStep(0);
-    setTutorialMsg(TUTORIAL_STEPS[0]);
-    
-    setView('GAME');
-    setHandViewMode('CATEGORIES');
-    setHandCategory('CHARGE');
+  const expMyId = () => user?.uid || 'exp_me';
 
-    const myId = user?.uid || 'me';
-
-    setGameState({
-      status: 'PLAYING',
-      turn: 1,
-      matchCount: 1, 
-      hostId: myId,
-      logs: [{ turn: 1, text: lang === 'zh' ? "教程开始" : "Tutorial Started", type: 'info' }],
-      players: [
-        {
-          id: myId, // <--- This must match user.uid
-          name: playerName || 'Player',
-          avatar: playerAvatar,
-          isBot: false,
-          hp: 2,
-          energy: 0,
-          isDead: false,
-          inventory: [0], 
-          layer: 0,
-          tempLayerMod: 0,
-          selectedCardId: null,
-          lastCardId: null,
-          lastAction: null,
-          freeSkills: [],
-          disabledSkills: [],
-          kills: 0,
-          tempSkills: []
-        },
-        {
-          id: 'dummy_bot',
-          name: lang === 'zh' ? '训练假人' : 'Training Dummy',
-          isBot: true,
-          hp: 2,
-          energy: 0,
-          isDead: false,
-          inventory: [0],
-          layer: 0,
-          tempLayerMod: 0,
-          selectedCardId: 'charge', 
-          lastCardId: null,
-          lastAction: null,
-          freeSkills: [],
-          kills: 0
-        }
-      ]
+  // 回合开始能量：聚气丹（自己）/ 热身腰带（首回合）/ Boss 光环（敌人）
+  const applyExpTurnStartEnergy = (players: Player[], firstTurn: boolean): Player[] => {
+    const relics = expRunRef.current.relics;
+    const myId = expMyId();
+    return players.map(p => {
+      if (p.isDead) return p;
+      let e = p.energy;
+      if (p.id === myId) {
+        if (relics.includes('jqd')) e += 1;
+        if (firstTurn && relics.includes('rxyd')) e += 2;
+      }
+      const passive = expPassivesRef.current[p.id];
+      if (passive?.energyPerTurn) e += passive.energyPerTurn;
+      return { ...p, energy: e };
     });
   };
 
-  const handleTutorialAction = (cardId: string) => {
-    // 忙碌锁：结算动画期间忽略一切点击，防止连点导致多条计时器链交错、状态错乱卡顿
-    if (tutorialBusyRef.current) return;
+  const setupExpeditionBattle = (stageIdx: number) => {
+    const myId = expMyId();
+    const stage = EXPEDITION_STAGES[stageIdx];
+    const run = expRunRef.current;
+    run.stageIdx = stageIdx;
+    expWhetstoneUsedRef.current = false;
+    expAdrenalineUsedRef.current = false;
+    expPassivesRef.current = {};
+    const enemies: Player[] = stage.enemies.map(en => {
+      const id = `exp_${stage.id}_${en.id}`;
+      if (en.passive) expPassivesRef.current[id] = en.passive;
+      return {
+        id,
+        name: en.name[lang],
+        avatar: undefined,
+        isBot: true,
+        hp: en.hp,
+        energy: en.passive?.startEnergy ?? 0,
+        isDead: false,
+        inventory: [...en.inventory],
+        layer: 0,
+        tempLayerMod: 0,
+        selectedCardId: null,
+        lastCardId: null,
+        lastAction: null,
+        disabledSkills: [],
+        freeSkills: [],
+        kills: 0,
+        tempSkills: [],
+      };
+    });
+    let players: Player[] = [
+      {
+        id: myId,
+        name: playerName || (lang === 'zh' ? '我' : 'Me'),
+        avatar: playerAvatar,
+        isBot: false,
+        hp: run.hp,
+        energy: 0,
+        isDead: false,
+        inventory: [...run.inventory],
+        layer: 0,
+        tempLayerMod: 0,
+        selectedCardId: null,
+        lastCardId: null,
+        lastAction: null,
+        disabledSkills: [],
+        freeSkills: [],
+        kills: 0,
+        tempSkills: [],
+      },
+      ...enemies,
+    ];
+    players = applyExpTurnStartEnergy(players, true);
+    setExpStageIdx(stageIdx);
+    setExpPhase('battle');
+    setGameState({
+      status: 'PLAYING',
+      turn: 1,
+      matchCount: stageIdx + 1,
+      hostId: myId,
+      players,
+      logs: [
+        { turn: 1, text: `${stage.chapter[lang]} · ${stage.name[lang]}`, type: 'info' },
+        ...stage.enemies.map(en => ({ turn: 1, text: en.intro[lang], type: 'info' as const })),
+      ],
+    });
+    if (stage.tip) setToastMsg(stage.tip[lang]);
+  };
 
-    // 1. Cleanup Tooltips
+  const startExpedition = () => {
+    playSound('confirm', muted);
+    clearExpeditionTimers();
+    expRunRef.current = { stageIdx: 0, relics: [], inventory: [0], hp: MAX_HP };
+    expIronShirtUsedRef.current = false;
+    setExpRelics([]);
+    setIsExpedition(true);
+    setupExpeditionBattle(0);
+    setView('GAME');
+  };
+
+  const handleExpeditionMove = (cardId: string) => {
+    if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle') return;
+    if (gameState.status !== 'PLAYING') return;
+    const myId = expMyId();
+    const me = gameState.players.find(p => p.id === myId);
+    if (!me || me.isDead) return;
+    const card = SKILL_DB.find(c => c.id === cardId);
+    if (!card) return;
+    if (me.energy < card.cost && !me.freeSkills?.includes(cardId)) return;
+    if (me.disabledSkills?.includes(cardId)) return;
+
+    expeditionBusyRef.current = true;
+    setSubmittingMove(true);
+    initAudio();
+    playSound('draw', muted);
     if (hoverTimer.current) clearTimeout(hoverTimer.current);
     setHoveredCard(null);
     setTooltipPos(null);
 
-    const step = tutorialStep;
-    const currentLesson = TUTORIAL_STEPS[step];
-    if (!currentLesson) return;
-    
-    // 2. Validation with Localized Toasts
-    if (!currentLesson.allowed.includes(cardId)) {
-      playSound('click', muted);
-      setToastMsg(lang === 'zh' ? "请按提示操作！打出正确的卡牌。" : "Follow the instructions! Play the correct card.");
-      return;
-    }
+    const stage = EXPEDITION_STAGES[expRunRef.current.stageIdx];
+    const myPreInventory = [...me.inventory];
+    const playersWithMoves = gameState.players.map(p => {
+      if (p.id === myId) return { ...p, selectedCardId: cardId };
+      if (p.isDead) return p;
+      const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === p.id);
+      const move = def ? expeditionBotMove(p, gameState.players, def.personality, myId) : 'charge';
+      return { ...p, selectedCardId: move };
+    });
+    const preHp = new Map(playersWithMoves.map(p => [p.id, p.hp]));
+    const preDead = new Set(playersWithMoves.filter(p => p.isDead).map(p => p.id));
+    setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN' }));
 
-    const card = SKILL_DB.find(c => c.id === cardId)!;
-    const me = gameState.players[0];
-    
-    if (me.energy < card.cost) {
-      setToastMsg(lang === 'zh' ? "能量不足！" : "Not enough energy!");
-      return;
-    }
+    const timer = setTimeout(() => {
+      const run = expRunRef.current;
+      const relics = run.relics;
+      const has = (id: string) => relics.includes(id);
+      const result = calculateTurnOutcome(playersWithMoves, gameState.turn, run.stageIdx + 1, lang);
+      // 联机胜利会自动发技能（pendingLevel/加 inventory）：远征走自己的奖励系统，这里清掉
+      let players: Player[] = result.players.map(p =>
+        p.id === myId
+          ? { ...p, inventory: p.inventory.filter(l => myPreInventory.includes(l)), pendingLevel: null }
+          : p
+      );
+      let logs = result.logs.filter(l => !(l.type === 'win' && (l.text.includes('获胜') || l.text.includes('WINS'))));
+      const meAfter = players.find(p => p.id === myId)!;
+      const myPreHp = preHp.get(myId) ?? meAfter.hp;
 
-    // 3. TRIGGER SHOWDOWN
-    tutorialBusyRef.current = true;
-    playSound('confirm', muted); 
-    setGameState(prev => ({
-      ...prev,
-      status: 'SHOWDOWN',
-      players: [
-         { ...prev.players[0], selectedCardId: cardId },
-         { ...prev.players[1] } 
-      ]
-    }));
+      // 遗物：铁布衫（每轮远征一次致命免死）
+      if (meAfter.isDead && has('tbs') && !expIronShirtUsedRef.current) {
+        const enemiesAlive = players.some(p => p.id !== myId && !p.isDead);
+        if (enemiesAlive) {
+          expIronShirtUsedRef.current = true;
+          players = players.map(p => (p.id === myId ? { ...p, isDead: false, hp: 1 } : p));
+          logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 铁布衫救了你一命！' : '🛡️ Iron Shirt saved you!', type: 'info' as const }];
+        }
+      }
+      const meFinal = players.find(p => p.id === myId)!;
+      const myCard = SKILL_DB.find(c => c.id === meFinal.lastCardId);
 
-    // 本课结算音效（提前算好，updater 里只做纯状态变更）
-    const lessonWins = [1, 3, 4, 6, 9].includes(currentLesson.id);
-    const lessonClashes = currentLesson.id === 2 || currentLesson.id === 8;
+      // 遗物：反击拳套（防守成功 +1 能量）
+      if (has('fjqt') && !meFinal.isDead && myCard?.type === 'DEFEND' && meFinal.hp >= myPreHp) {
+        players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 1 } : p));
+      }
+      // 遗物：处决令（有敌人被淘汰的回合 +2 能量）
+      if (has('zjling') && !meFinal.isDead) {
+        const freshKills = players.filter(p => p.id !== myId && p.isDead && !preDead.has(p.id)).length;
+        if (freshKills > 0) players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 2 } : p));
+      }
+      // 遗物：磨刀石（每场战斗第一次终极技能 +2 能量）
+      if (has('mds') && !expWhetstoneUsedRef.current && !meFinal.isDead && myCard?.type === 'ULTIMATE') {
+        expWhetstoneUsedRef.current = true;
+        players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 2 } : p));
+      }
+      // 遗物：肾上腺素（受伤 +2 能量，每场战斗一次）
+      if (has('jsn') && !expAdrenalineUsedRef.current && !meFinal.isDead && meFinal.hp < myPreHp) {
+        expAdrenalineUsedRef.current = true;
+        players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 2 } : p));
+      }
 
-    // 4. RESOLVE — 用函数式更新拿最新 state，避免闭包拿到过期快照
-    const t1 = setTimeout(() => {
-        const botActionId = currentLesson.setup.botAction;
-        const botCard = SKILL_DB.find(c => c.id === botActionId);
+      // 下回合开始能量（聚气丹 / Boss 光环）
+      players = applyExpTurnStartEnergy(players, false);
 
-        setGameState(prev => {
-          const players = prev.players.map(p => ({ ...p }));
-          const myPlayer = players[0];
-          const bot = players[1];
+      const enemiesAlive = players.some(p => p.id !== myId && !p.isDead);
+      const meAlive = players.some(p => p.id === myId && !p.isDead);
+      const meHp = players.find(p => p.id === myId)?.hp ?? 0;
 
-          myPlayer.lastCardId = cardId;
-          myPlayer.selectedCardId = null;
-          if (card.type === 'CHARGE') myPlayer.energy += 2;
-          else myPlayer.energy -= card.cost;
+      if (!meAlive) {
+        saveExpeditionBest(run.stageIdx);
+        setExpBest(loadExpeditionBest());
+        setExpPhase('runover');
+      } else if (!enemiesAlive) {
+        run.hp = Math.min(MAX_HP, meHp + (has('zstai') ? 1 : 0));
+        const opts = genRewardOptions(run.stageIdx, run.inventory, relics, has('cbt') ? 4 : 3);
+        logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🎉 通过${EXPEDITION_STAGES[run.stageIdx].name[lang]}！` : `🎉 Cleared ${EXPEDITION_STAGES[run.stageIdx].name[lang]}!`, type: 'win' as const }];
+        setExpRewards(opts);
+        setExpPhase('reward');
+        playSound('win', muted);
+      } else {
+        run.hp = meHp;
+      }
 
-          if (botCard) {
-              if (botCard.type === 'CHARGE') {
-                  bot.energy += 2;
-              } 
-              else {
-                  bot.energy = Math.max(0, bot.energy - botCard.cost);
-              }
-          }
-
-          // --- Determine Winner Visuals for Tutorial ---
-          if (lessonWins) {
-             bot.hp = 0; 
-             bot.isDead = true; 
-          }
-
-          return {
-            ...prev,
-            status: 'PLAYING', 
-            players,
-            logs: [{ turn: prev.turn, text: lang === 'zh' ? `教程: 你使用了 ${card.name.zh}` : `Tutorial: You used ${card.name.en}`, type: 'combat' }]
-          };
-        });
-
-        if (lessonWins) playSound('win', muted);
-        else if (lessonClashes) playSound('combat', muted);
-        else playSound('draw', muted);
-
-        const t2 = setTimeout(() => {
-          tutorialBusyRef.current = false;
-          const nextStep = step + 1;
-          if (nextStep >= TUTORIAL_STEPS.length) {
-            playSound('win', muted);
-            clearTutorialTimers();
-            setIsTutorial(false);
-            setView('NAME_INPUT');
-            return;
-          }
-
-          const nextLevelData = TUTORIAL_STEPS[nextStep]; 
-          
-          setTutorialStep(nextStep);
-          setTutorialMsg(nextLevelData);
-          
-          // ALWAYS RESET TO FOLDER VIEW — 让玩家自己选分类
-          setHandViewMode('CATEGORIES');
-          setHandCategory('CHARGE'); 
-
-          // --- INVENTORY SETUP FOR NEXT LEVEL ---
-          let newInventory = [0];
-          
-          if (nextStep === 4) newInventory = [0, 3];
-          if (nextStep === 5) newInventory = [0];
-          if (nextStep === 6) newInventory = [0, 3];
-          if (nextStep === 7) newInventory = [0];
-          if (nextStep === 8) newInventory = [0, 2];
-          if (nextStep === 9) newInventory = [0];
-          if (nextStep === 10) newInventory = [0, 2, 5];
-
-          setGameState(prev => ({
-            ...prev,
-            players: [
-              { 
-                  ...prev.players[0], 
-                  hp: 2, 
-                  energy: nextLevelData.setup.energy, 
-                  selectedCardId: null, 
-                  lastCardId: null, 
-                  inventory: newInventory 
-              },
-              { 
-                  ...prev.players[1], 
-                  hp: 2, 
-                  isDead: false, 
-                  energy: nextLevelData.setup.botEnergy, 
-                  selectedCardId: nextLevelData.setup.botAction, 
-                  lastCardId: null 
-              }
-            ]
-          }));
-        }, 1600);
-        tutorialTimersRef.current.push(t2);
-
-    }, 2000); 
-    tutorialTimersRef.current.push(t1);
+      setGameState(prev => ({
+        ...prev,
+        players,
+        logs: [...logs, ...prev.logs].slice(0, 300),
+        status: 'PLAYING',
+        turn: prev.turn + 1,
+        resetSeq: result.survivorReset ? (prev.resetSeq ?? 0) + 1 : prev.resetSeq,
+      }));
+      setSubmittingMove(false);
+      expeditionBusyRef.current = false;
+    }, 1600);
+    expeditionTimersRef.current.push(timer);
   };
+
+  const claimExpeditionReward = (opt: RewardOption) => {
+    playSound('confirm', muted);
+    const run = expRunRef.current;
+    if (opt.kind === 'level' && !run.inventory.includes(opt.level)) {
+      run.inventory.push(opt.level);
+    } else if (opt.kind === 'relic' && !run.relics.includes(opt.relicId)) {
+      run.relics.push(opt.relicId);
+      setExpRelics([...run.relics]);
+    } else if (opt.kind === 'heal') {
+      run.hp = MAX_HP;
+    }
+    const next = run.stageIdx + 1;
+    if (next >= EXPEDITION_STAGES.length) {
+      saveExpeditionBest(EXPEDITION_STAGES.length);
+      setExpBest(loadExpeditionBest());
+      setExpPhase('clear');
+    } else {
+      setupExpeditionBattle(next);
+    }
+  };
+
 
   // --- Drag Logic ---
   const handleMouseDown = (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
@@ -977,9 +1024,10 @@ export default function BobozanOnline() {
   };
 
   const resetRoom = useCallback(() => {
-    clearTutorialTimers();
+    clearExpeditionTimers();
     setIsOnline(false);
-    setIsTutorial(false);
+    setIsExpedition(false);
+    setExpPhase('battle');
     setRoomCode('');
     setSubmittingMove(false);
     setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, players: [], logs: [], hostId: '' });
@@ -1054,7 +1102,7 @@ export default function BobozanOnline() {
   }, [isOnline, roomCode, user, resetRoom, t.roomNotFound, lang]);
 
   useEffect(() => {
-    if (isTutorial || !isOnline || gameState.status !== 'SHOWDOWN' || gameState.hostId !== user?.uid) return;
+    if (!isOnline || gameState.status !== 'SHOWDOWN' || gameState.hostId !== user?.uid) return;
     const round = { turn: gameState.turn, matchCount: gameState.matchCount };
     const timer = setTimeout(() => {
       void mutateRoom(roomCode, room => settleRoom(room, user.uid, round, lang)).catch(error => {
@@ -1063,7 +1111,7 @@ export default function BobozanOnline() {
       });
     }, 2000);
     return () => clearTimeout(timer);
-  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, user, roomCode, lang, isTutorial, isOnline]);
+  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, user, roomCode, lang, isOnline]);
 
   useEffect(() => {
   if (muted || gameState.logs.length === 0) return;
@@ -1909,7 +1957,7 @@ export default function BobozanOnline() {
             </button>
 
             <button 
-              onClick={startTutorial} 
+              onClick={startExpedition} 
               className="mt-6 group relative px-6 py-2 overflow-hidden rounded-full bg-slate-800/50 border border-slate-600 hover:border-green-400 transition-all duration-300"
             >
               <div className="flex items-center gap-2 relative z-10">
@@ -1917,10 +1965,15 @@ export default function BobozanOnline() {
                   <HandHeart size={16} className="text-green-400 group-hover:text-black" />
                 </div>
                 <span className="text-sm font-bold text-slate-300 group-hover:text-white tracking-widest uppercase">
-                  {lang === 'zh' ? '新手教程' : 'Tutorial'}
+                  {lang === 'zh' ? '远征模式' : 'Expedition'}
                 </span>
               </div>
             </button>
+            {expBest > 0 && (
+              <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
+                {lang === 'zh' ? `🏆 历史最佳：第 ${expBest} 关` : `🏆 Best: Stage ${expBest}`}
+              </div>
+            )}
 
         </div>
       </div>
@@ -2583,6 +2636,7 @@ export default function BobozanOnline() {
             </div>
           )}
 
+          {!isExpedition && (
           <button
             onClick={() => {
                playSound('click', muted);
@@ -2600,6 +2654,7 @@ export default function BobozanOnline() {
               {emojiMenuOpen ? <X size={28} /> : <Smile size={28} />}
             </div>
           </button>
+          )}
         </div>
 
       </div>
@@ -2655,53 +2710,124 @@ export default function BobozanOnline() {
       {/* CENTER ARENA */}
       <div className="flex-1 flex flex-col relative h-screen z-10">
 
-        {/* --- TUTORIAL INSTRUCTION BANNER --- */}
-        {isTutorial && (
-          <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 md:left-1/4 z-[60] w-full max-w-md px-4 pointer-events-none">
-              
-              <div key={tutorialStep} className="animate-in slide-in-from-left-4 fade-in duration-300 bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-2xl p-5 md:p-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-left relative overflow-hidden">
-                  
-                  {/* 进度条 */}
-                  <div className="absolute top-0 inset-x-0 h-1 bg-white/10">
-                    <div
-                      className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all duration-500"
-                      style={{ width: `${((tutorialStep + 1) / TUTORIAL_STEPS.length) * 100}%` }}
-                    />
-                  </div>
-
-                  <div className="flex items-center gap-3 mb-2.5">
-                    <span className="shrink-0 text-[11px] font-black tracking-[0.18em] uppercase bg-white/10 border border-white/15 text-slate-200 rounded-full px-3 py-1">
-                      {lang === 'zh' ? `教程 ${tutorialStep + 1}/${TUTORIAL_STEPS.length}` : `Lesson ${tutorialStep + 1}/${TUTORIAL_STEPS.length}`}
-                    </span>
-                    <h2 className="text-lg font-black text-white tracking-wide truncate">
-                      {tutorialMsg.title[lang]}
-                    </h2>
-                  </div>
-                  
-                  <p className="text-sm md:text-[15px] text-slate-200 leading-relaxed">
-                    {tutorialMsg.sub[lang]}
-                  </p>
-
-                  <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-3.5">
-                    <span className="text-[11px] text-slate-400 uppercase tracking-[0.18em] font-bold">
-                      {lang === 'zh' ? '敌方意图' : 'Enemy intent'}
-                    </span>
-                    <div className="bg-white/5 border border-white/10 rounded-xl w-14 h-14 flex items-center justify-center overflow-hidden">
-                      <div className="scale-[0.62]">
-                        {TUTORIAL_STEPS[tutorialStep]?.setup?.botAction 
-                          ? getCardIcon(TUTORIAL_STEPS[tutorialStep].setup.botAction) 
-                          : <div className="w-8 h-8 bg-slate-800 rounded animate-pulse" />} 
-                      </div>
-                    </div>
-                  </div>
+        {/* --- EXPEDITION HUD（左上：章节关卡 + 遗物） --- */}
+        {isExpedition && expPhase === 'battle' && (
+          <div className="absolute top-3 left-3 z-50 pointer-events-none">
+            <div className="bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-xl px-3 py-2 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+              <div className="text-xs font-bold text-amber-300">
+                {EXPEDITION_STAGES[expStageIdx].chapter[lang]} · {EXPEDITION_STAGES[expStageIdx].name[lang]}
               </div>
+              {expRelics.length > 0 && (
+                <div className="flex gap-1.5 mt-1.5">
+                  {expRelics.map(id => {
+                    const r = EXPEDITION_RELICS.find(x => x.id === id);
+                    if (!r) return null;
+                    return (
+                      <span key={id} title={`${r.name[lang]}：${r.desc[lang]}`} className="text-lg leading-none">
+                        {r.icon}
+                      </span>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* --- EXPEDITION REWARD（战后多选一） --- */}
+        {isExpedition && expPhase === 'reward' && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-6 w-full max-w-2xl text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+              <div className="text-4xl mb-2">🎉</div>
+              <h2 className="text-xl font-black text-white mb-1">
+                {lang === 'zh' ? `通过${EXPEDITION_STAGES[expStageIdx].name[lang]}！` : `Cleared ${EXPEDITION_STAGES[expStageIdx].name[lang]}!`}
+              </h2>
+              <p className="text-slate-400 text-sm mb-5">
+                {lang === 'zh' ? `选择一项奖励（${expRewards.length} 选 1）` : `Choose a reward (1 of ${expRewards.length})`}
+              </p>
+              <div className={`grid gap-3 ${expRewards.length >= 4 ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
+                {expRewards.map((opt, i) => {
+                  const key = opt.kind === 'level' ? `lv${opt.level}` : opt.kind === 'relic' ? opt.relicId : 'heal';
+                  let icon = '💖';
+                  let title: string = lang === 'zh' ? '回满血' : 'Full Heal';
+                  let sub: string = lang === 'zh' ? '下一关满血开战' : 'Start next battle at full HP';
+                  if (opt.kind === 'level') {
+                    icon = '🃏';
+                    title = LEVEL_REWARD_INFO[opt.level][lang];
+                    const hint = comboHintFor(opt.level, expRunRef.current.inventory);
+                    sub = hint ? hint[lang] : (lang === 'zh' ? '解锁新技能卡' : 'Unlock new skill cards');
+                  } else if (opt.kind === 'relic') {
+                    const r = EXPEDITION_RELICS.find(x => x.id === opt.relicId)!;
+                    icon = r.icon;
+                    title = r.name[lang];
+                    sub = r.desc[lang];
+                  }
+                  return (
+                    <button
+                      key={`${key}-${i}`}
+                      onClick={() => claimExpeditionReward(opt)}
+                      className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/60 rounded-xl p-4 transition-all hover:scale-105 active:scale-95 text-center"
+                    >
+                      <div className="text-4xl mb-2">{icon}</div>
+                      <div className="font-bold text-white text-sm mb-1">{title}</div>
+                      <div className="text-xs text-slate-400">{sub}</div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- EXPEDITION RUN OVER（远征结束） --- */}
+        {isExpedition && expPhase === 'runover' && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-8 w-full max-w-md text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+              <div className="text-5xl mb-3">💀</div>
+              <h2 className="text-2xl font-black text-white mb-2">{lang === 'zh' ? '远征结束' : 'Expedition Over'}</h2>
+              <p className="text-slate-400 text-sm mb-1">
+                {lang === 'zh' ? `倒在${EXPEDITION_STAGES[expStageIdx].name[lang]}` : `Fell at ${EXPEDITION_STAGES[expStageIdx].name[lang]}`}
+              </p>
+              <p className="text-amber-300/90 text-sm mb-6">
+                {lang === 'zh' ? `历史最佳：第 ${expBest} 关` : `Best: Stage ${expBest}`}
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button onClick={startExpedition} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
+                  {lang === 'zh' ? '再来一轮' : 'Retry'}
+                </button>
+                <button onClick={() => leaveRoom()} className="px-6 py-2.5 rounded-xl bg-slate-800 border border-slate-600 font-bold text-slate-300 hover:text-white hover:scale-105 active:scale-95 transition-all">
+                  {lang === 'zh' ? '返回主页' : 'Home'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* --- EXPEDITION CLEAR（通关） --- */}
+        {isExpedition && expPhase === 'clear' && (
+          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+            <div className="bg-slate-900/80 backdrop-blur-xl border border-amber-400/30 rounded-2xl p-8 w-full max-w-md text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+              <div className="text-5xl mb-3">🏆</div>
+              <h2 className="text-2xl font-black text-amber-300 mb-2">{lang === 'zh' ? '登顶成功！' : 'Tower Conquered!'}</h2>
+              <p className="text-slate-400 text-sm mb-6">
+                {lang === 'zh' ? '你击败了塔主波赞，成为了新的传说。' : 'You defeated Lord Bozan and became a legend.'}
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button onClick={startExpedition} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
+                  {lang === 'zh' ? '再来一轮' : 'Retry'}
+                </button>
+                <button onClick={() => leaveRoom()} className="px-6 py-2.5 rounded-xl bg-slate-800 border border-slate-600 font-bold text-slate-300 hover:text-white hover:scale-105 active:scale-95 transition-all">
+                  {lang === 'zh' ? '返回主页' : 'Home'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
 
         {/* Mobile Header */}
         <div className="md:hidden p-3 flex justify-between items-center bg-slate-900 border-b border-slate-800 z-50">
           <button onClick={() => leaveRoom()} className="flex items-center gap-1 text-slate-400"><LogOut size={18} /></button>
-          <span className="font-mono font-bold text-yellow-500">{roomCode}</span>
+          <span className="font-mono font-bold text-yellow-500">{isExpedition ? `${lang === 'zh' ? '远征' : 'Expedition'} ${expStageIdx + 1}/15` : roomCode}</span>
           <span className="text-xs bg-indigo-500 px-2 py-1 rounded">M{gameState.matchCount}</span>
         </div>
 
@@ -3330,17 +3456,6 @@ export default function BobozanOnline() {
                             const translateY = Math.abs(offset) * 6;
                             const translateX = offset * 120;
 
-                            // --- TUTORIAL SUGGESTION LOGIC ---
-                            let isSuggested = false;
-                            if (isTutorial) {
-                                const allowedIds = TUTORIAL_STEPS[tutorialStep].allowed;
-                                if (cat === 'CHARGE' && allowedIds.includes('charge')) isSuggested = true;
-                                if (cat === 'DEFEND' && (allowedIds.includes('defend') || allowedIds.includes('smallfly'))) isSuggested = true;
-                                if (cat === 'ATTACK' && allowedIds.some(id => ['hong','hong2','dragonclaw','madian','liuke'].includes(id))) isSuggested = true;
-                                if (cat === 'ULTIMATE' && allowedIds.some(id => ['ka','ji','fireclaw','kajifen'].includes(id))) isSuggested = true;
-                                if (cat === 'SPECIAL' && allowedIds.includes('doublewing')) isSuggested = true;
-                            }
-                            // ---------------------------------
 
                             const isChargeDisabled = 
                               cat === 'CHARGE' && (myPlayer?.disabledSkills || []).includes('charge');
@@ -3379,8 +3494,7 @@ export default function BobozanOnline() {
                             // 🟢 FIX: Dynamic Classes based on State
                             // If suggested, we DISABLE standard transitions and hover transforms to prevent glitching.
                             const standardClasses = `transition-all duration-300 ease-out hover:z-50 hover:scale-110 hover:-translate-y-16 hover:rotate-0 ${hoverGlowClass}`;
-                            const suggestedClasses = `z-50 shadow-[0_0_50px_rgba(255,255,255,0.6)] ring-4 ring-white animate-pulse`;
-                            const entranceAnim = isSuggested ? '' : 'animate-in slide-in-from-bottom-10 fade-in duration-500';
+                            const entranceAnim = 'animate-in slide-in-from-bottom-10 fade-in duration-500';
 
                             return (
                               <div
@@ -3394,8 +3508,8 @@ export default function BobozanOnline() {
                                     const canAfford = chargeCard && myPlayer.energy >= chargeCard.cost;
 
                                     if (canAfford) {
-                                      if (isTutorial) {
-                                          handleTutorialAction('charge');
+                                      if (isExpedition) {
+                                          handleExpeditionMove('charge');
                                       } else {
                                           submitMove('charge');
                                       }
@@ -3413,7 +3527,7 @@ export default function BobozanOnline() {
                                   
                                   ${isChargeDisabled
                                       ? 'border-slate-700 grayscale opacity-70 cursor-not-allowed'
-                                      : `${borderClass} ${isSuggested ? suggestedClasses : standardClasses}`
+                                      : `${borderClass} ${standardClasses}`
                                   }
                                 `}
                                 style={{
@@ -3423,9 +3537,8 @@ export default function BobozanOnline() {
                                     translateX(${translateX}px) 
                                     translateY(${translateY}px) 
                                     rotate(${rotateDeg}deg) 
-                                    ${isSuggested ? 'scale(1.15) translateY(-25px)' : ''}
                                   `,
-                                  zIndex: isSuggested ? 100 : index,
+                                  zIndex: index,
                                   bottom: '30px',
                                   backgroundColor: '#1a1a1a',
                                 }}
@@ -3433,17 +3546,7 @@ export default function BobozanOnline() {
                                 <div className={`absolute inset-0 ${bgGradient} opacity-90`} />
                                 <div className="absolute inset-0 border border-white/10 rounded-xl pointer-events-none" />
                                 
-                                {/* Only show shine effect if NOT suggested (to reduce visual noise) */}
-                                {!isSuggested && (
-                                   <div className="absolute inset-0 bg-white/10 group-hover:translate-x-full transition-transform duration-700 ease-in-out -skew-x-12 origin-left z-10 pointer-events-none" />
-                                )}
-
-                                {/* Tutorial Arrow */}
-                                {isSuggested && (
-                                    <div className="absolute -top-14 left-1/2 -translate-x-1/2 z-[60] animate-bounce">
-                                        <ArrowDown size={36} className="text-white drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)]" strokeWidth={4} />
-                                    </div>
-                                )}
+                                <div className="absolute inset-0 bg-white/10 group-hover:translate-x-full transition-transform duration-700 ease-in-out -skew-x-12 origin-left z-10 pointer-events-none" />
 
                                 {isChargeDisabled && (
                                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
@@ -3455,7 +3558,7 @@ export default function BobozanOnline() {
                                 )}
 
                                 <div className="w-full h-32 flex items-center justify-center relative z-10 mt-2">
-                                  <div className={`transition-transform duration-300 drop-shadow-[0_8px_8px_rgba(0,0,0,0.5)] ${isSuggested ? 'scale-110' : 'group-hover:scale-110'}`}>
+                                  <div className="transition-transform duration-300 drop-shadow-[0_8px_8px_rgba(0,0,0,0.5)] group-hover:scale-110">
                                     {getCategoryIcon(cat)}
                                   </div>
                                 </div>
@@ -3563,8 +3666,8 @@ export default function BobozanOnline() {
                                           onClick={() => {
                                             const disabled = (myPlayer?.disabledSkills || []).includes(c.id);
                                             if (canAfford && !disabled && !submittingMove) {
-                                              if (isTutorial) {
-                                                  handleTutorialAction(c.id); // <--- Intercept for Tutorial
+                                              if (isExpedition) {
+                                                  handleExpeditionMove(c.id); // <--- Expedition mode
                                               } else {
                                                   submitMove(c.id);           // <--- Normal Game
                                               }
