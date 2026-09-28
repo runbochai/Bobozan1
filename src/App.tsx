@@ -623,7 +623,7 @@ export default function BobozanOnline() {
         playSound('death', muted);
         setResetFlash(true);
         if (resetFlashTimer.current) clearTimeout(resetFlashTimer.current);
-        resetFlashTimer.current = setTimeout(() => setResetFlash(false), 1100);
+        resetFlashTimer.current = setTimeout(() => setResetFlash(false), 1250);
       }
     }
   }, [gameState.resetSeq, view, muted]);
@@ -3728,43 +3728,64 @@ export default function BobozanOnline() {
         </div>
       )}
 
-      {/* --- 阶段重置过场：有人被淘汰，幸存者状态重置（约1秒闪过，不拦截操作） --- */}
+      {/* --- 阶段重置过场：左右黑板闪入会合 → 停顿 → 闪走（约1.2秒，不拦截操作） --- */}
       {resetFlash && (
-        <div className="fixed inset-0 z-[95] flex items-center justify-center pointer-events-none">
+        <div className="fixed inset-0 z-[95] pointer-events-none overflow-hidden">
           <style>{`
-            @keyframes reset-flash-bg {
-              0% { opacity: 0; }
-              15% { opacity: 1; }
-              75% { opacity: 1; }
-              100% { opacity: 0; }
+            @keyframes reset-panel-left {
+              0% { transform: translateX(-102%); }
+              20% { transform: translateX(2.5%); }
+              28% { transform: translateX(0); }
+              62% { transform: translateX(0); }
+              100% { transform: translateX(-102%); }
             }
-            @keyframes reset-flash-pop {
-              0% { opacity: 0; transform: scale(0.7); }
-              15% { opacity: 1; transform: scale(1.08); }
-              30% { transform: scale(1); }
-              75% { opacity: 1; transform: scale(1); }
-              100% { opacity: 0; transform: scale(1.02); }
+            @keyframes reset-panel-right {
+              0% { transform: translateX(102%); }
+              20% { transform: translateX(-2.5%); }
+              28% { transform: translateX(0); }
+              62% { transform: translateX(0); }
+              100% { transform: translateX(102%); }
+            }
+            @keyframes reset-text-line {
+              0%, 15% { opacity: 0; transform: scale(0.8); }
+              30% { opacity: 1; transform: scale(1.06); }
+              40% { transform: scale(1); }
+              48% { transform: scale(1.045); }
+              56% { transform: scale(1); }
+              64% { opacity: 1; transform: scale(1); }
+              80%, 100% { opacity: 0; transform: scale(1.05); }
+            }
+            @keyframes reset-seam {
+              0%, 20% { opacity: 0; }
+              30%, 62% { opacity: 1; }
+              75%, 100% { opacity: 0; }
             }
           `}</style>
-          {/* 红色闪光背景 */}
+          {/* 左黑板 */}
           <div
-            className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(220,38,38,0.35)_0%,rgba(0,0,0,0.55)_70%)]"
-            style={{ animation: 'reset-flash-bg 1.1s ease-out forwards' }}
+            className="absolute top-0 left-0 h-full w-[51%] bg-gradient-to-r from-black via-[#120606] to-[#1a0808] border-r-2 border-red-500/80 shadow-[4px_0_30px_rgba(220,38,38,0.45)]"
+            style={{ animation: 'reset-panel-left 1.2s cubic-bezier(0.22,1,0.36,1) forwards' }}
           />
-          {/* 中央提示 */}
+          {/* 右黑板 */}
           <div
-            className="relative flex flex-col items-center gap-2 px-10 py-6"
-            style={{ animation: 'reset-flash-pop 1.1s ease-out forwards' }}
-          >
-            <div className="text-6xl filter drop-shadow-[0_0_25px_rgba(220,38,38,0.9)]">💥</div>
-            <div className="text-4xl md:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-300 via-red-500 to-orange-400 tracking-widest whitespace-nowrap drop-shadow-lg">
-              {lang === 'zh' ? '有人被淘汰!' : 'ELIMINATION!'}
-            </div>
-            <div className="text-lg md:text-xl font-bold text-white tracking-wider">
-              {lang === 'zh' ? '幸存者状态重置 · 重新开战' : 'Survivors reset · Fight again'}
-            </div>
-            <div className="text-xs md:text-sm text-slate-300 font-mono tracking-[0.25em] bg-black/50 px-4 py-1 rounded-full border border-red-500/30">
-              {lang === 'zh' ? '血量 / 能量 / 层数已重置' : 'HP / ENERGY / LAYERS RESET'}
+            className="absolute top-0 right-0 h-full w-[51%] bg-gradient-to-l from-black via-[#120606] to-[#1a0808] border-l-2 border-red-500/80 shadow-[-4px_0_30px_rgba(220,38,38,0.45)]"
+            style={{ animation: 'reset-panel-right 1.2s cubic-bezier(0.22,1,0.36,1) forwards' }}
+          />
+          {/* 中央接缝高光 */}
+          <div
+            className="absolute top-0 bottom-0 left-1/2 w-[3px] -translate-x-1/2 bg-red-500 shadow-[0_0_25px_rgba(239,68,68,0.9)]"
+            style={{ animation: 'reset-seam 1.2s ease-out forwards' }}
+          />
+          {/* 一行字 */}
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div
+              className="text-4xl md:text-6xl font-black text-white tracking-[0.3em] whitespace-nowrap select-none"
+              style={{
+                animation: 'reset-text-line 1.2s ease-out forwards',
+                textShadow: '0 0 30px rgba(239,68,68,0.9), 0 0 60px rgba(239,68,68,0.5), 0 2px 10px rgba(0,0,0,0.8)',
+              }}
+            >
+              ⚡ 战争已重置
             </div>
           </div>
         </div>
