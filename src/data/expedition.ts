@@ -256,6 +256,29 @@ intro: { zh: '塔魂：波赞只是守门人。我，即是塔。', en: 'Soul: B
 },
 ];
 
+// ============ 前三关战斗内教学 ============
+export interface ExpeditionTutorialStep {
+text: LocalizedText;
+highlight?: string; // 高亮手牌：卡牌 id，或 'ULTIMATE' 表示任意终极技能
+}
+export const EXPEDITION_TUTORIALS: Record<string, ExpeditionTutorialStep[]> = {
+s0: [
+{ text: { zh: '👆 点「攒」：每次 +2 能量，能量是出牌的燃料', en: 'Tap [Charge]: +2 Energy each time — the fuel for every move' }, highlight: 'charge' },
+{ text: { zh: '⚡ 有能量了！点「轰」进攻——训练假人只有 2 ❤️', en: 'Got energy! Tap [Blast] to attack — the dummy has only 2 HP' }, highlight: 'hong' },
+{ text: { zh: '❤️ 看对手血条：打空 2 血就赢了，继续进攻！', en: 'Watch its HP bar: empty its 2 HP to win. Keep attacking!' }, highlight: 'hong' },
+],
+s1: [
+{ text: { zh: '🪵 胆小木桩 2 ❤️，但它会还手！先看它能量', en: 'The cowardly post has 2 HP — but it fights back! Watch its energy' } },
+{ text: { zh: '🛡️ 它能量 ≥2 就要打你：点「防」挡住伤害', en: 'When its energy ≥ 2 it will hit you: tap [Defend] to block' }, highlight: 'defend' },
+{ text: { zh: '⚔️ 它没能量时，就是你大胆「轰」它的好机会', en: 'When it has no energy, [Blast] it without fear' }, highlight: 'hong' },
+],
+s2: [
+{ text: { zh: '🐢 它只会「防」，普通「轰」打不动它', en: 'It only [Defend]s — normal [Blast] cannot hurt it' } },
+{ text: { zh: '👆 一直点「攒」，攒到 3 能量', en: 'Keep tapping [Charge] until you have 3 energy' }, highlight: 'charge' },
+{ text: { zh: '💥 3 能量了！点「终极技能」破防一击！', en: '3 energy! Tap your [Ultimate] to smash through!' }, highlight: 'ULTIMATE' },
+],
+};
+
 // ============ 遗物 ============
 
 export interface RelicDef {

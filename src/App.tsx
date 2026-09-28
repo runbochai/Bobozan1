@@ -46,7 +46,7 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
-import { EXPEDITION_EQUIPMENTS, EXPEDITION_RELICS, EXPEDITION_STAGES } from './data/expedition';
+import { EXPEDITION_EQUIPMENTS, EXPEDITION_RELICS, EXPEDITION_STAGES, EXPEDITION_TUTORIALS } from './data/expedition';
 import { drawGachaCard } from './data/expedition';
 import {
   applyIronhide,
@@ -351,6 +351,8 @@ export default function BobozanOnline() {
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
   const [expGold, setExpGold] = useState(0);
+  const [expTutIdx, setExpTutIdx] = useState(0);
+  const expTutIdxRef = useRef(0);
   const [expEquipment, setExpEquipment] = useState<string[]>([]);
   const [expGachaCardId, setExpGachaCardId] = useState<string | null>(null);
   const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
@@ -474,6 +476,8 @@ const expYpjUsedRef = useRef(false);
     players = applyExpTurnStartEnergy(players, true);
     expMaxHpRef.current = Object.fromEntries(players.map(pl => [pl.id, pl.id === myId ? run.maxHp : pl.hp]));
     expBossEnragedRef.current = false;
+    expTutIdxRef.current = 0;
+    setExpTutIdx(0);
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
     setGameState({
@@ -507,6 +511,16 @@ const expYpjUsedRef = useRef(false);
 
   const handleExpeditionMove = (cardId: string) => {
     if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle') return;
+    // 教学：出了当前高亮的牌，自动下一步
+    const tutSteps = EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expRunRef.current.stageIdx]?.id ?? ''];
+    if (tutSteps && expTutIdxRef.current < tutSteps.length) {
+      const hl = tutSteps[expTutIdxRef.current].highlight;
+      const played = SKILL_DB.find(x => x.id === cardId);
+      if (hl && (hl === cardId || (hl === 'ULTIMATE' && played?.type === 'ULTIMATE'))) {
+        expTutIdxRef.current += 1;
+        setExpTutIdx(expTutIdxRef.current);
+      }
+    }
     if (gameState.status !== 'PLAYING') return;
     const myId = expMyId();
     const me = gameState.players.find(p => p.id === myId);
@@ -2120,31 +2134,29 @@ const expYpjUsedRef = useRef(false);
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.8)] scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500 origin-center" />
                </div>
             </div>
-            <button 
-              onClick={handleEnterName} 
-              disabled={!playerName.trim()} 
-              className="group relative w-full max-w-xs overflow-hidden rounded-xl bg-gradient-to-r from-orange-600 to-red-600 p-4 transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_40px_rgba(220,38,38,0.6)] disabled:opacity-0 disabled:pointer-events-none duration-300"
-            >
-              <div className="relative w-full flex items-center justify-center gap-2">
-                <span className="text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">{t.enterLobby}</span>
-                <div className="bg-white/20 p-1 rounded-full flex-shrink-0"><ArrowUp className="rotate-90 text-white" size={20} strokeWidth={3} /></div>
-              </div>
-              <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
-            </button>
-
-            <button 
-              onClick={startExpedition} 
-              className="mt-6 group relative px-6 py-2 overflow-hidden rounded-full bg-slate-800/50 border border-slate-600 hover:border-green-400 transition-all duration-300"
-            >
-              <div className="flex items-center gap-2 relative z-10">
-                <div className="bg-green-500/20 p-1.5 rounded-full group-hover:bg-green-500 group-hover:text-black transition-colors">
-                  <HandHeart size={16} className="text-green-400 group-hover:text-black" />
+            <div className="flex gap-4 w-full max-w-md justify-center">
+              <button
+                onClick={startExpedition}
+                className="group relative flex-1 overflow-hidden rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 p-4 transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] duration-300"
+              >
+                <div className="relative w-full flex items-center justify-center gap-2">
+                  <span className="text-2xl">🗡️</span>
+                  <span className="text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">{lang === 'zh' ? '远征模式' : 'Expedition'}</span>
                 </div>
-                <span className="text-sm font-bold text-slate-300 group-hover:text-white tracking-widest uppercase">
-                  {lang === 'zh' ? '远征模式' : 'Expedition'}
-                </span>
-              </div>
-            </button>
+                <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
+              </button>
+              <button
+                onClick={handleEnterName}
+                disabled={!playerName.trim()}
+                className="group relative flex-1 overflow-hidden rounded-xl bg-gradient-to-r from-orange-600 to-red-600 p-4 transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_40px_rgba(220,38,38,0.6)] disabled:opacity-40 disabled:pointer-events-none duration-300"
+              >
+                <div className="relative w-full flex items-center justify-center gap-2">
+                  <span className="text-2xl">👥</span>
+                  <span className="text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">{lang === 'zh' ? '多人游戏' : 'Multiplayer'}</span>
+                </div>
+                <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
+              </button>
+            </div>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
                 {lang === 'zh' ? `🏆 历史最佳：第 ${expBest} 关` : `🏆 Best: Stage ${expBest}`}
@@ -2937,6 +2949,34 @@ const expYpjUsedRef = useRef(false);
             </div>
           </div>
         )}
+
+        {/* --- EXPEDITION TUTORIAL（前三关战斗内教学） --- */}
+        {isExpedition && expPhase === 'battle' && (() => {
+          const steps = EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expStageIdx]?.id ?? ''];
+          if (!steps || expTutIdx >= steps.length) return null;
+          const step = steps[expTutIdx];
+          return (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none">
+              <div className="bg-amber-950/90 backdrop-blur-xl border border-amber-400/50 rounded-xl px-4 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-center pointer-events-auto">
+                <div className="text-sm font-bold text-amber-100 leading-snug">{step.text[lang]}</div>
+                <div className="flex justify-center gap-2 mt-2">
+                  <button
+                    onClick={() => { expTutIdxRef.current += 1; setExpTutIdx(expTutIdxRef.current); }}
+                    className="px-3 py-1 rounded-lg bg-amber-500 text-black text-xs font-black hover:scale-105 active:scale-95 transition-all"
+                  >
+                    {lang === 'zh' ? '下一步 →' : 'Next →'}
+                  </button>
+                  <button
+                    onClick={() => { expTutIdxRef.current = 999; setExpTutIdx(999); }}
+                    className="px-3 py-1 rounded-lg bg-slate-700 text-slate-300 text-xs font-bold hover:scale-105 active:scale-95 transition-all"
+                  >
+                    {lang === 'zh' ? '跳过教学' : 'Skip'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
         {/* --- EXPEDITION REWARD（战后多选一） --- */}
         {isExpedition && expPhase === 'reward' && (
@@ -3962,6 +4002,10 @@ const expYpjUsedRef = useRef(false);
                                     if (c.tags?.includes('combo')) glareColor = '#fbbf24'; // Amber-400 
 
                                     const isHovered = hoveredCard === c.id;
+                                    // 远征前三关教学：高亮当前步骤的牌
+                                    const tutSteps = isExpedition ? EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expStageIdx]?.id ?? ''] : undefined;
+                                    const tutHL = tutSteps && expTutIdx < tutSteps.length ? tutSteps[expTutIdx].highlight : undefined;
+                                    const tutGlow = !!tutHL && (tutHL === c.id || (tutHL === 'ULTIMATE' && c.type === 'ULTIMATE'));
                                     return (
                                       <div
                                           key={`${c.id}-${index}`}
@@ -3995,6 +4039,7 @@ const expYpjUsedRef = useRef(false);
                                             relative w-36 h-56 rounded-2xl border-4 ${borderClass}
                                             shadow-2xl
                                             ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''}
+                                            ${tutGlow ? 'ring-4 ring-yellow-300 animate-pulse' : ''}
                                             origin-bottom
                                             cursor-pointer group flex flex-col items-center overflow-hidden hand-card
                                             animate-in slide-in-from-bottom-10 fade-in duration-500
