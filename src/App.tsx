@@ -64,7 +64,6 @@ import {
   intentRevealed,
   intentTaunt,
   passiveBadges,
-  type PassiveBadge,
 } from './logic/expedition';
 import {
   FINAL_LEVEL,
@@ -383,6 +382,7 @@ export default function BobozanOnline() {
   const [intentDismissed, setIntentDismissed] = useState<Set<string>>(new Set()); // 本回合手动点掉的意图
   const [intentOffset, setIntentOffset] = useState({ x: 0, y: 0 }); // 意图面板拖动偏移
   const [passiveTip, setPassiveTip] = useState<string | null>(null); // 敌人被动说明：`${enemyId}|${badgeKey}`
+  const intentDraggedRef = useRef(false); // 面板是否刚被拖过（避免松手误触点击）
   const [shopShake, setShopShake] = useState<number | null>(null); // 商城买不起抖动
   const [expEquipment, setExpEquipment] = useState<string[]>([]);
   const [expGachaCardId, setExpGachaCardId] = useState<string | null>(null);
@@ -3272,6 +3272,7 @@ const expYpjUsedRef = useRef(false);
                    const onMove = (ev: PointerEvent) => {
                      if (!dragging && Math.hypot(ev.clientX - startX, ev.clientY - startY) < 6) return;
                      dragging = true;
+                     intentDraggedRef.current = true;
                      setIntentOffset({ x: baseX + (ev.clientX - startX), y: baseY + (ev.clientY - startY) });
                    };
                    const onUp = () => {
@@ -3296,7 +3297,7 @@ const expYpjUsedRef = useRef(false);
                        <div className="text-[10px] text-slate-400 font-bold max-w-[7rem] truncate">{foe.name}</div>
                        {/* 对话气泡：敌人亲口说出意图 */}
                        <button
-                         onClick={() => { playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(foe.id)); }}
+                         onClick={() => { if (intentDraggedRef.current) { intentDraggedRef.current = false; return; } playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(foe.id)); }}
                          className="relative bg-amber-50 text-slate-900 text-xs font-bold rounded-xl rounded-bl-sm px-2.5 py-1.5 max-w-[7.5rem] text-left shadow-lg hover:scale-105 active:scale-95 transition-transform leading-snug"
                        >
                          {taunt}
@@ -3311,7 +3312,7 @@ const expYpjUsedRef = useRef(false);
                                  key={b.key}
                                  onMouseEnter={() => setPassiveTip(tipKey)}
                                  onMouseLeave={() => setPassiveTip(null)}
-                                 onClick={(e) => { e.stopPropagation(); playSound('click', muted); setPassiveTip(cur => cur === tipKey ? null : tipKey); }}
+                                 onClick={(e) => { e.stopPropagation(); if (intentDraggedRef.current) { intentDraggedRef.current = false; return; } playSound('click', muted); setPassiveTip(cur => cur === tipKey ? null : tipKey); }}
                                  className="text-sm leading-none cursor-help hover:scale-125 transition-transform"
                                >
                                  {b.icon}
