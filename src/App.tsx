@@ -377,6 +377,7 @@ export default function BobozanOnline() {
   const expTutIdxRef = useRef(0);
   const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
+  const [intentDismissed, setIntentDismissed] = useState<Set<string>>(new Set()); // 本回合手动点掉的意图
   const [shopShake, setShopShake] = useState<number | null>(null); // 商城买不起抖动
   const [expEquipment, setExpEquipment] = useState<string[]>([]);
   const [expGachaCardId, setExpGachaCardId] = useState<string | null>(null);
@@ -546,6 +547,7 @@ const expYpjUsedRef = useRef(false);
     });
     if (stage.tip) setToastMsg(stage.tip[lang]);
     setExpIntents(computeExpIntents(players, stageIdx));
+    setIntentDismissed(new Set());
   };
 
   const startExpedition = () => {
@@ -759,6 +761,7 @@ const expYpjUsedRef = useRef(false);
       } else {
         setExpIntents(computeExpIntents(players, run.stageIdx));
       }
+      setIntentDismissed(new Set());
       if (!delayedReward) {
         setSubmittingMove(false);
         expeditionBusyRef.current = false;
@@ -3246,6 +3249,39 @@ const expYpjUsedRef = useRef(false);
            
            {/* Background Table Outline */}
            <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] border-2 border-solid border-slate-600 rounded-[50%] pointer-events-none opacity-30" />
+
+           {/* 敌人意图面板（左侧，不挡头像，可点击隐藏） */}
+           {isExpedition && expPhase === 'battle' && gameState.status === 'PLAYING' && (() => {
+             const myId = expMyId();
+             const foes = gameState.players.filter(pl => pl.id !== myId && !pl.isDead && expIntents[pl.id]);
+             if (foes.length === 0) return null;
+             const iconMap: Record<string, string> = { ATTACK: '⚔️', DEFEND: '🛡️', CHARGE: '⚡', ULTIMATE: '💥', ABSORB: '🌀', SPECIAL: '✨' };
+             return (
+               <div className="absolute left-2 top-[38%] -translate-y-1/2 z-40 flex flex-col items-center gap-2 bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl px-2 py-3 shadow-xl max-w-[4.5rem]">
+                 <div className="text-[10px] font-black text-slate-400 tracking-widest">{lang === 'zh' ? '意图' : 'INTENT'}</div>
+                 {foes.map(foe => {
+                   const card = SKILL_DB.find(c => c.id === expIntents[foe.id]);
+                   const revealed = shouldRevealIntent(foe.id);
+                   const icon = revealed ? (iconMap[card?.type ?? ''] ?? '❔') : '❓';
+                   const label = revealed
+                     ? (card ? `${foe.name}：${icon} ${card.name[lang]}` : `${foe.name}：${icon}`)
+                     : (lang === 'zh' ? `${foe.name}：❓ 意图不明（点击隐藏）` : `${foe.name}: intent hidden (tap to hide)`);
+                   const dismissed = intentDismissed.has(foe.id);
+                   return (
+                     <button
+                       key={foe.id}
+                       title={label}
+                       onClick={() => { playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(foe.id)); }}
+                       className={`flex flex-col items-center gap-0.5 transition-all ${dismissed ? 'opacity-20 grayscale scale-90' : 'hover:scale-110 active:scale-95'}`}
+                     >
+                       <span className="text-3xl leading-none drop-shadow-lg">{icon}</span>
+                       <span className="text-[10px] text-slate-300 font-bold max-w-[3.8rem] truncate">{foe.name}</span>
+                     </button>
+                   );
+                 })}
+               </div>
+             );
+           })()}
            
            {/* Players */}
            {(() => {
@@ -3312,23 +3348,6 @@ const expYpjUsedRef = useRef(false);
                              )
                            )
                        )}
-                       {/* 敌人意图（远征）：前三关全显示，之后部分隐藏 */}
-                       {isExpedition && expPhase === 'battle' && !isMe && !p.isDead && gameState.status === 'PLAYING' && (() => {
-                         const intentId = expIntents[p.id];
-                         if (!intentId) return null;
-                         const card = SKILL_DB.find(c => c.id === intentId);
-                         const revealed = shouldRevealIntent(p.id);
-                         const iconMap: Record<string, string> = { ATTACK: '⚔️', DEFEND: '🛡️', CHARGE: '⚡', ULTIMATE: '💥', ABSORB: '🌀', SPECIAL: '✨' };
-                         const icon = revealed ? (iconMap[card?.type ?? ''] ?? '❔') : '❓';
-                         const label = revealed
-                           ? (card ? `${icon} ${card.name[lang]}` : icon)
-                           : (lang === 'zh' ? '❓ 意图不明……他在盘算什么？' : '❓ Unknown intent… what is it plotting?');
-                         return (
-                           <div title={label} className="pointer-events-auto mt-1.5 px-2 py-0.5 rounded-full bg-black/60 border border-white/15 backdrop-blur-sm text-sm leading-none shadow-lg animate-in fade-in zoom-in duration-300">
-                             {icon}
-                           </div>
-                         );
-                       })()}
                     </div>
 
                     {/* --- B. EMOJI BUBBLE --- */}
