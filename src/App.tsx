@@ -1131,7 +1131,7 @@ const expYpjUsedRef = useRef(false);
       }
     }
     setUltCutin(null);
-  }, [gameState.status, gameState.turn, reduceMotion]);
+  }, [gameState.status, gameState.turn, gameState.players, lang, reduceMotion]);
 
   useEffect(() => {
     if (gameState.players.length > 0 && prevPlayersRef.current.length > 0) {
@@ -1419,7 +1419,7 @@ const expYpjUsedRef = useRef(false);
       });
     }, settleMs);
     return () => clearTimeout(timer);
-  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, user, roomCode, lang, isOnline, reduceMotion]);
+  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, gameState.players, user, roomCode, lang, isOnline, reduceMotion]);
 
   useEffect(() => {
   if (muted || gameState.logs.length === 0) return;
