@@ -289,4 +289,9 @@ test('意图显示规则：前三关全显示，之后按哈希 45% 显示且稳
   let shown = 0;
   for (let i = 0; i < 200; i++) if (intentRevealed('enemy' + i, (i % 20) + 1, 5)) shown++;
   assert.ok(shown > 60 && shown < 120, `shown=${shown}`);
+  // Boss 永不显示，精英约 20%
+  for (let t = 1; t <= 10; t++) assert.equal(intentRevealed('boss1', t, 14, 'boss'), false);
+  let eliteShown = 0;
+  for (let i = 0; i < 300; i++) if (intentRevealed('elite' + i, (i % 25) + 1, 8, 'elite')) eliteShown++;
+  assert.ok(eliteShown > 30 && eliteShown < 100, `eliteShown=${eliteShown}`);
 });

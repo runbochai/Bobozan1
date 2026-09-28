@@ -92,13 +92,19 @@ return scored[0].id;
 }
 
 // ============ 敌人意图显示规则 ============
-/** 前三关（stageIdx 0-2）教学期意图全显示；之后每敌每回合 45% 概率显示（确定性哈希，不闪烁） */
-export function intentRevealed(enemyId: string, turn: number, stageIdx: number): boolean {
+export type IntentConceal = 'boss' | 'elite' | 'normal';
+/**
+ * 前三关（stageIdx 0-2）教学期意图全显示；
+ * 之后：Boss 完全隐藏（深不可测），精英 20% 概率显示，普通怪 45% 概率显示（确定性哈希，不闪烁）
+ */
+export function intentRevealed(enemyId: string, turn: number, stageIdx: number, conceal: IntentConceal = 'normal'): boolean {
 if (stageIdx <= 2) return true;
+if (conceal === 'boss') return false;
+const chance = conceal === 'elite' ? 20 : 45;
 const str = `${enemyId}|${turn}|${stageIdx}`;
 let h = 0;
 for (let i = 0; i < str.length; i++) h = ((h * 31 + str.charCodeAt(i)) >>> 0);
-return h % 100 < 45;
+return h % 100 < chance;
 }
 
 // ============ 战后奖励：治疗 / 升级 / 血量上限 / 限次秘技 / 遗物 ============

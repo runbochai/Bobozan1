@@ -447,9 +447,13 @@ const expYpjUsedRef = useRef(false);
     }
     return intents;
   };
-  // 意图是否显示：前三关教学全显示，之后每敌每回合 45% 概率显示（确定性哈希，不闪烁）
-  const shouldRevealIntent = (enemyId: string) =>
-    intentRevealed(enemyId, gameState.turn, expRunRef.current.stageIdx);
+  // 意图是否显示：前三关全显示；Boss 完全隐藏，精英 20%，普通怪 45%
+  const shouldRevealIntent = (enemyId: string) => {
+    const stage = EXPEDITION_STAGES[expRunRef.current.stageIdx];
+    const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === enemyId);
+    const conceal = def?.boss ? 'boss' : def?.elite ? 'elite' : 'normal';
+    return intentRevealed(enemyId, gameState.turn, expRunRef.current.stageIdx, conceal);
+  };
 
   const setupExpeditionBattle = (stageIdx: number) => {
     const myId = expMyId();
