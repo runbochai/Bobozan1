@@ -335,9 +335,18 @@ export default function BobozanOnline() {
     title: { zh: "", en: "" }, 
     sub: { zh: "", en: "" } 
   });
+  // 教程计时器与忙碌锁：防止结算期间连点导致状态错乱；退出教程时清理，避免幽灵跳转
+  const tutorialTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const tutorialBusyRef = useRef(false);
+  const clearTutorialTimers = () => {
+    tutorialTimersRef.current.forEach(t => clearTimeout(t));
+    tutorialTimersRef.current = [];
+    tutorialBusyRef.current = false;
+  };
 
   const startTutorial = () => {
     playSound('confirm', muted);
+    clearTutorialTimers();
     setIsTutorial(true);
     setTutorialStep(0);
     setTutorialMsg(TUTORIAL_STEPS[0]);
@@ -395,12 +404,17 @@ export default function BobozanOnline() {
   };
 
   const handleTutorialAction = (cardId: string) => {
+    // 忙碌锁：结算动画期间忽略一切点击，防止连点导致多条计时器链交错、状态错乱卡顿
+    if (tutorialBusyRef.current) return;
+
     // 1. Cleanup Tooltips
     if (hoverTimer.current) clearTimeout(hoverTimer.current);
     setHoveredCard(null);
     setTooltipPos(null);
 
-    const currentLesson = TUTORIAL_STEPS[tutorialStep];
+    const step = tutorialStep;
+    const currentLesson = TUTORIAL_STEPS[step];
+    if (!currentLesson) return;
     
     // 2. Validation with Localized Toasts
     if (!currentLesson.allowed.includes(cardId)) {
@@ -418,6 +432,7 @@ export default function BobozanOnline() {
     }
 
     // 3. TRIGGER SHOWDOWN
+    tutorialBusyRef.current = true;
     playSound('confirm', muted); 
     setGameState(prev => ({
       ...prev,
@@ -428,109 +443,109 @@ export default function BobozanOnline() {
       ]
     }));
 
-    // 4. WAIT FOR SLAM
-    setTimeout(() => {
-        const nextStep = tutorialStep + 1;
+    // 本课结算音效（提前算好，updater 里只做纯状态变更）
+    const lessonWins = [1, 3, 4, 6, 9].includes(currentLesson.id);
+    const lessonClashes = currentLesson.id === 2 || currentLesson.id === 8;
 
-        // 🟢 LOCALIZED COMPLETION MESSAGE
-        const nextMsg = nextStep < TUTORIAL_STEPS.length
-          ? TUTORIAL_STEPS[nextStep] 
-          : { 
-              title: { zh: "教程完成！", en: "Tutorial Complete!" }, 
-              sub: { zh: "你已准备好面对真正的战斗！", en: "You are ready for the real battle!" } 
-            };
-
-        const newPlayers = JSON.parse(JSON.stringify(gameState.players));
-        const myPlayer = newPlayers[0];
-        const bot = newPlayers[1];
-
+    // 4. RESOLVE — 用函数式更新拿最新 state，避免闭包拿到过期快照
+    const t1 = setTimeout(() => {
         const botActionId = currentLesson.setup.botAction;
         const botCard = SKILL_DB.find(c => c.id === botActionId);
 
-        myPlayer.lastCardId = cardId;
-        if (card.type === 'CHARGE') myPlayer.energy += 2;
-        else myPlayer.energy -= card.cost;
+        setGameState(prev => {
+          const players = prev.players.map(p => ({ ...p }));
+          const myPlayer = players[0];
+          const bot = players[1];
 
-        if (botCard) {
-            if (botCard.type === 'CHARGE') {
-                bot.energy += 2;
-            } 
-            else {
-                bot.energy = Math.max(0, bot.energy - botCard.cost);
-            }
-        }
+          myPlayer.lastCardId = cardId;
+          myPlayer.selectedCardId = null;
+          if (card.type === 'CHARGE') myPlayer.energy += 2;
+          else myPlayer.energy -= card.cost;
 
-        // --- Determine Winner Visuals for Tutorial ---
-        if ([1, 3, 4, 6, 9].includes(currentLesson.id)) {
-           bot.hp = 0; 
-           bot.isDead = true; 
-           playSound('win', muted); 
-        } else if (currentLesson.id === 2 || currentLesson.id === 8) {
-           playSound('combat', muted); 
-        } else {
-           playSound('draw', muted); 
-        }
+          if (botCard) {
+              if (botCard.type === 'CHARGE') {
+                  bot.energy += 2;
+              } 
+              else {
+                  bot.energy = Math.max(0, bot.energy - botCard.cost);
+              }
+          }
 
-        setGameState(prev => ({
-          ...prev,
-          status: 'PLAYING', 
-          players: newPlayers,
-          logs: [{ turn: prev.turn, text: lang === 'zh' ? `教程: 你使用了 ${card.name.zh}` : `Tutorial: You used ${card.name.en}`, type: 'combat' }]
-        }));
+          // --- Determine Winner Visuals for Tutorial ---
+          if (lessonWins) {
+             bot.hp = 0; 
+             bot.isDead = true; 
+          }
 
-        setTimeout(() => {
+          return {
+            ...prev,
+            status: 'PLAYING', 
+            players,
+            logs: [{ turn: prev.turn, text: lang === 'zh' ? `教程: 你使用了 ${card.name.zh}` : `Tutorial: You used ${card.name.en}`, type: 'combat' }]
+          };
+        });
+
+        if (lessonWins) playSound('win', muted);
+        else if (lessonClashes) playSound('combat', muted);
+        else playSound('draw', muted);
+
+        const t2 = setTimeout(() => {
+          tutorialBusyRef.current = false;
+          const nextStep = step + 1;
           if (nextStep >= TUTORIAL_STEPS.length) {
             playSound('win', muted);
+            clearTutorialTimers();
             setIsTutorial(false);
             setView('NAME_INPUT');
-          } else {
-            const nextLevelData = TUTORIAL_STEPS[nextStep]; 
-            
-            setTutorialStep(nextStep);
-            setTutorialMsg(nextMsg);
-            
-            // 🟢 UPDATED: ALWAYS RESET TO FOLDER VIEW
-            // We no longer auto-open the cards. We let the player choose the folder.
-            setHandViewMode('CATEGORIES');
-            // Reset category selection so nothing is "open"
-            setHandCategory('CHARGE'); 
-
-            // --- INVENTORY SETUP FOR NEXT LEVEL ---
-            let newInventory = [0];
-            
-            if (nextStep === 4) newInventory = [0, 3];
-            if (nextStep === 5) newInventory = [0];
-            if (nextStep === 6) newInventory = [0, 3];
-            if (nextStep === 7) newInventory = [0];
-            if (nextStep === 8) newInventory = [0, 2];
-            if (nextStep === 9) newInventory = [0];
-            if (nextStep === 10) newInventory = [0, 2, 5];
-
-            setGameState(prev => ({
-              ...prev,
-              players: [
-                { 
-                    ...prev.players[0], 
-                    hp: 2, 
-                    energy: nextLevelData.setup.energy, 
-                    selectedCardId: null, 
-                    lastCardId: null, 
-                    inventory: newInventory 
-                },
-                { 
-                    ...prev.players[1], 
-                    hp: 2, 
-                    isDead: false, 
-                    energy: nextLevelData.setup.botEnergy, 
-                    selectedCardId: nextLevelData.setup.botAction, 
-                    lastCardId: null 
-                }
-              ]
-            }));
+            return;
           }
-        }, 2500);
 
-    }, 3000); 
+          const nextLevelData = TUTORIAL_STEPS[nextStep]; 
+          
+          setTutorialStep(nextStep);
+          setTutorialMsg(nextLevelData);
+          
+          // ALWAYS RESET TO FOLDER VIEW — 让玩家自己选分类
+          setHandViewMode('CATEGORIES');
+          setHandCategory('CHARGE'); 
+
+          // --- INVENTORY SETUP FOR NEXT LEVEL ---
+          let newInventory = [0];
+          
+          if (nextStep === 4) newInventory = [0, 3];
+          if (nextStep === 5) newInventory = [0];
+          if (nextStep === 6) newInventory = [0, 3];
+          if (nextStep === 7) newInventory = [0];
+          if (nextStep === 8) newInventory = [0, 2];
+          if (nextStep === 9) newInventory = [0];
+          if (nextStep === 10) newInventory = [0, 2, 5];
+
+          setGameState(prev => ({
+            ...prev,
+            players: [
+              { 
+                  ...prev.players[0], 
+                  hp: 2, 
+                  energy: nextLevelData.setup.energy, 
+                  selectedCardId: null, 
+                  lastCardId: null, 
+                  inventory: newInventory 
+              },
+              { 
+                  ...prev.players[1], 
+                  hp: 2, 
+                  isDead: false, 
+                  energy: nextLevelData.setup.botEnergy, 
+                  selectedCardId: nextLevelData.setup.botAction, 
+                  lastCardId: null 
+              }
+            ]
+          }));
+        }, 1600);
+        tutorialTimersRef.current.push(t2);
+
+    }, 2000); 
+    tutorialTimersRef.current.push(t1);
   };
 
   // --- Drag Logic ---
@@ -962,6 +977,7 @@ export default function BobozanOnline() {
   };
 
   const resetRoom = useCallback(() => {
+    clearTutorialTimers();
     setIsOnline(false);
     setIsTutorial(false);
     setRoomCode('');
@@ -2639,30 +2655,43 @@ export default function BobozanOnline() {
       {/* CENTER ARENA */}
       <div className="flex-1 flex flex-col relative h-screen z-10">
 
-        {/* --- TUTORIAL INSTRUCTION OVERLAY --- */}
+        {/* --- TUTORIAL INSTRUCTION BANNER --- */}
         {isTutorial && (
-          <div className="absolute top-1/2 -translate-y-1/2 left-1/4 -translate-x-1/2 z-[60] w-full max-w-md px-4 animate-in slide-in-from-left-10 fade-in duration-500 pointer-events-none">
+          <div className="absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 md:left-1/4 z-[60] w-full max-w-md px-4 pointer-events-none">
               
-              <div className="bg-slate-900/95 border-2 border-yellow-400/50 backdrop-blur-xl rounded-3xl p-8 shadow-[0_0_60px_rgba(250,204,21,0.3)] text-left relative overflow-hidden pointer-events-auto">
+              <div key={tutorialStep} className="animate-in slide-in-from-left-4 fade-in duration-300 bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-2xl p-5 md:p-6 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-left relative overflow-hidden">
                   
-                  <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-yellow-400 to-transparent animate-pulse" />
+                  {/* 进度条 */}
+                  <div className="absolute top-0 inset-x-0 h-1 bg-white/10">
+                    <div
+                      className="h-full bg-gradient-to-r from-yellow-400 to-amber-500 transition-all duration-500"
+                      style={{ width: `${((tutorialStep + 1) / TUTORIAL_STEPS.length) * 100}%` }}
+                    />
+                  </div>
+
+                  <div className="flex items-center gap-3 mb-2.5">
+                    <span className="shrink-0 text-[11px] font-black tracking-[0.18em] uppercase bg-white/10 border border-white/15 text-slate-200 rounded-full px-3 py-1">
+                      {lang === 'zh' ? `教程 ${tutorialStep + 1}/${TUTORIAL_STEPS.length}` : `Lesson ${tutorialStep + 1}/${TUTORIAL_STEPS.length}`}
+                    </span>
+                    <h2 className="text-lg font-black text-white tracking-wide truncate">
+                      {tutorialMsg.title[lang]}
+                    </h2>
+                  </div>
                   
-                  <h2 className="text-3xl font-black text-white uppercase tracking-wider mb-4 drop-shadow-md">
-                    {tutorialMsg.title[lang]}
-                  </h2>
-                  
-                  <p className="text-lg text-yellow-100 font-medium leading-relaxed">
+                  <p className="text-sm md:text-[15px] text-slate-200 leading-relaxed">
                     {tutorialMsg.sub[lang]}
                   </p>
 
-                  <div className="mt-6 flex items-center gap-4 border-t border-white/10 pt-5">
-                    <span className="text-sm text-slate-400 uppercase tracking-widest font-bold">
-                      {lang === 'zh' ? '敌方意图:' : 'Enemy Intent:'}
+                  <div className="mt-4 flex items-center gap-3 border-t border-white/10 pt-3.5">
+                    <span className="text-[11px] text-slate-400 uppercase tracking-[0.18em] font-bold">
+                      {lang === 'zh' ? '敌方意图' : 'Enemy intent'}
                     </span>
-                    <div className="scale-90 origin-left">
+                    <div className="bg-white/5 border border-white/10 rounded-xl w-14 h-14 flex items-center justify-center overflow-hidden">
+                      <div className="scale-[0.62]">
                         {TUTORIAL_STEPS[tutorialStep]?.setup?.botAction 
                           ? getCardIcon(TUTORIAL_STEPS[tutorialStep].setup.botAction) 
                           : <div className="w-8 h-8 bg-slate-800 rounded animate-pulse" />} 
+                      </div>
                     </div>
                   </div>
               </div>
