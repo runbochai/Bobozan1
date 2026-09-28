@@ -345,7 +345,7 @@ export default function BobozanOnline() {
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
   // 远征 run 真值：timeout 回调里读 ref，避免闭包拿到旧 state
-  const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] as { cardId: string; usesLeft: number }[], energyBoost: 0 });
+  const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] as { cardId: string; usesLeft: number }[] });
   const expeditionBusyRef = useRef(false);
   const expeditionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const expPassivesRef = useRef<Record<string, { startEnergy?: number; energyPerTurn?: number }>>({});
@@ -434,12 +434,6 @@ const expYpjUsedRef = useRef(false);
     ];
     players = applyExpTurnStartEnergy(players, true);
     expMaxHpRef.current = Object.fromEntries(players.map(pl => [pl.id, pl.id === myId ? run.maxHp : pl.hp]));
-    // 蓄势奖励：本关开局 +N 能量（一次性）
-    if (run.energyBoost > 0) {
-      const boost = run.energyBoost;
-      run.energyBoost = 0;
-      players = players.map(pl => (pl.id === myId ? { ...pl, energy: pl.energy + boost } : pl));
-    }
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
     setGameState({
@@ -459,7 +453,7 @@ const expYpjUsedRef = useRef(false);
   const startExpedition = () => {
     playSound('confirm', muted);
     clearExpeditionTimers();
-    expRunRef.current = { stageIdx: 0, relics: [], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [], energyBoost: 0 };
+    expRunRef.current = { stageIdx: 0, relics: [], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] };
     expIronShirtUsedRef.current = false;
     setExpRelics([]);
     setIsExpedition(true);
@@ -579,7 +573,7 @@ const expYpjUsedRef = useRef(false);
         setExpPhase('runover');
       } else if (!enemiesAlive) {
         run.hp = Math.min(run.maxHp, meHp + (has('zstai') ? 1 : 0));
-        const opts = genRewardOptions(run.stageIdx, run.hp, run.maxHp, relics, has('cbt') ? 4 : 3);
+        const opts = genRewardOptions(run.stageIdx, run.hp, run.maxHp, relics, has('cbt') ? 4 : 3, run.inventory);
         logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🎉 通过${EXPEDITION_STAGES[run.stageIdx].name[lang]}！` : `🎉 Cleared ${EXPEDITION_STAGES[run.stageIdx].name[lang]}!`, type: 'win' as const }];
         setExpRewards(opts);
         setExpPhase('reward');
@@ -617,8 +611,8 @@ const expYpjUsedRef = useRef(false);
     } else if (opt.kind === 'relic' && !run.relics.includes(opt.relicId)) {
       run.relics.push(opt.relicId);
       setExpRelics([...run.relics]);
-    } else if (opt.kind === 'burst') {
-      run.energyBoost += 2;
+    } else if (opt.kind === 'levelup') {
+      if (!run.inventory.includes(opt.level)) run.inventory = [...run.inventory, opt.level];
     }
     const next = run.stageIdx + 1;
     if (next >= EXPEDITION_STAGES.length) {
@@ -2817,10 +2811,10 @@ const expYpjUsedRef = useRef(false);
                     icon = r.icon;
                     title = r.name[lang];
                     sub = r.desc[lang];
-                  } else if (opt.kind === 'burst') {
-                    icon = '⚡';
-                    title = lang === 'zh' ? '蓄势' : 'Power Up';
-                    sub = lang === 'zh' ? '下一关开局能量 +2（一次性）' : '+2 energy at next battle start (one-time)';
+                  } else if (opt.kind === 'levelup') {
+                    icon = '⬆️';
+                    title = lang === 'zh' ? `升级 · Lv.${opt.level}` : `Level Up · Lv.${opt.level}`;
+                    sub = lang === 'zh' ? '稳定升 1 级，解锁下一级技能卡' : 'Gain 1 level, unlock next-tier cards';
                   }
                   return (
                     <button

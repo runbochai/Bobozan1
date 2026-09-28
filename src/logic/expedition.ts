@@ -84,14 +84,18 @@ scored.sort((a, b) => b.w - a.w);
 return scored[0].id;
 }
 
-// ============ 战后奖励：治疗 / 血量上限 / 限次秘技 / 遗物 / 蓄势 ============
+// ============ 战后奖励：治疗 / 升级 / 血量上限 / 限次秘技 / 遗物 ============
+// 注意：没有任何开局能量加成。
 
 export type RewardOption =
 | { kind: 'heal'; amount: number}
+| { kind: 'levelup'; level: number}
 | { kind: 'maxhp'}
 | { kind: 'temp'; cardId: string; uses: number}
-| { kind: 'relic'; relicId: string}
-| { kind: 'burst'};
+| { kind: 'relic'; relicId: string};
+
+/** 远征玩家等级上限：与最终 Boss 持平 */
+export const EXPEDITION_MAX_LEVEL = 5;
 
 function shuffle<T>(arr: T[]): T[] {
 const a = [...arr];
@@ -108,8 +112,12 @@ hp: number,
 maxHp: number,
 relicIds: string[],
 optionCount = 3,
+inventory: number[] = [0],
 ): RewardOption[] {
 const rest: RewardOption[] = [];
+// 升级：稳定 +1 级，解锁下一级技能卡（满级后不再出现）
+const curMax = Math.max(0, ...inventory);
+if (curMax < EXPEDITION_MAX_LEVEL) rest.push({ kind: 'levelup', level: curMax + 1});
 // 体魄：血量上限 +1（当前血量也 +1）
 rest.push({ kind: 'maxhp'});
 // 秘技：按进度解锁的限次高阶卡
@@ -122,8 +130,6 @@ rest.push({ kind: 'temp', cardId: t.id, uses});
 // 遗物：还有没拿到的才出现
 const relicPool = shuffle(EXPEDITION_RELICS.filter((r) =>!relicIds.includes(r.id)));
 if (relicPool.length > 0) rest.push({ kind: 'relic', relicId: relicPool[0].id});
-// 蓄势：下一关开局 +2 能量（一次性）
-rest.push({ kind: 'burst'});
 // 受伤时治疗必出，其余随机
 const injured = hp < maxHp;
 const options = shuffle(rest).slice(0, Math.max(0, optionCount - (injured ? 1 : 0)));

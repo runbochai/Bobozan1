@@ -112,6 +112,22 @@ test('藏宝图：奖励 4 选 1', () => {
   assert.equal(opts.length, 4);
 });
 
+test('升级奖励：稳定 +1 级，满级后不再出现，无开局能量奖励', () => {
+  for (let i = 0; i < 30; i++) {
+    const opts = genRewardOptions(5, 3, 3, [], 3, [0, 1]);
+    const lv = opts.find((o) => o.kind === 'levelup');
+    for (const o of opts) {
+      assert.ok(['heal', 'levelup', 'maxhp', 'temp', 'relic'].includes(o.kind), `unexpected kind: ${o.kind}`);
+    }
+    if (lv && lv.kind === 'levelup') assert.equal(lv.level, 2, 'levelup should be exactly +1');
+  }
+  // 满级（5 级）：不再出升级
+  for (let i = 0; i < 20; i++) {
+    const opts = genRewardOptions(5, 3, 3, [], 3, [0, 1, 2, 3, 4, 5]);
+    assert.ok(opts.every((o) => o.kind !== 'levelup'), 'no levelup at max level');
+  }
+});
+
 test('applyIronhide：每场战斗首次受伤 -1，之后不再减', () => {
   const r1 = applyIronhide(2, 1, 3, false);
   assert.equal(r1.hp, 2);
