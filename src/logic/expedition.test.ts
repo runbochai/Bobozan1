@@ -10,6 +10,7 @@ import {
   goldForWin,
   pickThreat,
   shopCardPrice,
+  intentRevealed,
 } from './expedition';
 import { EXPEDITION_GACHA_POOL, EXPEDITION_EQUIPMENTS, drawGachaCard } from '../data/expedition';
 import { SKILL_DB } from '../data/skills';
@@ -277,4 +278,15 @@ test('聪明的敌人更爱用吸收技能', () => {
     if (expeditionBotMove(mk(), [mk(), me], dumbP, 'p') === 'absorb') dumbAbsorb++;
   }
   assert.ok(smartAbsorb > dumbAbsorb * 2, `smart ${smartAbsorb} vs dumb ${dumbAbsorb}`);
+});
+test('意图显示规则：前三关全显示，之后按哈希 45% 显示且稳定', () => {
+  for (let t = 1; t <= 5; t++) {
+    assert.equal(intentRevealed('e1', t, 0), true);
+    assert.equal(intentRevealed('e1', t, 2), true);
+  }
+  const a = intentRevealed('exp_s5_e1', 7, 5);
+  assert.equal(a, intentRevealed('exp_s5_e1', 7, 5));
+  let shown = 0;
+  for (let i = 0; i < 200; i++) if (intentRevealed('enemy' + i, (i % 20) + 1, 5)) shown++;
+  assert.ok(shown > 60 && shown < 120, `shown=${shown}`);
 });

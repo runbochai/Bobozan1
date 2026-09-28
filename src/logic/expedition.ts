@@ -91,6 +91,16 @@ scored.sort((a, b) => b.w - a.w);
 return scored[0].id;
 }
 
+// ============ 敌人意图显示规则 ============
+/** 前三关（stageIdx 0-2）教学期意图全显示；之后每敌每回合 45% 概率显示（确定性哈希，不闪烁） */
+export function intentRevealed(enemyId: string, turn: number, stageIdx: number): boolean {
+if (stageIdx <= 2) return true;
+const str = `${enemyId}|${turn}|${stageIdx}`;
+let h = 0;
+for (let i = 0; i < str.length; i++) h = ((h * 31 + str.charCodeAt(i)) >>> 0);
+return h % 100 < 45;
+}
+
 // ============ 战后奖励：治疗 / 升级 / 血量上限 / 限次秘技 / 遗物 ============
 // 注意：没有任何开局能量加成。
 

@@ -32,7 +32,8 @@ import {
   Layers,
   Undo2,
   HandHeart,
-  House
+  House,
+  Film
 } from 'lucide-react';
 import {
   signInAnonymously,
@@ -60,6 +61,7 @@ import {
   saveExpeditionBest,
   type RewardOption,
   type ShopItem,
+  intentRevealed,
 } from './logic/expedition';
 import {
   FINAL_LEVEL,
@@ -119,6 +121,8 @@ const TopControls = ({
   setMusicVolume,
   onHome,
   onBack,
+  reduceMotion,
+  toggleReduceMotion,
 }: {
   muted: boolean;
   toggleMute: () => void;
@@ -131,6 +135,8 @@ const TopControls = ({
   setMusicVolume: (v: number) => void;
   onHome?: () => void;
   onBack?: () => void;
+  reduceMotion: boolean;
+  toggleReduceMotion: () => void;
 }) => {
   // Local state for the slider toggle
   const [isVolumeOpen, setIsVolumeOpen] = useState(false);
@@ -211,6 +217,15 @@ const TopControls = ({
         className={`p-3 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 ${muted ? 'bg-red-500/80 hover:bg-red-500' : 'bg-white/10 hover:bg-white/20'}`}
       >
         {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+      </button>
+
+      {/* Reduce Motion Button */}
+      <button
+        onClick={toggleReduceMotion}
+        title={lang === 'zh' ? '减弱动效' : 'Reduce motion'}
+        className={`p-3 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 ${reduceMotion ? 'bg-cyan-500/80 hover:bg-cyan-500' : 'bg-white/10 hover:bg-white/20'}`}
+      >
+        <Film size={20} />
       </button>
 
       {/* Lang Button */}
@@ -309,6 +324,13 @@ export default function BobozanOnline() {
   const [playerName, setPlayerName] = useState('');
   const [lang, setLang] = useState<Lang>('zh'); 
   const [muted, setMuted] = useState(false);
+  const [reduceMotion, setReduceMotion] = useState(() => {
+    try { return localStorage.getItem('bobozan-reduce-motion') === '1'; } catch { return false; }
+  });
+  useEffect(() => {
+    try { localStorage.setItem('bobozan-reduce-motion', reduceMotion ? '1' : '0'); } catch { /* ignore */ }
+    document.documentElement.classList.toggle('reduce-motion', reduceMotion);
+  }, [reduceMotion]);
   const [submittingMove, setSubmittingMove] = useState(false);
 
   const [leaderboardMode, setLeaderboardMode] = useState<'MINIMIZED' | 'TOP3' | 'EXPANDED'>('MINIMIZED');
@@ -353,9 +375,19 @@ export default function BobozanOnline() {
   const [expGold, setExpGold] = useState(0);
   const [expTutIdx, setExpTutIdx] = useState(0);
   const expTutIdxRef = useRef(0);
+  const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
+  const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
+  const [shopShake, setShopShake] = useState<number | null>(null); // 商城买不起抖动
   const [expEquipment, setExpEquipment] = useState<string[]>([]);
   const [expGachaCardId, setExpGachaCardId] = useState<string | null>(null);
   const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
+  // 移动端手牌缩放
+  const [isSmallScreen, setIsSmallScreen] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  useEffect(() => {
+    const onResize = () => setIsSmallScreen(window.innerWidth < 768);
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
   // 远征 run 真值：timeout 回调里读 ref，避免闭包拿到旧 state
   const expRunRef = useRef({ stageIdx: 0, relics: [] as string[], inventory: [0], hp: MAX_HP, maxHp: MAX_HP, tempCards: [] as { cardId: string; usesLeft: number }[], gold: 0, equipment: [] as string[] });
   const expeditionBusyRef = useRef(false);
@@ -402,6 +434,22 @@ const expYpjUsedRef = useRef(false);
       return { ...p, energy: e, dmgBonus };
     });
   };
+
+  // 敌人意图：回合开始时预计算敌方出牌，展示用；提交时直接沿用，保证所见即所得
+  const computeExpIntents = (players: Player[], stageIdx: number) => {
+    const stage = EXPEDITION_STAGES[stageIdx];
+    const myId = expMyId();
+    const intents: Record<string, string> = {};
+    for (const pl of players) {
+      if (pl.id === myId || pl.isDead) continue;
+      const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === pl.id);
+      intents[pl.id] = def ? expeditionBotMove(pl, players, def.personality, myId) : 'charge';
+    }
+    return intents;
+  };
+  // 意图是否显示：前三关教学全显示，之后每敌每回合 45% 概率显示（确定性哈希，不闪烁）
+  const shouldRevealIntent = (enemyId: string) =>
+    intentRevealed(enemyId, gameState.turn, expRunRef.current.stageIdx);
 
   const setupExpeditionBattle = (stageIdx: number) => {
     const myId = expMyId();
@@ -493,6 +541,7 @@ const expYpjUsedRef = useRef(false);
       ],
     });
     if (stage.tip) setToastMsg(stage.tip[lang]);
+    setExpIntents(computeExpIntents(players, stageIdx));
   };
 
   const startExpedition = () => {
@@ -543,8 +592,11 @@ const expYpjUsedRef = useRef(false);
     const playersWithMoves = gameState.players.map(p => {
       if (p.id === myId) return { ...p, selectedCardId: cardId };
       if (p.isDead) return p;
-      const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === p.id);
-      const move = def ? expeditionBotMove(p, gameState.players, def.personality, myId) : 'charge';
+      if (p.isDead) return p;
+      const move = expIntents[p.id] ?? (() => {
+        const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === p.id);
+        return def ? expeditionBotMove(p, gameState.players, def.personality, myId) : 'charge';
+      })();
       return { ...p, selectedCardId: move };
     });
     const preHp = new Map(playersWithMoves.map(p => [p.id, p.hp]));
@@ -661,6 +713,7 @@ const expYpjUsedRef = useRef(false);
       const meAlive = players.some(p => p.id === myId && !p.isDead);
       const meHp = players.find(p => p.id === myId)?.hp ?? 0;
 
+      let delayedReward = false;
       if (!meAlive) {
         saveExpeditionBest(run.stageIdx);
         setExpBest(loadExpeditionBest());
@@ -671,12 +724,20 @@ const expYpjUsedRef = useRef(false);
         if (run.equipment.includes('treasurepot')) gold += 4;
         run.gold += gold;
         setExpGold(run.gold);
+        setGoldFly({ amount: gold, key: Date.now() });
+        expeditionTimersRef.current.push(setTimeout(() => setGoldFly(null), 1500));
         logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🪙 获得 ${gold} 金币！` : `🪙 Earned ${gold} gold!`, type: 'info' as const }];
         const opts = genRewardOptions(run.hp, run.maxHp, relics, has('cbt') ? 4 : 3, run.inventory);
         logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🎉 通过${EXPEDITION_STAGES[run.stageIdx].name[lang]}！` : `🎉 Cleared ${EXPEDITION_STAGES[run.stageIdx].name[lang]}!`, type: 'win' as const }];
         setExpRewards(opts);
-        setExpPhase('reward');
-        playSound('win', muted);
+        // 延迟进奖励：先播金币飞入动画，busy 保持锁定防连点
+        delayedReward = true;
+        expeditionTimersRef.current.push(setTimeout(() => {
+          setExpPhase('reward');
+          playSound('win', muted);
+          setSubmittingMove(false);
+          expeditionBusyRef.current = false;
+        }, 900));
       } else {
         run.hp = meHp;
       }
@@ -689,8 +750,15 @@ const expYpjUsedRef = useRef(false);
         turn: prev.turn + 1,
         resetSeq: result.survivorReset ? (prev.resetSeq ?? 0) + 1 : prev.resetSeq,
       }));
-      setSubmittingMove(false);
-      expeditionBusyRef.current = false;
+      if (!meAlive || !enemiesAlive) {
+        setExpIntents({});
+      } else {
+        setExpIntents(computeExpIntents(players, run.stageIdx));
+      }
+      if (!delayedReward) {
+        setSubmittingMove(false);
+        expeditionBusyRef.current = false;
+      }
     }, 1600);
     expeditionTimersRef.current.push(timer);
   };
@@ -1627,6 +1695,7 @@ const expYpjUsedRef = useRef(false);
 
   const toggleLang = () => { playSound('click', muted); setLang(prev => prev === 'zh' ? 'en' : 'zh'); }
   const toggleMute = () => { setMuted(!muted); }
+  const toggleReduceMotion = () => { playSound('click', muted); setReduceMotion(v => !v); }
 
   const myFreeSkills = myPlayer?.freeSkills;
   useEffect(() => {
@@ -1968,6 +2037,8 @@ const expYpjUsedRef = useRef(false);
         showLogToggle={false} 
         musicVolume={musicVolume}
         setMusicVolume={setMusicVolume}
+        reduceMotion={reduceMotion}
+        toggleReduceMotion={toggleReduceMotion}
       />
 
       {/* ================= STYLES ================= */}
@@ -2057,6 +2128,14 @@ const expYpjUsedRef = useRef(false);
           <h1 className="text-7xl md:text-9xl font-black tracking-wider super-title select-none scale-110 md:scale-125 relative z-10">
             {t.title}
           </h1>
+          <p className="text-slate-400 text-xs md:text-sm font-bold tracking-[0.35em] mt-3 select-none">
+            {lang === 'zh' ? '⚡ 卡牌心理战 · 远征十六关 · 在线多人' : '⚡ CARD MIND GAMES · 16-STAGE EXPEDITION · ONLINE MULTIPLAYER'}
+          </p>
+          {expBest > 0 && (
+            <div className="mt-2 text-xs text-amber-300/90 font-bold tracking-widest bg-amber-500/10 border border-amber-500/30 rounded-full px-3 py-1">
+              {lang === 'zh' ? `🏆 历史最佳：第 ${expBest} 关` : `🏆 Best: Stage ${expBest}`}
+            </div>
+          )}
         </div>
 
         {/* --- INPUT AREA --- */}
@@ -2137,7 +2216,7 @@ const expYpjUsedRef = useRef(false);
             <div className="flex gap-4 w-full max-w-md justify-center">
               <button
                 onClick={startExpedition}
-                className="group relative flex-1 overflow-hidden rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 p-4 transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] duration-300"
+                className="btn-expedition group relative flex-1 overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
                   <span className="text-2xl">🗡️</span>
@@ -2148,7 +2227,7 @@ const expYpjUsedRef = useRef(false);
               <button
                 onClick={handleEnterName}
                 disabled={!playerName.trim()}
-                className="group relative flex-1 overflow-hidden rounded-xl bg-gradient-to-r from-orange-600 to-red-600 p-4 transition-all hover:scale-105 active:scale-95 hover:shadow-[0_0_40px_rgba(220,38,38,0.6)] disabled:opacity-40 disabled:pointer-events-none duration-300"
+                className="btn-primary group relative flex-1 overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
                   <span className="text-2xl">👥</span>
@@ -2157,11 +2236,7 @@ const expYpjUsedRef = useRef(false);
                 <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
               </button>
             </div>
-            {expBest > 0 && (
-              <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
-                {lang === 'zh' ? `🏆 历史最佳：第 ${expBest} 关` : `🏆 Best: Stage ${expBest}`}
-              </div>
-            )}
+
 
         </div>
       </div>
@@ -2243,7 +2318,7 @@ const expYpjUsedRef = useRef(false);
 
       {/* ================= MAIN CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} onHome={goNameInput} onBack={goBackPage}/>
+      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage}/>
       
       {toastMsg && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 font-bold tracking-wide animate-in slide-in-from-top-4">
@@ -2397,7 +2472,7 @@ const expYpjUsedRef = useRef(false);
 
       {/* ================= LOBBY CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} musicVolume={musicVolume} setMusicVolume={setMusicVolume} onHome={goNameInput} onBack={goBackPage}/>
+      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage}/>
       
       {toastMsg && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 animate-in slide-in-from-top-4 font-bold tracking-wide">
@@ -2749,6 +2824,8 @@ const expYpjUsedRef = useRef(false);
        showLogToggle={true}
        musicVolume={musicVolume}
       setMusicVolume={setMusicVolume}
+      reduceMotion={reduceMotion}
+      toggleReduceMotion={toggleReduceMotion}
       onHome={goNameInput}
       onBack={goBackPage}
     />
@@ -2905,6 +2982,9 @@ const expYpjUsedRef = useRef(false);
               <div className="text-xs font-bold text-amber-300">
                 {EXPEDITION_STAGES[expStageIdx].chapter[lang]} · {EXPEDITION_STAGES[expStageIdx].name[lang]}
               </div>
+              <div className="text-[10px] font-bold text-slate-400 tracking-widest">
+                {lang === 'zh' ? `第 ${gameState.turn} 回合` : `TURN ${gameState.turn}`}
+              </div>
             </div>
           </div>
         )}
@@ -3018,22 +3098,32 @@ const expYpjUsedRef = useRef(false);
                     ? (lang === 'zh' ? `限次秘技：可用 ${item.uses} 次` : `Limited skill: ${item.uses} uses`)
                     : item.kind === 'equipment' ? item.equipment.desc[lang] : (lang === 'zh' ? `立即回复 ${POTION_HEAL} 点血量` : `Restore ${POTION_HEAL} HP now`);
                   return (
-                    <div key={i} className="bg-white/5 border border-white/10 rounded-xl p-4 text-center flex flex-col">
+                    <div key={i} className={`bg-white/5 border border-white/10 rounded-xl p-4 text-center flex flex-col transition-opacity ${afford ? '' : 'opacity-50'}`} style={shopShake === i ? { animation: 'shop-shake 0.35s ease' } : undefined}>
+                      <style>{`@keyframes shop-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }`}</style>
                       <div className="text-4xl mb-2">{icon}</div>
                       <div className="font-bold text-white text-sm mb-1">{title}</div>
                       <div className="text-xs text-slate-400 mb-3 flex-1">{sub}</div>
                       <button
-                        onClick={() => buyShopItem(item, i)}
-                        disabled={!afford}
-                        className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${afford ? 'bg-gradient-to-r from-amber-500 to-yellow-500 text-black hover:scale-105 active:scale-95' : 'bg-slate-700 text-slate-500 cursor-not-allowed'}`}
+                        onClick={() => {
+                          if (!afford) {
+                            playSound('click', muted);
+                            setShopShake(i);
+                            setTimeout(() => setShopShake(null), 400);
+                            return;
+                          }
+                          buyShopItem(item, i);
+                        }}
+                        className={afford ? 'btn-gold' : 'btn rounded-xl bg-slate-700 text-slate-500 text-sm px-4 py-2 cursor-not-allowed opacity-70'}
                       >
-                        {lang === 'zh' ? `购买 · 🪙${price}` : `Buy · 🪙${price}`}
+                        {afford
+                          ? (lang === 'zh' ? `购买 · 🪙${price}` : `Buy · 🪙${price}`)
+                          : (lang === 'zh' ? `🪙${price} · 金币不足` : `🪙${price} · Not enough`)}
                       </button>
                     </div>
                   );
                 })}
               </div>
-              <button onClick={leaveExpShop} className="px-8 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
+              <button onClick={leaveExpShop} className="btn-primary px-8 py-2.5">
                 {lang === 'zh' ? `出战 · ${EXPEDITION_STAGES[Math.min(expStageIdx + 1, EXPEDITION_STAGES.length - 1)].name[lang]}` : 'Next Battle'}
               </button>
             </div>
@@ -3217,6 +3307,23 @@ const expYpjUsedRef = useRef(false);
                              )
                            )
                        )}
+                       {/* 敌人意图（远征）：前三关全显示，之后部分隐藏 */}
+                       {isExpedition && expPhase === 'battle' && !isMe && !p.isDead && gameState.status === 'PLAYING' && (() => {
+                         const intentId = expIntents[p.id];
+                         if (!intentId) return null;
+                         const card = SKILL_DB.find(c => c.id === intentId);
+                         const revealed = shouldRevealIntent(p.id);
+                         const iconMap: Record<string, string> = { ATTACK: '⚔️', DEFEND: '🛡️', CHARGE: '⚡', ULTIMATE: '💥', ABSORB: '🌀', SPECIAL: '✨' };
+                         const icon = revealed ? (iconMap[card?.type ?? ''] ?? '❔') : '❓';
+                         const label = revealed
+                           ? (card ? `${icon} ${card.name[lang]}` : icon)
+                           : (lang === 'zh' ? '❓ 意图不明……他在盘算什么？' : '❓ Unknown intent… what is it plotting?');
+                         return (
+                           <div title={label} className="pointer-events-auto mt-1.5 px-2 py-0.5 rounded-full bg-black/60 border border-white/15 backdrop-blur-sm text-sm leading-none shadow-lg animate-in fade-in zoom-in duration-300">
+                             {icon}
+                           </div>
+                         );
+                       })()}
                     </div>
 
                     {/* --- B. EMOJI BUBBLE --- */}
@@ -3344,6 +3451,16 @@ const expYpjUsedRef = useRef(false);
                     )}
                         </div>
                     </div>
+
+                    {/* 金币飞入：+X 🪙 上浮 */}
+                    {isMe && goldFly && (
+                      <div key={goldFly.key} className="absolute left-full top-0 ml-6 z-50 pointer-events-none whitespace-nowrap">
+                        <style>{`@keyframes gold-float-up { 0% { opacity: 0; transform: translateY(10px) scale(0.8); } 20% { opacity: 1; transform: translateY(0) scale(1.15); } 100% { opacity: 0; transform: translateY(-46px) scale(1); } }`}</style>
+                        <div className="text-lg font-black text-yellow-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" style={{ animation: 'gold-float-up 1.4s ease-out forwards' }}>
+                          +{goldFly.amount} 🪙
+                        </div>
+                      </div>
+                    )}
 
                     {/* --- D. FLOATING DAMAGE NUMBER --- */}
                     {damageVal && (
@@ -3946,7 +4063,7 @@ const expYpjUsedRef = useRef(false);
                                     const offset = index - middle;
                                     const rotateDeg = offset * 4; 
                                     const translateY = Math.abs(offset) * 6;
-                                    const translateX = offset * 120; 
+                                    const translateX = offset * (isSmallScreen ? 92 : 120); 
                                     
                                     // Check if Player has Free Uses
                                     const hasFree = myPlayer.freeSkills?.includes(c.id) ?? false;
@@ -4002,7 +4119,7 @@ const expYpjUsedRef = useRef(false);
                                     return (
                                       <div
                                           key={`${c.id}-${index}`}
-                                          className="absolute w-36"
+                                          className={`absolute ${isSmallScreen ? 'w-28' : 'w-36'}`}
                                           style={{
                                             zIndex: isHovered ? 999 : index,
                                             bottom: '30px',
@@ -4029,7 +4146,7 @@ const expYpjUsedRef = useRef(false);
                                           }}
                                           disabled={isDisabled || !canAfford}
                                           className={`
-                                            relative w-36 h-56 rounded-2xl border-4 ${borderClass}
+                                            relative ${isSmallScreen ? 'w-28 h-44' : 'w-36 h-56'} rounded-2xl border-4 ${borderClass}
                                             shadow-2xl
                                             ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''}
                                             ${tutGlow ? 'ring-4 ring-yellow-300 animate-pulse' : ''}
