@@ -4,6 +4,7 @@ EXPEDITION_EQUIPMENTS,
 EXPEDITION_RELICS,
 drawGachaCard,
 type ExpeditionEquipment,
+type ExpeditionEnemyDef,
 type ExpeditionPersonality,
 type ExpeditionStage,
 } from '../data/expedition';
@@ -89,6 +90,72 @@ return { id: c.id, w};
 
 scored.sort((a, b) => b.w - a.w);
 return scored[0].id;
+}
+
+// ============ 敌人意图：对话气泡台词 ============
+const hashStr = (str: string): number => {
+  let h = 0;
+  for (let i = 0; i < str.length; i++) h = ((h * 31 + str.charCodeAt(i)) >>> 0);
+  return h;
+};
+
+const TAUNTS: Record<string, { zh: string[]; en: string[] }> = {
+  CHARGE: {
+    zh: ['攒点能量先！', '先积攒能量……', '蓄力中，别打扰我！'],
+    en: ['Charging up first!', 'Storing energy...', 'Powering up, do not disturb!'],
+  },
+  ATTACK: {
+    zh: ['吃我一击！', '我要打你！', '看招！'],
+    en: ['Take this!', "I'm coming for you!", 'Watch out!'],
+  },
+  DEFEND: {
+    zh: ['先防一回合。', '你打不着我。', '龟缩一下。'],
+    en: ['Blocking this round.', "You can't hit me.", 'Turtling up.'],
+  },
+  ULTIMATE: {
+    zh: ['终极一击！', '受死吧！', '这一击，送你上路！'],
+    en: ['Ultimate strike!', 'Face your doom!', 'This one finishes you!'],
+  },
+  ABSORB: {
+    zh: ['把你的能量交出来！', '吸干你！'],
+    en: ['Hand over your energy!', 'Draining you dry!'],
+  },
+  SPECIAL: {
+    zh: ['尝尝这个！', '有点意思的东西来了。'],
+    en: ['Try this on!', 'Something special incoming.'],
+  },
+};
+const HIDDEN_TAUNTS = {
+  zh: ['呵呵，猜猜看？', '……', '你猜我要干嘛？'],
+  en: ['Hehe, guess?', '...', 'Care to guess my move?'],
+};
+
+/** 意图气泡台词：显示时按真实意图类型给嘲讽，隐藏时给通用台词（不泄露） */
+export function intentTaunt(
+  cardType: string | undefined, revealed: boolean,
+  enemyId: string, turn: number, stageIdx: number, lang: 'zh' | 'en' = 'zh',
+): string {
+  const pool = revealed ? (TAUNTS[cardType ?? ''] ?? TAUNTS.SPECIAL) : HIDDEN_TAUNTS;
+  const arr = pool[lang];
+  return arr[hashStr(`${enemyId}|${turn}|${stageIdx}`) % arr.length];
+}
+
+// ============ 敌人被动徽章 ============
+export interface PassiveBadge { key: string; icon: string; title: string; desc: string; }
+
+/** 把敌人的被动转成一组小徽章（图标+悬停说明） */
+export function passiveBadges(pv: ExpeditionEnemyDef['passive'], lang: 'zh' | 'en' = 'zh'): PassiveBadge[] {
+  if (!pv) return [];
+  const zh = lang === 'zh';
+  const badges: PassiveBadge[] = [];
+  if (pv.pierce) badges.push({ key: 'pierce', icon: '🏹', title: zh ? '穿透' : 'Pierce', desc: zh ? '攻击无视对方的防御，直接命中' : 'Attacks ignore defense and hit directly' });
+  if (pv.energyDrain) badges.push({ key: 'drain', icon: '🌀', title: zh ? '吸能' : 'Energy Drain', desc: zh ? `命中时吸取目标 ${pv.energyDrain} 点能量` : `Drains ${pv.energyDrain} energy from the target on hit` });
+  if (pv.attackBonus) badges.push({ key: 'fury', icon: '🗡️', title: zh ? '狂战' : 'Fury', desc: zh ? `攻击伤害 +${pv.attackBonus}` : `Attack damage +${pv.attackBonus}` });
+  if (pv.armorPerTurn) badges.push({ key: 'armor', icon: '🛡️', title: zh ? '护甲' : 'Armor', desc: zh ? `每回合第一次受到的伤害 -${pv.armorPerTurn}` : `First damage taken each turn -${pv.armorPerTurn}` });
+  if (pv.enrageDmg || pv.enrageEnergy) badges.push({ key: 'enrage', icon: '💢', title: zh ? '狂暴' : 'Enrage', desc: zh ? `半血后：每回合能量 +${pv.enrageEnergy ?? 0}、伤害 +${pv.enrageDmg ?? 0}` : `Below half HP: +${pv.enrageEnergy ?? 0} energy/turn, +${pv.enrageDmg ?? 0} damage` });
+  if (pv.energyPerTurn) badges.push({ key: 'charge', icon: '⚡', title: zh ? '充能' : 'Recharge', desc: zh ? `每回合开始能量 +${pv.energyPerTurn}` : `+${pv.energyPerTurn} energy at turn start` });
+  if (pv.startEnergy) badges.push({ key: 'start', icon: '🌅', title: zh ? '开局' : 'Opener', desc: zh ? `战斗开始时能量 +${pv.startEnergy}` : `+${pv.startEnergy} energy at battle start` });
+  return badges;
 }
 
 // ============ 敌人意图显示规则 ============

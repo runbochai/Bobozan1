@@ -23,6 +23,9 @@ energyPerTurn?: number; // 每回合开始回复能量
 enrageEnergy?: number; // 狂暴：hp <= 一半时每回合能量改为 +enrageEnergy
 enrageDmg?: number; // 狂暴：hp <= 一半时伤害 +enrageDmg
 armorPerTurn?: number; // 护甲：每回合第一次受到的伤害 -armorPerTurn
+attackBonus?: number; // 狂战：攻击伤害 +N
+energyDrain?: number; // 吸能：命中时吸取目标 N 点能量
+pierce?: boolean; // 穿透：攻击无视对方防御，直接命中
 };
 elite?: boolean;
 boss?: boolean;
@@ -111,6 +114,7 @@ rewardTier: 1,
 enemies: [{
 id: 'ironwall', name: { zh: '🦍 铁壁阿强', en: '🦍 Iron Wall Qiang'}, hp: 3, inventory: [0],
 personality: P(0.25, 0.85, 0.4, 0.3), elite: true,
+passive: { attackBonus: 1 },
 intro: { zh: '阿强：我的防守，固若金汤！', en: 'Qiang: my defense is impenetrable!'},
 }],
 },
@@ -150,6 +154,7 @@ tip: { zh: '同类技能对拼，高等级压制低等级——小心他的龙�
 enemies: [{
 id: 'dragon_elder', name: { zh: '🐉 龙爪长老', en: '🐉 Dragon Elder'}, hp: 3, inventory: [0, 3],
 personality: P(0.75, 0.25, 0.35, 0.7), elite: true,
+passive: { pierce: true },
 intro: { zh: '长老：感受龙爪的等级压制吧！', en: 'Elder: feel the pressure of the Dragon Claw!'},
 }],
 },
@@ -194,6 +199,7 @@ tip: { zh: '必杀技可以压制常规终极技能，注意他的起手！', en
 enemies: [{
 id: 'hangman', name: { zh: '👻 吊死鬼', en: '👻 Hangman'}, hp: 4, inventory: [0, 5],
 personality: P(0.65, 0.3, 0.35, 0.8), elite: true,
+passive: { energyDrain: 1 },
 intro: { zh: '吊死鬼：终极？我的更终极。', en: 'Hangman: ultimate? Mine is more ultimate.'},
 }],
 },
@@ -246,11 +252,11 @@ intro: { zh: '波赞：能爬到这里，值得我亲自出手。半血之后，
 id: 's15', chapter: { zh: '终章 · 塔心', en: 'Finale · Tower Heart'},
 name: { zh: '第 16 关 · Boss：远古塔魂', en: 'Stage 16 · Boss: Ancient Tower Soul'},
 rewardTier: 3,
-tip: { zh: '塔魂披挂头盔/手盔/脚盔攻防，每回合护甲 1 点、能量 +1——它即是塔本身！', en: 'The Soul wields helm/hand/foot arms, 1 armor & +1 energy per turn — it IS the tower!'},
+tip: { zh: '塔魂披挂头盔/手盔/脚盔攻防，每回合护甲 1 点、能量 +1，攻击无视防御——它即是塔本身！', en: 'The Soul wields helm/hand/foot arms, 1 armor & +1 energy per turn, attacks pierce defense — it IS the tower!'},
 enemies: [{
 id: 'tower_soul', name: { zh: '🌑 远古塔魂', en: '🌑 Ancient Tower Soul'}, hp: 10, inventory: [0, 8, 10, 11],
 personality: P(0.55, 0.7, 0.3, 0.9), boss: true,
-passive: { startEnergy: 1, energyPerTurn: 1, armorPerTurn: 1},
+passive: { startEnergy: 1, energyPerTurn: 1, armorPerTurn: 1, pierce: true },
 intro: { zh: '塔魂：波赞只是守门人。我，即是塔。', en: 'Soul: Bozan was merely the gatekeeper. I am the tower.'},
 }],
 },

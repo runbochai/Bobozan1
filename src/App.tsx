@@ -62,6 +62,9 @@ import {
   type RewardOption,
   type ShopItem,
   intentRevealed,
+  intentTaunt,
+  passiveBadges,
+  type PassiveBadge,
 } from './logic/expedition';
 import {
   FINAL_LEVEL,
@@ -379,6 +382,7 @@ export default function BobozanOnline() {
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
   const [intentDismissed, setIntentDismissed] = useState<Set<string>>(new Set()); // 本回合手动点掉的意图
   const [intentOffset, setIntentOffset] = useState({ x: 0, y: 0 }); // 意图面板拖动偏移
+  const [passiveTip, setPassiveTip] = useState<string | null>(null); // 敌人被动说明：`${enemyId}|${badgeKey}`
   const [shopShake, setShopShake] = useState<number | null>(null); // 商城买不起抖动
   const [expEquipment, setExpEquipment] = useState<string[]>([]);
   const [expGachaCardId, setExpGachaCardId] = useState<string | null>(null);
@@ -487,6 +491,9 @@ const expYpjUsedRef = useRef(false);
         freeSkills: [],
         kills: 0,
         tempSkills: [],
+        dmgBonus: en.passive?.attackBonus ?? 0,
+        energyDrain: en.passive?.energyDrain ?? 0,
+        pierce: en.passive?.pierce ?? false,
       };
     });
     // 装备：幸运骰 —— 每场战斗开局随机抽一张限次卡
@@ -3000,7 +3007,7 @@ const expYpjUsedRef = useRef(false);
           if (!steps || expTutIdx >= steps.length) return null;
           const step = steps[expTutIdx];
           return (
-            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-50 w-full max-w-md px-4 pointer-events-none">
+            <div className="absolute left-6 top-[62%] z-50 w-full max-w-xs pointer-events-none">
               <div className="bg-amber-950/90 backdrop-blur-xl border border-amber-400/50 rounded-xl px-4 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-center pointer-events-auto">
                 <div className="text-sm font-bold text-amber-100 leading-snug">{step.text[lang]}</div>
                 <div className="flex justify-center gap-2 mt-2">
@@ -3253,10 +3260,9 @@ const expYpjUsedRef = useRef(false);
              const myId = expMyId();
              const foes = gameState.players.filter(pl => pl.id !== myId && !pl.isDead && expIntents[pl.id]);
              if (foes.length === 0) return null;
-             const iconMap: Record<string, string> = { ATTACK: '⚔️', DEFEND: '🛡️', CHARGE: '⚡', ULTIMATE: '💥', ABSORB: '🌀', SPECIAL: '✨' };
              return (
                <div
-                 className="absolute z-40 flex flex-col items-center gap-2 bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl px-2 py-3 shadow-xl max-w-[4.5rem] select-none cursor-grab active:cursor-grabbing touch-none"
+                 className="absolute z-40 flex flex-col items-stretch gap-3 bg-black/50 backdrop-blur-md border border-white/10 rounded-2xl px-2.5 py-3 shadow-xl max-w-[9rem] select-none cursor-grab active:cursor-grabbing touch-none"
                  style={{ left: `calc(0.5rem + ${intentOffset.x}px)`, top: `calc(55% + ${intentOffset.y}px)`, transform: 'translateY(-50%)' }}
                  onPointerDown={(e) => {
                    // 6px 阈值：小幅移动算点击（不影响里面按钮），大幅移动算拖拽
@@ -3278,25 +3284,50 @@ const expYpjUsedRef = useRef(false);
                    window.addEventListener('pointercancel', onUp);
                  }}
                >
-                 <div className="text-[10px] font-black text-slate-400 tracking-widest">{lang === 'zh' ? '意图 · 可拖' : 'INTENT · DRAG'}</div>
+                 <div className="text-[10px] font-black text-slate-500 tracking-widest select-none">⋮⋮</div>
                  {foes.map(foe => {
                    const card = SKILL_DB.find(c => c.id === expIntents[foe.id]);
                    const revealed = shouldRevealIntent(foe.id);
-                   const icon = revealed ? (iconMap[card?.type ?? ''] ?? '❔') : '❓';
-                   const label = revealed
-                     ? (card ? `${foe.name}：${icon} ${card.name[lang]}` : `${foe.name}：${icon}`)
-                     : (lang === 'zh' ? `${foe.name}：❓ 意图不明（点击隐藏）` : `${foe.name}: intent hidden (tap to hide)`);
+                   const taunt = intentTaunt(card?.type, revealed, foe.id, gameState.turn, expRunRef.current.stageIdx, lang);
+                   const badges = passiveBadges(expPassivesRef.current[foe.id], lang);
                    const dismissed = intentDismissed.has(foe.id);
                    return (
-                     <button
-                       key={foe.id}
-                       title={label}
-                       onClick={() => { playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(foe.id)); }}
-                       className={`flex flex-col items-center gap-0.5 transition-all ${dismissed ? 'opacity-20 grayscale scale-90' : 'hover:scale-110 active:scale-95'}`}
-                     >
-                       <span className="text-3xl leading-none drop-shadow-lg">{icon}</span>
-                       <span className="text-[10px] text-slate-300 font-bold max-w-[3.8rem] truncate">{foe.name}</span>
-                     </button>
+                     <div key={foe.id} className={`relative flex flex-col items-start gap-1 transition-all ${dismissed ? 'opacity-25 grayscale' : ''}`}>
+                       <div className="text-[10px] text-slate-400 font-bold max-w-[7rem] truncate">{foe.name}</div>
+                       {/* 对话气泡：敌人亲口说出意图 */}
+                       <button
+                         onClick={() => { playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(foe.id)); }}
+                         className="relative bg-amber-50 text-slate-900 text-xs font-bold rounded-xl rounded-bl-sm px-2.5 py-1.5 max-w-[7.5rem] text-left shadow-lg hover:scale-105 active:scale-95 transition-transform leading-snug"
+                       >
+                         {taunt}
+                       </button>
+                       {/* 被动徽章：悬停/点击弹出说明 */}
+                       {badges.length > 0 && (
+                         <div className="flex gap-1 flex-wrap max-w-[7.5rem]">
+                           {badges.map(b => {
+                             const tipKey = `${foe.id}|${b.key}`;
+                             return (
+                               <span
+                                 key={b.key}
+                                 onMouseEnter={() => setPassiveTip(tipKey)}
+                                 onMouseLeave={() => setPassiveTip(null)}
+                                 onClick={(e) => { e.stopPropagation(); playSound('click', muted); setPassiveTip(cur => cur === tipKey ? null : tipKey); }}
+                                 className="text-sm leading-none cursor-help hover:scale-125 transition-transform"
+                               >
+                                 {b.icon}
+                               </span>
+                             );
+                           })}
+                         </div>
+                       )}
+                       {/* 被动说明弹窗 */}
+                       {badges.filter(b => `${foe.id}|${b.key}` === passiveTip).map(b => (
+                         <div key={`tip-${b.key}`} className="absolute left-full ml-2 top-0 z-50 w-44 bg-slate-900/95 border border-white/20 rounded-xl p-2.5 text-left shadow-2xl pointer-events-none">
+                           <div className="text-xs font-black text-white mb-0.5">{b.icon} {b.title}</div>
+                           <div className="text-[11px] text-slate-300 leading-snug">{b.desc}</div>
+                         </div>
+                       ))}
+                     </div>
                    );
                  })}
                </div>

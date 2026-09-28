@@ -369,8 +369,14 @@ export const calculateTurnOutcome = (
 
   const damageMap: { [id: string]: number } = {};
   // 攻击伤害加成（远征装备等）：dmgBonus 为空时行为与原来完全一致
+  const energyDrainMap: { [id: string]: number } = {};
+  const energyDrainFrom: { [id: string]: string } = {};
   const dealDamage = (attacker: Player, victimId: string, base: number) => {
     damageMap[victimId] += base + (attacker.dmgBonus ?? 0);
+    if (attacker.energyDrain) {
+      energyDrainMap[victimId] = (energyDrainMap[victimId] ?? 0) + attacker.energyDrain;
+      energyDrainFrom[victimId] = attacker.name;
+    }
   };
   const disableMap: { [id: string]: string[] } = {};
   const absorbGainEnergy: { [id: string]: number } = {};
@@ -385,6 +391,7 @@ export const calculateTurnOutcome = (
 
   survivors.forEach((p) => {
     damageMap[p.id] = 0;
+    energyDrainMap[p.id] = 0;
     disableMap[p.id] = [];
     absorbGainEnergy[p.id] = 0;
     absorbGainSkills[p.id] = [];
@@ -494,7 +501,12 @@ export const calculateTurnOutcome = (
           }
         } 
         else if (card2.type === 'DEFEND') {
-          if (card2.tags?.includes('dodge_ult') && (card1.type === 'ULTIMATE' || card1.id === 'ka' || card1.id === 'ji')) {
+          if (p1.pierce) {
+            dealDamage(p1, p2.id, MAX_HP);
+            recordKill(p1.id, p2.id); // 🟢 Kill Credit
+            logs.push({ turn, text: lang === 'zh' ? `${p1.name} 打穿了 ${p2.name} 的防御!` : `${p1.name} pierces through ${p2.name}'s defense!`, type: 'combat' });
+          }
+          else if (card2.tags?.includes('dodge_ult') && (card1.type === 'ULTIMATE' || card1.id === 'ka' || card1.id === 'ji')) {
              /* Dodged */
           } 
           else if (card1.id === 'machete' && card2.id === 'defend') {
@@ -581,6 +593,12 @@ export const calculateTurnOutcome = (
     if (card.type === 'CHARGE' && damageMap[p.id] < MAX_HP) p.energy += 2;
     if (disableMap[p.id]?.length > 0) p.disabledSkills = Array.from(new Set([...(p.disabledSkills || []), ...disableMap[p.id]]));
 
+    const drain = energyDrainMap[p.id] ?? 0;
+    if (drain > 0 && !p.isDead && p.energy > 0) {
+      const d = Math.min(drain, p.energy);
+      p.energy -= d;
+      logs.push({ turn, text: lang === 'zh' ? `🌀 ${energyDrainFrom[p.id]} 吸取了 ${p.name} ${d} 点能量!` : `🌀 ${energyDrainFrom[p.id]} drains ${d} energy from ${p.name}!`, type: 'info' });
+    }
     if (damageMap[p.id] > 0) {
       p.hp -= damageMap[p.id];
       if (p.hp <= 0) {

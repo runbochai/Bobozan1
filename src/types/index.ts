@@ -42,7 +42,9 @@ export interface Player {
   isShared?: boolean;
   loseStreak?: number;      // 连败场次
   tempSkills?: string[];    // 临时技能 (复仇/赏金)，需花费能量，不占手牌上限，本局有效
-  dmgBonus?: number;      // 攻击伤害加成（远征装备：狂战斧）
+  dmgBonus?: number;      // 攻击伤害加成（远征装备：狂战斧 / 敌人被动：狂战）
+  energyDrain?: number;   // 命中时吸取目标能量（敌人被动：吸能）
+  pierce?: boolean;       // 攻击无视防御（敌人被动：穿透）
   revengeObtainedAt?: number | null;
   kills?: number;
 }
