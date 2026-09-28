@@ -31,7 +31,8 @@ import {
   Star,
   Layers,
   Undo2,
-  HandHeart
+  HandHeart,
+  House
 } from 'lucide-react';
 import {
   signInAnonymously,
@@ -101,6 +102,8 @@ const TopControls = ({
   showLogToggle = false,
   musicVolume,
   setMusicVolume,
+  onHome,
+  onBack,
 }: {
   muted: boolean;
   toggleMute: () => void;
@@ -111,12 +114,36 @@ const TopControls = ({
   showLogToggle?: boolean;
   musicVolume: number;
   setMusicVolume: (v: number) => void;
+  onHome?: () => void;
+  onBack?: () => void;
 }) => {
   // Local state for the slider toggle
   const [isVolumeOpen, setIsVolumeOpen] = useState(false);
 
   return (
     <div className="absolute top-4 right-4 z-50 flex items-center gap-3">
+
+      {/* Back Button */}
+      {onBack && (
+        <button
+          onClick={onBack}
+          title={lang === 'zh' ? '返回' : 'Back'}
+          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
+        >
+          <Undo2 size={20} />
+        </button>
+      )}
+
+      {/* Home Button */}
+      {onHome && (
+        <button
+          onClick={onHome}
+          title={lang === 'zh' ? '主页' : 'Home'}
+          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
+        >
+          <House size={20} />
+        </button>
+      )}
       
       {/* Music Volume Toggle (Round Button + Pop-out Slider) */}
       <div className="relative flex items-center">
@@ -954,6 +981,30 @@ export default function BobozanOnline() {
       }
     }
     resetRoom();
+  };
+
+  // 回到最初的名字输入页（先安静离开当前房间）
+  const goNameInput = async () => {
+    playSound('click', muted);
+    if (user && isOnline && roomCode) {
+      try {
+        await mutateRoom(roomCode, room => leavePlayer(room, user.uid));
+      } catch (error) {
+        console.error('Unable to leave room', error);
+      }
+    }
+    resetRoom();
+    setView('NAME_INPUT');
+  };
+
+  // 返回上一页：GAME/LOBBY 先离开房间回 HOME，HOME 回名字页
+  const goBackPage = () => {
+    playSound('click', muted);
+    if (view === 'GAME' || view === 'LOBBY') {
+      void leaveRoom();
+    } else if (view === 'HOME') {
+      setView('NAME_INPUT');
+    }
   };
 
   useEffect(() => {
@@ -1935,7 +1986,7 @@ export default function BobozanOnline() {
 
       {/* ================= MAIN CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume}/>
+      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} onHome={goNameInput} onBack={goBackPage}/>
       
       {toastMsg && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 font-bold tracking-wide animate-in slide-in-from-top-4">
@@ -2089,7 +2140,7 @@ export default function BobozanOnline() {
 
       {/* ================= LOBBY CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} musicVolume={musicVolume} setMusicVolume={setMusicVolume}/>
+      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} musicVolume={musicVolume} setMusicVolume={setMusicVolume} onHome={goNameInput} onBack={goBackPage}/>
       
       {toastMsg && (
         <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 animate-in slide-in-from-top-4 font-bold tracking-wide">
@@ -2441,6 +2492,8 @@ export default function BobozanOnline() {
        showLogToggle={true}
        musicVolume={musicVolume}
       setMusicVolume={setMusicVolume}
+      onHome={goNameInput}
+      onBack={goBackPage}
     />
 
       <Tooltip />
