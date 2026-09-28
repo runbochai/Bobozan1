@@ -47,6 +47,8 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
+import { pickUltCutin, type UltCutinPick } from './data/ultCutins';
+import UltCutin from './components/UltCutin';
 import type { ExpeditionEnemyDef } from './data/expedition';
 import { EXPEDITION_EQUIPMENTS, EXPEDITION_RELICS, EXPEDITION_STAGES, EXPEDITION_TUTORIALS } from './data/expedition';
 import { drawGachaCard } from './data/expedition';
@@ -617,6 +619,11 @@ const expYpjUsedRef = useRef(false);
     const preDead = new Set(playersWithMoves.filter(p => p.isDead).map(p => p.id));
     setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN' }));
 
+    // 有人放必杀 → 延长 SHOWDOWN，给 cut-in 演出留出时间
+    const ultPlayed = playersWithMoves.some(p =>
+      !p.isDead && p.selectedCardId && SKILL_DB.find(c => c.id === p.selectedCardId)?.type === 'ULTIMATE');
+    const showdownMs = ultPlayed && !reduceMotion ? 4300 : 1600;
+
     const timer = setTimeout(() => {
       const run = expRunRef.current;
       const relics = run.relics;
@@ -775,7 +782,7 @@ const expYpjUsedRef = useRef(false);
         setSubmittingMove(false);
         expeditionBusyRef.current = false;
       }
-    }, 1600);
+    }, showdownMs);
     expeditionTimersRef.current.push(timer);
   };
 
@@ -941,6 +948,9 @@ const expYpjUsedRef = useRef(false);
   const [showdownAnim, setShowdownAnim] = useState(false);
   const [slamAnim, setSlamAnim] = useState(false);
 
+  // 必杀技演出 overlay（SHOWDOWN 时有人放 ULTIMATE 则播）
+  const [ultCutin, setUltCutin] = useState<(UltCutinPick & { key: number }) | null>(null);
+
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{x: number, y: number} | null>(null);
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -1105,6 +1115,19 @@ const expYpjUsedRef = useRef(false);
       setSlamAnim(false);
     }
   }, [gameState.status]);
+
+  // 必杀技演出：进入 SHOWDOWN 且有人放 ULTIMATE 时播 cut-in（2.7s 后自动收）
+  useEffect(() => {
+    if (gameState.status === 'SHOWDOWN' && !reduceMotion) {
+      const pick: UltCutinPick | null = pickUltCutin(gameState.players, SKILL_DB);
+      if (pick) {
+        setUltCutin({ ...pick, key: gameState.turn });
+        const t = setTimeout(() => setUltCutin(null), 2850);
+        return () => clearTimeout(t);
+      }
+    }
+    setUltCutin(null);
+  }, [gameState.status, gameState.turn, reduceMotion]);
 
   useEffect(() => {
     if (gameState.players.length > 0 && prevPlayersRef.current.length > 0) {
@@ -1378,14 +1401,18 @@ const expYpjUsedRef = useRef(false);
   useEffect(() => {
     if (!isOnline || gameState.status !== 'SHOWDOWN' || gameState.hostId !== user?.uid) return;
     const round = { turn: gameState.turn, matchCount: gameState.matchCount };
+    // 有人放必杀 → 结算延迟，给 cut-in 演出留出时间（与远征一致）
+    const ultPlayed = gameState.players.some(p =>
+      !p.isDead && p.selectedCardId && SKILL_DB.find(c => c.id === p.selectedCardId)?.type === 'ULTIMATE');
+    const settleMs = ultPlayed && !reduceMotion ? 4700 : 2000;
     const timer = setTimeout(() => {
       void mutateRoom(roomCode, room => settleRoom(room, user.uid, round, lang)).catch(error => {
         console.error('Unable to settle round', error);
         setToastMsg(firebaseErrorMessage(error, lang));
       });
-    }, 2000);
+    }, settleMs);
     return () => clearTimeout(timer);
-  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, user, roomCode, lang, isOnline]);
+  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, user, roomCode, lang, isOnline, reduceMotion]);
 
   useEffect(() => {
   if (muted || gameState.logs.length === 0) return;
@@ -3669,6 +3696,18 @@ const expYpjUsedRef = useRef(false);
                 })}
               </div>
             )}
+
+           {/* 必杀技演出 overlay：左侧闪入巨型立绘 + 压暗 + 喊话 + 像素特效 */}
+           {ultCutin && (
+             <UltCutin
+               key={`ultcutin-${ultCutin.key}`}
+               def={ultCutin.def}
+               playerName={ultCutin.playerName}
+               skillName={ultCutin.skillName}
+               lang={lang}
+               muted={muted}
+             />
+           )}
 
            {/* Center "VS" Text when animating */}
            {gameState.status === 'SHOWDOWN' && !showdownAnim && (
