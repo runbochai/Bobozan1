@@ -26,7 +26,6 @@
 .pixel-screen-battle .center-table-board .pixel-intent button { width: 124px; max-width: 124px; font-size: 12px; padding: 5px 7px; }
 .pixel-screen-battle .center-table-board .battle-intent-tail { top: -4px; left: calc(50% - 4px); right: auto; width: 8px; height: 8px; transform: rotate(45deg); }
 .pixel-screen-battle .battle-command-dock { margin-top: calc(-1 * var(--table-hand-overlap)); }
-.pixel-screen-battle .battle-command-dock::before { inset: 28px 0 0; background: #101b2d; }
 .center-table-board .table-played-card { height: calc(var(--played-width) * 1.15); min-height: 0; overflow: hidden; padding: 14px 3px 4px; gap: 2px; border-width: 2px; box-shadow: 2px 4px #07121f99; }
 .center-table-board .table-played-card strong { font-size: clamp(9px, calc(var(--played-width) * .14), 14px); }
 .center-table-board .table-played-card small { display: none; }
@@ -53,7 +52,6 @@
   .pixel-screen-battle .pixel-battle-board.center-table-board { height: 680px; }
   .pixel-screen-battle .pixel-battle-board.center-table-board.battle-board-crowded { height: 960px; }
   .center-table-board .table-seat-status { width: 86px; }
-  .pixel-screen-battle .battle-command-dock::before { top: 14px; }
   .pixel-screen-battle .center-table-board .pixel-intent button { width: 88px; max-width: 88px; font-size: 10px; }
   .center-table-board .table-played-card { padding: 12px 1px 2px; border-width: 1px; }
   .center-table-board .table-played-card .pixel-card-art,
