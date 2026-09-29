@@ -1,8 +1,11 @@
 import './BattleTable.css';
+import { getTableGeometry } from '../logic/battleLayout';
 
 /** Decorative battlefield; never participates in hit testing. */
-export default function BattleArena({ turn, showdown, lang }: { turn: number; showdown: boolean; lang: 'zh' | 'en' }) {
-  return <div className={`battle-scenery ${showdown ? 'battle-scenery-clash' : ''}`} aria-hidden="true">
+export default function BattleArena({ turn, showdown, lang, compact=false }: { turn: number; showdown: boolean; lang: 'zh' | 'en'; compact?: boolean }) {
+  const {frame}=getTableGeometry(compact);
+  return <div className={`battle-scenery ${showdown ? 'battle-scenery-clash' : ''}`} aria-hidden="true"
+    style={{inset:'auto',left:`${frame.x}%`,top:`${frame.y}%`,width:`${frame.width}%`,height:`${frame.height}%`}}>
     <svg viewBox="0 0 1000 620" preserveAspectRatio="none" shapeRendering="crispEdges">
       <defs><pattern id="arena-stones" width="100" height="52" patternUnits="userSpaceOnUse"><path d="M2 2h94v46H2z" fill="#243947" stroke="#405664" strokeWidth="2"/><path d="M8 8h42M84 37h8" stroke="#6e807c" strokeWidth="2" opacity=".35"/></pattern></defs>
       <path d="M180 75h640l155 470H25z" fill="#101d2c" stroke="#997958" strokeWidth="12"/>

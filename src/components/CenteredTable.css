@@ -1,0 +1,48 @@
+/* Feet stay on the same perimeter; HUD content cannot move a character's anchor. */
+.pixel-screen-battle .pixel-battle-board.center-table-board { height: 760px; min-height: 0; flex: 0 0 auto; }
+.pixel-screen-battle .center-table-board .battle-fighter { height: calc(var(--model-size) * 4 / 3); transform: translate(-50%,-100%); }
+.pixel-screen-battle .center-table-board .battle-player-plinth { bottom: 1%; }
+.center-table-board .table-seat-status { position: absolute; bottom: 96%; left: 50%; transform: translateX(-50%); width: 116px; max-width: calc(var(--model-size) + 12px); display: grid; grid-template-columns: minmax(0,1fr) max-content; grid-template-areas: 'name level' 'stats stats'; column-gap: 2px; }
+.center-table-board .table-seat-status .battle-fighter-name { grid-area: name; font-size: 10px; line-height: 12px; }
+.pixel-screen-battle .center-table-board .battle-stats { grid-area: stats; display: grid; grid-template-columns: minmax(0,1fr); width: 100%; margin-top: 2px; padding: 2px 3px; gap: 1px; }
+.pixel-screen-battle .center-table-board :is(.battle-energy,.battle-health,.battle-layer) { min-width: 0; font-size: clamp(9px,calc(var(--model-size) * .1),11px); line-height: 12px; gap: 2px; }
+.pixel-screen-battle .center-table-board .battle-health { width: 100%; }
+.pixel-screen-battle .center-table-board .battle-layer { margin-left: auto; }
+.pixel-screen-battle .center-table-board .battle-stats .pixel-icon { width: 8px; height: 8px; flex-shrink: 0; }
+.pixel-screen-battle .center-table-board .battle-health-track { min-width: 10px; height: 5px; }
+.pixel-screen-battle .center-table-board .battle-level { grid-area: level; position: static; font-size: 9px; line-height: 12px; gap: 2px; }
+.pixel-screen-battle .center-table-board .battle-level .pixel-icon { width: 8px; height: 8px; }
+.pixel-screen-battle .center-table-board .pixel-intent { top: calc(100% + 10px); left: 50%; right: auto; margin: 0; transform: translateX(-50%); }
+.pixel-screen-battle .center-table-board .pixel-intent button { width: 124px; max-width: 124px; font-size: 12px; padding: 5px 7px; }
+.pixel-screen-battle .center-table-board .battle-intent-tail { top: -4px; left: calc(50% - 4px); right: auto; width: 8px; height: 8px; transform: rotate(45deg); }
+.pixel-screen-battle .battle-command-dock { margin-top: calc(-1 * var(--table-hand-overlap)); }
+.center-table-board .table-played-card { height: calc(var(--played-width) * 1.5); min-height: 0; overflow: hidden; padding: 16px 3px 4px; gap: 2px; }
+.center-table-board .table-played-card strong { font-size: clamp(9px, calc(var(--played-width) * .14), 14px); }
+.center-table-board .table-card-owner { margin-top: 7px; height: 18px; line-height: 14px; }
+@media (min-width: 768px) {
+  .pixel-screen-battle .center-table-board[data-player-count="2"] .pixel-intent { top: 35%; left: 100%; margin-left: 6px; transform: none; }
+  .pixel-screen-battle .center-table-board[data-player-count="2"] .battle-intent-tail { top: 12px; left: -4px; }
+}
+@media (max-width: 1199px) {
+  .pixel-screen-battle .battle-command-dock .pixel-hand-area.battle-hand { grid-row: 1; }
+  .pixel-screen-battle .battle-command-dock .battle-player-hud,
+  .pixel-screen-battle .battle-command-dock .battle-hud-inventory { grid-row: 2; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .pixel-screen-battle .center-table-board[data-player-count="7"] { height: 1000px; }
+}
+@media (min-width: 768px) and (max-width: 900px) {
+  .pixel-screen-battle .center-table-board[data-player-count="8"] { height: 1100px; }
+}
+@media (min-width: 1600px) {
+  .pixel-screen-battle .pixel-battle-board.center-table-board { height: 900px; }
+}
+@media (max-width: 767px) {
+  .pixel-screen-battle .pixel-battle-board.center-table-board { height: 680px; }
+  .pixel-screen-battle .pixel-battle-board.center-table-board.battle-board-crowded { height: 960px; }
+  .center-table-board .table-seat-status { width: 86px; }
+  .pixel-screen-battle .center-table-board .pixel-intent button { width: 88px; max-width: 88px; font-size: 10px; }
+  .center-table-board .table-played-card { padding: 12px 1px 2px; border-width: 1px; }
+  .center-table-board .table-played-card .pixel-card-art,
+  .center-table-board .table-played-card .pixel-card-symbol { flex: 1; min-height: 0; }
+}
