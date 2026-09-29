@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import type { Player } from '../types';
 import type { CardType } from '../types';
 import { directionToward, type BattleSeat } from '../logic/battleLayout';
+import { playerAvatar } from '../logic/bots';
 import BattleSprite from './BattleSprite';
 import BattleStats from './BattleStats';
 import BattleMoveFx from './BattleMoveFx';
@@ -42,7 +43,7 @@ export default function BattleFighter({ player, seat, self, maxHp, level, levelN
     data-player-id={player.id} data-facing={direction} style={{ left: `${seat.x}%`, top: `${seat.y}%`, zIndex: 10 + Math.round(seat.y / 10) } as CSSProperties}>
     <div className="battle-player-plinth" aria-hidden="true" />
     <div className={`battle-character-motion battle-character-${motion}`} key={`${turn}-${motion}`} style={{ '--idle-delay': `${-(seed % 20) / 10}s`, '--step-x': `${(50 - seat.x) / 5}px`, '--step-y': `${(48 - seat.y) / 5}px` } as CSSProperties}>
-      <BattleSprite avatar={player.avatar} name={player.name} direction={direction} />
+      <BattleSprite avatar={playerAvatar(player)} name={player.name} direction={direction} />
     </div>
     {!reduceMotion && showdown && moveType && !player.isDead && <BattleMoveFx key={`${turn}-${player.selectedCardId}`} type={moveType} />}
     {!reduceMotion && !!damage && <div className="battle-hit-burst" aria-hidden="true" />}

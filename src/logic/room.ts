@@ -1,6 +1,7 @@
 import type { GameState, Lang, Player } from '../types';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../data/constants';
-import { calculateTurnOutcome, getBotMove, getPlayerCards } from './combat';
+import { calculateTurnOutcome, getPlayerCards } from './combat';
+import { getBotMove } from './botAI';
 
 export type RoomPatch = Partial<GameState> | null;
 export type RoundId = Pick<GameState, 'turn' | 'matchCount'>;
@@ -51,7 +52,7 @@ export function advanceRoom(room: GameState, uid: string): RoomPatch {
   // A departure can leave one survivor. Resolve it without waiting for another move.
   if (active.length > 1 && active.some(p => !p.isBot && !p.selectedCardId)) return null;
   const players = room.players.map(p => !p.isDead && !p.selectedCardId
-    ? { ...p, selectedCardId: active.length <= 1 ? 'charge' : getBotMove(p, room.players) }
+    ? { ...p, selectedCardId: active.length <= 1 ? 'charge' : getBotMove(p, room.players, room) }
     : p);
   return { players, status: 'SHOWDOWN' };
 }

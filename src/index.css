@@ -357,6 +357,9 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
 /* Character views are independent of the stationary player HUD and card controls. */
 .pixel-battle-layout { height: auto; min-height: 100svh; }
 .pixel-screen-multiplayer .pixel-battle-board { margin-top: 112px; }
+@media (min-width: 768px) {
+  .pixel-screen-battle:not(.pixel-screen-multiplayer) .pixel-battle-board { margin-top: 72px; }
+}
 .pixel-battle-board { min-height: 580px; flex: 1 0 580px; }
 .pixel-battle-board.battle-board-crowded { min-height: 1000px; flex-basis: 1000px; }
 .battle-fighter { position: absolute; display: flex; flex-direction: column; align-items: center; width: 160px; transform: translate(-50%, -50%); }
@@ -398,6 +401,7 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
 .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-enemy .battle-sprite { width: 144px; }
 .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-self .battle-sprite { width: 210px; }
 .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .pixel-intent { left: 50%; right: auto; top: 100%; margin: 8px 0 0; transform: translateX(-50%); }
+.pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-intent-tail { width: 8px; height: 8px; left: calc(50% - 4px); right: auto; top: -4px; transform: rotate(45deg); }
 .battle-player-hud { position: relative; z-index: 40; display: flex; align-items: center; gap: 16px; padding: 10px 24px 12px; background: #152334; border-top: 2px solid #6c6755; min-width: 0; flex-shrink: 0; }
 .battle-hud-portrait { width: 92px; height: 92px; flex-shrink: 0; overflow: hidden; }
 .battle-hud-portrait > img { width: 100%; height: 100%; object-fit: cover; }
@@ -441,7 +445,7 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
   .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-enemy .battle-sprite { width: 88px; }
   .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-self .battle-sprite { width: 136px; }
   .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-enemy .battle-stats { width: 86px; }
-  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .pixel-intent button { width: 90px; max-width: 90px; padding: 6px; font-size: 10px; }
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .pixel-intent button { width: 86px; max-width: 86px; padding: 6px; font-size: 10px; }
   .battle-board-crowded .arena-round { left: 50%; top: 49%; }
   .battle-player-hud { flex-wrap: wrap; gap: 8px 12px; padding: 10px 14px 12px; }
   .battle-hud-portrait { width: 72px; height: 72px; }

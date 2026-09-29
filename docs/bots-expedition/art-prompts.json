@@ -1,0 +1,152 @@
+{
+  "tool": "Built-in ImageGen",
+  "atlasPrompt": "Use case: identity-preserve. This input is a CHARACTER IDENTITY reference, not the output layout. Produce a production game sprite atlas of this EXACT character with its recognizable colors, species, hairstyle, clothes and accessories preserved. Eight full-body idle battle poses in a precise 4-column x 2-row grid on a truly transparent background, landscape canvas 1536x1024 (each cell 384x512). All eight sprites same scale, complete feet visible, centered in each cell with generous transparent gutters, occupy about 65% cell width and 80% cell height. No labels, no frames, no blue circle, no scenery, no floor, no shadow. Crisp chunky 16-bit pixel art dark navy outline and stepped shading matching the input. This is ONE character turning around in eight directions, NOT eight characters and NOT animation frames. EXACT CELL ORDER: row1 col1 SOUTH face toward viewer frontal; row1 col2 SOUTHWEST three-quarter front facing screen left; row1 col3 WEST pure profile face left; row1 col4 NORTHWEST three-quarter BACK facing away to upper left, back of head and back of body visible. row2 col1 NORTH fully BACK, no face; row2 col2 NORTHEAST three-quarter BACK facing away to upper right; row2 col3 EAST pure profile face right; row2 col4 SOUTHEAST three-quarter front facing screen right. Keep wings horns hair weapon on physically consistent sides. No transformations of identity. ",
+  "robotAtlasPrompt": "Use case: stylized-concept. Produce a new production pixel-game sprite atlas of ONE small battle robot. It has a rounded-square steel blue head, black face screen with two warm amber rectangular eyes, one short antenna, chunky metal gauntlets, short sturdy boots, teal steel body armor and a glowing amber chest core. Friendly determined personality, retro fantasy arena proportions. Consistent identity in every direction. Eight full-body idle battle poses in a precise 4-column x 2-row grid on a truly transparent background, landscape canvas 1536x1024 (each cell 384x512). All eight sprites same scale, complete feet visible, centered in each cell with generous transparent gutters, occupy about 65% cell width and 80% cell height. No labels, no frames, no blue circle, no scenery, no floor, no shadow. Crisp chunky 16-bit pixel art dark navy outline and stepped shading matching a retro 16-bit pixel fantasy game. This is ONE character turning around in eight directions, NOT eight characters and NOT animation frames. EXACT CELL ORDER: row1 col1 SOUTH face toward viewer frontal; row1 col2 SOUTHWEST three-quarter front facing screen left; row1 col3 WEST pure profile face left; row1 col4 NORTHWEST three-quarter BACK facing away to upper left, back of head and back of body visible. row2 col1 NORTH fully BACK, no face; row2 col2 NORTHEAST three-quarter BACK facing away to upper right; row2 col3 EAST pure profile face right; row2 col4 SOUTHEAST three-quarter front facing screen right. Keep wings horns hair weapon on physically consistent sides. No transformations of identity. ",
+  "robotPortraitPrompt": "Use case: identity-preserve. Create ONE square 1024x1024 avatar portrait of the exact little robot in the reference atlas. This is an identity reference; do NOT make a sprite sheet. Use the frontal head and upper torso, large and centered, steel-blue rounded square head, short antenna, amber rectangular eyes in a black screen, teal body armor and an amber chest core. Match the chunky outlined 16-bit pixel style, simplify tiny surface texture so the face reads at 48px. Head and shoulders fill 80% of the square. A flat muted light-cyan circular disk behind the robot matches existing game portraits, genuinely transparent outside the disk. No text, no border, no extra characters.",
+  "repairs": {
+    "tower_soul": "Edit this production sprite atlas. Preserve the exact stone golem identity, pixel art style, transparent background and all eight directions. CRITICAL LAYOUT FIX: each sprite must fit COMPLETELY inside its own 384x512 cell, with a minimum 50-pixel TRANSPARENT empty gutter on left and right and 45px on top and bottom. Maximum individual sprite width 284px, maximum height 422px. Center each sprite at x=192,576,960,1344 and y=256 (top row) or y=768 (bottom row) on a 1536x1024 canvas. Do not let the first sprite's fist spill into the second cell. Keep FULL bodies and fists/feet intact: make the whole character proportionally smaller, rather than cropping anything. Eight directions in same order: S SW W NW / N NE E SE. Row1 col2 face left. Genuine transparent alpha, no glow or shadows outside sprites.",
+    "lord_bozan": "Edit this production sprite atlas. Preserve the exact orange dragon lord with purple and gold armor identity, pixel art style, transparent background and all eight directions. CRITICAL LAYOUT FIX: each sprite must fit COMPLETELY inside its own 384x512 cell, with a minimum 50-pixel TRANSPARENT empty gutter on left and right and 45px on top and bottom. Maximum individual sprite width 284px, maximum height 422px. Center each sprite at x=192,576,960,1344 and y=256 (top row) or y=768 (bottom row) on a 1536x1024 canvas. Do not let the second sprite's tail spill into the second cell. Keep FULL bodies and fists/feet intact: make the whole character proportionally smaller, rather than cropping anything. Eight directions in same order: S SW W NW / N NE E SE. Row1 col2 face left. Genuine transparent alpha, no glow or shadows outside sprites.\nAdditionally row1 col4 NW must show back turning toward LEFT; row2 col2 NE back turning toward RIGHT."
+  },
+  "assets": [
+    {
+      "id": "coward",
+      "path": "public/characters/enemies/coward.webp",
+      "reference": "public/avatars/enemies/coward.webp",
+      "identity": "Timid warm oak wooden log head, branch nub, blue tied headband, worried eyes, wooden fists and short wooden body with feet."
+    },
+    {
+      "id": "turtle",
+      "path": "public/characters/enemies/turtle.webp",
+      "reference": "public/avatars/enemies/turtle.webp",
+      "identity": "Olive green turtle with brown shell, cream belly and chin, blue scarf and stubby hands and feet."
+    },
+    {
+      "id": "slime",
+      "path": "public/characters/enemies/slime.webp",
+      "reference": "public/avatars/enemies/slime.webp",
+      "identity": "Bright lime/yellow green cheerful biped slime with pointed curled top, dot eyes, curved smile and rounded fists and blob feet."
+    },
+    {
+      "id": "slime_a",
+      "path": "public/characters/enemies/slime_a.webp",
+      "reference": "public/avatars/enemies/slime_a.webp",
+      "identity": "Grassy green older slime brother, orange tied headband, curled sprout and rounded limbs."
+    },
+    {
+      "id": "slime_b",
+      "path": "public/characters/enemies/slime_b.webp",
+      "reference": "public/avatars/enemies/slime_b.webp",
+      "identity": "Mint/turquoise younger slime, leaf sprout, blush cheeks, pale chin patch, small body and no headband."
+    },
+    {
+      "id": "ironwall",
+      "path": "public/characters/enemies/ironwall.webp",
+      "reference": "public/avatars/enemies/ironwall.webp",
+      "identity": "Large stocky brown gorilla guard, tan face and chest, stern eyebrows, dark-brown peaked fur, bright gold shoulder armor, muscular long arms and large fists, squat legs. Preserve gorilla proportions."
+    },
+    {
+      "id": "wolf",
+      "path": "public/characters/enemies/wolf.webp",
+      "reference": "public/avatars/enemies/wolf.webp",
+      "identity": "Small friendly but alert gray-blue anthropomorphic wolf, tall ears with white inner fur, white muzzle and chest, spiky fur, bright blue scarf tied behind neck, paws, bushy tail."
+    },
+    {
+      "id": "head_a",
+      "path": "public/characters/enemies/head_a.webp",
+      "reference": "public/avatars/enemies/head_a.webp",
+      "identity": "Short stocky red-orange oni imp with one ivory horn on forehead, pointed ears, spiky red hair, little fangs, orange martial-arts vest, red arms and legs. Only ONE head, this is a separate member of a pair."
+    },
+    {
+      "id": "head_b",
+      "path": "public/characters/enemies/head_b.webp",
+      "reference": "public/avatars/enemies/head_b.webp",
+      "identity": "Short blue oni imp with TWO ivory horns, spiky blue hair, small smile with one fang, purple hooded cape and dark belt, blue hands and feet. Only ONE head, a separate blue member of the pair."
+    },
+    {
+      "id": "dragon_elder",
+      "path": "public/characters/enemies/dragon_elder.webp",
+      "reference": "public/avatars/enemies/dragon_elder.webp",
+      "identity": "Sage-green elderly eastern dragon master with two golden antler-like horns, white eyebrows, curled white moustache and pointed white beard, ocher cross-lapel monk robe, little dragon claws and feet. Preserve dignified old face."
+    },
+    {
+      "id": "frost",
+      "path": "public/characters/enemies/frost.webp",
+      "reference": "public/avatars/enemies/frost.webp",
+      "identity": "Small frost mage with pale face, short white-blue hair, sky-blue hood with white edging, cyan diamond forehead jewel, blue and white robe, hands holding small cyan ice crystal at chest, short boots."
+    },
+    {
+      "id": "robot",
+      "path": "public/characters/robot.webp"
+    },
+    {
+      "id": "robot-portrait",
+      "path": "public/avatars/robot.webp"
+    },
+    {
+      "id": "shadow_a",
+      "path": "public/characters/enemies/shadow_a.webp",
+      "reference": "public/avatars/enemies/shadow_a.webp",
+      "identity": "Dark PURPLE hood, charcoal outfit, BROWN strap, burgundy/plum scarf with GOLD clasp, fair human face with BLACK hair and stern straight mouth."
+    },
+    {
+      "id": "shadow_b",
+      "path": "public/characters/enemies/shadow_b.webp",
+      "reference": "public/avatars/enemies/shadow_b.webp",
+      "identity": "NAVY BLUE hood and robe, TEAL scarf, fair human face with brown hair and friendly small smile."
+    },
+    {
+      "id": "shadow_c",
+      "path": "public/characters/enemies/shadow_c.webp",
+      "reference": "public/avatars/enemies/shadow_c.webp",
+      "identity": "CHARCOAL GRAY hood and robe, ORANGE scarf, warm human face, brown hair and friendly small smile."
+    },
+    {
+      "id": "hangman",
+      "path": "public/characters/enemies/hangman.webp",
+      "reference": "public/avatars/enemies/hangman.webp",
+      "identity": "Friendly CREAM colored ghost, PURPLE slouch pointed hood and cape with GOLD clasp, small visible ghost hands. Complete floating body ending in tapered ghost tail instead of feet."
+    },
+    {
+      "id": "knight",
+      "path": "public/characters/enemies/knight.webp",
+      "reference": "public/avatars/enemies/knight.webp",
+      "identity": "Anthropomorphic CHESTNUT HORSE knight, a single BIPED horse person, tall horse ears and BROWN mane, tan horse muzzle, SILVER helmet, BLUE and SILVER armor with GOLD trim, complete armored arms and hoof boots."
+    },
+    {
+      "id": "guard_a",
+      "path": "public/characters/enemies/guard_a.webp",
+      "reference": "public/avatars/enemies/guard_a.webp",
+      "identity": "Young human guard, SILVER helmet with RED plume, RED scarf and red tabard, SILVER armor, brown hair and friendly face."
+    },
+    {
+      "id": "guard_b",
+      "path": "public/characters/enemies/guard_b.webp",
+      "reference": "public/avatars/enemies/guard_b.webp",
+      "identity": "Young human guard, GOLD helmet with BLUE plume, BLUE scarf and blue-white tabard, GOLD shoulders and armor, RED cape behind, friendly brown-haired face."
+    },
+    {
+      "id": "guard_c",
+      "path": "public/characters/enemies/guard_c.webp",
+      "reference": "public/avatars/enemies/guard_c.webp",
+      "identity": "Young human guard, SILVER helmet with GREEN plume, GREEN scarf, WHITE tabard and SILVER armor, brown leather straps, friendly brown-haired face."
+    },
+    {
+      "id": "bluffer",
+      "path": "public/characters/enemies/bluffer.webp",
+      "reference": "public/avatars/enemies/bluffer.webp",
+      "identity": "Cheerful human jester with tousled BROWN hair, PURPLE and GOLD two-point floppy jester hat with bells, purple/gold motley costume with bell buttons, holding a small GOLD mask with PURPLE markings on his LEFT side (viewer right in frontal pose). Full-body jester trousers and curled shoes."
+    },
+    {
+      "id": "lord_bozan",
+      "path": "public/characters/enemies/lord_bozan.webp",
+      "reference": "public/avatars/enemies/lord_bozan.webp",
+      "identity": "A fierce anthropomorphic ORANGE dragon lord, LARGE curved GOLD horns, smaller gold crest spikes, red-orange scales, cream sharp fangs, PURPLE royal armor with GOLD trim and gold clasp, muscular armored biped body with tail. A dragon king, not human."
+    },
+    {
+      "id": "tower_soul",
+      "path": "public/characters/enemies/tower_soul.webp",
+      "reference": "public/avatars/enemies/tower_soul.webp",
+      "identity": "Massive stocky GRAY STONE golem with CASTLE BATTLEMENT crown made of stone blocks, BLUE CYAN glowing eyes and cyan runes on shoulder/arms, MOSS GREEN cracks, heavy block fists and stone feet, square rocky beardlike jaw. Complete powerful chunky body."
+    }
+  ]
+}

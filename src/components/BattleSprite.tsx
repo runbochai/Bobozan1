@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { assetUrl, avatarUrl } from '../assets';
-import { battleCharacterAtlas } from '../data/battleCharacters';
+import { battleCharacterAtlas, MIRRORED_BATTLE_VIEWS } from '../data/battleCharacters';
 import { BATTLE_DIRECTIONS, type BattleDirection } from '../logic/battleLayout';
 import { User } from './PixelIcons';
 
@@ -8,8 +8,7 @@ export default function BattleSprite({ avatar, name, direction }: { avatar?: str
   const atlas = battleCharacterAtlas(avatar);
   const [failedSources, setFailedSources] = useState<string[]>([]);
   const index = BATTLE_DIRECTIONS.indexOf(direction);
-  // The lord's generated rear-quarter cell faces right; mirror just that cropped view.
-  const mirrored = atlas === 'characters/young-tower-lord.webp' && direction === 'nw';
+  const mirrored = atlas && MIRRORED_BATTLE_VIEWS[atlas]?.includes(direction);
   if (atlas && !failedSources.includes(atlas)) return <span className="battle-sprite" role="img" aria-label={name} data-direction={direction} data-atlas={atlas} style={mirrored ? { transform: 'scaleX(-1)' } : undefined}>
     <img src={assetUrl(atlas)} alt="" draggable={false} onError={() => setFailedSources(previous => [...previous, atlas])}
       style={{ left: `${-(index % 4) * 100}%`, top: `${-Math.floor(index / 4) * 100}%` }} />

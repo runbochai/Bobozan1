@@ -610,28 +610,6 @@ export const calculateTurnOutcome = (
   return { players: finalPlayers, logs, isGameOver, winner, survivorReset };
 };
 
-export const getBotMove = (bot: Player, allPlayers: Player[]) => {
-  const allKnownCards = getPlayerCards(bot, allPlayers);
-  const affordable = allKnownCards.filter(c => 
-    (bot.energy >= c.cost || bot.freeSkills?.includes(c.id)) &&
-    !bot.disabledSkills?.includes(c.id) // 👈 机器人不能出被封印的牌
-  );
-  if (affordable.length === 0) return 'charge';
-  let choice = affordable[0];
-  const r = Math.random();
-  if (bot.energy < 1) {
-    choice = r > 0.3
-      ? affordable.find((c) => c.type === 'CHARGE') || choice
-      : affordable.find((c) => c.type === 'DEFEND') || choice;
-  } else if (bot.energy >= 3 && r > 0.4) {
-    const ults = affordable.filter((c) => c.type === 'ULTIMATE');
-    if (ults.length > 0) choice = ults[Math.floor(Math.random() * ults.length)];
-  } else {
-    choice = affordable[Math.floor(Math.random() * affordable.length)];
-  }
-  return choice ? choice.id : 'charge';
-};
-
 export const getPlayerCards = (p: Player, allPlayers?: Player[]) => {
   const hongTianUnlocked = allPlayers
     ? allPlayers.some((pl) => pl.inventory.includes(20))

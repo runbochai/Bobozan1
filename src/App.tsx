@@ -2,6 +2,7 @@ import BattleArena from './components/BattleArena';
 import BattleFighter from './components/BattleFighter';
 import BattleStats from './components/BattleStats';
 import TutorialGuide from './components/TutorialGuide';
+import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
 import { getBattleSeat } from './logic/battleLayout';
 import BrawlCover from './components/BrawlCover';
 import PixelBackdrop from './components/PixelBackdrop';
@@ -1590,34 +1591,12 @@ const expYpjUsedRef = useRef(false);
       setToastMsg(t.roomFull);
       return;
     }
-    const botCount = gameState.players.filter((p: Player) => p.isBot).length;
-    const newBot: Player = {
-      id: `bot_${Date.now()}_${botCount}`,
-      name: `Bot ${botCount + 1}`,
-      avatar: AVATAR_OPTIONS[botCount % AVATAR_OPTIONS.length].path,
-      isBot: true,
-      hp: MAX_HP,
-      energy: 0,
-      isDead: false,
-      inventory: [0],
-      layer: 0,
-      tempLayerMod: 0,
-      selectedCardId: null,
-      lastCardId: null,
-      lastAction: null,
-      emoji: null,
-      emojiAt: null,
-      freeSkills: [],
-      pendingLevel: null, 
-      disabledSkills: [],
-      revengeObtainedAt: null,
-      kills: 0,
-    };
+    const botId = `bot_${crypto.randomUUID()}`;
     if (!user) return;
     try {
       await mutateRoom(roomCode, room => {
         if (room.hostId !== user.uid || room.status !== 'LOBBY') return null;
-        return joinPlayer(room, newBot);
+        return joinPlayer(room, createBot(botId, room.players));
       });
     } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
@@ -2331,7 +2310,7 @@ const expYpjUsedRef = useRef(false);
                       <div className="relative bg-slate-800 border border-slate-700 p-4 rounded-2xl flex items-center gap-4 shadow-sm group-hover:border-orange-500/50 transition-colors">
                           <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center relative shadow-md">
                             {/* Avatar Helper */}
-                            {renderProfileAvatar(p.avatar, 48)}
+                            {renderProfileAvatar(getPlayerAvatar(p), 48)}
                             
                             {p.id === gameState.hostId && (
                               <div className="absolute -top-2 -right-2 bg-slate-900 rounded-full p-1 border border-slate-700 z-10">
@@ -2341,7 +2320,7 @@ const expYpjUsedRef = useRef(false);
                           </div>
                           <div className="overflow-hidden">
                             <div className="font-bold text-slate-200 truncate">{p.name}</div>
-                            <div className="text-[10px] text-slate-500 font-mono uppercase tracking-wider">{p.isBot ? 'BOT' : 'PLAYER'}</div>
+                            <div className="text-[10px] text-slate-400 font-mono uppercase tracking-wider">{p.isBot ? `BOT · ${getBotStyle(p.id).name[lang]}` : 'PLAYER'}</div>
                           </div>
                       </div>
                   </div>
@@ -2973,7 +2952,7 @@ const expYpjUsedRef = useRef(false);
                             >
                               {taunt}
                               {expStageIdx < 3 && revealed && card && <span className="block text-xs mt-1 text-amber-800">{lang === 'zh' ? '本回合：' : 'This turn: '}{card.name[lang]}</span>}
-                              <span className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-50 rotate-45 ${toRight ? '-left-2' : '-right-2'}`} />
+                              <span className={`battle-intent-tail absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-50 rotate-45 ${toRight ? '-left-2' : '-right-2'}`} />
                             </button>
                             {badges.length > 0 && (
                               <div className="relative flex gap-1">
@@ -3172,9 +3151,9 @@ const expYpjUsedRef = useRef(false);
                                    <div className="absolute inset-0 bg-yellow-400 blur-xl opacity-40 animate-pulse rounded-full" />
                                    
                                    <div className="relative w-32 h-32 bg-slate-800 rounded-full border-4 border-yellow-400 flex items-center justify-center shadow-lg z-10 overflow-hidden">
-                                      {displayWinner.avatar ? (
+                                      {getPlayerAvatar(displayWinner) ? (
                                           <img 
-                                            src={avatarUrl(displayWinner.avatar)}
+                                            src={avatarUrl(getPlayerAvatar(displayWinner)!)}
                                             alt={displayWinner.name} 
                                             className="w-full h-full object-cover" 
                                           />
