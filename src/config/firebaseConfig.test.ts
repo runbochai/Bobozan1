@@ -32,6 +32,9 @@ test('network and rules errors are not reported as configuration errors', () => 
 
 test('public assets and saved avatars work at root and project subpaths', () => {
   for (const base of ['/', '/Bobozan1/', '/preview/']) {
+    for (const prefix of ['', '/', '/Bobozan1/', '/old-preview/']) {
+      assert.equal(resolveAvatarUrl(`${prefix}avatars/alternates/pegasus-boxer.webp`, base), `${base}avatars/alternates/pegasus-boxer.webp`);
+    }
     assert.equal(publicAssetUrl('/music/bgm.mp3', base), `${base}music/bgm.mp3`);
     for (const avatar of ['/avatars/bdrag.png', 'avatars/bdrag.png', '/Bobozan1/avatars/bdrag.png']) {
       assert.equal(resolveAvatarUrl(avatar, base), `${base}avatars/bdrag.png`);

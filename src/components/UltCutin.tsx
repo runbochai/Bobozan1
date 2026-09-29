@@ -1,3 +1,4 @@
+import './UltCutin.css';
 // src/components/UltCutin.tsx
 // 必杀技演出 overlay：左侧闪入巨型像素立绘 → 压暗全屏 → 漫画对话框喊话 → 像素风技能特效
 import { useEffect, useMemo, useState } from 'react';
@@ -10,6 +11,7 @@ interface Props {
   def: UltCutinDef;
   playerName: string;
   skillName: string;
+  level: number;
   lang: 'zh' | 'en';
   muted: boolean;
   /** 多个同屏时的序号（0 起） */
@@ -21,109 +23,55 @@ interface Props {
 const METEORS = [0, 1, 2, 3, 4, 5, 6, 7];
 const SPARKS = Array.from({ length: 18 }, (_, i) => i);
 
-export default function UltCutin({ def, playerName, skillName, lang, muted, index = 0, total = 1 }: Props) {
+export default function UltCutin({ def, playerName, skillName, level, lang, muted, index = 0, total = 1 }: Props) {
   const shout = useMemo(() => pickShout(def, lang), [def, lang]);
   // 立绘缺失时降级为像素徽章，保证演出不断
   const [imgOk, setImgOk] = useState(true);
   // 多个同屏：立绘横向排开、横幅纵向错开，避免完全重叠
   const multi = total > 1;
+  const columns = total > 1 ? 2 : 1;
+  const rows = Math.ceil(total / columns);
 
   // 冲击音效（流星落地 / 特效爆发时）
   useEffect(() => {
+    if (index > 0) return;
     const t = setTimeout(() => playSound('combat', muted), 1150);
     return () => clearTimeout(t);
-  }, [muted]);
+  }, [muted, index]);
 
   return (
     <div
       className="fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim"
-      style={{ ['--ultdim' as string]: multi ? 0.42 : 0.72 }}
+      style={{ ['--ultdim' as string]: index === 0 ? 0.68 : 0 }}
     >
-      <style>{`
-        @keyframes ultcutin-dim { from { background-color: rgba(0,0,0,0); } to { background-color: rgba(0,0,0,var(--ultdim,0.72)); } }
-        .animate-ultcutin-dim { animation: ultcutin-dim 0.25s ease-out forwards, ultcutin-dim-out 0.3s ease-in 2.4s forwards; }
-        @keyframes ultcutin-dim-out { to { background-color: rgba(0,0,0,0); } }
-
-        /* 角色从左侧闪入 */
-        @keyframes ultcutin-enter { 0% { transform: translateX(-75vw); } 70% { transform: translateX(2vw); } 100% { transform: translateX(0); } }
-        .animate-ultcutin-enter { animation: ultcutin-enter 0.45s steps(9) forwards, ultcutin-exit 0.3s ease-in 2.4s forwards; }
-        @keyframes ultcutin-exit { to { transform: translateX(-75vw); opacity: 0; } }
-        @keyframes ultcutin-bob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-        .animate-ultcutin-bob { animation: ultcutin-bob 0.9s steps(4) infinite; }
-
-        /* 速度线背景 */
-        @keyframes ultcutin-speed { from { background-position: 0 0; } to { background-position: -240px 0; } }
-        .ultcutin-speedlines {
-          background: repeating-linear-gradient(-45deg, transparent 0 26px, rgba(255,255,255,0.06) 26px 30px);
-          animation: ultcutin-speed 0.5s linear infinite;
-        }
-
-        /* 技能名横幅砸入 */
-        @keyframes ultcutin-banner { 0% { transform: scale(3.2) rotate(-6deg); opacity: 0; } 18% { transform: scale(1) rotate(0deg); opacity: 1; } 82% { transform: scale(1); opacity: 1; } 100% { transform: scale(1.15); opacity: 0; } }
-        .animate-ultcutin-banner { animation: ultcutin-banner 2.1s cubic-bezier(0.2,1.4,0.4,1) 0.35s both; }
-
-        /* 漫画对话框弹出 */
-        @keyframes ultcutin-bubble { 0% { transform: scale(0); } 55% { transform: scale(1.18); } 75% { transform: scale(0.95); } 100% { transform: scale(1); } }
-        .animate-ultcutin-bubble { transform-origin: left center; animation: ultcutin-bubble 0.4s cubic-bezier(0.2,1.6,0.4,1) 0.75s both, ultcutin-bubble-out 0.25s ease-in 2.35s forwards; }
-        @keyframes ultcutin-bubble-out { to { transform: scale(0); opacity: 0; } }
-
-        /* 屏幕震动（像素步进） */
-        @keyframes ultcutin-shake { 0%,100% { transform: translate(0,0); } 20% { transform: translate(-8px,4px); } 40% { transform: translate(6px,-6px); } 60% { transform: translate(-5px,-3px); } 80% { transform: translate(4px,5px); } }
-        .animate-ultcutin-shake { animation: ultcutin-shake 0.45s steps(5) 1.15s 2; }
-
-        /* 像素流星：左上 → 右下坠落 */
-        @keyframes ultcutin-meteor-fall { from { transform: translate(0,0); } to { transform: translate(-46vw, 72vh); } }
-        .px-meteor { position: absolute; width: 10px; height: 10px; }
-        .px-meteor-core { width: 10px; height: 10px; background: #fff7ed;
-          box-shadow: 10px 0 #ffedd5, 0 10px #fed7aa, 10px 10px #fdba74,
-            20px -10px #fb923c, 30px -20px #f97316, 40px -30px #ea580c, 50px -40px #c2410c,
-            -10px 20px #fdba74, -20px 30px #fb923c; }
-
-        /* 像素火花爆裂 */
-        @keyframes ultcutin-spark { from { transform: translate(0,0) scale(1); opacity: 1; } to { transform: translate(var(--sx), var(--sy)) scale(0.4); opacity: 0; } }
-        .animate-ultcutin-spark { animation: ultcutin-spark 0.8s steps(8) 1.15s both; }
-
-        /* 斩击横扫 */
-        @keyframes ultcutin-slash-sweep { from { transform: translateX(110vw) skewX(-24deg); } to { transform: translateX(-110vw) skewX(-24deg); } }
-        .animate-ultcutin-slash { animation: ultcutin-slash-sweep 0.5s steps(10) both; }
-
-        /* 气浪横波 */
-        @keyframes ultcutin-wave-roll { from { transform: translateY(-30vh); } to { transform: translateY(130vh); } }
-        .animate-ultcutin-wave { animation: ultcutin-wave-roll 1.1s steps(14) 1.05s both; }
-
-        /* 冲击闪光 */
-        @keyframes ultcutin-flash { 0% { opacity: 0; } 12% { opacity: 0.9; } 100% { opacity: 0; } }
-        .animate-ultcutin-flash { animation: ultcutin-flash 0.6s ease-out 1.15s both; }
-
-        .ultcutin-pixeltext { text-shadow: 4px 4px 0 #000, -2px -2px 0 #000, 2px -2px 0 #000, -2px 2px 0 #000; }
-        .ultcutin-img { image-rendering: pixelated; }
-      `}</style>
-
       {/* 速度线 + 震动容器 */}
-      <div className="absolute inset-0 ultcutin-speedlines" />
-      <div className="absolute inset-0 animate-ultcutin-shake">
+      {index === 0 && <div className="absolute inset-0 ultcutin-speedlines" />}
+      <div className="absolute inset-0 animate-ultcutin-shake" style={multi ? {
+        left: `${(index % columns) * 100 / columns}%`, top: `${Math.floor(index / columns) * 100 / rows}%`,
+        width: `${100 / columns}%`, height: `${100 / rows}%`, overflow: 'hidden',
+      } : undefined}>
 
         {/* 巨型立绘：从左侧闪入（缺图时用像素徽章兜底）；多同屏时横向排开 */}
         <div
           className="absolute animate-ultcutin-enter"
-          style={multi ? { left: `${4 + index * 30}vw`, bottom: '4vh' } : { left: 0, bottom: '6vh' }}
+          style={{ left: '2%', bottom: '4%', width: multi ? '96%' : 'min(78vw, 760px)', height: multi ? '65%' : '68%' }}
         >
-          <div className="animate-ultcutin-bob">
+          <div className="animate-ultcutin-bob h-full">
             {imgOk ? (
               <img
                 src={assetUrl(def.image)}
                 alt={skillName}
                 onError={() => setImgOk(false)}
-                className={`ultcutin-img object-contain drop-shadow-[0_0_30px_rgba(0,0,0,0.9)] ${multi ? 'h-[40vh] max-w-[42vw]' : 'h-[58vh] max-w-[72vw]'}`}
+                className="ultcutin-img object-contain object-left-bottom h-full w-full drop-shadow-[6px_6px_0_#080e26]"
                 draggable={false}
               />
             ) : (
-              <div className="relative h-[44vh] w-[44vh] max-w-[64vw] flex items-center justify-center">
+              <div className="relative h-full w-full flex items-center justify-center">
                 <div
-                  className="absolute inset-0 rotate-45 border-8 border-black shadow-[0_0_40px_rgba(0,0,0,0.9)]"
-                  style={{ background: `linear-gradient(135deg, ${def.fxColor}, #0f172a)` }}
+                  className="absolute inset-4 border-8 border-black shadow-[8px_8px_0_#0f172a]"
+                  style={{ background: def.fxColor }}
                 />
-                <div className="absolute inset-5 rotate-45 border-4 border-white/60" />
+                <div className="absolute inset-8 border-4 border-white/60" />
                 <div className="ultcutin-pixeltext relative font-black text-white" style={{ fontSize: '17vh' }}>
                   {skillName[0]}
                 </div>
@@ -135,33 +83,33 @@ export default function UltCutin({ def, playerName, skillName, lang, muted, inde
         {/* 技能名横幅；多同屏时纵向错开 */}
         <div
           className="absolute inset-x-0 flex flex-col items-center animate-ultcutin-banner"
-          style={{ top: multi ? `${26 + index * 20}vh` : '30vh' }}
+          style={{ top: '12%', padding: '0 12px', textAlign: 'center' }}
         >
           <div
-            className={`ultcutin-pixeltext font-black tracking-wider ${multi ? 'text-4xl md:text-6xl' : 'text-6xl md:text-8xl'}`}
+            className={`ultcutin-pixeltext font-black tracking-wider ${multi ? 'text-xl md:text-3xl' : 'text-3xl sm:text-5xl md:text-7xl'}`}
             style={{ color: def.fxColor }}
           >
             {skillName}！！
           </div>
-          <div className={`ultcutin-pixeltext mt-3 font-bold text-white/90 ${multi ? 'text-base md:text-xl' : 'text-lg md:text-2xl'}`}>
-            — {playerName} —
+          <div className={`ultcutin-pixeltext mt-3 font-bold text-white/90 ${multi ? 'text-xs md:text-sm' : 'text-sm md:text-xl'}`}>
+            Lv.{level} · {playerName}
           </div>
         </div>
 
         {/* 漫画对话框；多同屏时错开位置 */}
         <div
-          className={`absolute max-w-[58vw] animate-ultcutin-bubble ${multi ? '' : 'left-[34vw] md:left-[30vw] top-[10vh]'}`}
-          style={multi ? { left: `${Math.min(22 + index * 26, 56)}vw`, top: `${6 + index * 9}vh` } : undefined}
+          className="absolute animate-ultcutin-bubble"
+          style={{ right: '5%', top: '34%', maxWidth: multi ? '80%' : '55%' }}
         >
-          <div className="relative bg-white border-4 border-black rounded-2xl px-5 py-3 shadow-[6px_6px_0_rgba(0,0,0,0.85)]">
+          <div className="relative bg-white border-4 border-black px-3 py-2 shadow-[6px_6px_0_rgba(0,0,0,0.85)]">
             <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[14px] border-y-transparent border-r-[16px] border-r-black" />
             <div className="absolute -left-[9px] top-1/2 -translate-y-1/2 w-0 h-0 border-y-[9px] border-y-transparent border-r-[11px] border-r-white" />
-            <div className="text-2xl md:text-4xl font-black text-black whitespace-nowrap">{shout}</div>
+            <div className={`font-black text-black break-words ${multi ? "text-sm md:text-xl" : "text-lg md:text-3xl"}`}>{shout}</div>
           </div>
         </div>
 
         {/* 特效层 */}
-        {def.fx === 'meteor' && (
+        {(def.fx === 'meteor' || def.fx === 'ice') && (
           <div className="absolute inset-0">
             {METEORS.map(i => (
               <div
@@ -170,13 +118,24 @@ export default function UltCutin({ def, playerName, skillName, lang, muted, inde
                 style={{
                   right: `${-6 + i * 13}%`,
                   top: `${-14 - (i % 3) * 9}%`,
-                  animation: `ultcutin-meteor-fall ${0.85 + (i % 4) * 0.14}s steps(16) ${1.0 + i * 0.09}s both`,
+                  animation: `ultcutin-meteor-fall ${0.85 + (i % 4) * 0.14}s steps(16) ${0.85 + i * 0.07}s both`,
                 }}
               >
-                <div className="px-meteor-core" />
+                <div className={def.fx === "ice" ? "px-ice-core" : "px-meteor-core"} />
               </div>
             ))}
-            <div className="absolute inset-0 bg-orange-200 animate-ultcutin-flash" />
+            {def.fx === "meteor" && <div className="px-impact" />}
+            <div className="absolute inset-0 animate-ultcutin-flash" style={{ background: def.fxColor }} />
+          </div>
+        )}
+
+        {(def.fx === 'palm' || def.fx === 'kick') && (
+          <div className="absolute inset-0 overflow-hidden">
+            {Array.from({ length: def.fx === 'palm' ? 5 : 3 }, (_, i) => (
+              <div key={i} className={`px-strike ${def.fx === 'palm' ? 'px-palm' : 'px-boot'}`}
+                style={{ left: `${28 + (i % 3) * 20}%`, top: `${38 + (i % 2) * 22}%`,
+                  color: def.fxColor, animationDelay: `${1.05 + i * 0.2}s` }} />
+            ))}
           </div>
         )}
 
@@ -189,8 +148,8 @@ export default function UltCutin({ def, playerName, skillName, lang, muted, inde
                 style={{
                   top: `${22 + i * 16}%`,
                   height: `${10 - i * 2}px`,
-                  background: `linear-gradient(90deg, transparent, ${def.fxColor}, #ffffff, transparent)`,
-                  boxShadow: `0 0 24px ${def.fxColor}`,
+                  background: def.fxColor,
+                  boxShadow: `8px 8px 0 #fff, -8px -8px 0 ${def.fxColor}`,
                   animationDelay: `${1.05 + i * 0.16}s`,
                 }}
               />
@@ -199,21 +158,25 @@ export default function UltCutin({ def, playerName, skillName, lang, muted, inde
           </div>
         )}
 
-        {def.fx === 'burst' && (
+        {(['burst', 'steam', 'stars'] as string[]).includes(def.fx) && (
           <div className="absolute inset-0">
             <div className="absolute left-1/2 top-1/2">
-              {SPARKS.map(i => {
-                const ang = (i / SPARKS.length) * Math.PI * 2;
+              {(def.fx === 'stars' ? [0, 1, 2] : SPARKS).map(i => {
+                const ang = (i / (def.fx === 'stars' ? 3 : SPARKS.length)) * Math.PI * 2;
                 const dist = 26 + (i % 3) * 14;
+                const steam = def.fx === 'steam';
                 return (
                   <div
                     key={i}
                     className="absolute w-3 h-3 animate-ultcutin-spark"
                     style={{
-                      background: def.fxColor,
-                      boxShadow: `0 0 12px ${def.fxColor}`,
+                      background: steam ? '#fff4d6' : def.fxColor,
+                      width: def.fx === 'stars' ? 32 : steam ? 24 : 12,
+                      height: def.fx === 'stars' ? 32 : steam ? 24 : 12,
+                      clipPath: def.fx === 'stars' ? 'polygon(33% 0,66% 0,66% 33%,100% 33%,100% 66%,66% 66%,66% 100%,33% 100%,33% 66%,0 66%,0 33%,33% 33%)' : undefined,
+                      boxShadow: `4px 4px 0 #0f172a`,
                       ['--sx' as string]: `${Math.cos(ang) * dist}vw`,
-                      ['--sy' as string]: `${Math.sin(ang) * dist}vh`,
+                      ['--sy' as string]: `${steam ? -dist : Math.sin(ang) * dist}vh`,
                       animationDelay: `${1.15 + (i % 5) * 0.05}s`,
                     }}
                   />
@@ -224,14 +187,15 @@ export default function UltCutin({ def, playerName, skillName, lang, muted, inde
           </div>
         )}
 
-        {def.fx === 'wave' && (
+        {(def.fx === 'wave' || def.fx === 'beam') && (
           <div className="absolute inset-0 overflow-hidden">
             {[0, 1, 2].map(i => (
               <div
                 key={i}
-                className="absolute inset-x-0 h-16 animate-ultcutin-wave"
+                className={def.fx === "beam" ? "absolute w-32 h-4 animate-ultcutin-beam" : "absolute inset-x-0 h-16 animate-ultcutin-wave"}
                 style={{
                   background: `repeating-linear-gradient(90deg, ${def.fxColor} 0 18px, transparent 18px 36px)`,
+                  top: def.fx === 'beam' ? `${40 + i * 12}%` : undefined,
                   opacity: 0.75 - i * 0.18,
                   animationDelay: `${1.0 + i * 0.22}s`,
                 }}
