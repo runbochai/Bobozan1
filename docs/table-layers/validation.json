@@ -1,0 +1,193 @@
+{
+  "baseline": "a1d227d00ab9740541fc1b91a259e2a94ab82f1d",
+  "scope": "Local Chromium viewport simulations with fictional players; not a live multi-client Firebase session or physical-device test.",
+  "unitTests": {
+    "passed": 100,
+    "failed": 0
+  },
+  "lint": "passed",
+  "build": "passed",
+  "layout": {
+    "states": 126,
+    "expectedStates": 126,
+    "failingStates": 0,
+    "partialCases": 54,
+    "issueCounts": {},
+    "browserErrors": [],
+    "consoleErrors": [],
+    "failures": []
+  },
+  "leaderboard": {
+    "passed": true,
+    "results": [
+      {
+        "width": 1440,
+        "height": 1000,
+        "scroll": 52,
+        "expanded": true,
+        "collapsed": true,
+        "firstDragDelta": {
+          "x": 1,
+          "y": 1
+        },
+        "dragDelta": {
+          "x": 40,
+          "y": 36
+        }
+      },
+      {
+        "width": 844,
+        "height": 390,
+        "scroll": 80,
+        "expanded": true,
+        "collapsed": true,
+        "firstDragDelta": {
+          "x": 1,
+          "y": 1
+        },
+        "dragDelta": {
+          "x": 40,
+          "y": 36
+        }
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "scroll": 50,
+        "expanded": true,
+        "collapsed": true,
+        "firstDragDelta": {
+          "x": 1,
+          "y": 1
+        },
+        "dragDelta": {
+          "x": 40,
+          "y": 36
+        }
+      },
+      {
+        "width": 320,
+        "height": 700,
+        "scroll": 50,
+        "expanded": true,
+        "collapsed": true,
+        "firstDragDelta": {
+          "x": 1,
+          "y": 1
+        },
+        "dragDelta": {
+          "x": 40,
+          "y": 36
+        }
+      }
+    ]
+  },
+  "expedition": {
+    "cases": 25,
+    "failures": 0,
+    "errors": []
+  },
+  "highStats": {
+    "cases": 63,
+    "failures": 0,
+    "errors": []
+  },
+  "hand": {
+    "results": [
+      {
+        "width": 1440,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "width": 844,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "width": 768,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "width": 390,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "width": 320,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "tutorialLocateAndNextStep": true
+      },
+      {
+        "simulatedEightPlayerRoom": true
+      }
+    ],
+    "errors": [],
+    "multiplayerScope": "Local simulated state; no Firebase multi-client session."
+  },
+  "tutorial": {
+    "results": [
+      {
+        "width": 1440,
+        "threeLessons": true,
+        "wrongCardBlocked": true,
+        "keyboardFocus": true,
+        "rewardAndShopContinue": true
+      },
+      {
+        "width": 390,
+        "threeLessons": true,
+        "wrongCardBlocked": true,
+        "keyboardFocus": true,
+        "rewardAndShopContinue": true
+      },
+      {
+        "width": 320,
+        "height": 480,
+        "emptyCategory": true,
+        "detailsFitShortScreen": true,
+        "deadPlayerCannotAct": true
+      }
+    ],
+    "errors": []
+  },
+  "avatars": {
+    "cases": 26,
+    "failures": 0,
+    "errors": []
+  }
+}

@@ -1,0 +1,127 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "height": 1000,
+      "total": 2,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "height": 1000,
+      "total": 8,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "total": 2,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 1024,
+      "height": 768,
+      "total": 8,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "total": 2,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "total": 8,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "total": 2,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "total": 8,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "total": 2,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "height": 700,
+      "total": 8,
+      "transparent": true,
+      "backdropReachesHand": true,
+      "categories": true,
+      "skillsAndDetails": true,
+      "focusRestored": true,
+      "showdown": true,
+      "overflow": false
+    }
+  ],
+  "errors": [],
+  "build": "passed",
+  "scope": "Local Chromium simulations with fictional players."
+}

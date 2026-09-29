@@ -17,16 +17,16 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
     return !player.isDead && card ? [{ player, card, index }] : [];
   });
   const highlighted = getShowdownWinner(players);
-  const positions = tableCardPositions(played.length, players.map((_, index) => seatFor(index)), bounds);
+  const positions = tableCardPositions(players.map((_, index) => seatFor(index)), bounds);
   return <div className={`table-cards ${reduced ? 'table-cards-still' : ''}`} aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'}>
-    {played.map(({ player, card, index }, i) => {
-      const position = positions[i];
+    {played.map(({ player, card, index }) => {
+      const position = positions[index];
       if (!position) return null;
       const { x, y, width } = position;
       const start = seatFor(index);
       return <div className="table-card-flight" key={player.id} data-player-id={player.id} style={{
         left: `${x}%`, top: `${y}%`, width, '--played-width': `${width}px`, '--card-from-x': `${start.x - x}cqw`,
-        '--card-from-y': `${start.y - y}cqh`, '--card-tilt': `${i % 2 ? 3 : -3}deg`,
+        '--card-from-y': `${start.y - y}cqh`, '--card-tilt': `${index % 2 ? 3 : -3}deg`,
       } as CSSProperties}>
         <div className="pixel-showdown-card table-played-card" data-card-type={card.type} data-impact={highlighted.includes(player.id)} data-card-id={card.id}>
           <span className="table-card-cost"><Zap size={12} />{player.freeSkills?.includes(card.id) ? 0 : card.cost}</span>

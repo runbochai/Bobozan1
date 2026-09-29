@@ -1,10 +1,20 @@
-/* Feet stay on the same perimeter; HUD content cannot move a character's anchor. */
+/* Seats touch the tabletop at the waist; bodies and HUD use separate layers. */
 .pixel-screen-battle .pixel-battle-board.center-table-board { height: 760px; min-height: 0; flex: 0 0 auto; }
-.pixel-screen-battle .center-table-board .battle-fighter { height: calc(var(--model-size) * 4 / 3); transform: translate(-50%,-100%); }
-.pixel-screen-battle .center-table-board .battle-player-plinth { bottom: 1%; }
+.pixel-screen-battle .center-table-board .battle-fighter { height: calc(var(--model-size) * 4 / 3); transform: none; margin-left: calc(var(--model-size) * -.5); margin-top: calc(var(--model-size) * -4 / 3 * var(--seat-anchor)); z-index: auto; }
+.center-table-board .battle-fighter .battle-character-motion { z-index: 10; }
+.center-table-board .battle-fighter[data-depth="front"] .battle-character-motion { z-index: 30; }
+.center-table-board .battle-scenery { z-index: 20; }
+.center-table-board .battle-scenery-props { z-index: 5; }
+.center-table-board .battle-scenery > svg { opacity: 1; }
+.center-table-board .table-cards { z-index: 25; }
+.center-table-board .table-seat-status,
+.center-table-board .battle-fighter .pixel-intent { z-index: 45; }
+.center-table-board .battle-damage,
+.center-table-board .battle-emoji,
+.center-table-board .battle-dead-mark { z-index: 50; }
 .center-table-board .table-seat-status { position: absolute; bottom: 96%; left: 50%; transform: translateX(-50%); width: 116px; max-width: calc(var(--model-size) + 12px); display: grid; grid-template-columns: minmax(0,1fr) max-content; grid-template-areas: 'name level' 'stats stats'; column-gap: 2px; }
 .center-table-board .table-seat-status .battle-fighter-name { grid-area: name; font-size: 10px; line-height: 12px; }
-.pixel-screen-battle .center-table-board .battle-stats { grid-area: stats; display: grid; grid-template-columns: minmax(0,1fr); width: 100%; margin-top: 2px; padding: 2px 3px; gap: 1px; }
+.pixel-screen-battle .center-table-board .battle-stats { grid-area: stats; display: grid; grid-template-columns: minmax(0,1fr); width: 100%; max-width: 100%; margin-top: 2px; padding: 2px 3px; gap: 1px; }
 .pixel-screen-battle .center-table-board :is(.battle-energy,.battle-health,.battle-layer) { min-width: 0; font-size: clamp(9px,calc(var(--model-size) * .1),11px); line-height: 12px; gap: 2px; }
 .pixel-screen-battle .center-table-board .battle-health { width: 100%; }
 .pixel-screen-battle .center-table-board .battle-layer { margin-left: auto; }
@@ -16,9 +26,10 @@
 .pixel-screen-battle .center-table-board .pixel-intent button { width: 124px; max-width: 124px; font-size: 12px; padding: 5px 7px; }
 .pixel-screen-battle .center-table-board .battle-intent-tail { top: -4px; left: calc(50% - 4px); right: auto; width: 8px; height: 8px; transform: rotate(45deg); }
 .pixel-screen-battle .battle-command-dock { margin-top: calc(-1 * var(--table-hand-overlap)); }
-.center-table-board .table-played-card { height: calc(var(--played-width) * 1.5); min-height: 0; overflow: hidden; padding: 16px 3px 4px; gap: 2px; }
+.center-table-board .table-played-card { height: calc(var(--played-width) * 1.15); min-height: 0; overflow: hidden; padding: 14px 3px 4px; gap: 2px; border-width: 2px; box-shadow: 2px 4px #07121f99; }
 .center-table-board .table-played-card strong { font-size: clamp(9px, calc(var(--played-width) * .14), 14px); }
-.center-table-board .table-card-owner { margin-top: 7px; height: 18px; line-height: 14px; }
+.center-table-board .table-played-card small { display: none; }
+.center-table-board .table-card-owner { margin-top: 4px; height: 18px; line-height: 14px; }
 @media (min-width: 768px) {
   .pixel-screen-battle .center-table-board[data-player-count="2"] .pixel-intent { top: 35%; left: 100%; margin-left: 6px; transform: none; }
   .pixel-screen-battle .center-table-board[data-player-count="2"] .battle-intent-tail { top: 12px; left: -4px; }
@@ -45,4 +56,7 @@
   .center-table-board .table-played-card { padding: 12px 1px 2px; border-width: 1px; }
   .center-table-board .table-played-card .pixel-card-art,
   .center-table-board .table-played-card .pixel-card-symbol { flex: 1; min-height: 0; }
+}
+@media (max-width: 360px) {
+  .pixel-screen-battle .center-table-board .pixel-intent button { width: 80px; max-width: 80px; }
 }

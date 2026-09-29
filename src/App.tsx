@@ -837,9 +837,10 @@ const expYpjUsedRef = useRef(false);
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
         if (!isDragging) return;
+        const parent = leaderboardRef.current?.offsetParent?.getBoundingClientRect();
         setDragPosition({
-            x: e.clientX - dragOffset.x,
-            y: e.clientY - dragOffset.y,
+            x: e.clientX - dragOffset.x - (parent?.left ?? 0),
+            y: e.clientY - dragOffset.y - (parent?.top ?? 0),
         });
     };
 
@@ -2474,7 +2475,7 @@ const expYpjUsedRef = useRef(false);
                       );
                     })()}
              </>;
-             return <BattleFighter key={p.id} player={p} seat={pos} self={isMe}
+             return <BattleFighter key={p.id} player={p} seat={pos} bounds={tableBounds} self={isMe}
                maxHp={isExpedition ? (expMaxHpRef.current[p.id] ?? MAX_HP) : MAX_HP}
                level={pMaxLvl} levelName={SKILL_DB.find(card => card.levelRequired === pMaxLvl)?.name[lang] ?? ''}
                leader={pMaxLvl > 0 && pMaxLvl === highestLevel} turn={gameState.turn}
@@ -2655,11 +2656,13 @@ const expYpjUsedRef = useRef(false);
             </div>
            )}
 
-          {/* 🟢 UPDATED: KILL LEADERBOARD（远征模式隐藏） (Draggable + Minimizable) */}
+          </div>
+
+          {/* Scroll with the scene header so the collapsed board cannot cover a seat. */}
           {!isExpedition && (
            <div
                ref={leaderboardRef}
-               className="battle-leaderboard fixed z-50 animate-in slide-in-from-left-10 duration-500 pointer-events-none"
+               className="battle-leaderboard absolute z-50 animate-in slide-in-from-left-10 duration-500 pointer-events-none"
                style={{ 
                   top: `${dragPosition.y}px`, 
                   left: `${dragPosition.x}px`,
@@ -2767,8 +2770,6 @@ const expYpjUsedRef = useRef(false);
                </div>
            </div>
           )}
-          </div>
-
         <div className="battle-command-dock">
         {/* Status stays on the left; expedition items have their own right column. */}
         {myPlayer && <div className="battle-player-hud" aria-label={lang === 'zh' ? '我的状态' : 'My status'}>
