@@ -6,6 +6,7 @@ import { SKILL_DB } from '../data/skills';
 import { SKILL_EFFECTS } from '../data/skillEffects';
 import PixelCardArt from './PixelCardArt';
 import SkillGlyph from './SkillGlyph';
+import TavernHands from './TavernHands';
 import { ArrowLeft, CheckCircle, Ghost, Layers, Shield, Skull, Star, Swords, X, Zap } from './PixelIcons';
 import './BattleHand.css';
 
@@ -95,8 +96,9 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
   };
 
   return <section className="pixel-hand-area battle-hand" aria-label={lang === 'zh' ? '手牌' : 'Your hand'} data-hand-state={status === 'SHOWDOWN' ? 'clash' : locked ? 'locked' : 'ready'}>
+    {player && !player.isDead && <TavernHands />}
     <div className="hand-toolbar">
-      {!player?.selectedCardId && !player?.isDead && (scrollable.left || scrollable.right) && <div className="hand-scroll-controls"><span className="hand-scroll-hint">{lang === 'zh' ? '滑动选牌' : 'Browse'}</span>
+      {viewMode === 'CARDS' && !player?.selectedCardId && !player?.isDead && (scrollable.left || scrollable.right) && <div className="hand-scroll-controls"><span className="hand-scroll-hint">{lang === 'zh' ? '滑动选牌' : 'Browse'}</span>
         <button type="button" aria-label={lang === 'zh' ? '向左浏览手牌' : 'Scroll hand left'} disabled={!scrollable.left} onClick={() => scrollHand(-1)}><ArrowLeft size={16} /></button>
         <button type="button" aria-label={lang === 'zh' ? '向右浏览手牌' : 'Scroll hand right'} disabled={!scrollable.right} onClick={() => scrollHand(1)}><ArrowLeft size={16} className="hand-arrow-right" /></button>
       </div>}

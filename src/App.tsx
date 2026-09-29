@@ -1,6 +1,7 @@
 import BattleArena from './components/BattleArena';
 import BattleHand from './components/BattleHand';
 import BattleTableCards from './components/BattleTableCards';
+import './components/TavernBattle.css';
 import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
 import BattleStats from './components/BattleStats';
@@ -2081,7 +2082,7 @@ const expYpjUsedRef = useRef(false);
   `;
 
   return (
-    <div className={`pixel-app pixel-screen-battle ${!isExpedition ? 'pixel-screen-multiplayer' : ''} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
+    <div className={`pixel-app pixel-screen-battle tavern-battle ${!isExpedition ? 'pixel-screen-multiplayer' : ''} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
 
       {/* 1. BACKGROUND LAYERS & STYLES */}
       <style>{`
@@ -2115,7 +2116,6 @@ const expYpjUsedRef = useRef(false);
           
       `}</style>
 
-      <PixelBackdrop scene="battle" />
 
       <TopControls 
        muted={muted} 
@@ -2136,7 +2136,7 @@ const expYpjUsedRef = useRef(false);
 
 
       {/* 🔹 Side Buttons (Emoji & Share) */}
-      <div className="hidden md:flex fixed bottom-80 right-20 z-50 flex-col gap-3 items-center">
+      <div className="battle-social-controls hidden md:flex fixed bottom-80 right-20 z-50 flex-col gap-3 items-center">
         
         {/* 1. SHARE BUTTON (Only visible if you have Lv3 or Lv18) */}
         {myPlayer && (myPlayer.inventory.includes(3) || myPlayer.inventory.includes(18)) && (
@@ -2276,7 +2276,7 @@ const expYpjUsedRef = useRef(false);
       </div>
 
       {/* CENTER ARENA */}
-      <div className="pixel-battle-layout flex-1 flex flex-col relative h-screen z-10">
+      <div data-player-count={totalPlayers} className="pixel-battle-layout flex-1 flex flex-col relative h-screen z-10">
 
         {/* --- EXPEDITION HUD（左上：章节关卡 + 遗物） --- */}
         {isExpedition && expPhase === 'battle' && (
@@ -2653,6 +2653,7 @@ const expYpjUsedRef = useRef(false);
           {!isExpedition && (
            <div
                ref={leaderboardRef}
+               data-mode={leaderboardMode}
                className="battle-leaderboard fixed z-50 animate-in slide-in-from-left-10 duration-500 pointer-events-none"
                style={{ 
                   top: `${dragPosition.y}px`, 
@@ -2765,7 +2766,7 @@ const expYpjUsedRef = useRef(false);
 
         <div className="battle-command-dock">
         {/* Status stays on the left; expedition items have their own right column. */}
-        {myPlayer && <div className="battle-player-hud" aria-label={lang === 'zh' ? '我的状态' : 'My status'}>
+        {myPlayer && <div className="battle-player-hud" data-hit={!!damageNumbers[myPlayer.id]} aria-label={lang === 'zh' ? '我的状态' : 'My status'}>
           <div className={`battle-hud-portrait ${myPlayer.isDead ? 'battle-hud-dead' : ''}`}>
             {myPlayer.avatar ? <img src={avatarUrl(myPlayer.avatar)} alt={myPlayer.name} draggable={false} /> : <User size={52} />}
           </div>

@@ -1,0 +1,189 @@
+/* One camera, one surface: seating and the foreground hand use the same scene coordinates. */
+.pixel-app.tavern-battle { background: #170f10 !important; --pixel-ink: #120e11; }
+.tavern-battle .pixel-battle-layout { min-height: 820px; height: max(820px, 100svh); flex: 1 0 auto; isolation: isolate; overflow: hidden; }
+.tavern-battle .pixel-battle-board,
+.tavern-battle .pixel-battle-board.battle-board-crowded { position: absolute; inset: 0; margin: 0; min-height: 0; height: 100%; width: 100%; flex: none; overflow: hidden; }
+.tavern-room { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: #1d1413; }
+.tavern-room > img { width: 100%; height: 100%; object-fit: cover; object-position: center 35%; }
+.tavern-room::after { content: ''; position: absolute; inset: 0; background: linear-gradient(#100e181a, #100e1826 35%, #100e1866), radial-gradient(ellipse at 50% 30%, transparent 30%, #080b1899); }
+.tavern-lamplight { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 20%, #fbc26714, transparent 60%); animation: tavern-light 6s steps(5) infinite; }
+.tavern-battle .battle-scenery { inset: 29% 5% -3%; z-index: 4; overflow: visible; }
+.tavern-table { width: 100%; height: 100%; object-fit: fill; filter: drop-shadow(0 22px 0 #08090b66); }
+.table-light-pool { position: absolute; inset: 12% 8% 28%; background: radial-gradient(ellipse, #ffd47810, transparent 65%); pointer-events: none; }
+.tavern-battle .arena-round { top: 34%; transform: translate(-50%, -50%); color: #ffe0aaba; text-shadow: 1px 2px #542913; gap: 12px; }
+.tavern-battle .arena-round span { font: bold 12px monospace; letter-spacing: 4px; }
+.tavern-battle .arena-round strong { margin: 0; font: 20px 'Pixel Display', monospace; color: #edbb7a55; letter-spacing: 3px; text-shadow: none; }
+.tavern-battle .battle-scenery-clash .arena-round { opacity: .15; }
+/* Wrists meet the surface. The waist crop is below the hands, never at the neck. */
+.tavern-battle .battle-fighter { --model-size: clamp(210px, min(25cqw, 34cqh), 380px); width: var(--model-size); height: var(--model-size); transform: translate(-50%, -100%); }
+.tavern-battle .battle-fighter[data-depth="side"] { --model-size: clamp(240px, min(32cqw, 45cqh), 520px); }
+.tavern-battle .battle-fighter[data-depth="near"] { --model-size: clamp(240px, min(29cqw, 42cqh), 490px); }
+.tavern-battle .battle-board-crowded .battle-fighter { --model-size: clamp(155px, min(18cqw, 27cqh), 320px); }
+.tavern-battle .battle-board-crowded .battle-fighter[data-depth="side"] { --model-size: clamp(180px, min(23cqw, 31cqh), 380px); }
+.tavern-battle .battle-board-crowded .battle-fighter[data-depth="near"] { --model-size: clamp(195px, min(25cqw, 25cqh), 420px); }
+.tavern-battle .battle-fighter-self { width: 110px; height: 80px; pointer-events: none; }
+.tavern-battle .battle-fighter-self .battle-character-motion { display: none; }
+.tavern-chair { position: absolute; width: 56%; height: 62%; top: 25%; z-index: -1; border: 7px solid #3e281d; background: repeating-linear-gradient(90deg, #533822 0 12%, #231a1980 12% 24%); box-shadow: inset 0 4px #b7834a, 0 4px 0 #100d11; clip-path: polygon(8% 0,92% 0,100% 8%,100% 100%,0 100%,0 8%); }
+.tavern-battle .battle-character-motion { width: 100%; height: 100%; filter: drop-shadow(3px 5px 0 #170e1266); transform-origin: center bottom; }
+.seated-character, .seated-sprite { position: relative; display: block; width: 100%; height: 100%; overflow: hidden; }
+.seated-sprite > img { position: absolute; width: 300%; height: 100%; max-width: none; top: 5%; }
+.seated-portrait { position: absolute; inset: 0 3% 0; overflow: hidden; clip-path: polygon(0 0,100% 0,100% 90%,82% 97%,18% 97%,0 90%); }
+.tavern-battle .seated-portrait .battle-sprite { width: 100%; height: auto; aspect-ratio: 3 / 4; margin-top: -2%; filter: sepia(.12) saturate(.84) brightness(.95); }
+.opponent-hand { position: absolute; bottom: 1%; left: 34%; width: 42%; height: 29%; transform: rotate(-9deg); filter: drop-shadow(2px 4px #120f1199); transition: opacity .2s; }
+.opponent-hand i { position: absolute; width: 45%; height: 100%; background: repeating-linear-gradient(45deg, #374839 0 3px,#2b3c31 3px 6px); border: 3px solid #bdab78; box-shadow: inset 0 0 0 3px #354839, inset 0 0 0 4px #8b9365; transform-origin: bottom center; }
+.opponent-hand i:nth-child(1) { left: 0; transform: rotate(-22deg); }
+.opponent-hand i:nth-child(2) { left: 28%; transform: rotate(-2deg); }
+.opponent-hand i:nth-child(3) { left: 55%; transform: rotate(18deg); }
+.seated-character[data-played="true"] .opponent-hand { opacity: .25; }
+.seat-nameplate { position: absolute; top: calc(100% - 7px); width: 126px; padding: 4px 7px; background: #241c19eb; border: 1px solid #bf925354; box-shadow: 2px 3px #130f1488; }
+.tavern-battle .battle-fighter-name { font-size: 12px; line-height: 1.5; color: #f8dda4; text-shadow: none; }
+.tavern-battle .battle-fighter .battle-stats { width: 100%; padding: 0; border: 0; background: none; box-shadow: none; margin: 2px 0 0; flex-direction: row; gap: 10px; align-items: center; }
+.tavern-battle .battle-fighter .battle-health { flex: 1; }
+.tavern-battle .battle-level { top: -17px; right: 2px; font-size: 9px; }
+.tavern-battle .battle-emoji { top: 10%; left: 65%; z-index: 5; }
+.tavern-battle .battle-fighter .pixel-intent { top: calc(100% + 56px); left: 50%; right: auto; margin: 0; transform: translateX(-50%); max-width: 170px; }
+.tavern-battle .battle-fighter .pixel-intent button { width: max-content; max-width: 170px; font-size: 13px; padding: 7px 10px; }
+.tavern-battle .battle-fighter .battle-intent-tail { top: -4px; left: calc(50% - 4px); right: auto; width: 8px; height: 8px; transform: rotate(45deg); }
+/* HUD sits at the margins; the cards are physically in the foreground, with no bottom panel. */
+.tavern-battle .battle-command-dock { position: absolute; inset: auto 0 0; z-index: 40; margin: 0; padding: 0 20px 8px; grid-template-columns: minmax(160px, 1fr) minmax(0, 740px) minmax(140px, 1fr); align-items: end; gap: 0 12px; }
+.tavern-battle .battle-command-dock::before { inset: 55% 0 0; background: linear-gradient(transparent,#110e16c7); }
+.tavern-battle .battle-command-dock .battle-player-hud { flex-wrap: nowrap; padding: 10px 0 18px; gap: 10px; align-self: end; grid-column: 1; grid-row: 1; }
+.tavern-battle .battle-command-dock .battle-hud-portrait { width: clamp(60px, 6vw, 96px); height: clamp(60px, 6vw, 96px); }
+.tavern-battle .battle-hud-details { width: 160px; color: #f4dbb5; }
+.tavern-battle .battle-hud-name { font-size: 12px; flex-wrap: wrap; gap: 0 6px; }
+.tavern-battle .battle-command-dock .battle-player-hud .battle-stats { flex-wrap: wrap; gap: 3px 7px; }
+.tavern-battle .battle-command-dock .battle-hud-inventory { grid-column: 3; grid-row: 1; padding-bottom: 22px; align-self: end; }
+.tavern-battle .battle-command-dock .battle-hud-inventory .pixel-inventory { background: #241c19e6 !important; border: 1px solid #c3995b55 !important; }
+.tavern-battle .battle-player-hud[data-hit="true"] { animation: tavern-hud-hit .45s steps(4); }
+.pixel-app.tavern-battle .pixel-hand-area.battle-hand { grid-column: 2; grid-row: 1; min-height: 290px; isolation: isolate; align-self: end; }
+.tavern-hands { position: absolute; left: 0; bottom: -10px; width: 100%; height: 250px; pointer-events: none; z-index: -1; filter: drop-shadow(4px 5px #100e1280); }
+.tavern-battle .battle-hand .pixel-hand-tray.hand-fan { height: 285px; align-items: flex-end; gap: 0; padding: 34px 25px 40px; scrollbar-color: #a88351 #231b17; }
+.tavern-battle .hand-category-slot { flex: 0 0 132px; width: 132px; transform-origin: 50% 130%; transition: translate .15s steps(3); }
+.tavern-battle .hand-category-slot + .hand-category-slot { margin-left: -15px; }
+.tavern-battle .battle-hand .hand-category-fan { overflow: visible; }
+.tavern-battle .hand-category-slot:nth-child(1) { transform: rotate(-12deg) translateY(18px); }
+.tavern-battle .hand-category-slot:nth-child(2) { transform: rotate(-6deg) translateY(4px); }
+.tavern-battle .hand-category-slot:nth-child(4) { transform: rotate(6deg) translateY(4px); }
+.tavern-battle .hand-category-slot:nth-child(5) { transform: rotate(12deg) translateY(18px); }
+.tavern-battle .hand-category-slot:hover, .tavern-battle .hand-category-slot:focus-within, .tavern-battle .hand-skill-slot:hover, .tavern-battle .hand-skill-slot:focus-within { translate: 0 -12px; }
+.pixel-app.tavern-battle .battle-hand button.hand-card { height: 203px; color: #3b291e; background: linear-gradient(115deg,#fae9bf,#d2b98b) !important; border: 3px solid #8b6e43 !important; box-shadow: 3px 6px 0 #170f13aa, inset 0 0 0 2px #f8e5b7 !important; padding: 12px 8px; }
+.pixel-app.tavern-battle .battle-hand .hand-card::after { border: 1px solid #705138; inset: 6px; opacity: .6; }
+.tavern-battle .hand-category-icon { filter: none; color: var(--card-ink); }
+.tavern-battle [data-card-type="CHARGE"] { --card-ink: #886314; }
+.tavern-battle [data-card-type="ATTACK"] { --card-ink: #a33f30; }
+.tavern-battle [data-card-type="DEFEND"] { --card-ink: #315d78; }
+.tavern-battle [data-card-type="ULTIMATE"] { --card-ink: #79478b; }
+.tavern-battle [data-card-type="SPECIAL"], .tavern-battle [data-card-type="ABSORB"] { --card-ink: #356853; }
+.tavern-battle .hand-card-name { text-shadow: none; font-size: 17px; }
+.tavern-battle .hand-card-eyebrow, .tavern-battle .hand-category-caption, .tavern-battle .hand-cost, .tavern-battle .hand-card-rank, .tavern-battle .hand-temp { color: var(--card-ink); }
+.tavern-battle .hand-category-caption { font-size: 10px; }
+.tavern-battle .hand-card-action, .tavern-battle .hand-card[aria-disabled="true"] .hand-card-action { color: #684837; }
+.tavern-battle .hand-skill-slot { transition: translate .15s steps(3); }
+.tavern-battle .battle-hand .pixel-card-slot.hand-skill-slot { flex: 0 0 130px; width: 130px; margin: 0 5px; }
+.pixel-app.tavern-battle .battle-hand button.hand-skill-card { padding-top: 28px; }
+.pixel-app.tavern-battle .battle-hand .hand-info { color: #594023; background: #f1dcad; border-color: #94744b; box-shadow: none; }
+.tavern-battle .hand-inspector { position: absolute; left: 8%; right: 8%; top: -70px; min-height: 0; padding: 0; color: #ffeac7; }
+.tavern-battle .hand-inspector:has(> *) { background: #241c19f5; border: 1px solid #bc965565; padding: 8px 12px; }
+.tavern-battle .hand-category-nav { padding-bottom: 0; }
+.pixel-app.tavern-battle .battle-hand .hand-category-tab, .pixel-app.tavern-battle .battle-hand .pixel-hand-back { background: #2a211b !important; color: #e4cdaa; border-color: #ac875459 !important; }
+.pixel-app.tavern-battle .battle-hand .hand-category-tab[aria-current="true"] { background: #d1b783 !important; color: #302417; border-color: #fbe4b6 !important; }
+.tavern-battle .hand-committed { min-height: 270px; padding-bottom: 16px; align-items: flex-end; }
+.tavern-battle .hand-locked-card { width: 90px; height: 132px; color: #392c20; background: #e3cca0 !important; transform: rotate(-8deg); box-shadow: 5px 7px #100e1180; }
+.tavern-battle .hand-committed-copy { padding: 10px; background: #241c19d9; color: #f5dfb9; }
+.tavern-battle .hand-committed-copy small { display: none; }
+.tavern-battle .table-cards { z-index: 25; }
+.tavern-battle .table-card-flight { --played-width: clamp(48px, 7cqw, 72px); width: var(--played-width); }
+.tavern-battle .table-played-card { height: calc(var(--played-width) * 1.5); min-height: 0; overflow: hidden; color: #36261e; background: #e7d0a3 !important; border-color: #93703f !important; transform: rotateX(22deg) rotate(var(--card-tilt)); box-shadow: 3px 5px #351b15a8; }
+.tavern-battle .table-played-card :is(.pixel-card-art, .pixel-card-symbol) { min-height: 0; flex: 1; }
+.tavern-battle .table-played-card strong { font-size: 12px; line-height: 1.2; }
+.tavern-battle .table-played-card small { display: none; }
+.tavern-battle .table-played-card small, .tavern-battle .table-card-cost { color: var(--card-ink); }
+.tavern-battle .table-card-owner { background: #38221bc9; font-size: 10px; }
+.tavern-battle .battle-social-controls { bottom: auto; top: 74px; right: 20px; }
+.tavern-battle .battle-social-controls > button { width: 40px; height: 40px; padding: 8px; }
+.tavern-battle .battle-leaderboard[data-mode="MINIMIZED"] > .relative { min-width: 0; padding: 10px 12px; background: #241c19e8 !important; border-color: #b9935c66; }
+.tavern-battle .battle-leaderboard[data-mode="MINIMIZED"] .cursor-grab { gap: 8px; }
+.tavern-battle .battle-leaderboard[data-mode="MINIMIZED"] .w-12 { width: 30px; height: 30px; }
+.tavern-battle .battle-leaderboard[data-mode="MINIMIZED"] .text-xl { font-size: 13px; }
+@keyframes tavern-light { 50% { opacity: .45; } }
+@keyframes tavern-hud-hit { 30% { filter: sepia(1) saturate(4); translate: -4px 0; } 70% { translate: 4px 0; } }
+@media (min-width: 1800px) {
+  .tavern-battle .battle-command-dock { grid-template-columns: minmax(210px,1fr) 900px minmax(210px,1fr); }
+  .tavern-battle .hand-category-slot { flex-basis: 155px; width: 155px; }
+  .pixel-app.tavern-battle .battle-hand button.hand-card { height: 232px; }
+  .tavern-battle .battle-hand .pixel-hand-tray.hand-fan { height: 318px; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .tavern-battle .battle-command-dock { grid-template-columns: 155px minmax(0,1fr) 90px; padding: 0 10px 8px; gap: 6px; }
+  .tavern-battle .battle-command-dock .battle-player-hud { flex-wrap: wrap; gap: 4px; }
+  .tavern-battle .hand-category-slot { flex-basis: calc((100% - 100px) / 5 + 12px); width: auto; }
+  .tavern-battle .hand-category-caption { display: none; }
+  .tavern-battle .battle-hand .pixel-hand-tray.hand-fan { padding-left: 8px; padding-right: 8px; }
+}
+@media (max-width: 767px) {
+  .tavern-battle .pixel-battle-layout { min-height: 800px; height: max(800px,100svh); }
+  .tavern-battle .pixel-battle-layout[data-player-count="4"] { min-height: 900px; height: max(900px,100svh); }
+  .tavern-battle .pixel-battle-layout:is([data-player-count="5"],[data-player-count="6"],[data-player-count="7"],[data-player-count="8"]) { min-height: 1100px; height: max(1100px,100svh); }
+  .tavern-battle .pixel-mobile-header { position: absolute; top: 55px; left: 0; right: 0; padding: 8px 12px; background: #241c19cc; border: 0; }
+  .tavern-battle .pixel-controls { top: 12px; }
+  .tavern-battle .battle-leaderboard[data-mode="MINIMIZED"] > .relative { padding: 5px 8px; }
+  .tavern-battle .battle-leaderboard[data-mode="MINIMIZED"] .cursor-grab > .flex-col > span:first-child { display: none; }
+  .tavern-battle .battle-leaderboard[data-mode="MINIMIZED"] .w-12 { width: 22px; height: 22px; }
+  .tavern-battle .battle-leaderboard[data-mode="MINIMIZED"] .pixel-icon { width: 15px; height: 15px; }
+  .tavern-battle .pixel-exp-hud { position: absolute; top: 96px; left: 8px; margin: 0; }
+  .tavern-battle .pixel-exp-hud > div { background: #241c19d9 !important; padding: 5px 8px; }
+  .tavern-battle .pixel-exp-hud .text-sm { font-size: 11px; }
+  .tavern-battle .battle-scenery { inset: 28% -25% 3%; }
+  .tavern-battle .tavern-room > img { object-position: 50% top; }
+  .tavern-battle .battle-fighter { --model-size: clamp(160px, min(58cqw, 26cqh), 260px); }
+  .tavern-battle .battle-fighter[data-depth="side"], .tavern-battle .battle-fighter[data-depth="near"] { --model-size: 39cqw; }
+  .tavern-battle .pixel-battle-board[data-player-count="3"] .battle-fighter { --model-size: 46cqw; }
+  .tavern-battle .pixel-battle-board[data-player-count="4"] .battle-fighter[data-depth="far"] { --model-size: min(43cqw, 20cqh); }
+  .tavern-battle .battle-board-crowded .battle-fighter { --model-size: min(28cqw, 15cqh); }
+  .tavern-battle .battle-board-crowded .battle-fighter[data-depth="side"],
+  .tavern-battle .battle-board-crowded .battle-fighter[data-depth="near"] { --model-size: min(36cqw, 16cqh); }
+  .tavern-battle .battle-fighter-self { --model-size: 0px; }
+  .seat-nameplate { width: 90px; padding: 3px 5px; top: calc(100% - 3px); }
+  .tavern-battle .battle-board-crowded .seat-nameplate { width: 80px; }
+  .tavern-battle .battle-fighter-name { font-size: 10px; }
+  .tavern-battle .battle-fighter .battle-stats { gap: 6px; }
+  .tavern-battle .battle-fighter .battle-stats .pixel-icon { width: 11px; height: 11px; }
+  .tavern-battle .battle-fighter .battle-energy, .tavern-battle .battle-fighter .battle-health { font-size: 10px; gap: 3px; }
+  .tavern-battle .battle-fighter .battle-health-track { min-width: 12px; height: 4px; }
+  .tavern-battle .battle-fighter .pixel-intent { top: calc(100% + 42px); max-width: 104px; }
+  .tavern-battle .battle-fighter .pixel-intent button { max-width: 104px; font-size: 11px; padding: 5px 6px; }
+  .tavern-battle .battle-fighter .pixel-intent .text-xs { font-size: 10px; }
+  .tavern-battle .battle-command-dock { grid-template-columns: 1fr 100px; gap: 0; padding: 0 8px; }
+  .pixel-app.tavern-battle .pixel-hand-area.battle-hand { grid-column: 1 / -1; grid-row: 1; min-height: 214px; }
+  .tavern-battle .battle-command-dock .battle-player-hud { grid-column: 1; grid-row: 2; padding: 3px 0 10px; gap: 6px; }
+  .tavern-battle .battle-command-dock .battle-hud-portrait { width: 58px; height: 58px; }
+  .tavern-battle .battle-command-dock .battle-hud-inventory { grid-column: 2; grid-row: 2; padding: 0 0 12px; max-width: 100px; }
+  .tavern-battle .battle-command-dock .tutorial-reminder { grid-row: 3; padding: 4px; }
+  .tavern-battle .battle-command-dock .tutorial-reopen { min-height: 30px; font-size: 12px; padding: 4px 10px; }
+  .tavern-battle .battle-hand .pixel-hand-tray.hand-fan { height: 216px; padding: 30px 14px 28px; }
+  .tavern-battle .hand-category-slot { flex: 0 0 calc((100% - 42px) / 5 + 7px); width: auto; }
+  .tavern-battle .hand-category-slot + .hand-category-slot { margin-left: -9px; }
+  .pixel-app.tavern-battle .battle-hand button.hand-category-card { height: 148px; padding: 8px 3px; border-width: 2px !important; }
+  .tavern-battle .hand-category-card .hand-card-name { font-size: 13px; }
+  .tavern-battle .hand-category-caption { display: none; }
+  .tavern-hands { height: 210px; }
+  .tavern-battle .battle-hand .pixel-card-slot.hand-skill-slot { flex-basis: 108px; width: 108px; }
+  .pixel-app.tavern-battle .battle-hand button.hand-skill-card { height: 181px; }
+  .tavern-battle .battle-hand .pixel-hand-tray.hand-skill-fan { height: 225px; padding-top: 24px; padding-bottom: 20px; }
+  .tavern-battle .hand-skill-card .hand-card-name { font-size: 13px; }
+  .tavern-battle .hand-inspector { top: -75px; left: 3%; right: 3%; }
+  .tavern-battle .hand-committed { min-height: 214px; padding: 10px 10px 25px; }
+  .tavern-battle .table-card-flight { --played-width: 9cqw; }
+  .tavern-battle .table-played-card strong { font-size: 9px; }
+  .tavern-battle .table-played-card { border-width: 1px; padding: 13px 1px 3px; }
+  .tavern-battle .table-card-owner { margin-top: 3px; font-size: 8px; }
+  .tavern-battle .arena-round strong { font-size: 13px; }
+  .tavern-battle .arena-round span { font-size: 10px; letter-spacing: 2px; }
+  .tavern-chair { border-width: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tavern-lamplight, .tavern-battle .battle-player-hud[data-hit="true"] { animation: none; }
+  .tavern-battle .hand-category-slot, .tavern-battle .hand-skill-slot, .opponent-hand { transition: none; }
+}
+.reduce-motion .tavern-lamplight, .reduce-motion .tavern-battle .battle-player-hud[data-hit="true"] { animation: none; }
+.reduce-motion .tavern-battle .hand-category-slot, .reduce-motion .tavern-battle .hand-skill-slot, .reduce-motion .opponent-hand { transition: none; }

@@ -317,13 +317,6 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
 
 /* Character views are independent of the stationary player HUD and card controls. */
 .pixel-battle-layout { height: auto; min-height: 100svh; }
-.pixel-screen-multiplayer .pixel-battle-board { margin-top: 152px; }
-@media (min-width: 768px) and (max-width: 1199px) {
-  .pixel-screen-multiplayer .pixel-battle-board { margin-top: 192px; }
-}
-@media (min-width: 768px) {
-  .pixel-screen-battle:not(.pixel-screen-multiplayer) .pixel-battle-board { margin-top: 72px; }
-}
 .pixel-battle-board { min-height: 680px; flex: 1 0 680px; container-type: size; }
 .battle-fighter { --model-size: clamp(190px, min(19cqw, 34cqh), 400px); position: absolute; display: flex; flex-direction: column; align-items: center; width: var(--model-size); transform: translate(-50%, -50%); }
 .battle-fighter-self { --model-size: clamp(260px, min(25cqw, 47cqh), 560px); transform: translate(-50%, -75%); pointer-events: none; }

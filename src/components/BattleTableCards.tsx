@@ -21,9 +21,8 @@ export default function BattleTableCards({ players, lang, seatFor, reduced }: {
     {played.map(({ player, card, index }, i) => {
       const row = Math.floor(i / columns);
       const rowCount = Math.min(columns, played.length - row * columns);
-      // Leave the center line clear for the near-side player's status in 8-seat games.
-      const x = rowCount === 4 ? [29, 40, 60, 71][i % columns] : 50 + (i % columns - (rowCount - 1) / 2) * 13;
-      const y = played.length > 4 ? 43 + row * 22 : 53;
+      const x = 50 + (i % columns - (rowCount - 1) / 2) * 10;
+      const y = played.length > 4 ? 54 + row * 18 : 58;
       const start = seatFor(index);
       return <div className="table-card-flight" key={player.id} data-player-id={player.id} style={{
         left: `${x}%`, top: `${y}%`, '--card-from-x': `${start.x - x}cqw`,

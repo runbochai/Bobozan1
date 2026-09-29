@@ -1,0 +1,339 @@
+{
+  "results": [
+    {
+      "avatar": "avatars/bdrag.png",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/boy.png",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/girl.png",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/ntr.png",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/pega.png",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/rsn.png",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/alternates/pegasus-swordsman.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/alternates/pegasus-martial-artist.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/alternates/pegasus-strategist.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/alternates/pegasus-boxer.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/alternates/pegasus-stargazer.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/alternates/young-tower-lord.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/alternates/little-tower-spirit.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/dummy.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/robot.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/coward.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/turtle.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/slime.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/slime_a.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/slime_b.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/ironwall.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/wolf.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/head_a.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/head_b.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/dragon_elder.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/frost.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/shadow_a.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/shadow_b.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/shadow_c.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/hangman.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/knight.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/guard_a.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/guard_b.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/guard_c.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/bluffer.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/lord_bozan.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    },
+    {
+      "avatar": "avatars/enemies/tower_soul.webp",
+      "views": [
+        "s",
+        "se",
+        "sw"
+      ],
+      "loaded": true
+    }
+  ],
+  "robotFailureFallsBackToRobot": true,
+  "errors": []
+}
