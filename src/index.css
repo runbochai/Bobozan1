@@ -461,40 +461,25 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
 }
 .reduce-motion .battle-character-motion, .reduce-motion .battle-gold-gain, .reduce-motion .battle-damage { animation: none !important; }
 
-/* Training lives beside the hand in document flow, leaving the arena and portrait clear. */
-.tutorial-guide { position: relative; z-index: 40; flex-shrink: 0; width: calc(100% - 48px); max-width: 896px; margin: 12px auto 4px; padding: 14px 18px; border: 2px solid #c9aa69; background: #252d37; box-shadow: 4px 4px #080f1c; }
-.pixel-app .tutorial-jump { display: block; margin-top: 4px; min-height: 36px; padding: 4px 8px; border: 1px solid #9b926d; background: #263d4a; color: #f4d698; font-size: 12px; }
-.tutorial-guide-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: #f7d992; }
-.tutorial-guide-header h2 { margin: 0; font-size: 14px; font-weight: 900; }
-.tutorial-guide-header > span { flex-shrink: 0; font-size: 11px; }
-.tutorial-progress { display: flex; gap: 4px; margin: 10px 0; }
-.tutorial-progress > span { flex: 1; padding: 4px 6px; border-top: 3px solid #506072; color: #9baaba; font-size: 11px; }
-.tutorial-progress > [data-state="done"] { border-color: #8ec8a2; color: #a7d5b3; }
-.tutorial-progress > [data-state="current"] { border-color: #f3ca7a; color: #ffe0a2; background: #f4d1840c; }
-.tutorial-guide-content { display: flex; align-items: center; gap: 24px; }
-.tutorial-guide-copy { flex: 1; min-width: 0; font-size: 14px; line-height: 1.6; }
-.tutorial-guide-copy p { margin: 4px 0; }
-.tutorial-guide-copy .tutorial-feedback { color: #a9d9ba; font-size: 12px; min-height: 20px; }
-.tutorial-facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 12px; color: #c4ccd3; }
-.tutorial-facts b { color: #ffe0a2; }
-.tutorial-guide-actions { display: flex; flex-direction: column; gap: 6px; min-width: 178px; }
-.tutorial-guide-actions button { min-height: 40px; }
-.tutorial-guide-actions small { text-align: center; font-size: 10px; color: #bdc9d1; }
-.pixel-app .tutorial-skip { background: transparent; color: #a9b8c4; border: 1px solid #637486; padding: 6px 10px; font-size: 12px; box-shadow: none; }
+/* One short instruction at a time. The native dialog handles focus and background input. */
+.tutorial-dialog { position: fixed; inset: 0; margin: auto; width: min(480px, calc(100% - 32px)); max-height: calc(100dvh - 32px); overflow-y: auto; padding: 28px; color: #f5e9d2; background: #1e2c40; border: 3px solid #d3b477; box-shadow: 0 0 0 4px #0b1424, 8px 8px 0 #080e19; font-family: 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif; }
+.tutorial-dialog::backdrop { background: #07101bbe; }
+.tutorial-dialog-progress { margin: 0 0 10px; color: #c9b582; font-size: 16px; font-weight: 700; }
+.tutorial-dialog h2 { margin: 0; color: #ffe0a2; font-size: 26px; font-weight: 900; line-height: 1.4; }
+.tutorial-dialog #tutorial-instruction { margin: 20px 0 24px; font-size: 22px; line-height: 1.65; overflow-wrap: anywhere; }
+.tutorial-dialog-actions { display: flex; flex-direction: column; gap: 12px; }
+.tutorial-dialog-actions button { min-height: 48px; border-radius: 0; font-size: 18px; font-weight: 700; padding: 10px 16px; }
+.tutorial-dialog-actions .btn-gold { box-shadow: 3px 3px 0 #080f1c; }
+.tutorial-dialog .tutorial-skip { border: 1px solid #718493; background: transparent; color: #c8d4dc; }
+.tutorial-dialog-actions button:hover:not(:disabled) { border-color: #ffe5a6; }
+.tutorial-reminder { display: flex; justify-content: flex-end; padding: 8px 18px; background: #152334; }
+.pixel-app .tutorial-reopen { min-height: 44px; padding: 6px 14px; border: 1px solid #718493; background: #273c50; color: #f4d698; font-size: 16px; }
 .tutorial-other-card { opacity: .5; cursor: not-allowed; }
 .tutorial-recap { border: 1px solid #92835b; background: #333b3e; padding: 12px; margin: 14px 0; text-align: left; }
-.tutorial-recap strong { color: #b0e0bb; }
-.tutorial-recap p { margin: 6px 0; font-size: 13px; line-height: 1.6; color: #f5e6c7; }
-.tutorial-recap small { color: #becbd1; font-size: 11px; }
+.tutorial-recap strong { color: #b0e0bb; font-size: 18px; }
+.tutorial-recap p { margin: 8px 0 0; font-size: 18px; line-height: 1.6; color: #f5e6c7; }
 @media (max-width: 767px) {
-  .tutorial-guide { width: calc(100% - 24px); padding: 12px; margin-top: 8px; }
-  .tutorial-guide-header { gap: 8px; align-items: flex-start; }
-  .tutorial-guide-header h2 { font-size: 12px; }
-  .tutorial-guide-header > span { font-size: 10px; }
-  .tutorial-progress > span { padding: 3px; font-size: 10px; }
-  .tutorial-guide-content { flex-direction: column; align-items: stretch; gap: 10px; }
-  .tutorial-guide-copy { font-size: 13px; }
-  .tutorial-guide-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; min-width: 0; }
-  .tutorial-guide-actions button { min-height: 44px; padding: 6px; font-size: 12px; }
-  .tutorial-guide-actions small { grid-column: 1 / -1; grid-row: 2; }
+  .tutorial-dialog { padding: 22px; }
+  .tutorial-dialog h2 { font-size: 24px; }
+  .tutorial-dialog #tutorial-instruction { font-size: 20px; }
 }
