@@ -1,98 +1,12 @@
 import React from 'react';
-import {
-  Zap,
-  Shield,
-  Bomb,
-  Hammer,
-  Sparkles,
-  ArrowUp,
-  ArrowDown,
-  Snowflake,
-  Feather,
-  Coffee,
-  Ghost,
-  Wind,
-  Magnet,
-  Crosshair,
-  HardHat,
-  Axe,
-  Hand,
-  Footprints,
-  Mountain,
-  Heart,
-  Cloud,
-  Swords,
-  Eye,
-  Biohazard,
-} from 'lucide-react';
+import PixelCardArt from '../components/PixelCardArt';
 import type { Card, Player, LogEntry, Lang, CardType } from '../types';
 import { TEXT } from '../data/translations';
 import { SKILL_DB } from '../data/skills';
 import { FINAL_LEVEL, MAX_HP } from '../data/constants';
 
 // --- ICON HELPER ---
-export const getCardIcon = (id: string) => {
-  switch (id) {
-    case 'charge': return React.createElement(Zap, { className: "text-yellow-400 fill-yellow-400/20", size: 48 });
-    case 'defend': return React.createElement(Shield, { className: "text-blue-400 fill-blue-400/20", size: 48 });
-    case 'hong':
-    case 'hong2': return React.createElement(Bomb, { className: "text-red-400 fill-red-400/20", size: 48 });
-    case 'liuke': return React.createElement(Hammer, { className: "text-red-400 fill-red-400/20", size: 48 });
-    case 'ka': return React.createElement("div", { className: "text-5xl" }, "✂️");
-    case 'ji': return React.createElement("div", { className: "text-5xl" }, "🐥");
-    case 'kajifen': return React.createElement(Sparkles, { className: "text-purple-400 fill-purple-400/20", size: 48 });
-    case 'kajisuper': return React.createElement("div", { className: "text-5xl" }, "🌟");
-    case 'ascend': return React.createElement(ArrowUp, { className: "text-green-400", size: 48 });
-    case 'descend': return React.createElement(ArrowDown, { className: "text-green-400", size: 48 });
-    case 'pegasus': return React.createElement("div", { className: "text-5xl" }, "🦄");
-    case 'meteor': return React.createElement("div", { className: "text-5xl" }, "☄️");
-    case 'icesword':
-    case 'iceult': return React.createElement(Snowflake, { className: "text-cyan-300", size: 48 });
-    case 'smallfly': return React.createElement(Feather, { className: "text-white", size: 48 });
-    case 'dragonclaw':
-    case 'fireclaw':
-    case 'dragondef': return React.createElement("div", { className: "text-5xl" }, "🐉");
-    case 'hotmilk':
-    case 'boiler': return React.createElement(Coffee, { className: "text-orange-300", size: 48 });
-    case 'madian': return React.createElement("div", { className: "text-5xl" }, "🐎");
-    case 'hangman': return React.createElement(Ghost, { className: "text-gray-400", size: 48 });
-    case 'bigfly': return React.createElement(Wind, { className: "text-white", size: 48 });
-    case 'absorb': return React.createElement(Magnet, { className: "text-purple-400", size: 48 });
-    case 'gun':
-    case 'gungod': return React.createElement(Crosshair, { className: "text-red-500", size: 48 });
-    case 'helmetatk':
-    case 'helmetdef': return React.createElement(HardHat, { className: "text-yellow-500", size: 48 });
-    case 'machete': return React.createElement(Axe, { className: "text-red-600", size: 48 });
-    case 'triplekill': return React.createElement("div", { className: "text-5xl" }, "☠️");
-    case 'handatk':
-    case 'handdef':
-    case 'shatter': return React.createElement(Hand, { className: "text-amber-700", size: 48 });
-    case 'footatk':
-    case 'footdef':
-    case 'triplekick': return React.createElement(Footprints, { className: "text-amber-800", size: 48 });
-    case 'aoxi': return React.createElement("div", { className: "text-5xl" }, "🌪️");
-    case 'oneg':
-    case 'threeg':
-    case 'fiveg':
-    case 'seveng':
-    case 'bang':
-    case 'stab': return React.createElement(Hammer, { className: "text-gray-400", size: 48 });
-    case 'wave':
-    case 'superwave': return React.createElement("div", { className: "text-5xl" }, "🌊"); 
-    case 'hongtian': return React.createElement(Cloud, { className: "text-sky-400", size: 48 });
-    case 'hongdi': return React.createElement(Mountain, { className: "text-stone-500", size: 48 });
-    case 'hearteye': return React.createElement("div", { className: "flex" }, React.createElement(Heart, { className: "text-red-500" }), React.createElement(Eye, { className: "text-white" }));
-    case 'poison': return React.createElement(Biohazard, { className: "text-green-500", size: 48 });
-    case 'skydragon': return React.createElement("div", { className: "text-5xl" }, "🐲");
-    case 'doublewing': return React.createElement("div", { className: "text-5xl" }, "🪽");
-    case 'vajra': return React.createElement("div", { className: "text-5xl" }, "🛡️");
-    case 'allbomb': return React.createElement("div", { className: "text-5xl" }, "💣");
-    case 'heartpoison': return React.createElement("div", { className: "text-5xl" }, "🖤");
-    default:
-      if (id.includes('def')) return React.createElement(Shield, { className: "text-blue-400", size: 48 });
-      return React.createElement(Swords, { className: "text-red-400", size: 48 });
-  }
-};
+export const getCardIcon = (id: string) => React.createElement(PixelCardArt, { id });
 
 // --- LOGIC ---
 // “会打人”的卡：只有 ATTACK / ULTIMATE；防守类 combo（比如双翼齐飞）不算

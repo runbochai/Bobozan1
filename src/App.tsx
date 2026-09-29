@@ -1,8 +1,12 @@
+import BrawlCover from './components/BrawlCover';
+import PixelBackdrop from './components/PixelBackdrop';
 import { AVATAR_OPTIONS } from './data/avatars';
 import { tutorialEnemyMove } from './logic/expeditionTutorial';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Shield,
+  Chest,
+  Coins,
   Music,
   Zap,
   Swords,
@@ -36,7 +40,7 @@ import {
   HandHeart,
   House,
   Film
-} from 'lucide-react';
+} from './components/PixelIcons';
 import {
   signInAnonymously,
   onAuthStateChanged,
@@ -77,7 +81,6 @@ import {
   MAX_HP,
   MAX_PLAYERS,
   MIN_PLAYERS,
-  BACKGROUND_CARDS,
 } from './data/constants';
 import {
   calculateTurnOutcome,
@@ -138,7 +141,7 @@ const TopControls = ({
   const [isVolumeOpen, setIsVolumeOpen] = useState(false);
 
   return (
-    <div className="absolute top-4 right-4 z-50 flex items-center gap-3">
+    <div className="pixel-controls absolute top-4 right-4 z-50 flex items-center gap-3">
 
       {/* Back Button */}
       {onBack && (
@@ -249,9 +252,10 @@ const TiltCard = ({
   className,
   style,
   disabled,
+  'data-card-type': cardType,
   disableMotion = false,
   glareColor = "#ffffff" // 👈 New Prop with default white
-}: React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean; glareColor?: string; disableMotion?: boolean }) => {
+}: React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean; glareColor?: string; disableMotion?: boolean; 'data-card-type'?: string }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
   const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
@@ -282,6 +286,11 @@ const TiltCard = ({
   return (
     <div
       ref={cardRef}
+      data-card-type={cardType}
+      role="button"
+      tabIndex={disabled ? -1 : 0}
+      aria-disabled={disabled}
+      onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.currentTarget.click(); } }}
       onClick={onClick}
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
@@ -1826,8 +1835,8 @@ const expYpjUsedRef = useRef(false);
     const step = 360 / total;
     const angleDeg = 90 + (index - myIndex) * step;
     const angleRad = (angleDeg * Math.PI) / 180;
-    const rx = 42; 
-    const ry = 35;
+    const rx = 32;
+    const ry = 25;
     return { 
       x: 50 + rx * Math.cos(angleRad), 
       y: 50 + ry * Math.sin(angleRad) 
@@ -1862,7 +1871,7 @@ const expYpjUsedRef = useRef(false);
     }
 
     return (
-      <div className={`
+      <div data-card-type={card.type} className={`pixel-showdown-card
         w-24 h-36 md:w-32 md:h-48
         bg-slate-900/95 rounded-xl border-2 ${borderColor}
         flex flex-col items-center justify-center p-2 text-center shadow-2xl
@@ -2002,102 +2011,9 @@ const expYpjUsedRef = useRef(false);
   // --- RENDER LOGIC ---
 
   if (view === 'NAME_INPUT') return (
-    <div className="min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-title brawl-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       
-      {/* ================= BACKGROUND LAYERS ================= */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a] to-[#020617] z-0" />
-
-      {/* Retro Grid */}
-      <div 
-        className="absolute inset-0 z-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(rgba(234, 88, 12, 0.3) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(234, 88, 12, 0.3) 1px, transparent 1px)
-          `,
-          backgroundSize: '40px 40px',
-          transform: 'perspective(500px) rotateX(60deg) translateY(100px) scale(2)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 40%, black 100%)'
-        }}
-      />
-
-      {/* 🃏 3D EXPLODING CARDS BACKGROUND 🃏 */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ perspective: '1200px' }}>
-      {BACKGROUND_CARDS.map((item) => {
-        if (!item) return null;
-
-        let borderColor = 'border-slate-600';
-        let bgGradient = 'bg-slate-800';
-        if (item.card.type === 'ATTACK') { borderColor = 'border-red-500'; bgGradient = 'bg-gradient-to-b from-red-900 to-slate-900'; }
-        else if (item.card.type === 'DEFEND') { borderColor = 'border-blue-500'; bgGradient = 'bg-gradient-to-b from-blue-900 to-slate-900'; }
-        else if (item.card.type === 'ULTIMATE') { borderColor = 'border-purple-500'; bgGradient = 'bg-gradient-to-b from-purple-900 to-slate-900'; }
-        else if (item.card.type === 'CHARGE') { borderColor = 'border-yellow-500'; bgGradient = 'bg-gradient-to-b from-yellow-900 to-slate-900'; }
-        else { borderColor = 'border-emerald-500'; bgGradient = 'bg-gradient-to-b from-emerald-900 to-slate-900'; }
-
-        return (
-          <div 
-            key={item.id}
-            className="absolute w-24 h-36 md:w-32 md:h-48 flex flex-col items-center justify-center"
-            style={{
-              top: `${item.top}%`,
-              left: `${item.left}%`,
-              
-              // Use 'item.z' instead of 'Math.random() * 500'
-              transform: `translate3d(-50%, -50%, -${item.z}px) rotateX(${item.rX}deg) rotateY(${item.rY}deg) rotateZ(${item.rZ}deg) scale(${item.scale})`,
-              
-              animation: `zero-gravity ${item.duration}s ease-in-out infinite alternate`,
-              animationDelay: `${item.delay}s`
-            }}
-          >
-              {/* Inner Card Wrapper with Effect */}
-              <div className={`
-                w-full h-full rounded-xl border-2 ${borderColor} shadow-2xl relative
-                flex flex-col items-center justify-center
-                opacity-50 blur-[1px]
-                ${item.effect || ''}
-            `}>
-                <div className={`absolute inset-0 ${bgGradient} opacity-90`} />
-                <div className="relative z-10 transform scale-75 opacity-80 grayscale contrast-125">
-                    {getCardIcon(item.card.id)}
-                </div>
-            </div>
-          </div>
-        );
-      })}
-      </div>
-
-      {/* 🔥 FIRE SPARKS (EMBERS) 🔥 */}
-      <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
-        {[...Array(30)].map((_, i) => {
-          const left = Math.random() * 100;
-          const delay = Math.random() * 5;
-          const duration = 3 + Math.random() * 4;
-          const size = 2 + Math.random() * 4;
-          return (
-            <div
-              key={i}
-              className="absolute rounded-full bg-orange-400 opacity-0"
-              style={{
-                left: `${left}%`,
-                top: '100%',
-                width: `${size}px`,
-                height: `${size}px`,
-                boxShadow: `0 0 ${size * 2}px rgba(234, 88, 12, 0.8)`,
-                animation: `ember-rise ${duration}s linear infinite`,
-                animationDelay: `-${delay}s`,
-              }}
-            />
-          );
-        })}
-      </div>
-
-      {/* Ambient Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-orange-600/20 blur-[120px] rounded-full animate-pulse z-0" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-600/20 blur-[120px] rounded-full animate-pulse delay-1000 z-0" />
-      <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[60%] h-[60%] bg-amber-600/10 blur-[100px] rounded-full z-0" />
-      
-      {/* Vignette */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_120%)] z-0 pointer-events-none" />
+      <PixelBackdrop scene="title" />
 
       <TopControls 
         muted={muted} 
@@ -2113,98 +2029,22 @@ const expYpjUsedRef = useRef(false);
         toggleReduceMotion={toggleReduceMotion}
       />
 
-      {/* ================= STYLES ================= */}
-      <style>{`
-        @keyframes liquid-flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-        @keyframes float-bob { 0%, 100% { transform: perspective(500px) rotateX(5deg) translateY(0); } 50% { transform: perspective(500px) rotateX(5deg) translateY(-15px); } }
-        @keyframes neon-pulse-fire { 0%, 100% { filter: drop-shadow(0 0 5px rgba(234, 88, 12, 0.4)); } 50% { filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 5px rgba(253, 224, 71, 0.4)); } }
-        @keyframes dragon-fire { 0%, 100% { filter: drop-shadow(0 0 10px rgba(220, 38, 38, 0.5)) brightness(1); } 50% { filter: drop-shadow(0 0 30px rgba(234, 179, 8, 0.8)) brightness(1.15); } }
-        @keyframes ember-rise { 0% { transform: translateY(0) scale(1); opacity: 0; } 10% { opacity: 1; } 100% { transform: translateY(-100vh) scale(0); opacity: 0; } }
-        
-        @keyframes zero-gravity {
-          0% { margin-top: 0px; margin-left: 0px; }
-          100% { margin-top: 20px; margin-left: 10px; }
-        }
-
-        @keyframes spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
-        }
-        .spin-slow { animation: spin-slow 10s linear infinite; }
-
-        @keyframes flip-slow {
-          0% { transform: perspective(600px) rotateY(0deg); }
-          50% { transform: perspective(600px) rotateY(180deg); }
-          100% { transform: perspective(600px) rotateY(360deg); }
-        }
-        .flip-slow { animation: flip-slow 6s ease-in-out infinite; transform-style: preserve-3d; }
-
-        .shine-slow { position: relative; overflow: hidden; }
-        .shine-slow::after {
-          content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
-          background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%);
-          transform: skewX(-20deg);
-          animation: shine-move 4s infinite;
-        }
-        @keyframes shine-move {
-          0% { left: -150%; }
-          20% { left: 150%; }
-          100% { left: 150%; }
-        }
-        
-        @keyframes glow-pulse {
-          0%, 100% { 
-            box-shadow: 0 0 5px rgba(255, 255, 255, 0.1); 
-            filter: brightness(1);
-          }
-          50% { 
-            box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); 
-            filter: brightness(1.3);
-            border-color: rgba(255, 255, 255, 0.8);
-          }
-        }
-        .glow-pulse {
-          animation: glow-pulse 3s ease-in-out infinite;
-        }
-
-        .super-title {
-          font-family: 'Arial Black', 'Impact', sans-serif;
-          font-weight: 900;
-          background: linear-gradient(90deg, #7f1d1d 0%, #ea580c 25%, #facc15 45%, #ffffff 50%, #facc15 55%, #ea580c 75%, #7f1d1d 100%);
-          background-size: 200% auto;
-          -webkit-background-clip: text;
-          background-clip: text;
-          color: transparent;
-          -webkit-text-stroke: 6px #0f172a; 
-          paint-order: stroke fill;
-          animation: liquid-flow 3s linear infinite, float-bob 6s ease-in-out infinite, neon-pulse-fire 3s ease-in-out infinite;
-        }
-      `}</style>
-
-
       {/* ================= CONTENT ================= */}
-      <div className="relative z-10 flex flex-col items-center gap-16 -mt-10 w-full max-w-lg px-4 animate-in fade-in zoom-in duration-700">
+      <div className="pixel-title-content relative z-10 flex flex-col items-center w-full max-w-2xl px-4">
         
-        {/* --- TITLE AREA --- */}
-        <div className="flex flex-col items-center relative group">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-orange-500/10 blur-[60px] rounded-full pointer-events-none animate-pulse" />
-          <img 
-            src={assetUrl('babydragtitle.png')}
-            alt="Baby Dragon"
-            className="w-[500px] h-[500px] md:w-[900px] md:h-[900px] object-contain relative z-20 mb-[-350px] pointer-events-none"
-            style={{ 
-              animation: 'float-bob 6s ease-in-out infinite, dragon-fire 3s ease-in-out infinite',
-              animationDelay: '-1s' 
-            }} 
-          />
-          <h1 className="text-7xl md:text-9xl font-black tracking-wider super-title select-none scale-110 md:scale-125 relative z-10">
-            {t.title}
-          </h1>
-        </div>
+        <header className="pixel-title-header brawl-title-header">
+          <BrawlCover />
+          <div className="brawl-logo">
+            <div className="pixel-kicker">{lang === 'zh' ? '全员就位 · 随时开打' : 'EVERYONE IN. ANYTHING GOES.'}</div>
+            <h1 className="pixel-wordmark">{t.title}</h1>
+            <p className="pixel-tagline">{lang === 'zh' ? '攒出绝招，打个痛快！' : 'CHARGE IT UP. LET IT RIP!'}</p>
+          </div>
+          <span className="brawl-edition">PIXEL<br/>BRAWL!</span>
+        </header>
 
         {/* --- INPUT AREA --- */}
-        <div className="w-full flex flex-col items-center gap-10 mt-2">
-            <div className="flex flex-col items-center gap-8 w-full">
+        <div className="pixel-panel pixel-start-panel brawl-start-panel w-full flex flex-col items-center gap-5">
+            <div className="pixel-player-setup flex items-center gap-5 w-full">
                <div className="relative z-50 flex flex-col items-center gap-2">
             <button
               onClick={() => { playSound('click', muted); setIsAvatarMenuOpen(!isAvatarMenuOpen); }}
@@ -2283,7 +2123,7 @@ const expYpjUsedRef = useRef(false);
                 className="btn-expedition group relative flex-1 overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
-                  <span className="text-2xl">🗡️</span>
+                  <Swords size={24} />
                   <span className="text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">{lang === 'zh' ? '远征模式' : 'Expedition'}</span>
                 </div>
                 <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
@@ -2294,7 +2134,7 @@ const expYpjUsedRef = useRef(false);
                 className="btn-primary group relative flex-1 overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
-                  <span className="text-2xl">👥</span>
+                  <Users size={24} />
                   <span className="text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">{lang === 'zh' ? '多人游戏' : 'Multiplayer'}</span>
                 </div>
                 <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
@@ -2313,96 +2153,29 @@ const expYpjUsedRef = useRef(false);
   );
 
   if (view === 'HOME') return (
-    <div className="min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-home min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       
-      {/* ================= BACKGROUND EFFECTS ================= */}
-      <style>{`
-        @keyframes liquid-flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-        @keyframes float-bob { 0%, 100% { transform: perspective(500px) rotateX(5deg) translateY(0); } 50% { transform: perspective(500px) rotateX(5deg) translateY(-15px); } }
-        @keyframes neon-pulse-fire { 0%, 100% { filter: drop-shadow(0 0 5px rgba(234, 88, 12, 0.4)); } 50% { filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 5px rgba(253, 224, 71, 0.4)); } }
-        @keyframes zero-gravity { 0% { margin-top: 0px; margin-left: 0px; } 100% { margin-top: 20px; margin-left: 10px; } }
-        
-        /* Card Effects */
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spin-slow { animation: spin-slow 10s linear infinite; }
-        @keyframes flip-slow { 0% { transform: perspective(600px) rotateY(0deg); } 50% { transform: perspective(600px) rotateY(180deg); } 100% { transform: perspective(600px) rotateY(360deg); } }
-        .flip-slow { animation: flip-slow 6s ease-in-out infinite; transform-style: preserve-3d; }
-        .shine-slow { position: relative; overflow: hidden; }
-        .shine-slow::after { content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%); transform: skewX(-20deg); animation: shine-move 4s infinite; }
-        @keyframes shine-move { 0% { left: -150%; } 20% { left: 150%; } 100% { left: 150%; } }
-        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.1); filter: brightness(1); } 50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); filter: brightness(1.3); border-color: rgba(255, 255, 255, 0.8); } }
-        .glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
-      `}</style>
-
-      {/* Dark Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a] to-[#020617] z-0" />
-
-      {/* Retro Grid (Orange) */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(rgba(234, 88, 12, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(234, 88, 12, 0.3) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
-          transform: 'perspective(500px) rotateX(60deg) translateY(100px) scale(2)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 40%, black 100%)'
-        }}
-      />
-
-      {/* 3D Exploding Cards (Floating in background) */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ perspective: '1200px' }}>
-        {BACKGROUND_CARDS.map((item) => {
-          if (!item) return null;
-          // Note: We keep original card colors (Red/Blue/Purple) to represent game mechanics
-          let borderColor = 'border-slate-600';
-          let bgGradient = 'bg-slate-800';
-          if (item.card.type === 'ATTACK') { borderColor = 'border-red-500'; bgGradient = 'bg-gradient-to-b from-red-900 to-slate-900'; }
-          else if (item.card.type === 'DEFEND') { borderColor = 'border-blue-500'; bgGradient = 'bg-gradient-to-b from-blue-900 to-slate-900'; }
-          else if (item.card.type === 'ULTIMATE') { borderColor = 'border-purple-500'; bgGradient = 'bg-gradient-to-b from-purple-900 to-slate-900'; }
-          else if (item.card.type === 'CHARGE') { borderColor = 'border-yellow-500'; bgGradient = 'bg-gradient-to-b from-yellow-900 to-slate-900'; }
-          else { borderColor = 'border-emerald-500'; bgGradient = 'bg-gradient-to-b from-emerald-900 to-slate-900'; }
-
-          return (
-            <div key={item.id} className="absolute w-24 h-36 md:w-32 md:h-48 flex flex-col items-center justify-center"
-              style={{
-                top: `${item.top}%`,
-                left: `${item.left}%`,
-                transform: `translate3d(-50%, -50%, -${item.z}px) rotateX(${item.rX}deg) rotateY(${item.rY}deg) rotateZ(${item.rZ}deg) scale(${item.scale})`,
-                animation: `zero-gravity ${item.duration}s ease-in-out infinite alternate`,
-                animationDelay: `${item.delay}s`
-              }}
-            >
-              <div className={`w-full h-full rounded-xl border-2 ${borderColor} shadow-2xl relative flex flex-col items-center justify-center opacity-50 blur-[1px] ${item.effect || ''}`}>
-                  <div className={`absolute inset-0 ${bgGradient} opacity-90`} />
-                  <div className="relative z-10 transform scale-75 opacity-80 grayscale contrast-125">{getCardIcon(item.card.id)}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Ambient Glows (Orange/Red) */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-orange-600/20 blur-[120px] rounded-full animate-pulse z-0" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-600/20 blur-[120px] rounded-full animate-pulse delay-1000 z-0" />
-      <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[60%] h-[60%] bg-amber-600/10 blur-[100px] rounded-full z-0" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_120%)] z-0 pointer-events-none" />
+      <PixelBackdrop scene="home" />
 
       {/* ================= MAIN CONTENT ================= */}
       
       <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage}/>
       
       {toastMsg && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 font-bold tracking-wide animate-in slide-in-from-top-4">
+        <div className="pixel-toast fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 font-bold tracking-wide animate-in slide-in-from-top-4">
           <CheckCircle size={20} /> {toastMsg}
         </div>
       )}
 
       {/* UI Container */}
-      <div className="w-full max-w-md relative z-10">
+      <div className="pixel-home-content w-full max-w-lg relative z-10">
         
         {/* 🎨 CHANGED: Glow Behind Box (Orange) */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-orange-500/20 blur-[100px] rounded-full pointer-events-none" />
 
-        <div className="relative backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden p-8 md:p-10 flex flex-col gap-8 animate-in fade-in zoom-in duration-300">
+        <div className="pixel-panel relative backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden p-8 md:p-10 flex flex-col gap-8 animate-in fade-in zoom-in duration-300">
             
+            <header className="pixel-section-heading"><span className="pixel-kicker">MULTIPLAYER</span><h1>{lang === 'zh' ? '冒险者公会' : 'Adventurers Guild'}</h1><p>{lang === 'zh' ? '创建房间，或输入伙伴的房间码。' : 'Create a room or join your party.'}</p></header>
             {/* User Profile */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
@@ -2467,94 +2240,27 @@ const expYpjUsedRef = useRef(false);
 
 
   if (view === 'LOBBY') return (
-    <div className="min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-lobby min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       
-      {/* ================= BACKGROUND EFFECTS ================= */}
-      <style>{`
-        @keyframes liquid-flow { 0% { background-position: 0% 50%; } 100% { background-position: 200% 50%; } }
-        @keyframes float-bob { 0%, 100% { transform: perspective(500px) rotateX(5deg) translateY(0); } 50% { transform: perspective(500px) rotateX(5deg) translateY(-15px); } }
-        @keyframes neon-pulse-fire { 0%, 100% { filter: drop-shadow(0 0 5px rgba(234, 88, 12, 0.4)); } 50% { filter: drop-shadow(0 0 20px rgba(220, 38, 38, 0.6)) drop-shadow(0 0 5px rgba(253, 224, 71, 0.4)); } }
-        @keyframes zero-gravity { 0% { margin-top: 0px; margin-left: 0px; } 100% { margin-top: 20px; margin-left: 10px; } }
-        
-        /* Card Effects */
-        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .spin-slow { animation: spin-slow 10s linear infinite; }
-        @keyframes flip-slow { 0% { transform: perspective(600px) rotateY(0deg); } 50% { transform: perspective(600px) rotateY(180deg); } 100% { transform: perspective(600px) rotateY(360deg); } }
-        .flip-slow { animation: flip-slow 6s ease-in-out infinite; transform-style: preserve-3d; }
-        .shine-slow { position: relative; overflow: hidden; }
-        .shine-slow::after { content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%; background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.8) 50%, rgba(255,255,255,0) 100%); transform: skewX(-20deg); animation: shine-move 4s infinite; }
-        @keyframes shine-move { 0% { left: -150%; } 20% { left: 150%; } 100% { left: 150%; } }
-        @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.1); filter: brightness(1); } 50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); filter: brightness(1.3); border-color: rgba(255, 255, 255, 0.8); } }
-        .glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
-      `}</style>
-
-      {/* Dark Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a] to-[#020617] z-0" />
-
-      {/* Retro Grid (Orange) */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(rgba(234, 88, 12, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(234, 88, 12, 0.3) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
-          transform: 'perspective(500px) rotateX(60deg) translateY(100px) scale(2)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 40%, black 100%)'
-        }}
-      />
-
-      {/* 3D Exploding Cards */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ perspective: '1200px' }}>
-        {BACKGROUND_CARDS.map((item) => {
-          if (!item) return null;
-          let borderColor = 'border-slate-600';
-          let bgGradient = 'bg-slate-800';
-          if (item.card.type === 'ATTACK') { borderColor = 'border-red-500'; bgGradient = 'bg-gradient-to-b from-red-900 to-slate-900'; }
-          else if (item.card.type === 'DEFEND') { borderColor = 'border-blue-500'; bgGradient = 'bg-gradient-to-b from-blue-900 to-slate-900'; }
-          else if (item.card.type === 'ULTIMATE') { borderColor = 'border-purple-500'; bgGradient = 'bg-gradient-to-b from-purple-900 to-slate-900'; }
-          else if (item.card.type === 'CHARGE') { borderColor = 'border-yellow-500'; bgGradient = 'bg-gradient-to-b from-yellow-900 to-slate-900'; }
-          else { borderColor = 'border-emerald-500'; bgGradient = 'bg-gradient-to-b from-emerald-900 to-slate-900'; }
-
-          return (
-            <div key={item.id} className="absolute w-24 h-36 md:w-32 md:h-48 flex flex-col items-center justify-center"
-              style={{
-                top: `${item.top}%`,
-                left: `${item.left}%`,
-                transform: `translate3d(-50%, -50%, -${item.z}px) rotateX(${item.rX}deg) rotateY(${item.rY}deg) rotateZ(${item.rZ}deg) scale(${item.scale})`,
-                animation: `zero-gravity ${item.duration}s ease-in-out infinite alternate`,
-                animationDelay: `${item.delay}s`
-              }}
-            >
-              <div className={`w-full h-full rounded-xl border-2 ${borderColor} shadow-2xl relative flex flex-col items-center justify-center opacity-50 blur-[1px] ${item.effect || ''}`}>
-                  <div className={`absolute inset-0 ${bgGradient} opacity-90`} />
-                  <div className="relative z-10 transform scale-75 opacity-80 grayscale contrast-125">{getCardIcon(item.card.id)}</div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Ambient Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-orange-600/20 blur-[120px] rounded-full animate-pulse z-0" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-600/20 blur-[120px] rounded-full animate-pulse delay-1000 z-0" />
-      <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[60%] h-[60%] bg-amber-600/10 blur-[100px] rounded-full z-0" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_120%)] z-0 pointer-events-none" />
-
+      <PixelBackdrop scene="lobby" />
 
       {/* ================= LOBBY CONTENT ================= */}
       
       <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage}/>
       
       {toastMsg && (
-        <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 animate-in slide-in-from-top-4 font-bold tracking-wide">
+        <div className="pixel-toast fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 animate-in slide-in-from-top-4 font-bold tracking-wide">
           <CheckCircle size={20} /> {toastMsg}
         </div>
       )}
 
       {/* Main Lobby Container */}
-      <div className="w-full max-w-5xl backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-orange-500/20 relative flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300 z-10">
+      <div className="pixel-panel pixel-lobby-panel w-full max-w-5xl backdrop-blur-xl rounded-[2.5rem] shadow-2xl border border-orange-500/20 relative flex flex-col overflow-hidden animate-in fade-in zoom-in duration-300 z-10">
         
         {/* Header Section */}
         <div className="px-8 pt-8 pb-2 md:px-10 md:pt-10 md:pb-2 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             
+            <div className="pixel-lobby-sign"><span className="pixel-kicker">PARTY CAMP</span><h1>{lang === 'zh' ? '出发前的营地' : 'Gather your party'}</h1></div>
             {/* Left: Back & Room Info */}
             <div className="flex flex-col gap-6 md:gap-6 w-full md:w-auto">
               
@@ -2610,7 +2316,7 @@ const expYpjUsedRef = useRef(false);
             </div>
 
             {/* Player Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="pixel-lobby-players grid grid-cols-2 lg:grid-cols-4 gap-4">
                 {/* Active Players */}
                 {gameState.players.map((p, i) => (
                   <div key={i} className="relative group">
@@ -2790,7 +2496,7 @@ const expYpjUsedRef = useRef(false);
   `;
 
   return (
-    <div className="min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-battle min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30">
 
       {/* 1. BACKGROUND LAYERS & STYLES */}
       <style>{`
@@ -2825,55 +2531,7 @@ const expYpjUsedRef = useRef(false);
           
       `}</style>
 
-      {/* Dark Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0f172a] to-[#020617] z-0" />
-
-      {/* Retro Grid (Orange) */}
-      <div className="absolute inset-0 z-0 opacity-20 pointer-events-none"
-        style={{
-          backgroundImage: `linear-gradient(rgba(234, 88, 12, 0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(234, 88, 12, 0.3) 1px, transparent 1px)`,
-          backgroundSize: '40px 40px',
-          transform: 'perspective(500px) rotateX(60deg) translateY(100px) scale(2)',
-          maskImage: 'linear-gradient(to bottom, transparent 0%, black 40%, black 100%)'
-        }}
-      />
-
-      {/* 3D Exploding Cards (Background) */}
-      <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none" style={{ perspective: '1200px' }}>
-        {BACKGROUND_CARDS.slice(0, 6).map((item) => {
-          if (!item) return null;
-          let borderColor = 'border-slate-600';
-          let bgGradient = 'bg-slate-800';
-          if (item.card.type === 'ATTACK') { borderColor = 'border-red-500'; bgGradient = 'bg-gradient-to-b from-red-900 to-slate-900'; }
-          else if (item.card.type === 'DEFEND') { borderColor = 'border-blue-500'; bgGradient = 'bg-gradient-to-b from-blue-900 to-slate-900'; }
-          else if (item.card.type === 'ULTIMATE') { borderColor = 'border-purple-500'; bgGradient = 'bg-gradient-to-b from-purple-900 to-slate-900'; }
-          else if (item.card.type === 'CHARGE') { borderColor = 'border-yellow-500'; bgGradient = 'bg-gradient-to-b from-yellow-900 to-slate-900'; }
-          else { borderColor = 'border-emerald-500'; bgGradient = 'bg-gradient-to-b from-emerald-900 to-slate-900'; }
-
-          return (
-            <div key={item.id} className="absolute w-24 h-36 md:w-32 md:h-48 flex flex-col items-center justify-center"
-              style={{
-                top: `${item.top}%`,
-                left: `${item.left}%`,
-                transform: `translate3d(-50%, -50%, -${item.z}px) rotateX(${item.rX}deg) rotateY(${item.rY}deg) rotateZ(${item.rZ}deg) scale(${item.scale})`,
-                animation: `zero-gravity ${item.duration}s ease-in-out infinite alternate`,
-                animationDelay: `${item.delay}s`
-              }}
-            >
-               <div className={`w-full h-full rounded-xl border-2 ${borderColor} shadow-2xl relative flex flex-col items-center justify-center opacity-20 blur-[1px] ${item.effect || ''}`}>
-                   <div className={`absolute inset-0 ${bgGradient} opacity-90`} />
-                   <div className="relative z-10 transform scale-75 opacity-80 grayscale contrast-125">{getCardIcon(item.card.id)}</div>
-               </div>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Ambient Glows */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-orange-600/20 blur-[120px] rounded-full animate-pulse z-0" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-red-600/20 blur-[120px] rounded-full animate-pulse delay-1000 z-0" />
-      <div className="absolute top-[40%] left-[50%] -translate-x-1/2 w-[60%] h-[60%] bg-amber-600/10 blur-[100px] rounded-full z-0" />
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,#000000_120%)] z-0 pointer-events-none" />
+      <PixelBackdrop scene="battle" />
 
       <TopControls 
        muted={muted} 
@@ -2985,7 +2643,7 @@ const expYpjUsedRef = useRef(false);
 
       </div>
 
-      {toastMsg && <div className="fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 font-medium animate-in slide-in-from-top-4"><CheckCircle size={18} /> {toastMsg}</div>}
+      {toastMsg && <div className="pixel-toast fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-50 flex items-center gap-2 font-medium animate-in slide-in-from-top-4"><CheckCircle size={18} /> {toastMsg}</div>}
 
       {/* LEFT LOGS (PC) */}
       <div
@@ -3034,11 +2692,11 @@ const expYpjUsedRef = useRef(false);
       </div>
 
       {/* CENTER ARENA */}
-      <div className="flex-1 flex flex-col relative h-screen z-10">
+      <div className="pixel-battle-layout flex-1 flex flex-col relative h-screen z-10">
 
         {/* --- EXPEDITION HUD（左上：章节关卡 + 遗物） --- */}
         {isExpedition && expPhase === 'battle' && (
-          <div className="absolute top-3 left-3 z-50 pointer-events-none">
+          <div className="pixel-exp-hud absolute top-3 left-3 z-50 pointer-events-none">
             <div className="bg-slate-900/70 backdrop-blur-xl border border-white/15 rounded-xl px-3 py-1.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
               <div className="text-sm font-bold text-amber-300">
                 {EXPEDITION_STAGES[expStageIdx].chapter[lang]} · {EXPEDITION_STAGES[expStageIdx].name[lang]}
@@ -3056,7 +2714,7 @@ const expYpjUsedRef = useRef(false);
           if (!steps || expTutIdx >= steps.length) return null;
           const step = steps[expTutIdx];
           return (
-            <div className="absolute left-3 right-3 top-20 md:left-6 md:right-auto md:top-[55%] z-50 md:w-80 pointer-events-none">
+            <div className="pixel-tutorial absolute left-3 right-3 top-20 md:left-6 md:right-auto md:top-[55%] z-50 md:w-80 pointer-events-none">
               <div className="bg-amber-950/90 backdrop-blur-xl border border-amber-400/50 rounded-xl px-4 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-center pointer-events-auto">
                 <div className="text-[10px] font-black text-amber-400/70 tracking-widest mb-1">{lang === 'zh' ? `教程 ${expTutIdx + 1} / ${steps.length}` : `Tutorial ${expTutIdx + 1} / ${steps.length}`}</div>
                 <div className="text-sm font-bold text-amber-100 leading-snug">{step.text[lang]}</div>
@@ -3084,8 +2742,8 @@ const expYpjUsedRef = useRef(false);
         {/* --- EXPEDITION REWARD（战后多选一） --- */}
         {isExpedition && expPhase === 'reward' && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-6 w-full max-w-2xl text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
-              <div className="text-4xl mb-2">🎉</div>
+            <div className="pixel-dialog bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-6 w-full max-w-2xl text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+              <Crown size={40} className="mx-auto mb-2 text-amber-200" />
               <h2 className="text-xl font-black text-white mb-1">
                 {lang === 'zh' ? `通过${EXPEDITION_STAGES[expStageIdx].name[lang]}！` : `Cleared ${EXPEDITION_STAGES[expStageIdx].name[lang]}!`}
               </h2>
@@ -3095,29 +2753,29 @@ const expYpjUsedRef = useRef(false);
               <div className={`grid gap-3 ${expRewards.length >= 4 ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
                 {expRewards.map((opt, i) => {
                   const key = opt.kind === 'temp' ? opt.cardId : opt.kind === 'relic' ? opt.relicId : opt.kind;
-                  let icon = '💖';
+                  let icon: React.ReactNode = <Heart size={40} />;
                   let title = '';
                   let sub = '';
                   if (opt.kind === 'heal') {
-                    icon = '💖';
+                    icon = <Heart size={40} />;
                     title = lang === 'zh' ? `治疗 +${opt.amount}` : `Heal +${opt.amount}`;
                     sub = lang === 'zh' ? '恢复自身血量' : 'Restore your HP';
                   } else if (opt.kind === 'maxhp') {
-                    icon = '❤️‍🔥';
+                    icon = <Heart size={40} />;
                     title = lang === 'zh' ? '体魄 +0.5' : 'Vigor +0.5';
                     sub = lang === 'zh' ? '血量上限 +1（本轮远征永久）' : '+1 max HP for this run';
                   } else if (opt.kind === 'temp') {
                     const c = SKILL_DB.find(x => x.id === opt.cardId);
-                    icon = '🃏';
+                    icon = getCardIcon(opt.cardId);
                     title = c ? c.name[lang] : opt.cardId;
                     sub = lang === 'zh' ? `限次秘技：可用 ${opt.uses} 次` : `Limited skill: ${opt.uses} uses`;
                   } else if (opt.kind === 'relic') {
                     const r = EXPEDITION_RELICS.find(x => x.id === opt.relicId)!;
-                    icon = r.icon;
+                    icon = <Chest size={40} />;
                     title = r.name[lang];
                     sub = r.desc[lang];
                   } else if (opt.kind === 'levelup') {
-                    icon = '⬆️';
+                    icon = <ArrowUp size={40} />;
                     title = lang === 'zh' ? `升级 · Lv.${opt.level}` : `Level Up · Lv.${opt.level}`;
                     sub = lang === 'zh' ? '稳定升 1 级，解锁下一级技能卡' : 'Gain 1 level, unlock next-tier cards';
                   }
@@ -3127,7 +2785,7 @@ const expYpjUsedRef = useRef(false);
                       onClick={() => claimExpeditionReward(opt)}
                       className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/60 rounded-xl p-4 transition-all hover:scale-105 active:scale-95 text-center"
                     >
-                      <div className="text-4xl mb-2">{icon}</div>
+                      <div className="pixel-item-art text-amber-200 mb-2">{icon}</div>
                       <div className="font-bold text-white text-sm mb-1">{title}</div>
                       <div className="text-xs text-slate-400">{sub}</div>
                     </button>
@@ -3141,20 +2799,20 @@ const expYpjUsedRef = useRef(false);
         {/* --- EXPEDITION SHOP（战后商城） --- */}
         {isExpedition && expPhase === 'shop' && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-6 w-full max-w-2xl text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
-              <div className="text-4xl mb-2">🏪</div>
+            <div className="pixel-dialog bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-6 w-full max-w-2xl text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+              <Chest size={40} className="mx-auto mb-2 text-amber-200" />
               <h2 className="text-xl font-black text-white mb-1">
                 {lang === 'zh' ? '远征商城' : 'Expedition Shop'}
               </h2>
               <p className="text-yellow-300 text-sm font-bold mb-5">
-                🪙 {expGold}
+                <Coins size={16} className="inline-block" /> {expGold}
               </p>
               <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mb-6">
                 {expShop.map((item, i) => {
                   const price = item.kind === 'tempcard' ? item.price : item.kind === 'equipment' ? item.equipment.price : item.price;
                   const afford = expGold >= price;
                   const card = item.kind === 'tempcard' ? SKILL_DB.find(x => x.id === item.cardId) : null;
-                  const icon = item.kind === 'tempcard' ? '🃏' : item.kind === 'equipment' ? item.equipment.icon : '🧪';
+                  const icon = item.kind === 'tempcard' ? getCardIcon(item.cardId) : item.kind === 'equipment' ? <Shield size={40} /> : <Heart size={40} />;
                   const title = item.kind === 'tempcard'
                     ? (card ? card.name[lang] : item.cardId)
                     : item.kind === 'equipment' ? item.equipment.name[lang] : (lang === 'zh' ? '疗伤药' : 'Healing Potion');
@@ -3162,9 +2820,9 @@ const expYpjUsedRef = useRef(false);
                     ? (lang === 'zh' ? `限次秘技：可用 ${item.uses} 次` : `Limited skill: ${item.uses} uses`)
                     : item.kind === 'equipment' ? item.equipment.desc[lang] : (lang === 'zh' ? `立即回复 ${POTION_HEAL} 点血量` : `Restore ${POTION_HEAL} HP now`);
                   return (
-                    <div key={i} className={`bg-white/5 border border-white/10 rounded-xl p-4 text-center flex flex-col transition-opacity ${afford ? '' : 'opacity-50'}`} style={shopShake === i ? { animation: 'shop-shake 0.35s ease' } : undefined}>
+                    <div key={i} className={`bg-white/5 border border-white/10 rounded-xl p-4 text-center flex flex-col transition-opacity ${afford ? '' : 'pixel-unaffordable'}`} style={shopShake === i ? { animation: 'shop-shake 0.35s ease' } : undefined}>
                       <style>{`@keyframes shop-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }`}</style>
-                      <div className="text-4xl mb-2">{icon}</div>
+                      <div className="pixel-item-art text-amber-200 mb-2">{icon}</div>
                       <div className="font-bold text-white text-sm mb-1">{title}</div>
                       <div className="text-xs text-slate-400 mb-3 flex-1">{sub}</div>
                       <button
@@ -3252,7 +2910,7 @@ const expYpjUsedRef = useRef(false);
         {/* --- EXPEDITION RUN OVER（远征结束） --- */}
         {isExpedition && expPhase === 'runover' && (
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className="bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-8 w-full max-w-md text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
+            <div className="pixel-dialog bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-8 w-full max-w-md text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
               <div className="text-5xl mb-3">💀</div>
               <h2 className="text-2xl font-black text-white mb-2">{lang === 'zh' ? '远征结束' : 'Expedition Over'}</h2>
               <p className="text-slate-400 text-sm mb-1">
@@ -3295,17 +2953,17 @@ const expYpjUsedRef = useRef(false);
         )}
 
         {/* Mobile Header */}
-        <div className="md:hidden p-3 flex justify-between items-center bg-slate-900 border-b border-slate-800 z-50">
+        <div className="pixel-mobile-header md:hidden p-3 flex justify-between items-center bg-slate-900 border-b border-slate-800 z-50">
           <button onClick={() => leaveRoom()} className="flex items-center gap-1 text-slate-400"><LogOut size={18} /></button>
           <span className="font-mono font-bold text-yellow-500">{isExpedition ? `${lang === 'zh' ? '远征' : 'Expedition'} ${expStageIdx + 1}/${EXPEDITION_STAGES.length}` : roomCode}</span>
           <span className="text-xs bg-indigo-500 px-2 py-1 rounded">M{gameState.matchCount}</span>
         </div>
 
         {/* ROUND TABLE LAYER */}
-        <div className="relative flex-1 w-full overflow-hidden bg-transparent">
+        <div className="pixel-battle-board relative flex-1 w-full overflow-hidden bg-transparent">
            
            {/* Background Table Outline */}
-           <div className="absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] border-2 border-solid border-slate-600 rounded-[50%] pointer-events-none opacity-30" />
+           <div className="pixel-arena absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] pointer-events-none" />
 
            {/* Players */}
            {(() => {
@@ -3397,7 +3055,7 @@ const expYpjUsedRef = useRef(false);
                       
                         {/* 1. Main Circle Frame */}
                         <div className={`
-                          relative w-24 h-24 md:w-32 md:h-32 rounded-full
+                          pixel-player-avatar relative w-24 h-24 md:w-32 md:h-32 rounded-full
                           border-[4px] shadow-2xl transition-transform duration-300
                           ${isMe 
                              ? 'border-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.4)] scale-105' 
@@ -3485,7 +3143,7 @@ const expYpjUsedRef = useRef(false);
                       const dismissed = intentDismissed.has(p.id);
                       const toRight = pos.x < 50; // 气泡朝桌心方向，不挡上面的头像
                       return (
-                        <div className={`absolute top-1/2 -translate-y-1/2 z-40 w-max ${toRight ? 'left-full ml-3' : 'right-full mr-3'} ${dismissed ? 'opacity-25' : ''}`}>
+                        <div className={`pixel-intent absolute top-1/2 -translate-y-1/2 z-40 w-max ${toRight ? 'left-full ml-3' : 'right-full mr-3'} ${dismissed ? 'opacity-25' : ''}`}>
                           <div className="flex flex-col gap-1 items-start">
                             <button
                               onClick={() => { playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(p.id)); }}
@@ -3989,7 +3647,7 @@ const expYpjUsedRef = useRef(false);
           </div>
 
         {/* 3. 手牌区 */}
-        <div className="h-64 bg-gradient-to-t from-black/30 via-slate-950/10 to-transparent relative z-40 flex flex-col">
+        <div className="pixel-hand-area h-64 bg-gradient-to-t from-black/30 via-slate-950/10 to-transparent relative z-40 flex flex-col">
 
             {/* HAND AREA */}
             <div className="flex-1 w-full relative flex justify-center items-end pb-8">
@@ -4004,7 +3662,7 @@ const expYpjUsedRef = useRef(false);
                         <p className="font-bold text-xl">{t.moveLocked}</p>
                     </div>
                 ) : (
-                    <div className="relative h-[250px] w-full max-w-4xl flex justify-center items-end px-10">
+                    <div className={`pixel-hand-tray ${handViewMode === 'CATEGORIES' ? 'pixel-categories' : 'pixel-cards'} relative h-[250px] w-full max-w-4xl flex justify-center items-end px-10`}>
                         
                         {/* MODE 1: CATEGORY SELECTION (FOLDERS) */}
                         {handViewMode === 'CATEGORIES' && (
@@ -4053,8 +3711,8 @@ const expYpjUsedRef = useRef(false);
 
                             // 🟢 FIX: Dynamic Classes based on State
                             // If suggested, we DISABLE standard transitions and hover transforms to prevent glitching.
-                            const standardClasses = `transition-all duration-300 ease-out hover:z-50 hover:scale-110 hover:-translate-y-16 hover:rotate-0 ${hoverGlowClass}`;
-                            const entranceAnim = 'animate-in slide-in-from-bottom-10 fade-in duration-500';
+                            const standardClasses = `transition-colors duration-150 hover:z-50 ${hoverGlowClass}`;
+                            const entranceAnim = '';
 
                             // 教程：高亮牌所在的文件夹也发光（牌藏在文件夹里，不提示根本找不到）
                             const tutStepsCat = isExpedition ? EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expStageIdx]?.id ?? ''] : undefined;
@@ -4071,6 +3729,12 @@ const expYpjUsedRef = useRef(false);
                             return (
                               <div
                                 key={cat}
+                                data-card-type={cat}
+                                role="button"
+                                tabIndex={isChargeDisabled ? -1 : 0}
+                                aria-label={t.categories[cat]}
+                                aria-disabled={isChargeDisabled}
+                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}
                                 onClick={() => {
                                   if (cat === 'CHARGE') {
                                     if (isChargeDisabled) return;
@@ -4152,7 +3816,7 @@ const expYpjUsedRef = useRef(false);
                               {/* Back Button */}
                               <button 
                                  onClick={goBackToCategories}
-                                 className="absolute left-4 top-1/2 -translate-y-1/2 z-[60] bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-full border border-slate-600 shadow-xl transition-all hover:scale-110"
+                                 className="pixel-hand-back absolute left-4 top-1/2 -translate-y-1/2 z-[60] bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-full border border-slate-600 shadow-xl transition-all hover:scale-110"
                               >
                                  <Undo2 size={24} />
                               </button>
@@ -4225,22 +3889,23 @@ const expYpjUsedRef = useRef(false);
                                     return (
                                       <div
                                           key={`${c.id}-${index}`}
-                                          className={`absolute ${isSmallScreen ? 'w-28' : 'w-36'}`}
+                                          className={`pixel-card-slot absolute ${isSmallScreen ? 'w-28' : 'w-36'}`}
                                           style={{
                                             zIndex: tutGlow ? 1000 : isHovered ? 999 : index,
                                             bottom: '30px',
                                             transform: `translateX(${translateX}px) translateY(${translateY}px)`,
                                             // 隐形 hover 保护区：卡片上浮时光标仍停留在容器内，
                                             // 不会误触发 mouseleave，提示框就不会反复闪烁
-                                            paddingTop: tutGlow ? 0 : '90px',
-                                            marginTop: tutGlow ? 0 : '-90px',
+                                            paddingTop: 0,
+                                            marginTop: 0,
                                           }}
                                           onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => handleMouseEnter(e, c.id)}
                                           onMouseLeave={handleMouseLeave}
                                       >
                                        <TiltCard
-                                          disableMotion={tutGlow}
+                                          disableMotion={true}
                                           glareColor={glareColor}
+                                          data-card-type={c.type}
                                           onClick={() => {
                                             const disabled = (myPlayer?.disabledSkills || []).includes(c.id);
                                             if (canAfford && !disabled && !submittingMove) {
@@ -4259,7 +3924,7 @@ const expYpjUsedRef = useRef(false);
                                             ${tutGlow ? 'tutorial-highlight' : ''}
                                             origin-bottom
                                             cursor-pointer group flex flex-col items-center overflow-hidden hand-card
-                                            ${tutGlow ? '' : 'animate-in slide-in-from-bottom-10 fade-in duration-500'}
+
                                             ${isDisabled 
                                               ? 'border-slate-700 grayscale opacity-70 cursor-not-allowed' 
                                               : `${borderClass} ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''} ${!canAfford ? 'grayscale opacity-60' : ''}`
@@ -4268,9 +3933,7 @@ const expYpjUsedRef = useRef(false);
                                           style={{
                                             backgroundColor: '#1a1a1a',
                                             // 悬停只做视觉上浮（容器不动），hover 判定区保持稳定
-                                            transform: tutGlow ? 'rotate(0deg)' : isHovered
-                                              ? 'translateY(-60px) scale(1.1)' // Pop up higher on hover
-                                              : `rotate(${rotateDeg}deg)`,
+                                            transform: tutGlow ? 'rotate(0deg)' : `rotate(${rotateDeg}deg)`,
                                           }}
                                         >
                                           {/* 1. Background Gradient */}
