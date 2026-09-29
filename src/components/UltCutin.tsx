@@ -12,15 +12,21 @@ interface Props {
   skillName: string;
   lang: 'zh' | 'en';
   muted: boolean;
+  /** 多个同屏时的序号（0 起） */
+  index?: number;
+  /** 同屏总数 */
+  total?: number;
 }
 
 const METEORS = [0, 1, 2, 3, 4, 5, 6, 7];
 const SPARKS = Array.from({ length: 18 }, (_, i) => i);
 
-export default function UltCutin({ def, playerName, skillName, lang, muted }: Props) {
+export default function UltCutin({ def, playerName, skillName, lang, muted, index = 0, total = 1 }: Props) {
   const shout = useMemo(() => pickShout(def, lang), [def, lang]);
   // 立绘缺失时降级为像素徽章，保证演出不断
   const [imgOk, setImgOk] = useState(true);
+  // 多个同屏：立绘横向排开、横幅纵向错开，避免完全重叠
+  const multi = total > 1;
 
   // 冲击音效（流星落地 / 特效爆发时）
   useEffect(() => {
@@ -29,9 +35,12 @@ export default function UltCutin({ def, playerName, skillName, lang, muted }: Pr
   }, [muted]);
 
   return (
-    <div className="fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim">
+    <div
+      className="fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim"
+      style={{ ['--ultdim' as string]: multi ? 0.42 : 0.72 }}
+    >
       <style>{`
-        @keyframes ultcutin-dim { from { background-color: rgba(0,0,0,0); } to { background-color: rgba(0,0,0,0.72); } }
+        @keyframes ultcutin-dim { from { background-color: rgba(0,0,0,0); } to { background-color: rgba(0,0,0,var(--ultdim,0.72)); } }
         .animate-ultcutin-dim { animation: ultcutin-dim 0.25s ease-out forwards, ultcutin-dim-out 0.3s ease-in 2.4s forwards; }
         @keyframes ultcutin-dim-out { to { background-color: rgba(0,0,0,0); } }
 
@@ -94,15 +103,18 @@ export default function UltCutin({ def, playerName, skillName, lang, muted }: Pr
       <div className="absolute inset-0 ultcutin-speedlines" />
       <div className="absolute inset-0 animate-ultcutin-shake">
 
-        {/* 巨型立绘：从左侧闪入（缺图时用像素徽章兜底） */}
-        <div className="absolute left-0 bottom-[6vh] animate-ultcutin-enter">
+        {/* 巨型立绘：从左侧闪入（缺图时用像素徽章兜底）；多同屏时横向排开 */}
+        <div
+          className="absolute animate-ultcutin-enter"
+          style={multi ? { left: `${4 + index * 30}vw`, bottom: '4vh' } : { left: 0, bottom: '6vh' }}
+        >
           <div className="animate-ultcutin-bob">
             {imgOk ? (
               <img
                 src={assetUrl(def.image)}
                 alt={skillName}
                 onError={() => setImgOk(false)}
-                className="ultcutin-img h-[58vh] max-w-[72vw] object-contain drop-shadow-[0_0_30px_rgba(0,0,0,0.9)]"
+                className={`ultcutin-img object-contain drop-shadow-[0_0_30px_rgba(0,0,0,0.9)] ${multi ? 'h-[40vh] max-w-[42vw]' : 'h-[58vh] max-w-[72vw]'}`}
                 draggable={false}
               />
             ) : (
@@ -120,21 +132,27 @@ export default function UltCutin({ def, playerName, skillName, lang, muted }: Pr
           </div>
         </div>
 
-        {/* 技能名横幅 */}
-        <div className="absolute inset-x-0 top-[30vh] flex flex-col items-center animate-ultcutin-banner">
+        {/* 技能名横幅；多同屏时纵向错开 */}
+        <div
+          className="absolute inset-x-0 flex flex-col items-center animate-ultcutin-banner"
+          style={{ top: multi ? `${26 + index * 20}vh` : '30vh' }}
+        >
           <div
-            className="ultcutin-pixeltext text-6xl md:text-8xl font-black tracking-wider"
+            className={`ultcutin-pixeltext font-black tracking-wider ${multi ? 'text-4xl md:text-6xl' : 'text-6xl md:text-8xl'}`}
             style={{ color: def.fxColor }}
           >
             {skillName}！！
           </div>
-          <div className="ultcutin-pixeltext mt-3 text-lg md:text-2xl font-bold text-white/90">
+          <div className={`ultcutin-pixeltext mt-3 font-bold text-white/90 ${multi ? 'text-base md:text-xl' : 'text-lg md:text-2xl'}`}>
             — {playerName} —
           </div>
         </div>
 
-        {/* 漫画对话框 */}
-        <div className="absolute left-[34vw] md:left-[30vw] top-[10vh] max-w-[58vw] animate-ultcutin-bubble">
+        {/* 漫画对话框；多同屏时错开位置 */}
+        <div
+          className={`absolute max-w-[58vw] animate-ultcutin-bubble ${multi ? '' : 'left-[34vw] md:left-[30vw] top-[10vh]'}`}
+          style={multi ? { left: `${Math.min(22 + index * 26, 56)}vw`, top: `${6 + index * 9}vh` } : undefined}
+        >
           <div className="relative bg-white border-4 border-black rounded-2xl px-5 py-3 shadow-[6px_6px_0_rgba(0,0,0,0.85)]">
             <div className="absolute -left-4 top-1/2 -translate-y-1/2 w-0 h-0 border-y-[14px] border-y-transparent border-r-[16px] border-r-black" />
             <div className="absolute -left-[9px] top-1/2 -translate-y-1/2 w-0 h-0 border-y-[9px] border-y-transparent border-r-[11px] border-r-white" />

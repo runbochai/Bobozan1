@@ -47,7 +47,7 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
-import { pickUltCutin, isLevelUltimate, type UltCutinPick } from './data/ultCutins';
+import { pickUltCutins, isLevelUltimate, type UltCutinPick } from './data/ultCutins';
 import UltCutin from './components/UltCutin';
 import InventoryBar from './components/InventoryBar';
 import type { ExpeditionEnemyDef } from './data/expedition';
@@ -953,7 +953,7 @@ const expYpjUsedRef = useRef(false);
   const [slamAnim, setSlamAnim] = useState(false);
 
   // 必杀技演出 overlay（SHOWDOWN 时有人放等级终极技则播）
-  const [ultCutin, setUltCutin] = useState<(UltCutinPick & { key: number }) | null>(null);
+  const [ultCutins, setUltCutins] = useState<(UltCutinPick & { key: number })[]>([]);
 
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
   const [tooltipPos, setTooltipPos] = useState<{x: number, y: number} | null>(null);
@@ -1120,17 +1120,17 @@ const expYpjUsedRef = useRef(false);
     }
   }, [gameState.status]);
 
-  // 必杀技演出：进入 SHOWDOWN 且有人放等级终极技时播 cut-in（2.7s 后自动收）
+  // 必杀技演出：进入 SHOWDOWN 且有人放等级终极技时播 cut-in（可多个同屏一起出现，2.85s 后自动收）
   useEffect(() => {
     if (gameState.status === 'SHOWDOWN' && !reduceMotion) {
-      const pick: UltCutinPick | null = pickUltCutin(gameState.players, SKILL_DB, lang);
-      if (pick) {
-        setUltCutin({ ...pick, key: gameState.turn });
-        const t = setTimeout(() => setUltCutin(null), 2850);
+      const picks = pickUltCutins(gameState.players, SKILL_DB, lang);
+      if (picks.length > 0) {
+        setUltCutins(picks.map(pick => ({ ...pick, key: gameState.turn })));
+        const t = setTimeout(() => setUltCutins([]), 2850);
         return () => clearTimeout(t);
       }
     }
-    setUltCutin(null);
+    setUltCutins([]);
   }, [gameState.status, gameState.turn, gameState.players, lang, reduceMotion]);
 
   useEffect(() => {
@@ -3459,19 +3459,6 @@ const expYpjUsedRef = useRef(false);
                         />
                       </div>
                     )}
-                        </div>
-                    </div>
-
-                    {/* 金币飞入：+X 🪙 上浮 */}
-                    {isMe && goldFly && (
-                      <div key={goldFly.key} className="absolute left-full top-0 ml-6 z-50 pointer-events-none whitespace-nowrap">
-                        <style>{`@keyframes gold-float-up { 0% { opacity: 0; transform: translateY(10px) scale(0.8); } 20% { opacity: 1; transform: translateY(0) scale(1.15); } 100% { opacity: 0; transform: translateY(-46px) scale(1); } }`}</style>
-                        <div className="text-lg font-black text-yellow-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" style={{ animation: 'gold-float-up 1.4s ease-out forwards' }}>
-                          +{goldFly.amount} 🪙
-                        </div>
-                      </div>
-                    )}
-
                     {/* --- C3. 敌人意图对话气泡（远征，头像旁边朝桌心，不可拖动） --- */}
                     {isExpedition && !isMe && !p.isDead && expPhase === 'battle' && gameState.status === 'PLAYING' && expIntents[p.id] && (() => {
                       const revealed = shouldRevealIntent(p.id);
@@ -3481,11 +3468,11 @@ const expYpjUsedRef = useRef(false);
                       const dismissed = intentDismissed.has(p.id);
                       const toRight = pos.x < 50; // 气泡朝桌心方向，不挡上面的头像
                       return (
-                        <div className={`absolute top-1/2 -translate-y-1/2 z-40 ${toRight ? 'left-full ml-3' : 'right-full mr-3'} ${dismissed ? 'opacity-25' : ''}`}>
+                        <div className={`absolute top-1/2 -translate-y-1/2 z-40 w-max ${toRight ? 'left-full ml-3' : 'right-full mr-3'} ${dismissed ? 'opacity-25' : ''}`}>
                           <div className="flex flex-col gap-1 items-start">
                             <button
                               onClick={() => { playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(p.id)); }}
-                              className="relative bg-amber-50 text-slate-900 text-2xl font-bold rounded-2xl px-4 py-2.5 max-w-[16rem] text-left shadow-lg hover:scale-105 active:scale-95 transition-transform leading-snug"
+                              className="relative bg-amber-50 text-slate-900 text-2xl font-bold rounded-2xl px-4 py-2.5 w-max max-w-[16rem] text-left shadow-lg hover:scale-105 active:scale-95 transition-transform leading-snug"
                             >
                               {taunt}
                               <span className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-50 rotate-45 ${toRight ? '-left-2' : '-right-2'}`} />
@@ -3518,6 +3505,18 @@ const expYpjUsedRef = useRef(false);
                         </div>
                       );
                     })()}
+                        </div>
+                    </div>
+
+                    {/* 金币飞入：+X 🪙 上浮 */}
+                    {isMe && goldFly && (
+                      <div key={goldFly.key} className="absolute left-full top-0 ml-6 z-50 pointer-events-none whitespace-nowrap">
+                        <style>{`@keyframes gold-float-up { 0% { opacity: 0; transform: translateY(10px) scale(0.8); } 20% { opacity: 1; transform: translateY(0) scale(1.15); } 100% { opacity: 0; transform: translateY(-46px) scale(1); } }`}</style>
+                        <div className="text-lg font-black text-yellow-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" style={{ animation: 'gold-float-up 1.4s ease-out forwards' }}>
+                          +{goldFly.amount} 🪙
+                        </div>
+                      </div>
+                    )}
 
                     {/* --- D. FLOATING DAMAGE NUMBER --- */}
                     {damageVal && (
@@ -3684,16 +3683,18 @@ const expYpjUsedRef = useRef(false);
             )}
 
            {/* 必杀技演出 overlay：左侧闪入巨型立绘 + 压暗 + 喊话 + 像素特效 */}
-           {ultCutin && (
+           {ultCutins.map((u, i) => (
              <UltCutin
-               key={`ultcutin-${ultCutin.key}`}
-               def={ultCutin.def}
-               playerName={ultCutin.playerName}
-               skillName={ultCutin.skillName}
+               key={`ultcutin-${u.key}-${i}`}
+               def={u.def}
+               playerName={u.playerName}
+               skillName={u.skillName}
                lang={lang}
                muted={muted}
+               index={i}
+               total={ultCutins.length}
              />
-           )}
+           ))}
 
            {/* Center "VS" Text when animating */}
            {gameState.status === 'SHOWDOWN' && !showdownAnim && (

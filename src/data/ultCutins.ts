@@ -95,24 +95,22 @@ export function isLevelUltimate(card: Card): boolean {
 }
 
 /**
- * 从本回合出牌中挑一个必杀做演出：只看活着的玩家出的等级终极技，
- * 取 tier 最高者（并列取先出场的）。没有则返回 null。
+ * 从本回合出牌中挑出所有要播演出的必杀：只看活着的玩家出的等级终极技，
+ * 按 tier 从高到低排（同 tier 按出场顺序，可多个同屏一起播）。没有则返回空数组。
  */
-export function pickUltCutin(players: Player[], skillDb: Card[], lang: 'zh' | 'en'): UltCutinPick | null {
-  let best: UltCutinPick | null = null;
-  let bestTier = -1;
+export function pickUltCutins(players: Player[], skillDb: Card[], lang: 'zh' | 'en'): UltCutinPick[] {
+  const picks: (UltCutinPick & { tier: number })[] = [];
   for (const p of players) {
     if (p.isDead || !p.selectedCardId) continue;
     const card = skillDb.find(c => c.id === p.selectedCardId);
     if (!card || !isLevelUltimate(card)) continue;
     const cutin = ULT_CUTINS[card.id];
     if (!cutin) continue;
-    if (card.tier > bestTier) {
-      bestTier = card.tier;
-      best = { def: cutin, playerName: p.name, skillName: card.name[lang] };
-    }
+    picks.push({ def: cutin, playerName: p.name, skillName: card.name[lang], tier: card.tier });
   }
-  return best;
+  return picks
+    .sort((a, b) => b.tier - a.tier) // sort 稳定，同 tier 保持出场顺序
+    .map(({ def, playerName, skillName }) => ({ def, playerName, skillName }));
 }
 
 /** 随机挑一句喊话 */
