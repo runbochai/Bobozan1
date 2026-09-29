@@ -282,19 +282,19 @@ highlight?: string; // 高亮手牌：卡牌 id，或 'ULTIMATE' 表示任意终
 }
 export const EXPEDITION_TUTORIALS: Record<string, ExpeditionTutorialStep[]> = {
 s0: [
-{ text: { zh: '👆 点「攒」：每次 +2 能量，能量是出牌的燃料', en: 'Tap [Charge]: +2 Energy each time — the fuel for every move' }, highlight: 'charge' },
-{ text: { zh: '⚡ 有能量了！点「轰」进攻——训练假人只有 1 ❤️', en: 'Got energy! Tap [Blast] to attack — the dummy has only 1 HP' }, highlight: 'hong' },
-{ text: { zh: '❤️ 看对手血条：打空 1 血就赢了，继续进攻！', en: 'Watch its HP bar: empty its 1 HP to win. Keep attacking!' }, highlight: 'hong' },
+{ text: { zh: '⚡ 点黄色「攒」：直接出牌，每次 +2 能量。能量是出牌的燃料', en: 'Tap the yellow [Charge] folder: plays instantly, +2 Energy each time — the fuel for every move' }, highlight: 'charge' },
+{ text: { zh: '🔴 点红色「攻击」文件夹，里面点「轰」：打攒气中的敌人，一击必杀！', en: 'Open the red [Attack] folder and tap [Blast]: hitting a charging enemy kills instantly!' }, highlight: 'hong' },
 ],
 s1: [
-{ text: { zh: '🪵 胆小木桩 1 ❤️，但它会还手！先看它能量', en: 'The cowardly post has 1 HP — but it fights back! Watch its energy' } },
-{ text: { zh: '🛡️ 它能量 ≥2 就要打你：点「防」挡住伤害', en: 'When its energy ≥ 2 it will hit you: tap [Defend] to block' }, highlight: 'defend' },
-{ text: { zh: '⚔️ 它没能量时，就是你大胆「轰」它的好机会', en: 'When it has no energy, [Blast] it without fear' }, highlight: 'hong' },
+{ text: { zh: '💬 先看敌人旁边的气泡：前三关它会说实话，告诉你这回合想干嘛', en: 'Check the speech bubble by the enemy: in the first 3 stages it tells the truth about its move' } },
+{ text: { zh: '🔵 气泡说它要打你？点蓝色「防御」文件夹，里面点「防」挡住！', en: 'Bubble says it will attack? Open the blue [Defend] folder and tap [Defend] to block!' }, highlight: 'defend' },
+{ text: { zh: '🔴 气泡说它在攒气？去红色「攻击」文件夹点「轰」，一击必杀！', en: 'Bubble says it is charging? Open the red [Attack] folder, tap [Blast] — instant kill!' }, highlight: 'hong' },
 ],
 s2: [
-{ text: { zh: '🐢 它只会「防」，普通「轰」打不动它', en: 'It only [Defend]s — normal [Blast] cannot hurt it' } },
-{ text: { zh: '👆 一直点「攒」，攒到 3 能量', en: 'Keep tapping [Charge] until you have 3 energy' }, highlight: 'charge' },
-{ text: { zh: '💥 3 能量了！点「终极技能」破防一击！', en: '3 energy! Tap your [Ultimate] to smash through!' }, highlight: 'ULTIMATE' },
+{ text: { zh: '🐢 它只会缩着「防」：防御中的敌人，普通攻击打不动', en: 'It only turtles with [Defend]: attacks cannot hurt a defending enemy' } },
+{ text: { zh: '⚡ 点「攒」存能量：终极技要 3 费，先存 2 费', en: 'Tap [Charge] to save up: Ultimates cost 3 — save 2 first' }, highlight: 'charge' },
+{ text: { zh: '⚡ 再点一次「攒」：4 能量了', en: 'Tap [Charge] again: 4 energy now' }, highlight: 'charge' },
+{ text: { zh: '🟣 点紫色「终极」文件夹，点任意终极技：无视防御，一击破防！', en: 'Open the purple [Ultimate] folder and tap any Ultimate: it pierces defense — instant break!' }, highlight: 'ULTIMATE' },
 ],
 };
 

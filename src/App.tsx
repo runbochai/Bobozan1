@@ -585,6 +585,10 @@ const expYpjUsedRef = useRef(false);
       if (hl && (hl === cardId || (hl === 'ULTIMATE' && played?.type === 'ULTIMATE'))) {
         expTutIdxRef.current += 1;
         setExpTutIdx(expTutIdxRef.current);
+        // 教程毕业：第 3 关最后一步完成时庆祝一下
+        if (expTutIdxRef.current >= tutSteps.length && EXPEDITION_STAGES[expRunRef.current.stageIdx]?.id === 's2') {
+          setToastMsg(lang === 'zh' ? '🎓 教程完成！塔在等你，加油！' : '🎓 Tutorial complete! The tower awaits!');
+        }
       }
     }
     if (gameState.status !== 'PLAYING') return;
@@ -3044,6 +3048,7 @@ const expYpjUsedRef = useRef(false);
           return (
             <div className="absolute left-6 top-[62%] z-50 w-full max-w-xs pointer-events-none">
               <div className="bg-amber-950/90 backdrop-blur-xl border border-amber-400/50 rounded-xl px-4 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-center pointer-events-auto">
+                <div className="text-[10px] font-black text-amber-400/70 tracking-widest mb-1">{lang === 'zh' ? `教程 ${expTutIdx + 1} / ${steps.length}` : `Tutorial ${expTutIdx + 1} / ${steps.length}`}</div>
                 <div className="text-sm font-bold text-amber-100 leading-snug">{step.text[lang]}</div>
                 <div className="flex justify-center gap-2 mt-2">
                   <button
@@ -3053,7 +3058,7 @@ const expYpjUsedRef = useRef(false);
                     {lang === 'zh' ? '下一步 →' : 'Next →'}
                   </button>
                   <button
-                    onClick={() => { expTutIdxRef.current = 999; setExpTutIdx(999); }}
+                    onClick={() => { expTutIdxRef.current = 999; setExpTutIdx(999); setToastMsg(lang === 'zh' ? '💡 能量为 0 也能点「攒」攒能量；看敌人旁边的气泡猜它要干嘛' : 'Tip: you can [Charge] even at 0 energy — watch the enemy bubble!'); }}
                     className="px-3 py-1 rounded-lg bg-slate-700 text-slate-300 text-xs font-bold hover:scale-105 active:scale-95 transition-all"
                   >
                     {lang === 'zh' ? '跳过教学' : 'Skip'}
@@ -4037,6 +4042,18 @@ const expYpjUsedRef = useRef(false);
                             const standardClasses = `transition-all duration-300 ease-out hover:z-50 hover:scale-110 hover:-translate-y-16 hover:rotate-0 ${hoverGlowClass}`;
                             const entranceAnim = 'animate-in slide-in-from-bottom-10 fade-in duration-500';
 
+                            // 教程：高亮牌所在的文件夹也发光（牌藏在文件夹里，不提示根本找不到）
+                            const tutStepsCat = isExpedition ? EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expStageIdx]?.id ?? ''] : undefined;
+                            const tutHLcat = tutStepsCat && expTutIdx < tutStepsCat.length ? tutStepsCat[expTutIdx].highlight : undefined;
+                            let tutCatGlow = false;
+                            if (tutHLcat) {
+                              if (tutHLcat === 'ULTIMATE') tutCatGlow = cat === 'ULTIMATE';
+                              else {
+                                const hc = SKILL_DB.find(c => c.id === tutHLcat);
+                                if (hc) tutCatGlow = (hc.type === 'ABSORB' ? 'SPECIAL' : hc.type) === cat;
+                              }
+                            }
+
                             return (
                               <div
                                 key={cat}
@@ -4070,6 +4087,7 @@ const expYpjUsedRef = useRef(false);
                                       ? 'border-slate-700 grayscale opacity-70 cursor-not-allowed'
                                       : `${borderClass} ${standardClasses}`
                                   }
+                                  ${tutCatGlow ? 'ring-4 ring-yellow-300 animate-pulse' : ''}
                                 `}
                                 style={{
                                   // 🟢 FIX: Transform is stable. If suggested, we force the scale here.
