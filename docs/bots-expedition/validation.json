@@ -1,0 +1,818 @@
+{
+  "results": [
+    {
+      "label": "dummy",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/dummy.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "coward",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/coward.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "turtle",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/turtle.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "slime",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/slime.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "slime_a",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/slime_a.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "slime_b",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/slime_b.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "ironwall",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/ironwall.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "wolf",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/wolf.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "head_a",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/head_a.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "head_b",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/head_b.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "dragon_elder",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/dragon_elder.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "frost",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/frost.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "shadow_a",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/shadow_a.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "shadow_b",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/shadow_b.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "shadow_c",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/shadow_c.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "hangman",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/hangman.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "knight",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/knight.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "guard_a",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/guard_a.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "guard_b",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/guard_b.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "guard_c",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/guard_c.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "bluffer",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/bluffer.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "lord_bozan",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/lord_bozan.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "tower_soul",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/tower_soul.webp",
+          "direction": "se"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "shadow_a-1440",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/shadow_a.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/shadow_b.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/enemies/shadow_c.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "shadow_a-390",
+      "width": 390,
+      "scroll": 390,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/shadow_a.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/shadow_b.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/enemies/shadow_c.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "shadow_a-320",
+      "width": 320,
+      "scroll": 320,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/shadow_a.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/shadow_b.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/enemies/shadow_c.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "guard_a-1440",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/guard_a.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/guard_b.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/enemies/guard_c.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "guard_a-390",
+      "width": 390,
+      "scroll": 390,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/guard_a.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/guard_b.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/enemies/guard_c.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "guard_a-320",
+      "width": 320,
+      "scroll": 320,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/guard_a.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/guard_b.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/enemies/guard_c.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "lord_bozan-1440",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/lord_bozan.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/tower_soul.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "lord_bozan-390",
+      "width": 390,
+      "scroll": 390,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/lord_bozan.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/tower_soul.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "lord_bozan-320",
+      "width": 320,
+      "scroll": 320,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/enemies/lord_bozan.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/enemies/tower_soul.webp",
+          "direction": "sw"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "seven-bots-1440",
+      "width": 1440,
+      "scroll": 1440,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "sw"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "e"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "w"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "ne"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "n"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "seven-bots-768",
+      "width": 768,
+      "scroll": 768,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "sw"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "e"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "w"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "ne"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "n"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "seven-bots-390",
+      "width": 390,
+      "scroll": 390,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "sw"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "e"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "w"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "ne"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "n"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "seven-bots-320",
+      "width": 320,
+      "scroll": 320,
+      "sprites": [
+        {
+          "atlas": "characters/bdrag.webp",
+          "direction": "nw"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "se"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "s"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "sw"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "e"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "w"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "ne"
+        },
+        {
+          "atlas": "characters/robot.webp",
+          "direction": "n"
+        }
+      ],
+      "fallbacks": 0,
+      "bubbleOverlaps": [],
+      "hudOverlaps": []
+    },
+    {
+      "label": "reduced-motion",
+      "passed": true
+    },
+    {
+      "label": "bot-lobby-avatars",
+      "count": 7
+    }
+  ],
+  "errors": [],
+  "scope": "Local app with simulated room states; no Firebase multi-client session."
+}

@@ -1,0 +1,131 @@
+{
+  "results": [
+    {
+      "scenario": "expedition",
+      "width": 1440,
+      "scroll": 1440,
+      "missing": []
+    },
+    {
+      "scenario": "expedition",
+      "width": 768,
+      "scroll": 768,
+      "missing": []
+    },
+    {
+      "scenario": "expedition",
+      "width": 390,
+      "scroll": 390,
+      "missing": []
+    },
+    {
+      "scenario": "expedition",
+      "width": 320,
+      "scroll": 320,
+      "missing": []
+    },
+    {
+      "scenario": "selected-avatar-mapping",
+      "checked": 13
+    },
+    {
+      "scenario": "three-enemy-intents",
+      "width": 1440,
+      "scroll": 1440,
+      "collisions": []
+    },
+    {
+      "scenario": "three-enemy-intents",
+      "width": 390,
+      "scroll": 390,
+      "collisions": []
+    },
+    {
+      "scenario": "three-enemy-intents",
+      "width": 320,
+      "scroll": 320,
+      "collisions": []
+    },
+    {
+      "scenario": "eight-player-layout",
+      "width": 1440,
+      "scroll": 1440,
+      "overlaps": [],
+      "obstructed": [],
+      "clipped": [],
+      "facings": [
+        "nw",
+        "se",
+        "s",
+        "sw",
+        "e",
+        "w",
+        "ne",
+        "n"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "eight-player-layout",
+      "width": 768,
+      "scroll": 768,
+      "overlaps": [],
+      "obstructed": [],
+      "clipped": [],
+      "facings": [
+        "nw",
+        "se",
+        "s",
+        "sw",
+        "e",
+        "w",
+        "ne",
+        "n"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "eight-player-layout",
+      "width": 390,
+      "scroll": 390,
+      "overlaps": [],
+      "obstructed": [],
+      "clipped": [],
+      "facings": [
+        "nw",
+        "se",
+        "s",
+        "sw",
+        "e",
+        "w",
+        "ne",
+        "n"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "eight-player-layout",
+      "width": 320,
+      "scroll": 320,
+      "overlaps": [],
+      "obstructed": [],
+      "clipped": [],
+      "facings": [
+        "nw",
+        "se",
+        "s",
+        "sw",
+        "e",
+        "w",
+        "ne",
+        "n"
+      ],
+      "missing": []
+    },
+    {
+      "scenario": "motion-and-reduced-motion",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

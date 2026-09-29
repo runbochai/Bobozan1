@@ -165,7 +165,6 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
   .pixel-battle-layout { height: auto; min-height: 100svh; }
   .pixel-mobile-header { order: -1; }
   .pixel-exp-hud { position: relative; top: auto; left: auto; margin: 48px 12px 8px; }
-  .pixel-tutorial { position: relative; inset: auto; width: auto; margin: 0 12px 8px; }
   .pixel-battle-board { flex: 1 0 370px; min-height: 370px; }
   .pixel-hand-area { height: 220px; flex-shrink: 0; }
   .pixel-hand-area > div { padding-bottom: 8px; }
@@ -353,4 +352,149 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
   .arena-round { top: 52%; left: 17%; }
   .arena-round small { display: none; }
   .battle-scenery-clash .arena-round strong { font-size: 13px; }
+}
+
+/* Character views are independent of the stationary player HUD and card controls. */
+.pixel-battle-layout { height: auto; min-height: 100svh; }
+.pixel-screen-multiplayer .pixel-battle-board { margin-top: 112px; }
+@media (min-width: 768px) {
+  .pixel-screen-battle:not(.pixel-screen-multiplayer) .pixel-battle-board { margin-top: 72px; }
+}
+.pixel-battle-board { min-height: 580px; flex: 1 0 580px; }
+.pixel-battle-board.battle-board-crowded { min-height: 1000px; flex-basis: 1000px; }
+.battle-fighter { position: absolute; display: flex; flex-direction: column; align-items: center; width: 160px; transform: translate(-50%, -50%); }
+.battle-fighter-self { width: 240px; transform: translate(-50%, -72%); pointer-events: none; }
+.battle-sprite { position: relative; display: block; width: 180px; aspect-ratio: 3 / 4; overflow: hidden; pointer-events: none; }
+.battle-sprite > img { position: absolute; width: 400%; height: 200%; max-width: none; image-rendering: pixelated; }
+.battle-sprite-fallback { display: flex; justify-content: center; align-items: center; }
+.battle-sprite-fallback > img { position: static; width: 100%; height: 100%; object-fit: contain; }
+.battle-fighter-self .battle-sprite { width: 240px; }
+.battle-character-motion { position: relative; pointer-events: none; filter: drop-shadow(3px 5px 0 #07101b55); }
+.battle-character-idle { animation: character-idle 2.4s steps(6, end) infinite; animation-delay: var(--idle-delay); }
+.battle-character-move { animation: character-move .7s steps(6, end) both; }
+.battle-character-hit { animation: character-hit .4s steps(5, end) both; }
+.battle-fighter-dead .battle-character-motion { filter: grayscale(1); opacity: .35; }
+.battle-player-plinth { width: 100px; height: 14px; top: auto; bottom: 62px; border: 0; background: #08131d99; transform: skewX(-25deg); z-index: -1; pointer-events: none; }
+.battle-fighter-self .battle-player-plinth { bottom: 14px; width: 142px; }
+.battle-fighter-name { display: flex; align-items: center; justify-content: center; gap: 4px; width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-size: 12px; font-weight: 900; color: #f6dfb8; text-shadow: 2px 2px #09121f; }
+.battle-fighter-name .pixel-icon { color: #7ce0a1; }
+.battle-fighter-name > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; min-width: 0; }
+.battle-level { position: absolute; top: 0; display: flex; align-items: center; gap: 4px; color: #efca7c; font-size: 11px; }
+.pixel-app .battle-stats { display: flex; flex-direction: column; width: 116px; margin: 4px 0 0; gap: 3px; padding: 4px 7px; background: #112132ed; border: 1px solid #526570; border-left: 3px solid #7aaecb; box-shadow: 2px 2px #07122080; }
+.battle-energy, .battle-health, .battle-layer { display: flex; align-items: center; gap: 5px; }
+.battle-energy { color: #f0cf76; font-size: 14px; }
+.battle-layer { margin-left: auto; color: #8bd3ef; font-size: 12px; }
+.battle-health { color: #f2a0a6; font-size: 12px; }
+.battle-health-track { flex: 1; height: 6px; min-width: 20px; background: #3e2836; overflow: hidden; }
+.battle-health-track i { display: block; height: 100%; background: #e56873; transition: width .3s; }
+.battle-fighter .pixel-intent { top: 35%; }
+.battle-fighter .pixel-intent button { font-size: 16px; max-width: 220px; }
+.battle-emoji { position: absolute; top: -48px; padding: 4px 10px; font-size: 28px; background: #fff3d3; color: #142137; border: 2px solid #95856b; pointer-events: none; animation: emoji-lifecycle 2s steps(6) both; }
+.battle-dead-mark { position: absolute; top: 40%; color: #ed7985; }
+.battle-damage { position: absolute; top: 25%; color: #ffb7ad; font-size: 36px; font-weight: 900; text-shadow: 3px 3px #711e31; pointer-events: none; animation: battle-damage .8s steps(6) both; }
+.battle-damage-still { animation: none; }
+.battle-board-crowded .battle-fighter { width: 140px; }
+.battle-board-crowded .battle-sprite { width: 136px; }
+.battle-board-crowded .battle-fighter-self .battle-sprite { width: 170px; }
+.battle-board-crowded .arena-round { top: 49%; }
+.pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) { min-height: 740px; flex-basis: 740px; }
+.pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-enemy .battle-sprite { width: 144px; }
+.pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-self .battle-sprite { width: 210px; }
+.pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .pixel-intent { left: 50%; right: auto; top: 100%; margin: 8px 0 0; transform: translateX(-50%); }
+.pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-intent-tail { width: 8px; height: 8px; left: calc(50% - 4px); right: auto; top: -4px; transform: rotate(45deg); }
+.battle-player-hud { position: relative; z-index: 40; display: flex; align-items: center; gap: 16px; padding: 10px 24px 12px; background: #152334; border-top: 2px solid #6c6755; min-width: 0; flex-shrink: 0; }
+.battle-hud-portrait { width: 92px; height: 92px; flex-shrink: 0; overflow: hidden; }
+.battle-hud-portrait > img { width: 100%; height: 100%; object-fit: cover; }
+.battle-hud-dead { filter: grayscale(1); opacity: .5; }
+.battle-hud-details { width: 220px; max-width: calc(100% - 80px); }
+.battle-hud-name { display: flex; justify-content: space-between; align-items: center; gap: 12px; font-size: 14px; }
+.battle-hud-name strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.battle-hud-name span { flex-shrink: 0; font-size: 11px; color: #dbb772; }
+.pixel-app .battle-player-hud .battle-stats { flex-direction: row; width: 100%; justify-content: space-between; align-items: center; border: 0; padding: 3px 0; box-shadow: none; background: transparent; }
+.battle-player-hud .battle-health { flex: 1; max-width: 135px; }
+.battle-hud-inventory { position: relative; max-width: 100%; min-width: 0; }
+.battle-hud-inventory .pixel-inventory { flex-wrap: wrap; max-width: none; overflow: visible; }
+.battle-gold-gain { position: absolute; top: -20px; left: 10px; color: #f8d675; font-weight: bold; pointer-events: none; animation: battle-damage 1.4s steps(8) both; }
+.pixel-hand-area { flex-shrink: 0; }
+@keyframes character-idle { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+@keyframes character-move { 0%,100% { transform: translate(0,0); } 35% { transform: translate(var(--step-x),var(--step-y)); } }
+@keyframes character-hit { 0%,100% { transform: translateX(0); } 25%,75% { transform: translateX(4px); } 50% { transform: translateX(-4px); } }
+@keyframes battle-damage { from { opacity: 1; transform: translateY(0); } to { opacity: 0; transform: translateY(-28px); } }
+@media (max-width:767px) {
+  .pixel-battle-board { flex-basis: 410px; min-height: 410px; }
+  .pixel-battle-board.battle-board-crowded { flex-basis: 740px; min-height: 740px; }
+  .battle-fighter { width: 104px; }
+  .battle-sprite { width: 110px; }
+  .battle-fighter-self { width: 136px; }
+  .battle-fighter-self .battle-sprite { width: 136px; }
+  .battle-fighter-name { font-size: 10px; }
+  .battle-level { font-size: 9px; top: 0; }
+  .pixel-app .battle-stats { width: 94px; padding: 3px 5px; }
+  .battle-energy { font-size: 12px; }
+  .battle-health { font-size: 10px; }
+  .battle-fighter .pixel-intent { max-width: 132px; }
+  .battle-fighter .pixel-intent button { width: 132px; max-width: 132px; font-size: 12px; }
+  .battle-player-plinth { width: 74px; height: 10px; bottom: 58px; }
+  .battle-fighter-self .battle-player-plinth { width: 90px; bottom: 6px; }
+  .battle-board-crowded .battle-fighter { width: 92px; }
+  .battle-board-crowded .battle-sprite { width: 84px; }
+  .battle-board-crowded .battle-fighter-self .battle-sprite { width: 108px; }
+  .battle-board-crowded .battle-stats { width: 86px; }
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) { min-height: 620px; flex-basis: 620px; }
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-enemy { width: 92px; }
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-enemy .battle-sprite { width: 88px; }
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-self .battle-sprite { width: 136px; }
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-enemy .battle-stats { width: 86px; }
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .pixel-intent button { width: 86px; max-width: 86px; padding: 6px; font-size: 10px; }
+  .battle-board-crowded .arena-round { left: 50%; top: 49%; }
+  .battle-player-hud { flex-wrap: wrap; gap: 8px 12px; padding: 10px 14px 12px; }
+  .battle-hud-portrait { width: 72px; height: 72px; }
+  .battle-hud-details { flex: 1; width: auto; }
+  .battle-hud-name { font-size: 12px; }
+  .battle-hud-inventory { flex-basis: 100%; }
+  .battle-hud-inventory .pixel-inventory { padding: 5px 7px; }
+  .battle-hand-heading { top: 7px; }
+  .arena-round { left: 46%; top: 57%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .battle-character-motion, .battle-gold-gain, .battle-damage { animation: none !important; }
+}
+.reduce-motion .battle-character-motion, .reduce-motion .battle-gold-gain, .reduce-motion .battle-damage { animation: none !important; }
+
+/* Training lives beside the hand in document flow, leaving the arena and portrait clear. */
+.tutorial-guide { position: relative; z-index: 40; flex-shrink: 0; width: calc(100% - 48px); max-width: 896px; margin: 12px auto 4px; padding: 14px 18px; border: 2px solid #c9aa69; background: #252d37; box-shadow: 4px 4px #080f1c; }
+.pixel-app .tutorial-jump { display: block; margin-top: 4px; min-height: 36px; padding: 4px 8px; border: 1px solid #9b926d; background: #263d4a; color: #f4d698; font-size: 12px; }
+.tutorial-guide-header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; color: #f7d992; }
+.tutorial-guide-header h2 { margin: 0; font-size: 14px; font-weight: 900; }
+.tutorial-guide-header > span { flex-shrink: 0; font-size: 11px; }
+.tutorial-progress { display: flex; gap: 4px; margin: 10px 0; }
+.tutorial-progress > span { flex: 1; padding: 4px 6px; border-top: 3px solid #506072; color: #9baaba; font-size: 11px; }
+.tutorial-progress > [data-state="done"] { border-color: #8ec8a2; color: #a7d5b3; }
+.tutorial-progress > [data-state="current"] { border-color: #f3ca7a; color: #ffe0a2; background: #f4d1840c; }
+.tutorial-guide-content { display: flex; align-items: center; gap: 24px; }
+.tutorial-guide-copy { flex: 1; min-width: 0; font-size: 14px; line-height: 1.6; }
+.tutorial-guide-copy p { margin: 4px 0; }
+.tutorial-guide-copy .tutorial-feedback { color: #a9d9ba; font-size: 12px; min-height: 20px; }
+.tutorial-facts { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 12px; color: #c4ccd3; }
+.tutorial-facts b { color: #ffe0a2; }
+.tutorial-guide-actions { display: flex; flex-direction: column; gap: 6px; min-width: 178px; }
+.tutorial-guide-actions button { min-height: 40px; }
+.tutorial-guide-actions small { text-align: center; font-size: 10px; color: #bdc9d1; }
+.pixel-app .tutorial-skip { background: transparent; color: #a9b8c4; border: 1px solid #637486; padding: 6px 10px; font-size: 12px; box-shadow: none; }
+.tutorial-other-card { opacity: .5; cursor: not-allowed; }
+.tutorial-recap { border: 1px solid #92835b; background: #333b3e; padding: 12px; margin: 14px 0; text-align: left; }
+.tutorial-recap strong { color: #b0e0bb; }
+.tutorial-recap p { margin: 6px 0; font-size: 13px; line-height: 1.6; color: #f5e6c7; }
+.tutorial-recap small { color: #becbd1; font-size: 11px; }
+@media (max-width: 767px) {
+  .tutorial-guide { width: calc(100% - 24px); padding: 12px; margin-top: 8px; }
+  .tutorial-guide-header { gap: 8px; align-items: flex-start; }
+  .tutorial-guide-header h2 { font-size: 12px; }
+  .tutorial-guide-header > span { font-size: 10px; }
+  .tutorial-progress > span { padding: 3px; font-size: 10px; }
+  .tutorial-guide-content { flex-direction: column; align-items: stretch; gap: 10px; }
+  .tutorial-guide-copy { font-size: 13px; }
+  .tutorial-guide-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; min-width: 0; }
+  .tutorial-guide-actions button { min-height: 44px; padding: 6px; font-size: 12px; }
+  .tutorial-guide-actions small { grid-column: 1 / -1; grid-row: 2; }
 }

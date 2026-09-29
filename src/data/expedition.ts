@@ -278,24 +278,39 @@ intro: { zh: '塔魂：波赞只是守门人。我，即是塔。', en: 'Soul: B
 // ============ 前三关战斗内教学 ============
 export interface ExpeditionTutorialStep {
 text: LocalizedText;
-highlight?: string; // 高亮手牌：卡牌 id，或 'ULTIMATE' 表示任意终极技能
+highlight?: string; // A concrete card ID; reading steps do not consume a turn.
+success?: LocalizedText;
 }
+export const EXPEDITION_LESSONS: Record<string, { title: LocalizedText; summary: LocalizedText }> = {
+s0: {
+title: { zh: '攒气与进攻', en: 'Charge & attack' },
+summary: { zh: '攒一次获得 2 能量；「轰」消耗 1 能量。敌人攒气时，是进攻的好机会。', en: 'Charge gives 2 Energy; Blast costs 1. A charging enemy is open to attack.' },
+},
+s1: {
+title: { zh: '看意图，学防守', en: 'Read & defend' },
+summary: { zh: '先看敌人的意图。基础「防」不耗能量，能挡住「轰」，但挡不住所有招式。', en: 'Read the enemy intent first. Defend costs no Energy and blocks Blast, but not every move.' },
+},
+s2: {
+title: { zh: '积攒能量，突破防守', en: 'Save & break through' },
+summary: { zh: '「咔」消耗 3 能量，可以突破基础「防」。接下来的敌人不一定会亮出真实意图，留意自己的能量与血量。', en: 'Ka costs 3 Energy and pierces basic Defend. Later enemies may hide their intent; keep watching your Energy and HP.' },
+},
+};
 export const EXPEDITION_TUTORIALS: Record<string, ExpeditionTutorialStep[]> = {
 s0: [
-{ text: { zh: '⚡ 点黄色「攒」：直接出牌，每次 +2 能量。能量是出牌的燃料', en: 'Tap the yellow [Charge] folder: plays instantly, +2 Energy each time — the fuel for every move' }, highlight: 'charge' },
-{ text: { zh: '🔴 点红色「攻击」文件夹，里面点「轰」：打攒气中的敌人，一击必杀！', en: 'Open the red [Attack] folder and tap [Blast]: hitting a charging enemy kills instantly!' }, highlight: 'hong' },
+{ text: { zh: '先点黄色「攒」，获得 2 能量。点击它会直接出招，双方的招式在同一回合结算。', en: 'Tap yellow Charge to gain 2 Energy. It plays immediately; both sides resolve their moves together.' }, highlight: 'charge', success: { zh: '攒气成功，能量 +2。现在可以进攻了。', en: 'Charged: +2 Energy. You are ready to attack.' } },
+{ text: { zh: '打开红色「攻击」，再点「轰」（1 能量）。训练假人正在攒气，这次攻击可以击败它。', en: 'Open red Attack, then play Blast (1 Energy). The charging training dummy is vulnerable; this hit will defeat it.' }, highlight: 'hong', success: { zh: '击败训练假人！你学会了先攒气，再进攻。', en: 'Dummy defeated! Charge first, then attack.' } },
 ],
 s1: [
-{ text: { zh: '💬 先看敌人旁边的气泡：前三关它会说实话，告诉你这回合想干嘛', en: 'Check the speech bubble by the enemy: in the first 3 stages it tells the truth about its move' } },
-{ text: { zh: '⚡ 先点「攒」储备能量。敌人这一回合也会攒气。', en: 'Charge first to store energy. The enemy will charge too.' }, highlight: 'charge' },
-{ text: { zh: '🔵 气泡说它要打你？点蓝色「防御」文件夹，里面点「防」挡住！', en: 'Bubble says it will attack? Open the blue [Defend] folder and tap [Defend] to block!' }, highlight: 'defend' },
-{ text: { zh: '🔴 气泡说它在攒气？去红色「攻击」文件夹点「轰」，一击必杀！', en: 'Bubble says it is charging? Open the red [Attack] folder, tap [Blast] — instant kill!' }, highlight: 'hong' },
+{ text: { zh: '敌人旁边的气泡会显示本回合意图，下面也有提示。前三关的意图都是真实的；先看，再出招。', en: 'The enemy bubble shows its intent, also repeated below. Intent is truthful in the first three stages. Read it before choosing a move.' } },
+{ text: { zh: '敌人本回合也会攒气。点「攒」，为之后的进攻储备能量。', en: 'The enemy will Charge this turn too. Play Charge to save energy for your attack.' }, highlight: 'charge', success: { zh: '能量已储备。注意：敌人下一招变成了「轰」。', en: 'Energy stored. Watch out: the enemy now intends to use Blast.' } },
+{ text: { zh: '敌人要用「轰」！打开蓝色「防守」，点「防」。基础防守不消耗能量。', en: 'The enemy is using Blast! Open blue Defend and play Defend. Basic defense costs no Energy.' }, highlight: 'defend', success: { zh: '成功挡住「轰」，没有受伤，也没有消耗能量。', en: 'Blast blocked: no HP lost and no Energy spent.' } },
+{ text: { zh: '敌人又开始攒气了。打开「攻击」，用「轰」抓住这个空当。', en: 'The enemy is charging again. Open Attack and use Blast to take this opening.' }, highlight: 'hong', success: { zh: '反击成功！看清意图，就能选择合适的应对。', en: 'Counterattack successful! Match your response to the enemy intent.' } },
 ],
 s2: [
-{ text: { zh: '🐢 它只会缩着「防」：防御中的敌人，普通攻击打不动', en: 'It only turtles with [Defend]: attacks cannot hurt a defending enemy' } },
-{ text: { zh: '⚡ 点「攒」存能量：「咔」需要 3 能量，先攒一次', en: 'Tap [Charge] to save up: Ka costs 3 Energy — charge once first' }, highlight: 'charge' },
-{ text: { zh: '⚡ 再点一次「攒」：能量足够使用「咔」了', en: 'Tap [Charge] again: you now have enough energy for Ka' }, highlight: 'charge' },
-{ text: { zh: '🟣 点紫色「终极」文件夹，点「咔」（3 能量）：穿透基础防御！', en: 'Open the purple [Ultimate] folder and tap [Ka] (3 Energy) to pierce basic defense!' }, highlight: 'ka' },
+{ text: { zh: '这个假人会一直用基础「防」，挡住「轰」。这次练习用「咔」突破它的防守。', en: 'This dummy keeps using basic Defend, which blocks Blast. Practise breaking through with Ka.' } },
+{ text: { zh: '「咔」需要 3 能量。先点「攒」，每次获得 2 能量。', en: 'Ka costs 3 Energy. Start with Charge, which gives 2 Energy each time.' }, highlight: 'charge', success: { zh: '第一轮攒气完成，继续为破防招式储备能量。', en: 'First Charge complete. Keep saving for your breakthrough.' } },
+{ text: { zh: '再点一次「攒」，为「咔」备足能量。', en: 'Play Charge once more to build up enough Energy for Ka.' }, highlight: 'charge', success: { zh: '能量已充足！现在用「咔」突破基础防守。', en: 'Enough Energy! Use Ka to pierce basic defense.' } },
+{ text: { zh: '打开紫色「终极」，点「咔」（3 能量），突破基础「防」。', en: 'Open purple Ultimate, then play Ka (3 Energy) to pierce basic Defend.' }, highlight: 'ka', success: { zh: '破防成功！三课完成，准备开始正式冒险。', en: 'Defense broken! Three lessons complete. Your adventure begins.' } },
 ],
 };
 

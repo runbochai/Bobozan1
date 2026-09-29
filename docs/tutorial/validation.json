@@ -1,0 +1,42 @@
+[
+  {
+    "width": 390,
+    "fullThreeLessons": true,
+    "keyboard": true,
+    "wrongCardBlocked": true,
+    "locateDoesNotPlay": true,
+    "noOverlap": true,
+    "noHorizontalOverflow": true,
+    "skipAndRestart": true,
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "fullThreeLessons": true,
+    "keyboard": true,
+    "wrongCardBlocked": true,
+    "locateDoesNotPlay": true,
+    "noOverlap": true,
+    "noHorizontalOverflow": true,
+    "skipAndRestart": true,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "fullThreeLessons": true,
+    "keyboard": true,
+    "wrongCardBlocked": true,
+    "locateDoesNotPlay": true,
+    "noOverlap": true,
+    "noHorizontalOverflow": true,
+    "skipAndRestart": true,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "english": true,
+    "reducedMotion": true,
+    "keyboardSpace": true,
+    "errors": []
+  }
+]
