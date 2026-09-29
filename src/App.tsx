@@ -1,3 +1,4 @@
+import BrawlCover from './components/BrawlCover';
 import PixelBackdrop from './components/PixelBackdrop';
 import { AVATAR_OPTIONS } from './data/avatars';
 import { tutorialEnemyMove } from './logic/expeditionTutorial';
@@ -2010,7 +2011,7 @@ const expYpjUsedRef = useRef(false);
   // --- RENDER LOGIC ---
 
   if (view === 'NAME_INPUT') return (
-    <div className="pixel-app pixel-screen-title min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-title brawl-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       
       <PixelBackdrop scene="title" />
 
@@ -2031,19 +2032,18 @@ const expYpjUsedRef = useRef(false);
       {/* ================= CONTENT ================= */}
       <div className="pixel-title-content relative z-10 flex flex-col items-center w-full max-w-2xl px-4">
         
-        <header className="pixel-title-header">
-          <div className="pixel-kicker">BOBOZAN · PIXEL ADVENTURE</div>
-          <h1 className="pixel-wordmark">{t.title}</h1>
-          <p className="pixel-tagline">{lang === 'zh' ? '攒气 · 出招 · 登上高塔' : 'CHARGE · BATTLE · CONQUER'}</p>
-          <div className="pixel-hero-party" aria-hidden="true">
-            <img src={assetUrl('ultcutins/iceult.webp')} alt="" />
-            <img src={assetUrl('ultcutins/fireclaw.webp')} alt="" />
-            <img src={assetUrl('ultcutins/meteor.webp')} alt="" />
+        <header className="pixel-title-header brawl-title-header">
+          <BrawlCover />
+          <div className="brawl-logo">
+            <div className="pixel-kicker">{lang === 'zh' ? '全员就位 · 随时开打' : 'EVERYONE IN. ANYTHING GOES.'}</div>
+            <h1 className="pixel-wordmark">{t.title}</h1>
+            <p className="pixel-tagline">{lang === 'zh' ? '攒出绝招，打个痛快！' : 'CHARGE IT UP. LET IT RIP!'}</p>
           </div>
+          <span className="brawl-edition">PIXEL<br/>BRAWL!</span>
         </header>
 
         {/* --- INPUT AREA --- */}
-        <div className="pixel-panel pixel-start-panel w-full flex flex-col items-center gap-5">
+        <div className="pixel-panel pixel-start-panel brawl-start-panel w-full flex flex-col items-center gap-5">
             <div className="pixel-player-setup flex items-center gap-5 w-full">
                <div className="relative z-50 flex flex-col items-center gap-2">
             <button

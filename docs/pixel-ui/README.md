@@ -10,7 +10,7 @@ The title screen, multiplayer home, lobby, battle arena, cards, inventory, rewar
 
 ## Preview
 
-![Title screen](title.png)
+![Title screen](title.webp)
 
 ![Lobby](lobby.png)
 
@@ -23,3 +23,11 @@ The title screen, multiplayer home, lobby, battle arena, cards, inventory, rewar
 - Played the first expedition tutorial: Charge → Attack → Blast → victory → reward → shop. Highlight bounds stayed unchanged during an 800ms sample. No broken images in the tested expedition state.
 - Lobby preview uses local simulated players. Live multiplayer was not exercised because the local environment has no Firebase deployment configuration. No Firebase configuration, room protocol or game balance changes are included.
 - Chinese screenshot rendering used a local test font because the headless test environment lacks CJK fonts. The product uses the visitor's system Chinese font and bundles only the small Latin display font.
+
+## Brawl cover revision
+
+The title screen now uses an asymmetrical ensemble composition: twelve existing fighters at different scales and depths, a diagonal logo, red/cyan torn shapes, impact rays and comic callouts. The entry panel has skewed decorative edges while its actual controls remain stationary and accessible. No reference artwork is shipped with the game.
+
+![Mobile cover](title-mobile.webp)
+
+Rechecked 320px/390px/1440px layouts, loaded images, multiplayer navigation and expedition entry in Chromium. ESLint and production build passed. Decorative fighter movement also respects the existing reduced-motion rules.
