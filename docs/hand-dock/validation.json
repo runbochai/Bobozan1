@@ -1,0 +1,56 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "allCategories": true,
+      "overflow": false,
+      "keyboard": true,
+      "detailsAndFocus": true,
+      "disabledAndUnaffordable": true,
+      "freeAndTemporary": true,
+      "realUltimateCastAndSettlement": true,
+      "reducedMotion": true
+    },
+    {
+      "width": 768,
+      "allCategories": true,
+      "overflow": false,
+      "keyboard": true,
+      "detailsAndFocus": true,
+      "disabledAndUnaffordable": true,
+      "freeAndTemporary": true,
+      "realUltimateCastAndSettlement": true,
+      "reducedMotion": true
+    },
+    {
+      "width": 390,
+      "allCategories": true,
+      "overflow": false,
+      "keyboard": true,
+      "detailsAndFocus": true,
+      "disabledAndUnaffordable": true,
+      "freeAndTemporary": true,
+      "realUltimateCastAndSettlement": true,
+      "reducedMotion": true
+    },
+    {
+      "width": 320,
+      "allCategories": true,
+      "overflow": false,
+      "keyboard": true,
+      "detailsAndFocus": true,
+      "disabledAndUnaffordable": true,
+      "freeAndTemporary": true,
+      "realUltimateCastAndSettlement": true,
+      "reducedMotion": true
+    },
+    {
+      "tutorialLocateAndNextStep": true
+    },
+    {
+      "simulatedEightPlayerRoom": true
+    }
+  ],
+  "errors": [],
+  "multiplayerScope": "Local simulated state; no Firebase multi-client session."
+}
