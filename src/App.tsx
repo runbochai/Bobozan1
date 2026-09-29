@@ -1,3 +1,5 @@
+import BattleArena from './components/BattleArena';
+import BattleMoveFx from './components/BattleMoveFx';
 import BrawlCover from './components/BrawlCover';
 import PixelBackdrop from './components/PixelBackdrop';
 import { AVATAR_OPTIONS } from './data/avatars';
@@ -2963,7 +2965,7 @@ const expYpjUsedRef = useRef(false);
         <div className="pixel-battle-board relative flex-1 w-full overflow-hidden bg-transparent">
            
            {/* Background Table Outline */}
-           <div className="pixel-arena absolute top-[45%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[60%] pointer-events-none" />
+           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} />
 
            {/* Players */}
            {(() => {
@@ -2996,13 +2998,16 @@ const expYpjUsedRef = useRef(false);
                return (
                   <div 
                     key={p.id}
-                    className={`absolute transition-all duration-700 ease-out z-20 flex flex-col items-center justify-center ${animClass}`}
+                    className={`battle-fighter ${isMe ? 'battle-fighter-self' : 'battle-fighter-enemy'} absolute transition-all duration-700 ease-out z-20 flex flex-col items-center justify-center ${animClass}`}
                     style={{ 
                       left: `${pos.x}%`, 
                       top: `${pos.y}%`, 
                       transform: 'translate(-50%, -50%)'
                     }}
                   >
+                    {!reduceMotion && gameState.status === 'SHOWDOWN' && p.selectedCardId && !p.isDead && <BattleMoveFx key={`${gameState.turn}-${p.selectedCardId}`} type={SKILL_DB.find(c => c.id === p.selectedCardId)?.type ?? 'SPECIAL'} />}
+                    {!reduceMotion && damageVal && <div className="battle-hit-burst" key={`hit-${gameState.turn}`} aria-hidden="true" />}
+                    <div className="battle-player-plinth" aria-hidden="true" />
                     {/* Inject Style Once */}
                     {i === 0 && <style>{shineStyle}</style>}
 
@@ -3214,7 +3219,7 @@ const expYpjUsedRef = useRef(false);
                     )}
 
                     {/* --- E. STATS BAR (Below Name) --- */ }
-                    <div className="mt-6 flex flex-col items-center gap-2 z-10 transition-opacity duration-300">
+                    <div className="battle-stats mt-6 flex flex-col items-center gap-2 z-10 transition-opacity duration-300">
                         
                         {/* 3a. STATS (Always visible here for everyone) */}
                         <div className="flex gap-2 items-center">
@@ -3649,6 +3654,7 @@ const expYpjUsedRef = useRef(false);
         {/* 3. 手牌区 */}
         <div className="pixel-hand-area h-64 bg-gradient-to-t from-black/30 via-slate-950/10 to-transparent relative z-40 flex flex-col">
 
+            <div className="battle-hand-heading"><span>{gameState.status === 'SHOWDOWN' ? (lang === 'zh' ? '招式交锋 · 回合结算' : 'CLASH · RESOLVING') : myPlayer?.selectedCardId ? (lang === 'zh' ? '已出牌 · 等待对手' : 'MOVE LOCKED · WAITING') : (lang === 'zh' ? '你的回合 · 选择招式' : 'YOUR MOVE · CHOOSE A SKILL')}</span><small>{lang === 'zh' ? '观察意图，见招拆招' : 'READ • REACT • STRIKE'}</small></div>
             {/* HAND AREA */}
             <div className="flex-1 w-full relative flex justify-center items-end pb-8">
                 {!myPlayer || myPlayer.isDead ? (
