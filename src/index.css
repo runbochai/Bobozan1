@@ -229,10 +229,7 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
 .brawl-fighter-5 { width: 33%; height: 58%; left: 52%; top: 24%; --lean: -12deg; --depth: 3; --delay: -1.7s; }
 .brawl-fighter-6 { width: 40%; height: 68%; left: 8%; top: 26%; --lean: 12deg; --depth: 5; }
 .brawl-logo { position: absolute; left: 12%; top: 7%; z-index: 8; transform: rotate(-7deg); text-align: left; }
-.brawl-logo .pixel-kicker { display: inline-block; background: #f6d174; color: #151b2b; padding: 7px 13px; letter-spacing: 2px; box-shadow: 5px 5px #07101b; }
 .brawl-logo .pixel-wordmark { color: #fff2cf; font-size: clamp(38px,6vw,76px); text-shadow: 5px 0 #15223b,-4px 0 #15223b,0 -4px #15223b,0 5px #15223b,8px 10px #a63036,12px 14px #08101f; margin: 12px 0; }
-.brawl-logo .pixel-tagline { display: inline-block; margin: 0 0 0 18px; padding: 6px 14px; background: #142236; color: #f7e5ba; letter-spacing: .14em; font-weight: bold; box-shadow: 4px 4px #df4b45; }
-.brawl-edition { position: absolute; right: 5%; bottom: 5%; z-index: 7; color: #f4d176; font-family: 'Pixel Display',monospace; font-size: 17px; line-height: 1.6; transform: rotate(9deg); text-shadow: 3px 3px #08101f; }
 .brawl-callout { position: absolute; font-family: 'Pixel Display',monospace; font-size: 19px; z-index: 6; background: #ffefbd; color: #171c2a; padding: 15px; clip-path: polygon(7% 0,92% 4%,100% 85%,57% 86%,42% 100%,37% 85%,0 90%); }
 .brawl-callout-hit { left: 67%; top: 29%; transform: rotate(12deg); }
 .brawl-callout-charge { left: 6%; top: 74%; transform: rotate(-13deg); font-size: 15px; background: #55c7c9; }
@@ -248,9 +245,7 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
   .brawl-title-screen { padding: 76px 10px 32px; justify-content: center; }
   .brawl-title-header { height: clamp(350px,100vw,510px); }
   .brawl-logo { left: 8%; top: 12%; }
-  .brawl-logo .pixel-kicker { font-size: 8px; letter-spacing: 1px; padding: 5px 8px; }
   .brawl-logo .pixel-wordmark { font-size: clamp(31px,8.4vw,60px); margin: 8px 0; text-shadow: 3px 0 #15223b,-3px 0 #15223b,0 -3px #15223b,0 4px #15223b,5px 7px #a63036,8px 10px #08101f; }
-  .brawl-logo .pixel-tagline { font-size: 11px; margin-left: 8px; padding: 5px 7px; }
   .brawl-fighter-0 { left: 72%; top: -1%; width: 26%; }
   .brawl-fighter-1 { left: 41%; top: -7%; width: 36%; }
   .brawl-fighter-2 { top: 26%; left: -5%; width: 32%; }
@@ -260,11 +255,8 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
   .brawl-fighter-6 { left: 0; top: 36%; width: 52%; height: 61%; }
   .brawl-callout-hit { left: 64%; top: 40%; font-size: 10px; padding: 10px; }
   .brawl-callout-charge { left: 1%; top: 81%; font-size: 10px; padding: 10px; }
-  .brawl-edition { font-size: 9px; right: 1%; bottom: 2%; }
   .pixel-app .brawl-start-panel { width: calc(100% - 18px); max-width: 520px; margin: 4px 0 0 8px; padding: 20px 16px; gap: 14px; }
 }
-.brawl-logo .pixel-kicker { font-family: inherit; font-size: 12px; font-weight: 900; }
-@media (max-width:767px) { .brawl-logo .pixel-kicker { font-size: 10px; } }
 /* Supporting cast and flying skill cards fill the edges of the poster. */
 .brawl-fighter-7 { width: 19%; height: 32%; left: -5%; top: -1%; --lean: -17deg; --depth: 1; --delay: -1.6s; }
 .brawl-fighter-8 { width: 26%; height: 39%; left: 21%; top: -10%; --lean: 12deg; --depth: 1; --delay: -2.1s; }

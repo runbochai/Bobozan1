@@ -1675,11 +1675,8 @@ const expYpjUsedRef = useRef(false);
         <header className="pixel-title-header brawl-title-header">
           <BrawlCover />
           <div className="brawl-logo">
-            <div className="pixel-kicker">{lang === 'zh' ? '全员就位 · 随时开打' : 'EVERYONE IN. ANYTHING GOES.'}</div>
             <h1 className="pixel-wordmark">{t.title}</h1>
-            <p className="pixel-tagline">{lang === 'zh' ? '攒出绝招，打个痛快！' : 'CHARGE IT UP. LET IT RIP!'}</p>
           </div>
-          <span className="brawl-edition">PIXEL<br/>BRAWL!</span>
         </header>
 
         {/* --- INPUT AREA --- */}
