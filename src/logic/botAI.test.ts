@@ -70,6 +70,16 @@ test('AI takes a cheap certain kill instead of spending its strongest attack', (
   for (const turn of turns) assert.equal(getBotMove(me, [me, enemy], { turn }), 'hong');
 });
 
+test('energy pressure permits occasional feints while keeping defense the usual response', () => {
+  const me = bot({ energy: 0 });
+  const charged = opponent({ energy: 1 });
+  const moves = Array.from({ length: 120 }, (_, i) => getBotMove(me, [me, charged], { turn: i + 1 }));
+  const defenses = moves.filter(id => id === 'defend').length;
+  assert.ok(defenses >= 90 && defenses < moves.length, 'usually defend, occasionally charge');
+  assert.ok(moves.every(id => id === 'charge' || id === 'defend'));
+  for (const turn of turns) assert.equal(getBotMove(me, [me, opponent({ energy: 0 })], { turn }), 'charge');
+});
+
 test('AI charges for a defense-breaking ultimate instead of wasting basic attacks', () => {
   const enemy = opponent({ hp: 1, disabledSkills: only('defend'), lastCardId: 'defend' });
   const low = bot({ energy: 2 });

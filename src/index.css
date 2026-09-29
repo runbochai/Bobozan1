@@ -317,13 +317,16 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
 
 /* Character views are independent of the stationary player HUD and card controls. */
 .pixel-battle-layout { height: auto; min-height: 100svh; }
-.pixel-screen-multiplayer .pixel-battle-board { margin-top: 192px; }
+.pixel-screen-multiplayer .pixel-battle-board { margin-top: 152px; }
+@media (min-width: 768px) and (max-width: 1199px) {
+  .pixel-screen-multiplayer .pixel-battle-board { margin-top: 192px; }
+}
 @media (min-width: 768px) {
   .pixel-screen-battle:not(.pixel-screen-multiplayer) .pixel-battle-board { margin-top: 72px; }
 }
 .pixel-battle-board { min-height: 680px; flex: 1 0 680px; container-type: size; }
-.battle-fighter { --model-size: clamp(180px, min(14cqw, 27cqh), 380px); position: absolute; display: flex; flex-direction: column; align-items: center; width: var(--model-size); transform: translate(-50%, -50%); }
-.battle-fighter-self { --model-size: clamp(240px, min(20cqw, 40cqh), 520px); transform: translate(-50%, -75%); pointer-events: none; }
+.battle-fighter { --model-size: clamp(190px, min(19cqw, 34cqh), 400px); position: absolute; display: flex; flex-direction: column; align-items: center; width: var(--model-size); transform: translate(-50%, -50%); }
+.battle-fighter-self { --model-size: clamp(260px, min(25cqw, 47cqh), 560px); transform: translate(-50%, -75%); pointer-events: none; }
 .battle-sprite { position: relative; display: block; width: var(--model-size); aspect-ratio: 3 / 4; overflow: hidden; pointer-events: none; }
 .battle-sprite > img { position: absolute; width: 400%; height: 200%; max-width: none; image-rendering: pixelated; }
 .battle-sprite-fallback { display: flex; justify-content: center; align-items: center; }
@@ -353,16 +356,20 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
 .battle-damage { position: absolute; top: 25%; color: #ffb7ad; font-size: 36px; font-weight: 900; text-shadow: 3px 3px #711e31; pointer-events: none; animation: battle-damage .8s steps(6) both; }
 .battle-damage-still { animation: none; }
 .pixel-battle-board.battle-board-crowded { min-height: 1100px; flex-basis: 1100px; }
-.battle-board-crowded .battle-fighter { --model-size: clamp(150px, min(11cqw, calc(20cqh - 56px)), 300px); }
-.battle-board-crowded .battle-fighter-self { --model-size: clamp(210px, min(16cqw, 28cqh), 400px); }
+.battle-board-crowded .battle-fighter { --model-size: clamp(160px, min(15cqw, calc(22cqh - 56px)), 330px); }
+.battle-board-crowded .battle-fighter-self { --model-size: clamp(230px, min(23cqw, 32cqh), 480px); }
 @media (min-width:768px) {
-  .battle-board-crowded:not([data-player-count="5"]) .battle-fighter-self { --model-size: clamp(180px, min(16cqw, calc(23cqh - 48px)), 400px); }
+  .battle-board-crowded:not([data-player-count="5"]) .battle-fighter-self { --model-size: clamp(220px, min(23cqw, calc(25cqh - 64px)), 480px); }
 }
 .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) { min-height: 800px; flex-basis: 800px; }
+@media (min-width: 768px) {
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-enemy { --model-size: clamp(180px, min(19cqw, 30cqh), 380px); }
+  .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-self { --model-size: clamp(240px, min(24cqw, 32cqh), 520px); }
+}
 .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .pixel-intent { left: 50%; right: auto; top: 100%; margin: 8px 0 0; transform: translateX(-50%); }
 .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-intent-tail { width: 8px; height: 8px; left: calc(50% - 4px); right: auto; top: -4px; transform: rotate(45deg); }
 @media (min-width: 768px) {
-  .pixel-screen-battle:not(.pixel-screen-multiplayer) .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-self { --model-size: clamp(220px, min(20cqw, 32cqh), 480px); }
+  .pixel-screen-battle:not(.pixel-screen-multiplayer) .pixel-battle-board:is([data-player-count="3"], [data-player-count="4"]) .battle-fighter-self { --model-size: clamp(240px, min(24cqw, 32cqh), 520px); }
 }
 .battle-player-hud { position: relative; z-index: 40; display: flex; align-items: center; gap: 16px; padding: 10px 24px 12px; background: #152334; border-top: 2px solid #6c6755; min-width: 0; flex-shrink: 0; }
 .battle-hud-portrait { width: 92px; height: 92px; flex-shrink: 0; overflow: hidden; }
