@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Coins, Chest, Shield, Scroll } from './PixelIcons';
 import { EXPEDITION_RELICS, EXPEDITION_EQUIPMENTS } from '../data/expedition';
 import { SKILL_DB } from '../data/skills';
 
@@ -32,7 +33,7 @@ function Slot({
   activeTip: string | null;
   setActiveTip: (k: string | null) => void;
   playClick: () => void;
-  icon?: string;
+  icon?: React.ReactNode;
   tipTitle: string;
   tipDesc: string;
   className: string;
@@ -48,13 +49,13 @@ function Slot({
         playClick();
         setActiveTip(open ? null : tipKey);
       }}
-      className={`relative cursor-help transition-transform hover:scale-110 active:scale-95 ${className}`}
+      className={`relative cursor-help ${className}`}
     >
       {children}
       {open && (
         <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-44 max-w-[70vw] rounded-xl border border-white/20 bg-slate-900/95 p-2.5 text-left shadow-2xl pointer-events-none">
           <div className="text-xs font-black text-white mb-0.5">
-            {icon ? `${icon} ` : ''}{tipTitle}
+            {icon} {tipTitle}
           </div>
           <div className="text-[11px] text-slate-300 leading-snug">{tipDesc}</div>
           <span className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900/95" />
@@ -81,21 +82,21 @@ export default function InventoryBar({ gold, relics, equipment, tempCards, lang,
     .filter((x): x is { id: string; def: (typeof EXPEDITION_EQUIPMENTS)[number] } => !!x.def);
 
   return (
-    <div className="flex items-center gap-1.5 rounded-2xl border border-amber-200/20 bg-gradient-to-b from-slate-900/95 to-slate-950/95 px-3 py-2 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl whitespace-nowrap">
+    <div className="pixel-inventory flex items-center gap-1.5 rounded-2xl border border-amber-200/20 bg-gradient-to-b from-slate-900/95 to-slate-950/95 px-3 py-2 shadow-[0_10px_40px_rgba(0,0,0,0.6)] backdrop-blur-xl whitespace-nowrap">
       {/* 金币 */}
       <Slot
         tipKey="gold"
         activeTip={tip}
         setActiveTip={setTip}
         playClick={playClick}
-        icon="🪙"
+        icon={<Coins size={14} />}
         tipTitle={lang === 'zh' ? '金币' : 'Gold'}
         tipDesc={lang === 'zh'
           ? '战斗胜利获得，可在商城购买限次秘技、装备与疗伤药'
           : 'Earned from battle victories. Spend it in the shop on secret cards, equipment and heal potions.'}
         className="flex items-center gap-1.5 rounded-xl border border-yellow-400/40 bg-gradient-to-b from-yellow-400/25 to-amber-600/20 px-2.5 py-1 hover:border-yellow-300/70"
       >
-        <span className="text-base leading-none drop-shadow-[0_0_6px_rgba(250,204,21,0.8)]">🪙</span>
+        <span className="text-base leading-none drop-shadow-[0_0_6px_rgba(250,204,21,0.8)]"><Coins size={20} /></span>
         <span className="text-sm font-black text-yellow-200 tabular-nums">{gold}</span>
       </Slot>
 
@@ -110,12 +111,12 @@ export default function InventoryBar({ gold, relics, equipment, tempCards, lang,
               activeTip={tip}
               setActiveTip={setTip}
               playClick={playClick}
-              icon={def.icon}
+              icon={<Chest size={14} />}
               tipTitle={`${def.name[lang]}${lang === 'zh' ? ' · 遗物' : ' · Relic'}`}
               tipDesc={def.desc[lang]}
               className="grid place-items-center w-8 h-8 rounded-lg border border-sky-400/30 bg-sky-500/10 text-lg leading-none hover:border-sky-300/60"
             >
-              {def.icon}
+              <Chest size={22} />
             </Slot>
           ))}
         </>
@@ -132,12 +133,12 @@ export default function InventoryBar({ gold, relics, equipment, tempCards, lang,
               activeTip={tip}
               setActiveTip={setTip}
               playClick={playClick}
-              icon={def.icon}
+              icon={<Shield size={14} />}
               tipTitle={`${def.name[lang]}${lang === 'zh' ? ' · 装备' : ' · Gear'}`}
               tipDesc={def.desc[lang]}
               className="grid place-items-center w-8 h-8 rounded-lg border border-amber-400/30 bg-amber-500/10 text-lg leading-none hover:border-amber-300/60"
             >
-              {def.icon}
+              <Shield size={22} />
             </Slot>
           ))}
         </>
@@ -157,14 +158,14 @@ export default function InventoryBar({ gold, relics, equipment, tempCards, lang,
                 activeTip={tip}
                 setActiveTip={setTip}
                 playClick={playClick}
-                icon="🃏"
+                icon={<Scroll size={14} />}
                 tipTitle={`${name}${lang === 'zh' ? ' · 限次秘技' : ' · Secret Card'}`}
                 tipDesc={lang === 'zh'
                   ? `剩余 ${t.usesLeft} 次${c ? ` · 费用 ${c.cost}⚡` : ''}`
                   : `${t.usesLeft} uses left${c ? ` · costs ${c.cost}⚡` : ''}`}
                 className="flex items-center gap-1 rounded-lg border border-fuchsia-400/30 bg-fuchsia-500/10 px-2 py-1.5 text-[11px] font-bold text-fuchsia-200 hover:border-fuchsia-300/60"
               >
-                🃏×{t.usesLeft}
+                <Scroll size={16} />×{t.usesLeft}
               </Slot>
             );
           })}
