@@ -1,0 +1,297 @@
+{
+  "base": "32a0834aa69edd93d31c4bd1a078d8232bd7f788",
+  "scope": "Local browser simulations with fictional players; no online multi-client transaction or physical-device test.",
+  "unitTests": {
+    "passed": 94,
+    "failed": 0
+  },
+  "lint": "passed",
+  "productionBuild": "passed",
+  "layout": {
+    "states": 126,
+    "expectedStates": 126,
+    "failingStates": 0,
+    "issueCounts": {},
+    "browserErrors": [],
+    "consoleErrors": [],
+    "failures": []
+  },
+  "highStats": {
+    "states": 63,
+    "energy": 120,
+    "hp": 9.5,
+    "elevation": 3,
+    "level": 23,
+    "overflowStates": 0,
+    "cardStatusStates": 0,
+    "statusCoreStates": 0,
+    "clippedStatuses": 0,
+    "missingCards": 0,
+    "errors": []
+  },
+  "expedition": [
+    {
+      "width": 1440,
+      "stageIdx": 0,
+      "issues": []
+    },
+    {
+      "width": 1440,
+      "stageIdx": 4,
+      "issues": []
+    },
+    {
+      "width": 1440,
+      "stageIdx": 10,
+      "issues": []
+    },
+    {
+      "width": 1440,
+      "stageIdx": 13,
+      "issues": []
+    },
+    {
+      "width": 1440,
+      "stageIdx": 15,
+      "issues": []
+    },
+    {
+      "width": 1024,
+      "stageIdx": 0,
+      "issues": []
+    },
+    {
+      "width": 1024,
+      "stageIdx": 4,
+      "issues": []
+    },
+    {
+      "width": 1024,
+      "stageIdx": 10,
+      "issues": []
+    },
+    {
+      "width": 1024,
+      "stageIdx": 13,
+      "issues": []
+    },
+    {
+      "width": 1024,
+      "stageIdx": 15,
+      "issues": []
+    },
+    {
+      "width": 844,
+      "stageIdx": 0,
+      "issues": []
+    },
+    {
+      "width": 844,
+      "stageIdx": 4,
+      "issues": []
+    },
+    {
+      "width": 844,
+      "stageIdx": 10,
+      "issues": []
+    },
+    {
+      "width": 844,
+      "stageIdx": 13,
+      "issues": []
+    },
+    {
+      "width": 844,
+      "stageIdx": 15,
+      "issues": []
+    },
+    {
+      "width": 390,
+      "stageIdx": 0,
+      "issues": []
+    },
+    {
+      "width": 390,
+      "stageIdx": 4,
+      "issues": []
+    },
+    {
+      "width": 390,
+      "stageIdx": 10,
+      "issues": []
+    },
+    {
+      "width": 390,
+      "stageIdx": 13,
+      "issues": []
+    },
+    {
+      "width": 390,
+      "stageIdx": 15,
+      "issues": []
+    },
+    {
+      "width": 320,
+      "stageIdx": 0,
+      "issues": []
+    },
+    {
+      "width": 320,
+      "stageIdx": 4,
+      "issues": []
+    },
+    {
+      "width": 320,
+      "stageIdx": 10,
+      "issues": []
+    },
+    {
+      "width": 320,
+      "stageIdx": 13,
+      "issues": []
+    },
+    {
+      "width": 320,
+      "stageIdx": 15,
+      "issues": []
+    }
+  ],
+  "hand": {
+    "results": [
+      {
+        "width": 1440,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "width": 768,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "width": 390,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "width": 320,
+        "allCategories": true,
+        "overflow": false,
+        "keyboard": true,
+        "detailsAndFocus": true,
+        "disabledAndUnaffordable": true,
+        "freeAndTemporary": true,
+        "realUltimateCastAndSettlement": true,
+        "reducedMotion": true
+      },
+      {
+        "tutorialLocateAndNextStep": true
+      },
+      {
+        "simulatedEightPlayerRoom": true
+      }
+    ],
+    "errors": [],
+    "multiplayerScope": "Local simulated state; no Firebase multi-client session."
+  },
+  "tutorial": {
+    "results": [
+      {
+        "width": 1440,
+        "threeLessons": true,
+        "wrongCardBlocked": true,
+        "keyboardFocus": true,
+        "rewardAndShopContinue": true
+      },
+      {
+        "width": 390,
+        "threeLessons": true,
+        "wrongCardBlocked": true,
+        "keyboardFocus": true,
+        "rewardAndShopContinue": true
+      },
+      {
+        "width": 320,
+        "height": 480,
+        "emptyCategory": true,
+        "detailsFitShortScreen": true,
+        "deadPlayerCannotAct": true
+      }
+    ],
+    "errors": []
+  },
+  "avatarViews": [
+    {
+      "width": 1440,
+      "failures": 0,
+      "sprites": 8,
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "failures": 0,
+      "sprites": 8,
+      "overflow": false
+    }
+  ],
+  "social": {
+    "states": 6,
+    "scope": "Local UI only; no online send."
+  },
+  "previews": [
+    {
+      "source": "final-1440x1000-2p-playing.png",
+      "target": "players-2.webp"
+    },
+    {
+      "source": "final-1440x1000-3p-playing.png",
+      "target": "players-3.webp"
+    },
+    {
+      "source": "final-1440x1000-4p-playing.png",
+      "target": "players-4.webp"
+    },
+    {
+      "source": "final-1440x1000-5p-playing.png",
+      "target": "players-5.webp"
+    },
+    {
+      "source": "final-1440x1000-6p-playing.png",
+      "target": "players-6.webp"
+    },
+    {
+      "source": "final-1440x1000-8p-playing.png",
+      "target": "players-8.webp"
+    },
+    {
+      "source": "final-1440x1000-6p-showdown.png",
+      "target": "showdown-6.webp"
+    },
+    {
+      "source": "final-768x1024-8p-playing.png",
+      "target": "tablet-8.webp"
+    },
+    {
+      "source": "final-390x844-8p-playing.png",
+      "target": "phone-8.webp"
+    }
+  ]
+}

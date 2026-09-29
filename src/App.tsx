@@ -1,4 +1,6 @@
 import BattleArena from './components/BattleArena';
+import { useBattleBounds } from './components/useBattleBounds';
+import './components/CenteredTable.css';
 import BattleHand from './components/BattleHand';
 import BattleTableCards from './components/BattleTableCards';
 import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
@@ -1595,7 +1597,8 @@ const expYpjUsedRef = useRef(false);
   };
 
   // --- LAYOUT HELPERS ---
-  const getPlayerPosition = (index: number, total: number, viewer: number) => getBattleSeat(index, total, viewer, isSmallScreen);
+  const { bounds: tableBounds, ref: tableRef } = useBattleBounds();
+  const getPlayerPosition = (index: number, total: number, viewer: number) => getBattleSeat(index, total, viewer, isSmallScreen, tableBounds);
 
   // --- HAND RENDER HELPERS ---
   const filteredHand = knownCards.filter(c => {
@@ -2136,13 +2139,14 @@ const expYpjUsedRef = useRef(false);
 
 
       {/* 🔹 Side Buttons (Emoji & Share) */}
-      <div className="hidden md:flex fixed bottom-80 right-20 z-50 flex-col gap-3 items-center">
+      <div className="battle-social-controls hidden md:flex absolute top-[76px] right-4 z-50 gap-3 items-center">
         
         {/* 1. SHARE BUTTON (Only visible if you have Lv3 or Lv18) */}
         {myPlayer && (myPlayer.inventory.includes(3) || myPlayer.inventory.includes(18)) && (
           <div className="relative group">
              <button
                onClick={toggleShare}
+               aria-label={lang === 'zh' ? '借出防御技能' : 'Share defense'}
                className={`
                  w-16 h-16 rounded-full flex items-center justify-center border-2 shadow-xl transition-all duration-300 ease-out
                  ${myPlayer.isShared 
@@ -2170,15 +2174,15 @@ const expYpjUsedRef = useRef(false);
         <div className="relative">
           {emojiMenuOpen && (
             <div className="
-              absolute bottom-4 right-20 w-80
+              absolute top-full mt-3 right-0 w-80 max-h-[calc(100dvh-160px)] overflow-y-auto
               bg-slate-900/90 border border-slate-700/50
               rounded-2xl p-5 shadow-2xl shadow-black/80
               backdrop-blur-xl
               animate-in fade-in slide-in-from-right-2 zoom-in-95 duration-200
-              origin-bottom-right
+              origin-top-right
             ">
               {/* Arrow */}
-              <div className="absolute bottom-8 -right-1.5 w-3 h-3 bg-slate-900 border-t border-r border-slate-700/50 rotate-45" />
+              <div className="absolute -top-1.5 right-6 w-3 h-3 bg-slate-900 border-t border-l border-slate-700/50 rotate-45" />
               
               {/* Header */}
               <div className="flex justify-between items-center mb-4 px-1">
@@ -2206,6 +2210,8 @@ const expYpjUsedRef = useRef(false);
 
           {!isExpedition && (
           <button
+            aria-label={lang === 'zh' ? '表情' : 'Reactions'}
+            aria-expanded={emojiMenuOpen}
             onClick={() => {
                playSound('click', muted);
                setEmojiMenuOpen(o => !o);
@@ -2276,7 +2282,7 @@ const expYpjUsedRef = useRef(false);
       </div>
 
       {/* CENTER ARENA */}
-      <div className="pixel-battle-layout flex-1 flex flex-col relative h-screen z-10">
+      <div className="pixel-battle-layout flex-1 flex flex-col relative h-screen z-10" style={{'--table-hand-overlap':`${tableBounds.height*.15+12}px`} as React.CSSProperties}>
 
         {/* --- EXPEDITION HUD（左上：章节关卡 + 遗物） --- */}
         {isExpedition && expPhase === 'battle' && (
@@ -2409,10 +2415,10 @@ const expYpjUsedRef = useRef(false);
         </div>
 
         {/* ROUND TABLE LAYER */}
-        <div data-player-count={totalPlayers} className={`pixel-battle-board ${totalPlayers > 4 ? 'battle-board-crowded' : ''} relative flex-1 w-full overflow-hidden bg-transparent`}>
+        <div ref={tableRef} data-player-count={totalPlayers} className={`pixel-battle-board center-table-board ${totalPlayers > 4 ? 'battle-board-crowded' : ''} relative flex-1 w-full overflow-hidden bg-transparent`}>
            
            {/* Background Table Outline */}
-           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} />
+           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} compact={isSmallScreen} />
 
            {/* Player positions also drive card origins and facing directions. */}
            {gameState.players.map((p, i) => {
@@ -2477,7 +2483,7 @@ const expYpjUsedRef = useRef(false);
            })}
 
            {gameState.status === 'SHOWDOWN' && <BattleTableCards key={'cards-' + gameState.matchCount + '-' + gameState.turn}
-             players={gameState.players} lang={lang} reduced={reduceMotion}
+             players={gameState.players} lang={lang} reduced={reduceMotion} bounds={tableBounds}
              seatFor={i => getPlayerPosition(i, totalPlayers, myIndex)} />}
 
            {/* 必杀技演出 overlay：左侧闪入巨型立绘 + 压暗 + 喊话 + 像素特效 */}
