@@ -59,7 +59,7 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
-import { pickUltCutins, isLevelUltimate, ULT_CUTINS, type UltCutinPick } from './data/ultCutins';
+import { pickUltCutins, hasBattleCutin, ULT_CUTINS, type UltCutinPick } from './data/ultCutins';
 import UltCutin from './components/UltCutin';
 import InventoryBar from './components/InventoryBar';
 import type { ExpeditionEnemyDef } from './data/expedition';
@@ -632,11 +632,11 @@ const expYpjUsedRef = useRef(false);
     const preDead = new Set(playersWithMoves.filter(p => p.isDead).map(p => p.id));
     setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN' }));
 
-    // 有人放必杀（等级终极技）→ 延长 SHOWDOWN，给 cut-in 演出留出时间
+    // 等级必杀或联合技：为亮牌、过场和场上特效留足时间。
     const ultPlayed = playersWithMoves.some(p => {
       if (p.isDead || !p.selectedCardId) return false;
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
-      return !!c && isLevelUltimate(c);
+      return !!c && hasBattleCutin(c);
     });
     const showdownMs = CARD_REVEAL_MS + (ultPlayed && !reduceMotion ? 4300 : 1600);
 
@@ -958,7 +958,7 @@ const expYpjUsedRef = useRef(false);
   const prevShowdownRef = useRef(false);
   
 
-  // 必杀技演出 overlay（SHOWDOWN 时有人放等级终极技则播）
+  // 必杀及联合技过场。
   const [ultCutins, setUltCutins] = useState<(UltCutinPick & { key: number })[]>([]);
 
   const [hoveredCard, setHoveredCard] = useState<string | null>(null);
@@ -1129,7 +1129,7 @@ const expYpjUsedRef = useRef(false);
     }
   }, [toastMsg]);
 
-  // 必杀技演出：进入 SHOWDOWN 且有人放等级终极技时播 cut-in（可多个同屏一起出现，2.85s 后自动收）
+  // 亮牌之后播放必杀或联合技过场；多人可以同时演出。
   useEffect(() => {
     if (gameState.status === 'SHOWDOWN' && !reduceMotion) {
       const picks = pickUltCutins(gameState.players, SKILL_DB, lang);
@@ -1404,11 +1404,11 @@ const expYpjUsedRef = useRef(false);
   useEffect(() => {
     if (!isOnline || gameState.status !== 'SHOWDOWN' || gameState.hostId !== user?.uid) return;
     const round = { turn: gameState.turn, matchCount: gameState.matchCount };
-    // 有人放必杀（等级终极技）→ 结算延迟，给 cut-in 演出留出时间（与远征一致）
+    // 组合技也必须等待完整过场再结算。
     const ultPlayed = gameState.players.some(p => {
       if (p.isDead || !p.selectedCardId) return false;
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
-      return !!c && isLevelUltimate(c);
+      return !!c && hasBattleCutin(c);
     });
     // Every client gets time to finish; the host's motion preference cannot shorten other clients' casts.
     const settleMs = CARD_REVEAL_MS + (ultPlayed ? 4700 : 2000);
@@ -2304,7 +2304,7 @@ const expYpjUsedRef = useRef(false);
   
   const castDelay = CARD_REVEAL_MS + (!reduceMotion && gameState.players.some(p => {
     const card = SKILL_DB.find(c => c.id === p.selectedCardId);
-    return !p.isDead && !!card && isLevelUltimate(card);
+    return !p.isDead && !!card && hasBattleCutin(card);
   }) ? ULT_CUTIN_MS : 0);
 
   // --- EMOJI ANIMATION STYLE ---

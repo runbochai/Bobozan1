@@ -1,8 +1,9 @@
 // src/data/ultCutins.ts
-// 必杀技演出（cut-in）数据：每个 ULTIMATE 技能对应一张像素立绘 + 喊话台词 + 特效类型
+// 等级必杀和联合技能的像素立绘、喊话与过场特效。
 import type { Card, Player } from '../types';
 
-export type UltFx = 'meteor' | 'slash' | 'burst' | 'wave' | 'ice' | 'steam' | 'stars' | 'beam' | 'palm' | 'kick';
+export type UltFx = 'meteor' | 'slash' | 'burst' | 'wave' | 'ice' | 'steam' | 'stars' | 'beam' | 'palm' | 'kick' | 'wings' | 'guard' | 'detonation' | 'poison';
+export type ComboCutinId = 'skydragon' | 'doublewing' | 'vajra' | 'allbomb' | 'heartpoison';
 
 export interface UltCutinDef {
   skillId: string;
@@ -12,6 +13,7 @@ export interface UltCutinDef {
   fx: UltFx;
   /** 特效主色 */
   fxColor: string;
+  combo?: ComboCutinId;
 }
 
 const def = (
@@ -78,6 +80,26 @@ export const ULT_CUTINS: Record<string, UltCutinDef> = {
     ['超级第一波！', '气功全开！'],
     ['Super First Wave!', 'Full power!'],
     'wave', '#60a5fa'),
+  skydragon: { ...def('skydragon', 'ultcutins/fireclaw.webp',
+    ['天、冰、火——天龙剑！', '三力合一，斩！'],
+    ['Sky, ice and flame—Sky Dragon!', 'Three powers, one blade!'],
+    'slash', '#a5f0df'), combo: 'skydragon' },
+  doublewing: { ...def('doublewing', 'ultcutins/iceult.webp',
+    ['双翼齐飞！', '振翅，冲破云霄！'],
+    ['Twin wings, take flight!', 'Rise beyond the clouds!'],
+    'wings', '#b8d9ff'), combo: 'doublewing' },
+  vajra: { ...def('vajra', 'ultcutins/fiveslap.webp',
+    ['三大金刚，合阵！', '金刚之力，破！'],
+    ['Three Vajras, unite!', 'Vajra power, break through!'],
+    'guard', '#ffe09a'), combo: 'vajra' },
+  allbomb: { ...def('allbomb', 'ultcutins/superwave.webp',
+    ['轰天！轰地！轰！', '天地齐鸣！'],
+    ['Sky blast! Earth blast! BOOM!', 'Let the heavens and earth roar!'],
+    'detonation', '#ffbe89'), combo: 'allbomb' },
+  heartpoison: { ...def('heartpoison', 'ultcutins/hangman.webp',
+    ['诛心毒气，散！', '心之毒雾，绽放！'],
+    ['Heart Poison, spread!', 'Bloom, venom of the heart!'],
+    'poison', '#d0aae9'), combo: 'heartpoison' },
 };
 
 export interface UltCutinPick {
@@ -88,15 +110,19 @@ export interface UltCutinPick {
 }
 
 /**
- * 只有“等级终极技”（levelRequired 1–99 的 ULTIMATE）才播必杀演出；
- * 咔叽系（ka/ji/kajifen/kajisuper）与联合技（skydragon/vajra/heartpoison）不播。
+ * 等级终极技的规则分类；联合技仍保留其原有 ATTACK / SPECIAL / ULTIMATE 类型。
  */
 export function isLevelUltimate(card: Card): boolean {
   return card.type === 'ULTIMATE' && card.levelRequired >= 1 && card.levelRequired < 100;
 }
 
+/** One eligibility check for the overlay, cast delay and both settlement timers. */
+export function hasBattleCutin(card: Card): boolean {
+  return !!ULT_CUTINS[card.id] && (isLevelUltimate(card) || !!card.tags?.includes('combo'));
+}
+
 /**
- * 从本回合出牌中挑出所有要播演出的必杀：只看活着的玩家出的等级终极技，
+ * 从本回合出牌中挑出活着的玩家使用的等级必杀及联合技，
  * 按 tier 从高到低排（同 tier 按出场顺序，可多个同屏一起播）。没有则返回空数组。
  */
 export function pickUltCutins(players: Player[], skillDb: Card[], lang: 'zh' | 'en'): UltCutinPick[] {
@@ -104,7 +130,7 @@ export function pickUltCutins(players: Player[], skillDb: Card[], lang: 'zh' | '
   for (const p of players) {
     if (p.isDead || !p.selectedCardId) continue;
     const card = skillDb.find(c => c.id === p.selectedCardId);
-    if (!card || !isLevelUltimate(card)) continue;
+    if (!card || !hasBattleCutin(card)) continue;
     const cutin = ULT_CUTINS[card.id];
     if (!cutin) continue;
     picks.push({ def: cutin, playerName: p.name, skillName: card.name[lang], level: card.levelRequired, tier: card.tier });

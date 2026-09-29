@@ -6,6 +6,7 @@ import type { UltCutinDef } from '../data/ultCutins';
 import { pickShout } from '../data/ultCutins';
 import { assetUrl } from '../assets';
 import { playSound } from '../audio/sound';
+import ComboCutinArt from './ComboCutinArt';
 
 interface Props {
   def: UltCutinDef;
@@ -41,12 +42,13 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
 
   return (
     <div
-      className="fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim"
+      className={`ultcutin fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim ${multi ? 'ultcutin-multi' : ''} ${total > 4 ? 'ultcutin-dense' : ''}`}
+      data-skill={def.skillId} data-combo={!!def.combo}
       style={{ ['--ultdim' as string]: index === 0 ? 0.68 : 0 }}
     >
       {/* 速度线 + 震动容器 */}
       {index === 0 && <div className="absolute inset-0 ultcutin-speedlines" />}
-      <div className="absolute inset-0 animate-ultcutin-shake" style={multi ? {
+      <div className="ultcutin-cell absolute inset-0 animate-ultcutin-shake" style={multi ? {
         left: `${(index % columns) * 100 / columns}%`, top: `${Math.floor(index / columns) * 100 / rows}%`,
         width: `${100 / columns}%`, height: `${100 / rows}%`, overflow: 'hidden',
       } : undefined}>
@@ -80,25 +82,27 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
           </div>
         </div>
 
+        {def.combo && <div className="ultcutin-combo-crest"><ComboCutinArt id={def.combo} /></div>}
+
         {/* 技能名横幅；多同屏时纵向错开 */}
         <div
-          className="absolute inset-x-0 flex flex-col items-center animate-ultcutin-banner"
+          className="ultcutin-banner absolute inset-x-0 flex flex-col items-center animate-ultcutin-banner"
           style={{ top: '12%', padding: '0 12px', textAlign: 'center' }}
         >
           <div
-            className={`ultcutin-pixeltext font-black tracking-wider ${multi ? 'text-xl md:text-3xl' : 'text-3xl sm:text-5xl md:text-7xl'}`}
+            className={`ultcutin-title ultcutin-pixeltext font-black tracking-wider ${multi ? 'text-xl md:text-3xl' : 'text-3xl sm:text-5xl md:text-7xl'}`}
             style={{ color: def.fxColor }}
           >
             {skillName}！！
           </div>
-          <div className={`ultcutin-pixeltext mt-3 font-bold text-white/90 ${multi ? 'text-xs md:text-sm' : 'text-sm md:text-xl'}`}>
-            Lv.{level} · {playerName}
+          <div className={`ultcutin-meta ultcutin-pixeltext mt-3 font-bold text-white/90 ${multi ? 'text-xs md:text-sm' : 'text-sm md:text-xl'}`}>
+            {def.combo ? (lang === 'zh' ? '联合技' : 'COMBO') : `Lv.${level}`} · {playerName}
           </div>
         </div>
 
         {/* 漫画对话框；多同屏时错开位置 */}
         <div
-          className="absolute animate-ultcutin-bubble"
+          className="ultcutin-bubble absolute animate-ultcutin-bubble"
           style={{ right: '5%', top: '34%', maxWidth: multi ? '80%' : '55%' }}
         >
           <div className="relative bg-white border-4 border-black px-3 py-2 shadow-[6px_6px_0_rgba(0,0,0,0.85)]">
@@ -109,6 +113,13 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
         </div>
 
         {/* 特效层 */}
+        {def.combo && ['wings', 'guard', 'detonation', 'poison'].includes(def.fx) && <div className={`combo-cutin-fx combo-fx-${def.fx} absolute inset-0 overflow-hidden`} data-combo-fx={def.fx}>
+          {Array.from({ length: def.fx === 'poison' ? 6 : 3 }, (_, i) => <div key={i} className="combo-fx-mark" style={{
+            left: `${def.fx === 'wings' ? 50 : 24 + i % 3 * 26}%`, top: `${def.fx === 'poison' ? 48 + i % 2 * 24 : 56}%`,
+            animationDelay: `${1.0 + i * .16}s`, color: def.fxColor,
+          }}><ComboCutinArt id={def.combo!} /></div>)}
+          <div className="absolute inset-0 animate-ultcutin-flash" style={{ background: def.fxColor }} />
+        </div>}
         {(def.fx === 'meteor' || def.fx === 'ice') && (
           <div className="absolute inset-0">
             {METEORS.map(i => (

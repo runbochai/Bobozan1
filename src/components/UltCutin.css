@@ -73,3 +73,28 @@
 .px-palm { box-shadow: -8px 0 currentColor, -8px -24px currentColor, 8px -32px currentColor, 24px -24px currentColor, 40px -16px currentColor, -16px 16px currentColor, 8px 40px currentColor; }
 .px-boot { width: 32px; height: 48px; box-shadow: 0 24px currentColor, 16px 40px currentColor, 32px 40px currentColor, 40px 48px #fff; }
 @media (prefers-reduced-motion: reduce) { .px-strike { display: none; } }
+
+/* Joint skills combine existing pixel characters with a distinct oversized emblem. */
+.ultcutin-cell { container-type: size; }
+.ultcutin-title, .ultcutin-meta { overflow-wrap: anywhere; max-width: 100%; }
+.ultcutin-combo-crest { position: absolute; right: 5%; bottom: 5%; width: 47%; height: 48%; filter: drop-shadow(5px 7px #071121) drop-shadow(0 0 16px #d3edbf55); animation: combo-crest-in .5s steps(7) .45s both, ultcutin-bubble-out .25s ease-in 2.35s forwards; }
+.combo-cutin-art { display: block; width: 100%; height: 100%; object-fit: contain; }
+.combo-fx-mark { position: absolute; width: 35%; height: 48%; max-width: 400px; opacity: 0; transform: translate(-50%,-50%); filter: drop-shadow(0 0 9px currentColor); animation: combo-impact .8s steps(8) both; }
+.combo-fx-wings .combo-fx-mark { width: 70%; height: 65%; animation-name: combo-wing-rise; }
+.combo-fx-guard .combo-fx-mark { width: 24%; height: 45%; animation-name: combo-guard; }
+.combo-fx-poison .combo-fx-mark { width: 44%; height: 46%; animation-name: combo-poison; }
+.ultcutin-dense .ultcutin-bubble { display: none; }
+.ultcutin-dense .ultcutin-banner { top: 5% !important; padding: 0 6px !important; }
+.ultcutin-dense .ultcutin-title { font-size: clamp(14px, 9cqh, 28px); line-height: 1.15; }
+.ultcutin-dense .ultcutin-meta { margin-top: 5px; font-size: clamp(10px, 5cqh, 14px); }
+@keyframes combo-crest-in { from { opacity: 0; transform: translateY(35%) scale(.5); } to { opacity: 1; transform: translateY(0) scale(1); } }
+@keyframes combo-impact { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.25); } 28% { opacity: .95; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(2); } }
+@keyframes combo-wing-rise { 0% { opacity: 0; transform: translate(-50%,10%) scale(.4); } 30% { opacity: .8; } 100% { opacity: 0; transform: translate(-50%,-110%) scale(1.15); } }
+@keyframes combo-guard { 0% { opacity: 0; transform: translate(-50%,-35%) scale(.4); } 30%,65% { opacity: .9; transform: translate(-50%,-50%) scale(1); } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.4); } }
+@keyframes combo-poison { 0% { opacity: 0; transform: translate(-50%,-20%) scale(.5); } 30% { opacity: .5; } 100% { opacity: 0; transform: translate(-50%,-75%) scale(1.6); } }
+@media (prefers-reduced-motion: reduce) {
+  .combo-cutin-fx { display: none; }
+  .ultcutin-combo-crest { animation: none; }
+}
+.reduce-motion .combo-cutin-fx { display: none; }
+.reduce-motion .ultcutin-combo-crest { animation: none !important; }
