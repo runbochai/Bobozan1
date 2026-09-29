@@ -1,0 +1,91 @@
+{
+  "tool": "Built-in image_gen.imagegen",
+  "transparent_background": true,
+  "atlas_prompt": "Use case: identity-preserve. This input is a CHARACTER IDENTITY reference, not the output layout. Produce a production game sprite atlas of this EXACT character with its recognizable colors, species, hairstyle, clothes and accessories preserved. Eight full-body idle battle poses in a precise 4-column x 2-row grid on a truly transparent background, landscape canvas 1536x1024 (each cell 384x512). All eight sprites same scale, complete feet visible, centered in each cell with generous transparent gutters, occupy about 65% cell width and 80% cell height. No labels, no frames, no blue circle, no scenery, no floor, no shadow. Crisp chunky 16-bit pixel art dark navy outline and stepped shading matching the input. This is ONE character turning around in eight directions, NOT eight characters and NOT animation frames. EXACT CELL ORDER: row1 col1 SOUTH face toward viewer frontal; row1 col2 SOUTHWEST three-quarter front facing screen left; row1 col3 WEST pure profile face left; row1 col4 NORTHWEST three-quarter BACK facing away to upper left, back of head and back of body visible. row2 col1 NORTH fully BACK, no face; row2 col2 NORTHEAST three-quarter BACK facing away to upper right; row2 col3 EAST pure profile face right; row2 col4 SOUTHEAST three-quarter front facing screen right. Keep wings horns hair weapon on physically consistent sides. No transformations of identity. ",
+  "characters": [
+    {
+      "id": "bdrag",
+      "reference": "avatars/bdrag.png",
+      "identity_prompt": "Small cute orange dragon with yellow belly, two tan horns, small wings and tail.",
+      "output": "public/characters/bdrag.webp"
+    },
+    {
+      "id": "boy",
+      "reference": "avatars/boy.png",
+      "identity_prompt": "Brown haired boy wearing blue hoodie with horizontal orange chest stripe, dark trousers and shoes.",
+      "output": "public/characters/boy.webp"
+    },
+    {
+      "id": "girl",
+      "reference": "avatars/girl.png",
+      "identity_prompt": "Brown long-haired girl in pink and white striped long-sleeve top, dark trousers and pink shoes.",
+      "output": "public/characters/girl.webp"
+    },
+    {
+      "id": "ntr",
+      "reference": "avatars/ntr.png",
+      "identity_prompt": "Cute brown minotaur with large curved cream horns, bovine head, muscular tan torso, brown loincloth and hooves.",
+      "output": "public/characters/ntr.webp"
+    },
+    {
+      "id": "pega",
+      "reference": "avatars/pega.png",
+      "identity_prompt": "Cute cream-colored pegasus horse with golden mane and tail, small golden wings, dark hooves. Not human.",
+      "output": "public/characters/pega.webp"
+    },
+    {
+      "id": "rsn",
+      "reference": "avatars/rsn.png",
+      "identity_prompt": "Cute harpy: human girl's brown-haired head, small brown feathered bird body, brown wings and two bird talons. Not a human with clothing.",
+      "output": "public/characters/rsn.webp"
+    },
+    {
+      "id": "pegasus-swordsman",
+      "reference": "avatars/alternates/pegasus-swordsman.webp",
+      "identity_prompt": "Cream pegasus swordsman with golden mane, golden wings, red scarf, broad silver sword. Idle guard stance with sword compact and entirely within each cell. Preserve scarf and sword.",
+      "output": "public/characters/pegasus-swordsman.webp"
+    },
+    {
+      "id": "pegasus-martial-artist",
+      "reference": "avatars/alternates/pegasus-martial-artist.webp",
+      "identity_prompt": "Cream pegasus martial artist with golden mane and wings, brown hand wraps and dark hoof guards, balanced standing guard stance, no kick in the idle pose.",
+      "output": "public/characters/pegasus-martial-artist.webp"
+    },
+    {
+      "id": "pegasus-strategist",
+      "reference": "avatars/alternates/pegasus-strategist.webp",
+      "identity_prompt": "Cream pegasus tactician with golden mane and wings, flowing cream and gold scholar robes, compact folding fan and checkered strategy board. Idle pose; preserve outfit and accessories.",
+      "output": "public/characters/pegasus-strategist.webp"
+    },
+    {
+      "id": "pegasus-boxer",
+      "reference": "avatars/alternates/pegasus-boxer.webp",
+      "identity_prompt": "Cream pegasus boxer with golden mane and wings, pink-and-white gi, pink sash and large pink boxing gloves. Standing guard stance.",
+      "output": "public/characters/pegasus-boxer.webp"
+    },
+    {
+      "id": "pegasus-stargazer",
+      "reference": "avatars/alternates/pegasus-stargazer.webp",
+      "identity_prompt": "Cream pegasus with golden mane and wings, three small golden stars floating closely over head, no clothes, upright idle stance. Stars entirely inside each cell.",
+      "output": "public/characters/pegasus-stargazer.webp"
+    },
+    {
+      "id": "young-tower-lord",
+      "reference": "avatars/alternates/young-tower-lord.webp",
+      "identity_prompt": "Young cute orange dragon lord with tan horns, burgundy royal cape with gold trim and round gold clasp. Preserve royal cape and horns, complete feet and tail.",
+      "output": "public/characters/young-tower-lord.webp"
+    },
+    {
+      "id": "little-tower-spirit",
+      "reference": "avatars/alternates/little-tower-spirit.webp",
+      "identity_prompt": "Cute small gray stone golem, head shaped like a castle turret with battlements, moss patches, stone arms and legs. Preserve friendly face and stone block silhouette.",
+      "output": "public/characters/little-tower-spirit.webp"
+    },
+    {
+      "id": "dummy",
+      "reference": "avatars/enemies/dummy.webp",
+      "identity_prompt": "Cute wooden training dummy with log-shaped head, top stump, straw neck ruff, little log fists, wooden cylindrical trunk on a short broad wooden pedestal base. NO humanoid legs needed, base visible.",
+      "output": "public/characters/dummy.webp"
+    }
+  ]
+}

@@ -1,5 +1,8 @@
 import BattleArena from './components/BattleArena';
-import BattleMoveFx from './components/BattleMoveFx';
+import BattleFighter from './components/BattleFighter';
+import BattleStats from './components/BattleStats';
+import TutorialGuide from './components/TutorialGuide';
+import { getBattleSeat } from './logic/battleLayout';
 import BrawlCover from './components/BrawlCover';
 import PixelBackdrop from './components/PixelBackdrop';
 import { AVATAR_OPTIONS } from './data/avatars';
@@ -59,7 +62,7 @@ import { pickUltCutins, isLevelUltimate, ULT_CUTINS, type UltCutinPick } from '.
 import UltCutin from './components/UltCutin';
 import InventoryBar from './components/InventoryBar';
 import type { ExpeditionEnemyDef } from './data/expedition';
-import { EXPEDITION_RELICS, EXPEDITION_STAGES, EXPEDITION_TUTORIALS } from './data/expedition';
+import { EXPEDITION_RELICS, EXPEDITION_STAGES, EXPEDITION_TUTORIALS, EXPEDITION_LESSONS } from './data/expedition';
 import { drawGachaCard } from './data/expedition';
 import {
   applyIronhide,
@@ -232,6 +235,7 @@ const TopControls = ({
       {/* Lang Button */}
       <button
         onClick={toggleLang}
+        aria-label={lang === 'zh' ? '切换语言' : 'Switch language'}
         className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 group"
       >
         <div className="flex items-center gap-2">
@@ -256,8 +260,9 @@ const TiltCard = ({
   disabled,
   'data-card-type': cardType,
   disableMotion = false,
-  glareColor = "#ffffff" // 👈 New Prop with default white
-}: React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean; glareColor?: string; disableMotion?: boolean; 'data-card-type'?: string }) => {
+  glareColor = "#ffffff",
+  ...attributes
+}: React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean; glareColor?: string; disableMotion?: boolean; 'data-card-type'?: string; 'data-tutorial-target'?: boolean }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
   const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
@@ -287,13 +292,14 @@ const TiltCard = ({
 
   return (
     <div
+      {...attributes}
       ref={cardRef}
       data-card-type={cardType}
       role="button"
       tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled}
       onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.currentTarget.click(); } }}
-      onClick={onClick}
+      onClick={disabled ? undefined : onClick}
       onMouseMove={handleMove}
       onMouseLeave={handleLeave}
       onMouseEnter={onMouseEnter}
@@ -368,7 +374,7 @@ export default function BobozanOnline() {
   };
 
   // --- Drag State ---
-  const [dragPosition, setDragPosition] = useState({ x: 25, y: 50 }); // Initial starting position (Top/Left in px)
+  const [dragPosition, setDragPosition] = useState({ x: 25, y: 98 }); // Below the controls; the lower-left area belongs to the player HUD.
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 }); // Offset of mouse click within the element
   const leaderboardRef = useRef<HTMLDivElement>(null);
@@ -566,7 +572,7 @@ const expYpjUsedRef = useRef(false);
         ...(moneyTreeBonus > 0 ? [{ turn: 1, text: lang === 'zh' ? `🌱 摇钱树摇下 ${moneyTreeBonus} 金币！` : `🌱 Money Tree shook down ${moneyTreeBonus} gold!`, type: 'info' as const }] : []),
       ],
     });
-    if (stage.tip) setToastMsg(stage.tip[lang]);
+    if (stage.tip && !EXPEDITION_TUTORIALS[stage.id]?.[expTutIdxRef.current]) setToastMsg(stage.tip[lang]);
     setExpIntents(computeExpIntents(players, stageIdx));
     setIntentDismissed(new Set());
   };
@@ -919,17 +925,6 @@ const expYpjUsedRef = useRef(false);
   const music = useBackgroundMusic(assetUrl('music/bgm.mp3'), view === 'GAME', muted, musicVolume);
 
   useEffect(() => {
-    // Set initial position based on Bottom-Left if not already set (only runs once)
-    if (leaderboardRef.current) {
-       
-       // Calculate Y: Window Height - Hand Deck Height (approx 260px) - Padding (20px) - Leaderboard Height
-       const elementHeight = leaderboardRef.current.offsetHeight;
-       const targetY = window.innerHeight - 280 - elementHeight;
-
-       setDragPosition(current => current.x === 25 && current.y === 50
-         ? { x: 20, y: Math.max(20, targetY) } : current);
-    }
-
     const handleMouseMove = (e: MouseEvent) => {
         if (!isDragging) return;
         setDragPosition({
@@ -1027,6 +1022,13 @@ const expYpjUsedRef = useRef(false);
   const myPlayerId = isExpedition ? expMyId() : user?.uid || 'me';
   const myPlayer = gameState.players.find((p: Player) => p.id === myPlayerId);
   const knownCards = myPlayer ? getPlayerCards(myPlayer, gameState.players) : [];
+  const tutorialStageId = isExpedition ? EXPEDITION_STAGES[expStageIdx]?.id ?? '' : '';
+  const tutorialSteps = EXPEDITION_TUTORIALS[tutorialStageId];
+  const activeTutorialStep = expPhase === 'battle' ? tutorialSteps?.[expTutIdx] : undefined;
+  const tutorialCard = SKILL_DB.find(c => c.id === activeTutorialStep?.highlight);
+  const tutorialCategory = tutorialCard?.type === 'ABSORB' ? 'SPECIAL' : tutorialCard?.type;
+  const completedTutorialLesson = tutorialSteps && expTutIdx === tutorialSteps.length
+    ? EXPEDITION_LESSONS[tutorialStageId] : undefined;
 
   const preloadedCutinsRef = useRef(new Set<string>());
   useEffect(() => {
@@ -1592,6 +1594,7 @@ const expYpjUsedRef = useRef(false);
     const newBot: Player = {
       id: `bot_${Date.now()}_${botCount}`,
       name: `Bot ${botCount + 1}`,
+      avatar: AVATAR_OPTIONS[botCount % AVATAR_OPTIONS.length].path,
       isBot: true,
       hp: MAX_HP,
       energy: 0,
@@ -1831,19 +1834,20 @@ const expYpjUsedRef = useRef(false);
     setHandViewMode('CATEGORIES');
   };
 
-  // --- LAYOUT HELPERS ---
-  const getPlayerPosition = (index: number, total: number, myIndex: number) => {
-    if (total === 0) return { x: 50, y: 50 };
-    const step = 360 / total;
-    const angleDeg = 90 + (index - myIndex) * step;
-    const angleRad = (angleDeg * Math.PI) / 180;
-    const rx = 32;
-    const ry = 25;
-    return { 
-      x: 50 + rx * Math.cos(angleRad), 
-      y: 50 + ry * Math.sin(angleRad) 
-    };
+  // Navigation only: players still choose the actual card to commit their move.
+  const locateTutorialCard = () => {
+    if (!tutorialCategory || submittingMove) return;
+    if (tutorialCategory === 'CHARGE') goBackToCategories();
+    else selectCategory(tutorialCategory);
+    requestAnimationFrame(() => {
+      const target = document.querySelector<HTMLElement>('[data-tutorial-target="true"]');
+      target?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
+      target?.focus({ preventScroll: true });
+    });
   };
+
+  // --- LAYOUT HELPERS ---
+  const getPlayerPosition = getBattleSeat;
 
   const getMiniTablePosition = (index: number, total: number, myIndex: number) => {
     if (total === 0) return { x: 50, y: 45 };
@@ -2498,7 +2502,7 @@ const expYpjUsedRef = useRef(false);
   `;
 
   return (
-    <div className="pixel-app pixel-screen-battle min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30">
+    <div className={`pixel-app pixel-screen-battle ${!isExpedition ? 'pixel-screen-multiplayer' : ''} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
 
       {/* 1. BACKGROUND LAYERS & STYLES */}
       <style>{`
@@ -2706,40 +2710,14 @@ const expYpjUsedRef = useRef(false);
               <div className="text-xs font-bold text-slate-400 tracking-widest">
                 {lang === 'zh' ? `第 ${gameState.turn} 回合` : `TURN ${gameState.turn}`}
               </div>
+              {activeTutorialStep && <button type="button" className="tutorial-jump pointer-events-auto" onClick={() => {
+                const heading = document.getElementById('tutorial-heading');
+                heading?.scrollIntoView({ block: 'center', behavior: 'instant' });
+                heading?.focus({ preventScroll: true });
+              }}>{lang === 'zh' ? '查看本课指引 ↓' : 'Go to lesson ↓'}</button>}
             </div>
           </div>
         )}
-
-        {/* --- EXPEDITION TUTORIAL（前三关战斗内教学） --- */}
-        {isExpedition && expPhase === 'battle' && gameState.status === 'PLAYING' && (() => {
-          const steps = EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expStageIdx]?.id ?? ''];
-          if (!steps || expTutIdx >= steps.length) return null;
-          const step = steps[expTutIdx];
-          return (
-            <div className="pixel-tutorial absolute left-3 right-3 top-20 md:left-6 md:right-auto md:top-[55%] z-50 md:w-80 pointer-events-none">
-              <div className="bg-amber-950/90 backdrop-blur-xl border border-amber-400/50 rounded-xl px-4 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-center pointer-events-auto">
-                <div className="text-[10px] font-black text-amber-400/70 tracking-widest mb-1">{lang === 'zh' ? `教程 ${expTutIdx + 1} / ${steps.length}` : `Tutorial ${expTutIdx + 1} / ${steps.length}`}</div>
-                <div className="text-sm font-bold text-amber-100 leading-snug">{step.text[lang]}</div>
-                <div className="flex justify-center gap-2 mt-2">
-                  <button
-                    disabled={!!step.highlight || submittingMove}
-                    onClick={() => { expTutIdxRef.current += 1; setExpTutIdx(expTutIdxRef.current); setExpIntents(computeExpIntents(gameState.players, expStageIdx)); }}
-                    className="px-3 py-1 rounded-lg bg-amber-500 text-black text-xs font-black hover:scale-105 active:scale-95 transition-all"
-                  >
-                    {step.highlight ? (lang === 'zh' ? '完成高亮操作后继续' : 'Play the highlighted card') : (lang === 'zh' ? '明白了 →' : 'Got it →')}
-                  </button>
-                  <button
-                    disabled={submittingMove}
-                    onClick={() => { expTutorialSkippedRef.current = true; expTutIdxRef.current = 999; setExpTutIdx(999); setToastMsg(lang === 'zh' ? '💡 能量为 0 也能点「攒」攒能量；看敌人旁边的气泡猜它要干嘛' : 'Tip: you can [Charge] even at 0 energy — watch the enemy bubble!'); }}
-                    className="px-3 py-1 rounded-lg bg-slate-700 text-slate-300 text-xs font-bold hover:scale-105 active:scale-95 transition-all"
-                  >
-                    {lang === 'zh' ? '本轮跳过' : 'Skip this run'}
-                  </button>
-                </div>
-              </div>
-            </div>
-          );
-        })()}
 
         {/* --- EXPEDITION REWARD（战后多选一） --- */}
         {isExpedition && expPhase === 'reward' && (
@@ -2749,6 +2727,11 @@ const expYpjUsedRef = useRef(false);
               <h2 className="text-xl font-black text-white mb-1">
                 {lang === 'zh' ? `通过${EXPEDITION_STAGES[expStageIdx].name[lang]}！` : `Cleared ${EXPEDITION_STAGES[expStageIdx].name[lang]}!`}
               </h2>
+              {completedTutorialLesson && <div className="tutorial-recap">
+                <strong>{lang === 'zh' ? (expStageIdx === 2 ? '✓ 新手三课完成！' : `✓ 第 ${expStageIdx + 1} 课完成`) : (expStageIdx === 2 ? '✓ Training complete!' : `✓ Lesson ${expStageIdx + 1} complete`)}</strong>
+                <p>{completedTutorialLesson.summary[lang]}</p>
+                <small>{lang === 'zh' ? '选好奖励后，可以在商城补给，也可以直接进入下一关。' : 'Choose a reward, then shop for supplies or go straight to the next battle.'}</small>
+              </div>}
               <p className="text-slate-400 text-sm mb-5">
                 {lang === 'zh' ? `选择一项奖励（${expRewards.length} 选 1）` : `Choose a reward (1 of ${expRewards.length})`}
               </p>
@@ -2765,7 +2748,7 @@ const expYpjUsedRef = useRef(false);
                   } else if (opt.kind === 'maxhp') {
                     icon = <Heart size={40} />;
                     title = lang === 'zh' ? '体魄 +0.5' : 'Vigor +0.5';
-                    sub = lang === 'zh' ? '血量上限 +1（本轮远征永久）' : '+1 max HP for this run';
+                    sub = lang === 'zh' ? '血量上限 +0.5（本轮远征永久）' : '+0.5 max HP for this run';
                   } else if (opt.kind === 'temp') {
                     const c = SKILL_DB.find(x => x.id === opt.cardId);
                     icon = getCardIcon(opt.cardId);
@@ -2962,184 +2945,18 @@ const expYpjUsedRef = useRef(false);
         </div>
 
         {/* ROUND TABLE LAYER */}
-        <div className="pixel-battle-board relative flex-1 w-full overflow-hidden bg-transparent">
+        <div data-player-count={totalPlayers} className={`pixel-battle-board ${totalPlayers > 4 ? 'battle-board-crowded' : ''} relative flex-1 w-full overflow-hidden bg-transparent`}>
            
            {/* Background Table Outline */}
            <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} />
 
-           {/* Players */}
-           {(() => {
-             // 1. Calculate highest level for the "Crown" logic
-             const highestLevelInGame = Math.max(0, ...gameState.players.map(p => Math.max(0, ...p.inventory)));
-             
-             // 2. Shine Animation for Leader
-             const shineStyle = `
-               @keyframes text-shine {
-                 0% { background-position: 200% center; }
-                 100% { background-position: -200% center; }
-               }
-               .animate-text-shine {
-                 background-size: 200% auto;
-                 animation: text-shine 3s linear infinite;
-               }
-             `;
-
-             return gameState.players.map((p, i) => {
-               const pos = getPlayerPosition(i, totalPlayers, myIndex);
-               const isMe = p.id === myPlayerId;
-               const effLayer = (p.layer ?? 0) + (p.tempLayerMod ?? 0);
-               const animClass = activeAnimations[p.id] === 'shake' ? 'animate-[shake_0.5s_ease-in-out]' : '';
-               const damageVal = damageNumbers[p.id];
-
-               const pMaxLvl = Math.max(0, ...p.inventory);
-               const pDisplayCard = SKILL_DB.find(c => c.levelRequired === pMaxLvl); 
-               const isLeader = pMaxLvl > 0 && pMaxLvl === highestLevelInGame;
-
-               return (
-                  <div 
-                    key={p.id}
-                    className={`battle-fighter ${isMe ? 'battle-fighter-self' : 'battle-fighter-enemy'} absolute transition-all duration-700 ease-out z-20 flex flex-col items-center justify-center ${animClass}`}
-                    style={{ 
-                      left: `${pos.x}%`, 
-                      top: `${pos.y}%`, 
-                      transform: 'translate(-50%, -50%)'
-                    }}
-                  >
-                    {!reduceMotion && gameState.status === 'SHOWDOWN' && p.selectedCardId && !p.isDead && <BattleMoveFx key={`${gameState.turn}-${p.selectedCardId}`} type={SKILL_DB.find(c => c.id === p.selectedCardId)?.type ?? 'SPECIAL'} />}
-                    {!reduceMotion && damageVal && <div className="battle-hit-burst" key={`hit-${gameState.turn}`} aria-hidden="true" />}
-                    <div className="battle-player-plinth" aria-hidden="true" />
-                    {/* Inject Style Once */}
-                    {i === 0 && <style>{shineStyle}</style>}
-
-                    {/* --- A. LEVEL & CROWN STATUS (Floating Top) --- */}
-                    <div className="absolute -top-10 left-1/2 -translate-x-1/2 z-40 flex flex-col items-center justify-center pointer-events-none whitespace-nowrap">
-                       {!isMe && (
-                           isLeader ? (
-                             <div className="flex flex-row items-center gap-2">
-                                <Crown size={20} className="text-yellow-400 fill-yellow-200 animate-bounce drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
-                                <span className="
-                                  text-base md:text-lg font-black tracking-widest uppercase font-mono
-                                  bg-gradient-to-r from-amber-300 via-yellow-100 to-amber-300
-                                  bg-clip-text text-transparent
-                                  animate-text-shine
-                                  drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]
-                                ">
-                                   LVL {pMaxLvl} {pDisplayCard?.name[lang] || ''}
-                                </span>
-                             </div>
-                           ) : (
-                             pMaxLvl > 0 && (
-                               <span className="text-sm md:text-base font-bold tracking-wider uppercase font-mono text-slate-400 drop-shadow-md bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/5">
-                                  LVL {pMaxLvl} {pDisplayCard?.name[lang] || ''}
-                               </span>
-                             )
-                           )
-                       )}
-                    </div>
-
-                    {/* --- B. EMOJI BUBBLE --- */}
-                    {p.emoji && p.emojiAt && Date.now() - p.emojiAt < 2000 && (
-                      <>
-                        <style>{emojiStyle}</style>
-                        <div 
-                          key={p.emojiAt}
-                          className="absolute -top-24 left-1/2 -translate-x-1/2 z-[60] pointer-events-none select-none animate-emoji-lifecycle"
-                        >
-                          <div className="relative">
-                            <div className="bg-white text-black px-4 py-3 rounded-2xl shadow-[0_10px_30px_-5px_rgba(0,0,0,0.6)] border-2 border-slate-100 flex items-center justify-center min-w-[4rem]">
-                               <span className="text-4xl md:text-5xl leading-none pb-1">{p.emoji}</span>
-                            </div>
-                            <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border-b-2 border-r-2 border-slate-100 rotate-45" />
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    {/* --- C. AVATAR CIRCLE CONTAINER --- */}
-                    <div className="relative">
-                      
-                        {/* 1. Main Circle Frame */}
-                        <div className={`
-                          pixel-player-avatar relative w-24 h-24 md:w-32 md:h-32 rounded-full
-                          border-[4px] shadow-2xl transition-transform duration-300
-                          ${isMe 
-                             ? 'border-orange-500 shadow-[0_0_30px_rgba(249,115,22,0.4)] scale-105' 
-                             : 'border-slate-700 bg-slate-800 shadow-black/60'}
-                          ${p.isDead ? 'grayscale brightness-50 border-red-900' : ''}
-                        `}>
-                            
-                            {/* 2. Image (Full Fill) */}
-                            <div className="w-full h-full rounded-full overflow-hidden bg-slate-900 relative z-0">
-                                {p.isDead ? (
-                                    <div className="w-full h-full flex items-center justify-center bg-red-950/80">
-                                      <Skull size={40} className="text-red-500 animate-pulse" />
-                                    </div>
-                                ) : p.avatar ? (
-                                    <img 
-                                      src={avatarUrl(p.avatar)}
-                                      alt={p.name} 
-                                      className="w-full h-full object-cover [image-rendering:pixelated] transform hover:scale-110 transition-transform duration-500"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-slate-800">
-                                      <User size={40} className="text-slate-500" />
-                                    </div>
-                                )}
-                            </div>
-
-                            {/* 3. Damage Overlay (Red Flash) */}
-                            {damageVal && (
-                              <>
-                                <div className="absolute inset-0 rounded-full bg-red-600/60 animate-pulse z-20 pointer-events-none" />
-                                <div className="absolute inset-0 rounded-full border-4 border-red-500/80 animate-[ping_0.4s_ease-out] z-20 pointer-events-none" />
-                              </>
-                            )}
-
-                            {/* 4. Ready Status (Top Right) */}
-                            {!p.isDead && gameState.status !== 'SHOWDOWN' && (
-                               <div className="absolute -top-1 -right-1 z-30">
-                                  {p.selectedCardId ? (
-                                     <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-green-500 text-white flex items-center justify-center shadow-[0_0_10px_rgba(34,197,94,0.8)] border-[3px] border-slate-900 animate-[bounce_0.8s_infinite]">
-                                        <CheckCircle size={16} strokeWidth={3} />
-                                     </div>
-                                  ) : (
-                                     <div className="w-7 h-7 md:w-8 md:h-8 rounded-full bg-slate-800 text-slate-400 flex items-center justify-center border-[2px] border-slate-600 shadow-lg animate-pulse">
-                                        <Loader size={14} className="animate-spin" />
-                                     </div>
-                                  )}
-                               </div>
-                            )}
-
-                            {/* 5. Name Badge (Bottom Overlap) */}
-                            <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 z-20 w-[140%] flex justify-center">
-                                <div className={`
-                                  px-3 py-1 rounded-lg text-xs md:text-sm font-bold font-mono tracking-tight
-                                  truncate text-center shadow-lg border border-white/10
-                                  max-w-[90%]
-                                  ${p.isDead 
-                                    ? 'bg-red-950 text-red-400 line-through decoration-red-500/50' 
-                                    : isMe 
-                                      ? 'bg-gradient-to-r from-orange-600 to-red-600 text-white shadow-orange-900/40' 
-                                      : 'bg-slate-900/95 text-slate-200'}
-                                `}>
-                                  {p.name}
-                                </div>
-                            </div>
-
-                    {/* --- C2. 远征物品栏（金币/遗物/装备/限次技能，头像右侧） --- */}
-                    {isMe && isExpedition && expPhase === 'battle' && (
-                      <div className="absolute left-full top-1/2 -translate-y-1/2 ml-3 z-40">
-                        <InventoryBar
-                          gold={expGold}
-                          relics={expRelics}
-                          equipment={expEquipment}
-                          tempCards={expRunRef.current.tempCards}
-                          lang={lang}
-                          playClick={() => playSound('click', muted)}
-                        />
-                      </div>
-                    )}
-                    {/* --- C3. 敌人意图对话气泡（远征，头像旁边朝桌心，不可拖动） --- */}
+           {/* Player positions also drive card origins and facing directions. */}
+           {gameState.players.map((p, i) => {
+             const pos = getPlayerPosition(i, totalPlayers, myIndex);
+             const isMe = p.id === myPlayerId;
+             const pMaxLvl = Math.max(0, ...p.inventory);
+             const highestLevel = Math.max(0, ...gameState.players.flatMap(player => player.inventory));
+             const intent = <>
                     {isExpedition && !isMe && !p.isDead && expPhase === 'battle' && gameState.status === 'PLAYING' && expIntents[p.id] && (() => {
                       const revealed = shouldRevealIntent(p.id);
                       const card = SKILL_DB.find(c => c.id === expIntents[p.id]);
@@ -3186,93 +3003,14 @@ const expYpjUsedRef = useRef(false);
                         </div>
                       );
                     })()}
-                        </div>
-                    </div>
-
-                    {/* 金币飞入：+X 🪙 上浮 */}
-                    {isMe && goldFly && (
-                      <div key={goldFly.key} className="absolute left-full top-0 ml-6 z-50 pointer-events-none whitespace-nowrap">
-                        <style>{`@keyframes gold-float-up { 0% { opacity: 0; transform: translateY(10px) scale(0.8); } 20% { opacity: 1; transform: translateY(0) scale(1.15); } 100% { opacity: 0; transform: translateY(-46px) scale(1); } }`}</style>
-                        <div className="text-lg font-black text-yellow-300 drop-shadow-[0_2px_6px_rgba(0,0,0,0.8)]" style={{ animation: 'gold-float-up 1.4s ease-out forwards' }}>
-                          +{goldFly.amount} 🪙
-                        </div>
-                      </div>
-                    )}
-
-                    {/* --- D. FLOATING DAMAGE NUMBER --- */}
-                    {damageVal && (
-                        <div 
-                          className="absolute left-1/2 top-1/2 z-50 pointer-events-none whitespace-nowrap"
-                          style={{ animation: 'damage-pop-up 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards' }}
-                        >
-                          <span 
-                            className="block text-5xl md:text-6xl font-black text-red-500 italic tracking-tighter"
-                            style={{
-                              textShadow: '2px 2px 0px #7f1d1d, -1px -1px 0 #fff',
-                              WebkitTextStroke: '1.5px white',
-                              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.5))'
-                            }}
-                          >
-                            -{damageVal}
-                          </span>
-                        </div>
-                    )}
-
-                    {/* --- E. STATS BAR (Below Name) --- */ }
-                    <div className="battle-stats mt-6 flex flex-col items-center gap-2 z-10 transition-opacity duration-300">
-                        
-                        {/* 3a. STATS (Always visible here for everyone) */}
-                        <div className="flex gap-2 items-center">
-                          <div className="flex items-center gap-2 px-4 py-1.5 rounded-xl bg-black/70 border-2 border-yellow-400/60 backdrop-blur-sm shadow-[0_0_18px_rgba(250,204,21,0.35)]">
-                            <Zap size={22} className="text-yellow-400" fill="currentColor" />
-                            <span className="text-2xl font-black text-yellow-300 font-mono leading-none pt-0.5 drop-shadow-[0_0_6px_rgba(250,204,21,0.6)]">{p.energy}</span>
-                          </div>
-                          {effLayer > 0 && (
-                            <div className="flex items-center gap-1.5 px-3 py-1 rounded-lg bg-black/70 border border-sky-500/30 backdrop-blur-sm shadow-sm animate-in zoom-in duration-200">
-                              <ArrowUp size={16} className="text-sky-400" />
-                              <span className="text-base font-black text-sky-300 font-mono leading-none pt-0.5">{effLayer}</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2 bg-black/60 px-3 py-1.5 rounded-full backdrop-blur-sm border border-white/5 shadow-sm">
-                          <Heart size={16} className="text-red-500" fill="currentColor" />
-                          <div className="w-24 h-3 rounded-full bg-slate-800/80 overflow-hidden border border-white/10 relative">
-                             <div className="absolute inset-0 bg-red-900/30" />
-                             <div className="h-full bg-gradient-to-r from-red-600 to-red-400" style={{ width: `${Math.max(0, Math.min(100, ((p.hp ?? 0) / ((isExpedition ? (expMaxHpRef.current[p.id] ?? MAX_HP) : MAX_HP) || 1)) * 100))}%`, transition: 'width 0.3s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-                          </div>
-                          <span className="text-sm font-bold text-red-200 min-w-[1ch] pt-0.5">{p.hp}</span>
-                        </div>
-
-                        {/* 3b. LEVEL (Shown here ONLY if it is ME) */}
-                        {isMe && (
-                           <div className="mt-0">
-                             {isLeader ? (
-                               <div className="flex flex-row items-center gap-2">
-                                  <Crown size={20} className="text-yellow-400 fill-yellow-200 animate-bounce drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]" />
-                                  <span className="
-                                    text-base md:text-lg font-black tracking-widest uppercase font-mono
-                                    bg-gradient-to-r from-amber-300 via-yellow-100 to-amber-300
-                                    bg-clip-text text-transparent
-                                    animate-text-shine
-                                    drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)]
-                                  ">
-                                     LVL {pMaxLvl} {pDisplayCard?.name[lang] || ''}
-                                  </span>
-                               </div>
-                             ) : (
-                               pMaxLvl > 0 && (
-                                 <span className="text-sm md:text-base font-bold tracking-wider uppercase font-mono text-slate-400 drop-shadow-md bg-black/40 px-2 py-0.5 rounded-full backdrop-blur-sm border border-white/5">
-                                    LVL {pMaxLvl} {pDisplayCard?.name[lang] || ''}
-                                 </span>
-                               )
-                             )}
-                           </div>
-                        )}
-                    </div>
-                  </div>
-               )
-             })
-           })()}
+             </>;
+             return <BattleFighter key={p.id} player={p} seat={pos} self={isMe}
+               maxHp={isExpedition ? (expMaxHpRef.current[p.id] ?? MAX_HP) : MAX_HP}
+               level={pMaxLvl} levelName={SKILL_DB.find(card => card.levelRequired === pMaxLvl)?.name[lang] ?? ''}
+               leader={pMaxLvl > 0 && pMaxLvl === highestLevel} turn={gameState.turn}
+               showdown={gameState.status === 'SHOWDOWN'} moveType={SKILL_DB.find(card => card.id === p.selectedCardId)?.type}
+               damage={damageNumbers[p.id]} hit={activeAnimations[p.id] === 'shake'} reduceMotion={reduceMotion} intent={intent} />;
+           })}
 
            {/* Showdown / Card Fly Animation Layer */}
            {gameState.status === 'SHOWDOWN' && (
@@ -3541,7 +3279,7 @@ const expYpjUsedRef = useRef(false);
           {!isExpedition && (
            <div
                ref={leaderboardRef}
-               className="fixed z-50 animate-in slide-in-from-left-10 duration-500 pointer-events-none" 
+               className="battle-leaderboard fixed z-50 animate-in slide-in-from-left-10 duration-500 pointer-events-none"
                style={{ 
                   top: `${dragPosition.y}px`, 
                   left: `${dragPosition.x}px`,
@@ -3651,6 +3389,48 @@ const expYpjUsedRef = useRef(false);
           )}
           </div>
 
+        {/* The selected portrait and controls remain still above the left of the hand. */}
+        {myPlayer && <div className="battle-player-hud" aria-label={lang === 'zh' ? '我的状态' : 'My status'}>
+          <div className={`battle-hud-portrait ${myPlayer.isDead ? 'battle-hud-dead' : ''}`}>
+            {myPlayer.avatar ? <img src={avatarUrl(myPlayer.avatar)} alt={myPlayer.name} draggable={false} /> : <User size={52} />}
+          </div>
+          <div className="battle-hud-details">
+            <div className="battle-hud-name"><strong title={myPlayer.name}>{myPlayer.name}</strong><span>LVL {Math.max(0, ...myPlayer.inventory)}</span></div>
+            <BattleStats player={myPlayer} maxHp={isExpedition ? (expMaxHpRef.current[myPlayer.id] ?? MAX_HP) : MAX_HP} />
+          </div>
+          {isExpedition && expPhase === 'battle' && <div className="battle-hud-inventory">
+            <InventoryBar gold={expGold} relics={expRelics} equipment={expEquipment} tempCards={expRunRef.current.tempCards} lang={lang} playClick={() => playSound('click', muted)} />
+            {goldFly && <span key={goldFly.key} className="battle-gold-gain">+{goldFly.amount} 🪙</span>}
+          </div>}
+        </div>}
+
+        {activeTutorialStep && myPlayer && <TutorialGuide
+          stageId={tutorialStageId}
+          stepIndex={expTutIdx}
+          lang={lang}
+          energy={myPlayer.energy}
+          enemyMove={Object.values(expIntents)[0]}
+          settling={submittingMove || gameState.status !== 'PLAYING'}
+          handCategory={handCategory}
+          handViewMode={handViewMode}
+          onLocate={locateTutorialCard}
+          onAdvance={() => {
+            if (submittingMove || activeTutorialStep.highlight) return;
+            expTutIdxRef.current += 1;
+            setExpTutIdx(expTutIdxRef.current);
+            setExpIntents(computeExpIntents(gameState.players, expStageIdx));
+          }}
+          onSkip={() => {
+            if (submittingMove) return;
+            expTutorialSkippedRef.current = true;
+            expTutIdxRef.current = 999;
+            setExpTutIdx(999);
+            setExpIntents(computeExpIntents(gameState.players, expStageIdx));
+            setIntentDismissed(new Set());
+            setToastMsg(lang === 'zh' ? '已跳过本轮教学，可以自由选择招式。' : 'Training skipped for this run. Choose any available move.');
+          }}
+        />}
+
         {/* 3. 手牌区 */}
         <div className="pixel-hand-area h-64 bg-gradient-to-t from-black/30 via-slate-950/10 to-transparent relative z-40 flex flex-col">
 
@@ -3681,8 +3461,9 @@ const expYpjUsedRef = useRef(false);
                             const translateX = offset * 120;
 
 
-                            const isChargeDisabled = 
-                              cat === 'CHARGE' && (myPlayer?.disabledSkills || []).includes('charge');
+                            const isChargeDisabled =
+                              cat === 'CHARGE' && ((myPlayer?.disabledSkills || []).includes('charge') ||
+                                !!activeTutorialStep && activeTutorialStep.highlight !== 'charge');
 
                             // STYLES
                             let bgGradient = 'bg-slate-800';
@@ -3721,21 +3502,14 @@ const expYpjUsedRef = useRef(false);
                             const entranceAnim = '';
 
                             // 教程：高亮牌所在的文件夹也发光（牌藏在文件夹里，不提示根本找不到）
-                            const tutStepsCat = isExpedition ? EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expStageIdx]?.id ?? ''] : undefined;
-                            const tutHLcat = tutStepsCat && expTutIdx < tutStepsCat.length ? tutStepsCat[expTutIdx].highlight : undefined;
-                            let tutCatGlow = false;
-                            if (tutHLcat) {
-                              if (tutHLcat === 'ULTIMATE') tutCatGlow = cat === 'ULTIMATE';
-                              else {
-                                const hc = SKILL_DB.find(c => c.id === tutHLcat);
-                                if (hc) tutCatGlow = (hc.type === 'ABSORB' ? 'SPECIAL' : hc.type) === cat;
-                              }
-                            }
+                            const tutCatGlow = tutorialCategory === cat;
 
                             return (
                               <div
                                 key={cat}
                                 data-card-type={cat}
+                                data-tutorial-target={tutCatGlow}
+                                aria-describedby={activeTutorialStep ? 'tutorial-instruction' : undefined}
                                 role="button"
                                 tabIndex={isChargeDisabled ? -1 : 0}
                                 aria-label={t.categories[cat]}
@@ -3791,7 +3565,7 @@ const expYpjUsedRef = useRef(false);
                                 
                                 <div className="absolute inset-0 bg-white/10 group-hover:translate-x-full transition-transform duration-700 ease-in-out -skew-x-12 origin-left z-10 pointer-events-none" />
 
-                                {isChargeDisabled && (
+                                {isChargeDisabled && !activeTutorialStep && (
                                   <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
                                     <X className="text-red-500/80 w-24 h-24 drop-shadow-lg" strokeWidth={3} />
                                     <span className="absolute mt-16 text-red-200 font-black text-sm bg-red-900/80 px-2 py-1 rounded">
@@ -3889,9 +3663,8 @@ const expYpjUsedRef = useRef(false);
 
                                     const isHovered = hoveredCard === c.id;
                                     // 远征前三关教学：高亮当前步骤的牌
-                                    const tutSteps = isExpedition ? EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expStageIdx]?.id ?? ''] : undefined;
-                                    const tutHL = tutSteps && expTutIdx < tutSteps.length ? tutSteps[expTutIdx].highlight : undefined;
-                                    const tutGlow = !!tutHL && (tutHL === c.id || (tutHL === 'ULTIMATE' && c.type === 'ULTIMATE'));
+                                    const tutGlow = activeTutorialStep?.highlight === c.id;
+                                    const tutorialBlocked = !!activeTutorialStep && !tutGlow;
                                     return (
                                       <div
                                           key={`${c.id}-${index}`}
@@ -3912,9 +3685,11 @@ const expYpjUsedRef = useRef(false);
                                           disableMotion={true}
                                           glareColor={glareColor}
                                           data-card-type={c.type}
+                                          data-tutorial-target={tutGlow}
+                                          aria-describedby={activeTutorialStep ? 'tutorial-instruction' : undefined}
                                           onClick={() => {
                                             const disabled = (myPlayer?.disabledSkills || []).includes(c.id);
-                                            if (canAfford && !disabled && !submittingMove) {
+                                            if (canAfford && !disabled && !submittingMove && !tutorialBlocked) {
                                               if (isExpedition) {
                                                   handleExpeditionMove(c.id); // <--- Expedition mode
                                               } else {
@@ -3922,12 +3697,13 @@ const expYpjUsedRef = useRef(false);
                                               }
                                             }
                                           }}
-                                          disabled={isDisabled || !canAfford}
+                                          disabled={isDisabled || !canAfford || tutorialBlocked}
                                           className={`
                                             relative ${isSmallScreen ? 'w-28 h-44' : 'w-36 h-56'} rounded-2xl border-4 ${borderClass}
                                             shadow-2xl
                                             ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''}
                                             ${tutGlow ? 'tutorial-highlight' : ''}
+                                            ${tutorialBlocked ? 'tutorial-other-card' : ''}
                                             origin-bottom
                                             cursor-pointer group flex flex-col items-center overflow-hidden hand-card
 
