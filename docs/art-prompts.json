@@ -1,0 +1,183 @@
+{
+  "tool": "imagegen",
+  "mode": "reference-guided generation, one asset per call",
+  "transparent_background": true,
+  "packaging": "512x512 nearest-neighbor scale; lossless WebP",
+  "enemies": {
+    "references": [
+      "public/avatars/bdrag.png",
+      "public/avatars/boy.png"
+    ],
+    "prompt": "Use case: stylized-concept. Create ONE square game enemy avatar of {subject}. Use the two attached ORIGINAL PLAYER AVATARS as strict style references, not as characters to copy. Match their very chunky low-resolution pixel blocks, thick nearly-black navy stepped outlines, oversized cute head, simple large black rectangular eyes with one white square glint, restrained 3-tone shading, warm friendly retro handheld RPG charm. This is NOT detailed 16-bit sprite art, not a tiny full-body sprite. Head and upper torso occupy 85% of the canvas and remain legible at 64px. Center on a pale cyan circular badge like the originals, crop upper torso at bottom of circle, leave a very small transparent margin outside the circle. Square 1024x1024 composition. Face must dominate. No lettering, UI, border frame, weapons over face, or scenery. Preserve the enemy concept while matching exactly the coarse pixel scale and adorable proportions of the player references.",
+    "assets": [
+      {
+        "path": "public/avatars/enemies/dummy.webp",
+        "subject": "a friendly wooden martial arts training dummy, round wood head, simple dot eyes and smile, two little padded arms, tan straw collar"
+      },
+      {
+        "path": "public/avatars/enemies/coward.webp",
+        "subject": "a timid wooden practice-post warrior, worried big eyes, little raised wooden hands, pale tan wood, small blue cloth headband"
+      },
+      {
+        "path": "public/avatars/enemies/turtle.webp",
+        "subject": "a shy green turtle training guard, rounded olive shell shoulder armor, tiny friendly face peeking from shell, blue scarf"
+      },
+      {
+        "path": "public/avatars/enemies/slime.webp",
+        "subject": "a cheerful lime green jelly slime, round squishy head and tiny nubby arms, big glossy black pixel eyes, a little smile"
+      },
+      {
+        "path": "public/avatars/enemies/slime_a.webp",
+        "subject": "the brave older green slime sibling, emerald jelly, small orange martial arts headband tied to the side, confident friendly smile"
+      },
+      {
+        "path": "public/avatars/enemies/slime_b.webp",
+        "subject": "the little turquoise-green slime sibling, tiny leaf on its head, shy bright eyes, rounded jelly cheeks"
+      },
+      {
+        "path": "public/avatars/enemies/ironwall.webp",
+        "subject": "a stout silverback gorilla martial arts guard, dark brown fur, broad round face, warm amber shoulder pads, crossed big fists near chest, stern but cute"
+      },
+      {
+        "path": "public/avatars/enemies/wolf.webp",
+        "subject": "a silver-blue gale wolf, pointed ears, fluffy cheek fur, sky blue neck scarf, cheerful determined eyes"
+      },
+      {
+        "path": "public/avatars/enemies/head_a.webp",
+        "subject": "a red horned ogre sibling, one short ivory horn, round cheeks, tiny fangs, orange tunic, mischievous grin"
+      },
+      {
+        "path": "public/avatars/enemies/head_b.webp",
+        "subject": "a blue horned ogre sibling, two short ivory horns, round cheeks, tiny fang, violet tunic, curious smile"
+      },
+      {
+        "path": "public/avatars/enemies/dragon_elder.webp",
+        "subject": "an elderly jade green dragon master, two golden antlers, little white eyebrows and moustache, warm ochre martial arts robe, wise kindly eyes"
+      },
+      {
+        "path": "public/avatars/enemies/frost.webp",
+        "subject": "a small ice mage, pale face, light blue hood with ice crystal forehead pin, blue and white robe, large black eyes, hands holding a tiny ice crystal"
+      },
+      {
+        "path": "public/avatars/enemies/shadow_a.webp",
+        "subject": "the oldest shadow ninja, dark violet hood, visible warm face and big black eyes, plum scarf, amber clasp, determined brows"
+      },
+      {
+        "path": "public/avatars/enemies/shadow_b.webp",
+        "subject": "the middle shadow ninja, indigo hood, visible warm face and big black eyes, teal scarf, calm smile"
+      },
+      {
+        "path": "public/avatars/enemies/shadow_c.webp",
+        "subject": "the youngest shadow ninja, charcoal hood, visible warm face and big black eyes, orange scarf, playful smile"
+      },
+      {
+        "path": "public/avatars/enemies/hangman.webp",
+        "subject": "a friendly floating little ghost sorcerer, cream-white rounded ghost head, two big glossy black pixel eyes, small smile, violet hood and scarf, softly curled ghost shoulders; no rope no hanging no gore"
+      },
+      {
+        "path": "public/avatars/enemies/knight.webp",
+        "subject": "a chestnut horse knight, large horse ears, short brown mane, friendly long round muzzle, small silver helmet and blue shoulder armor"
+      },
+      {
+        "path": "public/avatars/enemies/guard_a.webp",
+        "subject": "a tower guard, warm tan human face, rounded silver helmet with red plume, red scarf and silver shoulder pads, confident eyes"
+      },
+      {
+        "path": "public/avatars/enemies/guard_b.webp",
+        "subject": "a tower guard captain, warm tan human face, rounded gold helmet with blue plume, blue scarf, golden shoulder pads, broad confident smile"
+      },
+      {
+        "path": "public/avatars/enemies/guard_c.webp",
+        "subject": "a tower guard, warm tan human face, rounded silver helmet with green plume, green scarf, silver shoulder pads, slightly shy smile"
+      },
+      {
+        "path": "public/avatars/enemies/bluffer.webp",
+        "subject": "a mischievous chibi stage trickster, two-tone violet and ochre jester cap, expressive warm face and big eyes, little half mask held next to cheek, playful grin"
+      },
+      {
+        "path": "public/avatars/alternates/young-tower-lord.webp",
+        "subject": "the regal tower lord Bozan, cute round dragon king face, terracotta orange scales, small three-point gold crown, plum royal mantle with gold clasp, proud friendly expression"
+      },
+      {
+        "path": "public/avatars/alternates/little-tower-spirit.webp",
+        "subject": "an ancient friendly stone tower spirit, round bluish-grey stone head, small battlement crown, glossy dark pixel eyes with pale cyan glints, blocky stone shoulders with moss accents, wise smile"
+      }
+    ]
+  },
+  "ultimates": {
+    "references": [
+      "public/avatars/pega.png",
+      "public/avatars/bdrag.png",
+      "public/avatars/boy.png"
+    ],
+    "prompt": "Create ONE game ultimate skill character cut-in: {subject}. Strictly match attached original avatar art: chunky coarse pixels, navy black stepped outline, oversized adorable head, rectangular black eyes with single white pixel glint, limited warm palette, simple 3-tone shading. Full body dynamic action pose, facing right, character fills 90% of square composition. Big readable silhouette, cute handheld RPG pixel manga art. TRANSPARENT background, isolated character only, NO circle badge, NO scenery, no text, no UI, no smooth gradients, no realistic anatomy, no tiny detailed sprite. Golden Pegasus must match reference character identity.",
+    "assets": [
+      {
+        "path": "public/ultcutins/meteor.webp",
+        "subject": "the reference cream and golden maned baby PEGASUS with large feather wings, rearing to summon falling stars"
+      },
+      {
+        "path": "public/ultcutins/iceult.webp",
+        "subject": "a cute blue hooded ice sword mage holding a chunky crystal sword"
+      },
+      {
+        "path": "public/ultcutins/fireclaw.webp",
+        "subject": "the reference orange baby dragon with a raised flaming claw"
+      },
+      {
+        "path": "public/ultcutins/boiler.webp",
+        "subject": "a cute brass boiler robot with square steam puffs"
+      },
+      {
+        "path": "public/ultcutins/hangman.webp",
+        "subject": "a friendly little cream ghost in purple hood"
+      },
+      {
+        "path": "public/ultcutins/gungod.webp",
+        "subject": "a cute cyan armored space ranger with a toy-like blaster"
+      },
+      {
+        "path": "public/avatars/alternates/pegasus-swordsman.webp",
+        "subject": "a cute red scarf swordsman swinging a chunky sword"
+      },
+      {
+        "path": "public/avatars/alternates/pegasus-martial-artist.webp",
+        "subject": "a cute orange martial artist performing a flying kick"
+      },
+      {
+        "path": "public/avatars/alternates/pegasus-strategist.webp",
+        "subject": "a cute golden robed strategist holding a counting board"
+      },
+      {
+        "path": "public/avatars/alternates/pegasus-stargazer.webp",
+        "subject": "a cute golden dragon with three square stars above its head"
+      },
+      {
+        "path": "public/avatars/alternates/pegasus-boxer.webp",
+        "subject": "a cute pink martial artist with raised oversized glove"
+      },
+      {
+        "path": "public/ultcutins/superwave.webp",
+        "subject": "a cute blue hoodie fighter releasing square blue energy from both hands"
+      }
+    ]
+  },
+  "revisions": {
+    "references": [
+      "public/avatars/boy.png",
+      "public/avatars/bdrag.png"
+    ],
+    "direction": "Coarse stepped pixels, dark outline, oversized head, transparent background. Species follows skill, no horse or Pegasus for unrelated skills. Preserve original avatar art treatment.",
+    "characters": {
+      "triplekill": "Raccoon swordsman, red scarf, curved sword; three slashes",
+      "triplekick": "White rabbit martial artist, orange trousers and teal belt, flying kick",
+      "pointdiff": "Owl strategist, glasses, golden robe and abacus",
+      "fiveslap": "Panda palm master in pink gi, open paws and five impact marks",
+      "threestar": "Sky blue celestial Chinese dragon, golden antlers, three stars"
+    },
+    "bossEdits": {
+      "lord_bozan": "Threatening dragon king with crown, plum armor, angled brows, toothy snarl and violet absorption energy",
+      "tower_soul": "Ancient armored fortress golem, cyan angry eyes, stone fists, cracked runes and moss"
+    }
+  }
+}

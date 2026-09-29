@@ -61,7 +61,7 @@ intro: { zh: '师父：先学会攒气，再谈打架。', en: 'Master: learn to
 id: 's1', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
 name: { zh: '第 2 关 · 胆小鬼', en: 'Stage 2 · Coward'},
 rewardTier: 1,
-tip: { zh: '敌人要打你了！用「防」挡住伤害', en: 'The enemy is attacking! Block it with [Defend]'},
+tip: { zh: '先储备能量，再看意图用「防」挡住攻击', en: 'Store energy, then read intent and block with [Defend]'},
 enemies: [{
 id: 'coward', name: { zh: '🪵 胆小木桩', en: '🪵 Cowardly Post'}, hp: 1, inventory: [0],
 personality: P(0.35, 0.5, 0.4, 0.1),
@@ -287,14 +287,15 @@ s0: [
 ],
 s1: [
 { text: { zh: '💬 先看敌人旁边的气泡：前三关它会说实话，告诉你这回合想干嘛', en: 'Check the speech bubble by the enemy: in the first 3 stages it tells the truth about its move' } },
+{ text: { zh: '⚡ 先点「攒」储备能量。敌人这一回合也会攒气。', en: 'Charge first to store energy. The enemy will charge too.' }, highlight: 'charge' },
 { text: { zh: '🔵 气泡说它要打你？点蓝色「防御」文件夹，里面点「防」挡住！', en: 'Bubble says it will attack? Open the blue [Defend] folder and tap [Defend] to block!' }, highlight: 'defend' },
 { text: { zh: '🔴 气泡说它在攒气？去红色「攻击」文件夹点「轰」，一击必杀！', en: 'Bubble says it is charging? Open the red [Attack] folder, tap [Blast] — instant kill!' }, highlight: 'hong' },
 ],
 s2: [
 { text: { zh: '🐢 它只会缩着「防」：防御中的敌人，普通攻击打不动', en: 'It only turtles with [Defend]: attacks cannot hurt a defending enemy' } },
-{ text: { zh: '⚡ 点「攒」存能量：终极技要 3 费，先存 2 费', en: 'Tap [Charge] to save up: Ultimates cost 3 — save 2 first' }, highlight: 'charge' },
-{ text: { zh: '⚡ 再点一次「攒」：4 能量了', en: 'Tap [Charge] again: 4 energy now' }, highlight: 'charge' },
-{ text: { zh: '🟣 点紫色「终极」文件夹，点任意终极技：无视防御，一击破防！', en: 'Open the purple [Ultimate] folder and tap any Ultimate: it pierces defense — instant break!' }, highlight: 'ULTIMATE' },
+{ text: { zh: '⚡ 点「攒」存能量：「咔」需要 3 能量，先攒一次', en: 'Tap [Charge] to save up: Ka costs 3 Energy — charge once first' }, highlight: 'charge' },
+{ text: { zh: '⚡ 再点一次「攒」：能量足够使用「咔」了', en: 'Tap [Charge] again: you now have enough energy for Ka' }, highlight: 'charge' },
+{ text: { zh: '🟣 点紫色「终极」文件夹，点「咔」（3 能量）：穿透基础防御！', en: 'Open the purple [Ultimate] folder and tap [Ka] (3 Energy) to pierce basic defense!' }, highlight: 'ka' },
 ],
 };
 

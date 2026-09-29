@@ -2,11 +2,11 @@
 // 必杀技演出（cut-in）数据：每个 ULTIMATE 技能对应一张像素立绘 + 喊话台词 + 特效类型
 import type { Card, Player } from '../types';
 
-export type UltFx = 'meteor' | 'slash' | 'burst' | 'wave';
+export type UltFx = 'meteor' | 'slash' | 'burst' | 'wave' | 'ice' | 'steam' | 'stars' | 'beam' | 'palm' | 'kick';
 
 export interface UltCutinDef {
   skillId: string;
-  /** public/ultcutins 下的图片（hangman 复用敌人头像） */
+  /** Transparent pixel character artwork under public/ultcutins. */
   image: string;
   shouts: { zh: string[]; en: string[] };
   fx: UltFx;
@@ -37,23 +37,23 @@ export const ULT_CUTINS: Record<string, UltCutinDef> = {
   iceult: def('iceult', 'ultcutins/iceult.webp',
     ['玄天冰剑，封！', '冰封千里！'],
     ['Mystic Ice Sword, seal!', 'Frozen for miles!'],
-    'burst', '#7dd3fc'),
-  fireclaw: def('fireclaw', 'avatars/enemies/dragon_elder.webp',
+    'ice', '#7dd3fc'),
+  fireclaw: def('fireclaw', 'ultcutins/fireclaw.webp',
     ['火焰龙爪！', '燃起来吧！'],
     ['Flame Dragon Claw!', 'Burn it all!'],
-    'burst', '#ef4444'),
+    'slash', '#ef4444'),
   boiler: def('boiler', 'ultcutins/boiler.webp',
     ['锅炉全开！', '蒸汽爆发！'],
     ['Boiler at full blast!', 'Steam eruption!'],
-    'burst', '#f59e0b'),
-  hangman: def('hangman', 'avatars/enemies/hangman.webp',
+    'steam', '#f59e0b'),
+  hangman: def('hangman', 'ultcutins/hangman.webp',
     ['来陪我吧……', '嘻嘻嘻……'],
     ['Come join me...', 'Hee hee hee...'],
     'burst', '#a78bfa'),
   gungod: def('gungod', 'ultcutins/gungod.webp',
     ['穿梭射击！', '一枪定音！'],
     ['Warp shot!', 'One shot decides it!'],
-    'burst', '#22d3ee'),
+    'beam', '#22d3ee'),
   triplekill: def('triplekill', 'ultcutins/triplekill.webp',
     ['一砍！二砍！三必杀！', '三连斩！'],
     ['One slash! Two slashes! Triple kill!', 'Triple Slash!'],
@@ -61,7 +61,7 @@ export const ULT_CUTINS: Record<string, UltCutinDef> = {
   triplekick: def('triplekick', 'ultcutins/triplekick.webp',
     ['吃我三连踹！', '连环腿！'],
     ['Take my triple kick!', 'Chain kicks!'],
-    'slash', '#fbbf24'),
+    'kick', '#fbbf24'),
   pointdiff: def('pointdiff', 'ultcutins/pointdiff.webp',
     ['点差分晓！', '算无遗策！'],
     ['The point gap decides!', 'Every calc precise!'],
@@ -69,11 +69,11 @@ export const ULT_CUTINS: Record<string, UltCutinDef> = {
   threestar: def('threestar', 'ultcutins/threestar.webp',
     ['三星汇聚！', '神龙降临！'],
     ['Three stars converge!', 'Divine dragon descends!'],
-    'burst', '#facc15'),
+    'stars', '#facc15'),
   fiveslap: def('fiveslap', 'ultcutins/fiveslap.webp',
     ['五连拍！', '啪啪啪啪啪！'],
     ['Five slaps!', 'Slap slap slap slap slap!'],
-    'burst', '#fb7185'),
+    'palm', '#fb7185'),
   superwave: def('superwave', 'ultcutins/superwave.webp',
     ['超级第一波！', '气功全开！'],
     ['Super First Wave!', 'Full power!'],
@@ -84,6 +84,7 @@ export interface UltCutinPick {
   def: UltCutinDef;
   playerName: string;
   skillName: string;
+  level: number;
 }
 
 /**
@@ -106,11 +107,11 @@ export function pickUltCutins(players: Player[], skillDb: Card[], lang: 'zh' | '
     if (!card || !isLevelUltimate(card)) continue;
     const cutin = ULT_CUTINS[card.id];
     if (!cutin) continue;
-    picks.push({ def: cutin, playerName: p.name, skillName: card.name[lang], tier: card.tier });
+    picks.push({ def: cutin, playerName: p.name, skillName: card.name[lang], level: card.levelRequired, tier: card.tier });
   }
   return picks
     .sort((a, b) => b.tier - a.tier) // sort 稳定，同 tier 保持出场顺序
-    .map(({ def, playerName, skillName }) => ({ def, playerName, skillName }));
+    .map(({ def, playerName, skillName, level }) => ({ def, playerName, skillName, level }));
 }
 
 /** 随机挑一句喊话 */

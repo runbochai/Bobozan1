@@ -1,3 +1,5 @@
+import { AVATAR_OPTIONS } from './data/avatars';
+import { tutorialEnemyMove } from './logic/expeditionTutorial';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Shield,
@@ -47,7 +49,7 @@ import {
 import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
-import { pickUltCutins, isLevelUltimate, type UltCutinPick } from './data/ultCutins';
+import { pickUltCutins, isLevelUltimate, ULT_CUTINS, type UltCutinPick } from './data/ultCutins';
 import UltCutin from './components/UltCutin';
 import InventoryBar from './components/InventoryBar';
 import type { ExpeditionEnemyDef } from './data/expedition';
@@ -94,19 +96,6 @@ import { advanceRoom, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoo
 import type { User as FirebaseUser } from 'firebase/auth';
 
 
-
-
-
-
-// Avatar Paths
-const AVATAR_OPTIONS = [
-  assetUrl('avatars/bdrag.png'),
-  assetUrl('avatars/boy.png'),
-  assetUrl('avatars/girl.png'),
-  assetUrl('avatars/ntr.png'),
-  assetUrl('avatars/pega.png'),
-  assetUrl('avatars/rsn.png'),
-];
 
 
 
@@ -356,7 +345,7 @@ export default function BobozanOnline() {
       <img 
         src={avatarUrl(avatar)}
         alt="Avatar" 
-        className="rounded-full object-cover shadow-md bg-slate-900 border border-white/10 select-none"
+        className="rounded-full object-cover [image-rendering:pixelated] shadow-md bg-slate-900 border border-white/10 select-none"
         style={{ 
           width: `${size}px`, 
           height: `${size}px`,
@@ -382,6 +371,7 @@ export default function BobozanOnline() {
   const [expGold, setExpGold] = useState(0);
   const [expTutIdx, setExpTutIdx] = useState(0);
   const expTutIdxRef = useRef(0);
+  const expTutorialSkippedRef = useRef(false);
   const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
   const [intentDismissed, setIntentDismissed] = useState<Set<string>>(new Set()); // 本回合手动点掉的意图
@@ -414,7 +404,8 @@ const expYpjUsedRef = useRef(false);
     expeditionBusyRef.current = false;
   };
 
-  const expMyId = () => user?.uid || 'exp_me';
+  // Local expedition identity must survive delayed Firebase sign-in.
+  const expMyId = () => 'exp_me';
 
   // 回合开始能量：热身腰带（首回合）/ Boss 光环（敌人）
   const applyExpTurnStartEnergy = (players: Player[], firstTurn: boolean): Player[] => {
@@ -452,6 +443,11 @@ const expYpjUsedRef = useRef(false);
     for (const pl of players) {
       if (pl.id === myId || pl.isDead) continue;
       const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === pl.id);
+      const practiceMove = expTutorialSkippedRef.current ? undefined : tutorialEnemyMove(stage.id, expTutIdxRef.current, pl.energy);
+      if (practiceMove) {
+        intents[pl.id] = practiceMove;
+        continue;
+      }
       intents[pl.id] = def ? expeditionBotMove(pl, players, def.personality, myId) : 'charge';
     }
     return intents;
@@ -540,10 +536,12 @@ const expYpjUsedRef = useRef(false);
     players = applyExpTurnStartEnergy(players, true);
     expMaxHpRef.current = Object.fromEntries(players.map(pl => [pl.id, pl.id === myId ? run.maxHp : pl.hp]));
     expBossEnragedRef.current = false;
-    expTutIdxRef.current = 0;
-    setExpTutIdx(0);
+    expTutIdxRef.current = expTutorialSkippedRef.current ? 999 : 0;
+    setExpTutIdx(expTutIdxRef.current);
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
+    setHandViewMode('CATEGORIES');
+    setHandCategory('CHARGE');
     setGameState({
       status: 'PLAYING',
       turn: 1,
@@ -570,6 +568,7 @@ const expYpjUsedRef = useRef(false);
     setExpGold(0);
     setExpEquipment([]);
     setExpShop([]);
+    expTutorialSkippedRef.current = false;
     setIsExpedition(true);
     setupExpeditionBattle(0);
     setView('GAME');
@@ -577,20 +576,6 @@ const expYpjUsedRef = useRef(false);
 
   const handleExpeditionMove = (cardId: string) => {
     if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle') return;
-    // 教学：出了当前高亮的牌，自动下一步
-    const tutSteps = EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expRunRef.current.stageIdx]?.id ?? ''];
-    if (tutSteps && expTutIdxRef.current < tutSteps.length) {
-      const hl = tutSteps[expTutIdxRef.current].highlight;
-      const played = SKILL_DB.find(x => x.id === cardId);
-      if (hl && (hl === cardId || (hl === 'ULTIMATE' && played?.type === 'ULTIMATE'))) {
-        expTutIdxRef.current += 1;
-        setExpTutIdx(expTutIdxRef.current);
-        // 教程毕业：第 3 关最后一步完成时庆祝一下
-        if (expTutIdxRef.current >= tutSteps.length && EXPEDITION_STAGES[expRunRef.current.stageIdx]?.id === 's2') {
-          setToastMsg(lang === 'zh' ? '🎓 教程完成！塔在等你，加油！' : '🎓 Tutorial complete! The tower awaits!');
-        }
-      }
-    }
     if (gameState.status !== 'PLAYING') return;
     const myId = expMyId();
     const me = gameState.players.find(p => p.id === myId);
@@ -599,6 +584,13 @@ const expYpjUsedRef = useRef(false);
     if (!card) return;
     if (me.energy < card.cost && !me.freeSkills?.includes(cardId)) return;
     if (me.disabledSkills?.includes(cardId)) return;
+
+    const tutSteps = EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expRunRef.current.stageIdx]?.id ?? ''];
+    const tutorialStep = tutSteps?.[expTutIdxRef.current];
+    if (tutorialStep && tutorialStep.highlight !== cardId) {
+      setToastMsg(tutorialStep.text[lang]);
+      return;
+    }
 
     expeditionBusyRef.current = true;
     setSubmittingMove(true);
@@ -612,7 +604,6 @@ const expYpjUsedRef = useRef(false);
     const myPreInventory = [...me.inventory];
     const playersWithMoves = gameState.players.map(p => {
       if (p.id === myId) return { ...p, selectedCardId: cardId };
-      if (p.isDead) return p;
       if (p.isDead) return p;
       const move = expIntents[p.id] ?? (() => {
         const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === p.id);
@@ -770,6 +761,15 @@ const expYpjUsedRef = useRef(false);
         }, 900));
       } else {
         run.hp = meHp;
+      }
+
+      // Advance only after a legal move has resolved; the next intent uses the new step.
+      if (tutorialStep?.highlight === cardId) {
+        expTutIdxRef.current += 1;
+        setExpTutIdx(expTutIdxRef.current);
+        if (run.stageIdx === 2 && expTutIdxRef.current >= tutSteps.length) {
+          setToastMsg(lang === 'zh' ? '🎓 教程完成！看意图、攒能量、选择克制的招式。' : '🎓 Ready! Read intent, save energy, choose your counter.');
+        }
       }
 
       setGameState(prev => ({
@@ -1012,8 +1012,25 @@ const expYpjUsedRef = useRef(false);
   const t = TEXT[lang]; 
   const [emojiMenuOpen, setEmojiMenuOpen] = useState(false);
 
-  const myPlayer = gameState.players.find((p: Player) => p.id === (user?.uid || 'me'));
+  const myPlayerId = isExpedition ? expMyId() : user?.uid || 'me';
+  const myPlayer = gameState.players.find((p: Player) => p.id === myPlayerId);
   const knownCards = myPlayer ? getPlayerCards(myPlayer, gameState.players) : [];
+
+  const preloadedCutinsRef = useRef(new Set<string>());
+  useEffect(() => {
+    if (view !== 'GAME' || reduceMotion) return;
+    for (const player of gameState.players) {
+      if (player.isDead) continue;
+      for (const card of getPlayerCards(player, gameState.players)) {
+        const def = ULT_CUTINS[card.id];
+        if (!def || preloadedCutinsRef.current.has(def.image)) continue;
+        preloadedCutinsRef.current.add(def.image);
+        const img = new Image();
+        img.onerror = () => preloadedCutinsRef.current.delete(def.image);
+        img.src = assetUrl(def.image);
+      }
+    }
+  }, [gameState.players, view, reduceMotion]);
 
   const [revengeCardId, setRevengeCardId] = useState<string | null>(null);
   const prevMatchCountRef = useRef(gameState.matchCount);
@@ -1022,7 +1039,7 @@ const expYpjUsedRef = useRef(false);
   useEffect(() => {
     // Detect if match count increased (New Game Started)
     if (gameState.matchCount > prevMatchCountRef.current) {
-       const me = gameState.players.find(p => p.id === user?.uid);
+       const me = gameState.players.find(p => p.id === myPlayerId);
        // If I have a temp skill at the start of the round, it's a Revenge Card
        if (me && me.tempSkills && me.tempSkills.length > 0) {
           setRevengeCardId(me.tempSkills[0]); // Show the first one
@@ -1031,7 +1048,7 @@ const expYpjUsedRef = useRef(false);
     }
     // Update ref
     prevMatchCountRef.current = gameState.matchCount;
-  }, [gameState.matchCount, gameState.players, user?.uid, muted]);
+  }, [gameState.matchCount, gameState.players, myPlayerId, muted]);
 
   // 3. Animation Style (Spin & Flip)
   const revengeStyle = `
@@ -2213,8 +2230,8 @@ const expYpjUsedRef = useRef(false);
 
             {/* --- POPUP MENU --- */}
             {isAvatarMenuOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 bg-slate-900/95 border border-slate-700 p-4 rounded-2xl shadow-2xl grid grid-cols-4 gap-3 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 z-[100]">
-                {AVATAR_OPTIONS.map((path) => (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-w-[calc(100vw-24px)] max-h-[50vh] overflow-y-auto bg-slate-900/95 border border-slate-700 p-4 rounded-2xl shadow-2xl grid grid-cols-4 gap-3 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 z-[100]">
+                {AVATAR_OPTIONS.map(({ path, name }) => (
                   <button
                     key={path}
                     onClick={() => {
@@ -2224,10 +2241,10 @@ const expYpjUsedRef = useRef(false);
                     }}
                     className={`
                       aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-110
-                      ${playerAvatar === path ? 'border-orange-500 ring-2 ring-orange-500/50' : 'border-slate-600 hover:border-white'}
+                      ${avatarUrl(playerAvatar) === assetUrl(path) ? 'border-orange-500 ring-2 ring-orange-500/50' : 'border-slate-600 hover:border-white'}
                     `}
                   >
-                    <img src={path} className="w-full h-full object-cover" alt="choice" />
+                    <img src={assetUrl(path)} className="w-full h-full object-cover [image-rendering:pixelated]" alt={name[lang]} title={name[lang]} />
                   </button>
                 ))}
                 
@@ -2676,7 +2693,7 @@ const expYpjUsedRef = useRef(false);
   );
 
   // GAME VIEW - MAIN RENDER
-  const myIndex = gameState.players.findIndex(p => p.id === user?.uid);
+  const myIndex = gameState.players.findIndex(p => p.id === myPlayerId);
   const totalPlayers = gameState.players.length;
   
   // --- UPDATED ANIMATION STYLE (With Random Tilt) ---
@@ -3041,27 +3058,29 @@ const expYpjUsedRef = useRef(false);
         )}
 
         {/* --- EXPEDITION TUTORIAL（前三关战斗内教学） --- */}
-        {isExpedition && expPhase === 'battle' && (() => {
+        {isExpedition && expPhase === 'battle' && gameState.status === 'PLAYING' && (() => {
           const steps = EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expStageIdx]?.id ?? ''];
           if (!steps || expTutIdx >= steps.length) return null;
           const step = steps[expTutIdx];
           return (
-            <div className="absolute left-6 top-[62%] z-50 w-full max-w-xs pointer-events-none">
+            <div className="absolute left-3 right-3 top-20 md:left-6 md:right-auto md:top-[55%] z-50 md:w-80 pointer-events-none">
               <div className="bg-amber-950/90 backdrop-blur-xl border border-amber-400/50 rounded-xl px-4 py-2.5 shadow-[0_10px_40px_rgba(0,0,0,0.5)] text-center pointer-events-auto">
                 <div className="text-[10px] font-black text-amber-400/70 tracking-widest mb-1">{lang === 'zh' ? `教程 ${expTutIdx + 1} / ${steps.length}` : `Tutorial ${expTutIdx + 1} / ${steps.length}`}</div>
                 <div className="text-sm font-bold text-amber-100 leading-snug">{step.text[lang]}</div>
                 <div className="flex justify-center gap-2 mt-2">
                   <button
-                    onClick={() => { expTutIdxRef.current += 1; setExpTutIdx(expTutIdxRef.current); }}
+                    disabled={!!step.highlight || submittingMove}
+                    onClick={() => { expTutIdxRef.current += 1; setExpTutIdx(expTutIdxRef.current); setExpIntents(computeExpIntents(gameState.players, expStageIdx)); }}
                     className="px-3 py-1 rounded-lg bg-amber-500 text-black text-xs font-black hover:scale-105 active:scale-95 transition-all"
                   >
-                    {lang === 'zh' ? '下一步 →' : 'Next →'}
+                    {step.highlight ? (lang === 'zh' ? '完成高亮操作后继续' : 'Play the highlighted card') : (lang === 'zh' ? '明白了 →' : 'Got it →')}
                   </button>
                   <button
-                    onClick={() => { expTutIdxRef.current = 999; setExpTutIdx(999); setToastMsg(lang === 'zh' ? '💡 能量为 0 也能点「攒」攒能量；看敌人旁边的气泡猜它要干嘛' : 'Tip: you can [Charge] even at 0 energy — watch the enemy bubble!'); }}
+                    disabled={submittingMove}
+                    onClick={() => { expTutorialSkippedRef.current = true; expTutIdxRef.current = 999; setExpTutIdx(999); setToastMsg(lang === 'zh' ? '💡 能量为 0 也能点「攒」攒能量；看敌人旁边的气泡猜它要干嘛' : 'Tip: you can [Charge] even at 0 energy — watch the enemy bubble!'); }}
                     className="px-3 py-1 rounded-lg bg-slate-700 text-slate-300 text-xs font-bold hover:scale-105 active:scale-95 transition-all"
                   >
-                    {lang === 'zh' ? '跳过教学' : 'Skip'}
+                    {lang === 'zh' ? '本轮跳过' : 'Skip this run'}
                   </button>
                 </div>
               </div>
@@ -3285,7 +3304,7 @@ const expYpjUsedRef = useRef(false);
         {/* Mobile Header */}
         <div className="md:hidden p-3 flex justify-between items-center bg-slate-900 border-b border-slate-800 z-50">
           <button onClick={() => leaveRoom()} className="flex items-center gap-1 text-slate-400"><LogOut size={18} /></button>
-          <span className="font-mono font-bold text-yellow-500">{isExpedition ? `${lang === 'zh' ? '远征' : 'Expedition'} ${expStageIdx + 1}/15` : roomCode}</span>
+          <span className="font-mono font-bold text-yellow-500">{isExpedition ? `${lang === 'zh' ? '远征' : 'Expedition'} ${expStageIdx + 1}/${EXPEDITION_STAGES.length}` : roomCode}</span>
           <span className="text-xs bg-indigo-500 px-2 py-1 rounded">M{gameState.matchCount}</span>
         </div>
 
@@ -3314,7 +3333,7 @@ const expYpjUsedRef = useRef(false);
 
              return gameState.players.map((p, i) => {
                const pos = getPlayerPosition(i, totalPlayers, myIndex);
-               const isMe = p.id === user?.uid;
+               const isMe = p.id === myPlayerId;
                const effLayer = (p.layer ?? 0) + (p.tempLayerMod ?? 0);
                const animClass = activeAnimations[p.id] === 'shake' ? 'animate-[shake_0.5s_ease-in-out]' : '';
                const damageVal = damageNumbers[p.id];
@@ -3403,7 +3422,7 @@ const expYpjUsedRef = useRef(false);
                                     <img 
                                       src={avatarUrl(p.avatar)}
                                       alt={p.name} 
-                                      className="w-full h-full object-cover transform hover:scale-110 transition-transform duration-500" 
+                                      className="w-full h-full object-cover [image-rendering:pixelated] transform hover:scale-110 transition-transform duration-500"
                                     />
                                 ) : (
                                     <div className="w-full h-full flex items-center justify-center bg-slate-800">
@@ -3480,6 +3499,7 @@ const expYpjUsedRef = useRef(false);
                               className="relative bg-amber-50 text-slate-900 text-2xl font-bold rounded-2xl px-4 py-2.5 w-max max-w-[16rem] text-left shadow-lg hover:scale-105 active:scale-95 transition-transform leading-snug"
                             >
                               {taunt}
+                              {expStageIdx < 3 && revealed && card && <span className="block text-xs mt-1 text-amber-800">{lang === 'zh' ? '本回合：' : 'This turn: '}{card.name[lang]}</span>}
                               <span className={`absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-50 rotate-45 ${toRight ? '-left-2' : '-right-2'}`} />
                             </button>
                             {badges.length > 0 && (
@@ -3694,6 +3714,7 @@ const expYpjUsedRef = useRef(false);
                def={u.def}
                playerName={u.playerName}
                skillName={u.skillName}
+               level={u.level}
                lang={lang}
                muted={muted}
                index={i}
@@ -3915,7 +3936,7 @@ const expYpjUsedRef = useRef(false);
                                .sort((a, b) => (b.kills || 0) - (a.kills || 0))
                                .slice(0, leaderboardMode === 'EXPANDED' ? gameState.players.length : 3) 
                                .map((p, i) => {
-                                   const isMe = p.id === user?.uid;
+                                   const isMe = p.id === myPlayerId;
                                    const hasKills = (p.kills || 0) > 0;
                                    const isLeader = i === 0 && hasKills;
 
