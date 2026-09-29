@@ -1,4 +1,5 @@
 import BattleArena from './components/BattleArena';
+import BattleHand from './components/BattleHand';
 import BattleSkillFlights from './components/BattleSkillFlights';
 import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
@@ -13,15 +14,12 @@ import { AVATAR_OPTIONS } from './data/avatars';
 import { tutorialEnemyMove } from './logic/expeditionTutorial';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
-  Shield,
   Music,
-  Zap,
   Swords,
   Skull,
   Smile,
   X,
   Flame,
-  Ghost,
   ArrowUp,
   ArrowDown,
   Target,
@@ -40,8 +38,6 @@ import {
   Globe,
   Volume2,
   VolumeX,
-  Star,
-  Layers,
   Undo2,
   HandHeart,
   House,
@@ -248,87 +244,6 @@ const TopControls = ({
     </div>
   );
 };
-
-// --- TILT CARD EFFECT ---
-const TiltCard = ({ 
-  children, 
-  onClick, 
-  onMouseEnter, 
-  onMouseLeave, 
-  className,
-  style,
-  disabled,
-  'data-card-type': cardType,
-  disableMotion = false,
-  glareColor = "#ffffff",
-  ...attributes
-}: React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean; glareColor?: string; disableMotion?: boolean; 'data-card-type'?: string; 'data-tutorial-target'?: boolean }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
-  const [rotate, setRotate] = useState({ x: 0, y: 0 });
-  const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
-
-  const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (disabled || disableMotion || !cardRef.current) return;
-
-    const rect = cardRef.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
-    
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const rotateY = ((mouseX / width) - 0.5) * 20; 
-    const rotateX = ((mouseY / height) - 0.5) * -20;
-
-    setRotate({ x: rotateX, y: rotateY });
-    setGlare({ x: (mouseX / width) * 100, y: (mouseY / height) * 100, opacity: 1 });
-  };
-
-  const handleLeave = (e: React.MouseEvent<HTMLDivElement>) => {
-    setRotate({ x: 0, y: 0 });
-    setGlare({ x: 50, y: 50, opacity: 0 });
-    if (onMouseLeave) onMouseLeave(e);
-  };
-
-  return (
-    <div
-      {...attributes}
-      ref={cardRef}
-      data-card-type={cardType}
-      role="button"
-      tabIndex={disabled ? -1 : 0}
-      aria-disabled={disabled}
-      onKeyDown={(e) => { if (!disabled && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.currentTarget.click(); } }}
-      onClick={disabled ? undefined : onClick}
-      onMouseMove={handleMove}
-      onMouseLeave={handleLeave}
-      onMouseEnter={onMouseEnter}
-      className={`${className} transition-transform duration-100 ease-out will-change-transform`}
-      style={{
-        ...style,
-        transform: disableMotion ? style?.transform : `${style?.transform || ''} perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale3d(1.02, 1.02, 1.02)`,
-      }}
-    >
-      {children}
-      
-      {!disabled && !disableMotion && (
-        <div 
-          className="absolute inset-0 pointer-events-none z-40 rounded-2xl"
-          style={{
-            // 🌟 Use the passed color, fading to transparent
-            background: `radial-gradient(circle at ${glare.x}% ${glare.y}%, ${glareColor} 0%, transparent 60%)`,
-            opacity: glare.opacity,
-            mixBlendMode: 'hard-light', // 🌟 hard-light makes colors vibrant on dark backgrounds
-            transition: 'opacity 0.2s ease',
-          }}
-        />
-      )}
-    </div>
-  );
-};
-
-// 🃏 GENERATE RANDOM BACKGROUND CARDS (Optimized Visibility)
-
 
 // --- MAIN COMPONENT ---
 
@@ -613,9 +528,6 @@ const expYpjUsedRef = useRef(false);
     setSubmittingMove(true);
     initAudio();
     playSound('draw', muted);
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    setHoveredCard(null);
-    setTooltipPos(null);
 
     const stage = EXPEDITION_STAGES[expRunRef.current.stageIdx];
     const myPreInventory = [...me.inventory];
@@ -961,9 +873,6 @@ const expYpjUsedRef = useRef(false);
   // 必杀及联合技过场。
   const [ultCutins, setUltCutins] = useState<(UltCutinPick & { key: number })[]>([]);
 
-  const [hoveredCard, setHoveredCard] = useState<string | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{x: number, y: number} | null>(null);
-  const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   
 
   const [poppingFree, setPoppingFree] = useState<Record<string, boolean>>({});
@@ -1207,107 +1116,6 @@ const expYpjUsedRef = useRef(false);
       }, 180); 
     }
   }, [myTempSkills]);
-
-  const handleMouseEnter = (e: React.MouseEvent, cardId: string) => {
-    // 手牌外层包了一层静止的 hover 容器（防闪烁），提示框按内层卡牌定位；摊牌卡没有包装，直接量自身
-    const innerCard = e.currentTarget.classList.contains('hand-card')
-      ? e.currentTarget
-      : e.currentTarget.querySelector('.hand-card');
-    const rect = (innerCard ?? e.currentTarget).getBoundingClientRect();
-    const x = rect.left + rect.width / 2;
-    const y = rect.top - 70;
-
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    hoverTimer.current = setTimeout(() => {
-      setHoveredCard(cardId);
-      setTooltipPos({ x, y });
-    }, 600); // 想更快就再调小一点
-  };
-
-  const handleMouseLeave = () => {
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    setHoveredCard(null);
-    setTooltipPos(null);
-  };
-
-  
-  const Tooltip = () => {
-    if (!hoveredCard || !tooltipPos) return null;
-    const card = SKILL_DB.find(c => c.id === hoveredCard);
-    if (!card) return null;
-
-    // Check if disabled
-    const isDisabled = myPlayer?.disabledSkills?.includes(card.id);
-
-    const typeStr = t.skillType[card.type] || card.type;
-    const lvlStr =
-      card.levelRequired === 100
-        ? t.skillType.COMBO
-        : `Lv ${card.levelRequired}`;
-
-    return (
-      <div
-        className={`
-          fixed z-[100] w-64
-          rounded-2xl px-4 py-3
-          shadow-2xl backdrop-blur
-          pointer-events-none
-          animate-in fade-in zoom-in duration-200
-          border
-          ${isDisabled 
-            ? 'bg-slate-800/95 border-red-500/50 grayscale'  // Disabled 样式
-            : 'bg-slate-900/95 border-slate-700 text-white' // Normal 样式
-          }
-        `}
-        style={{
-          left: tooltipPos.x,
-          top: tooltipPos.y,
-          transform: 'translate(-50%, -110%)',
-        }}
-      >
-        {/* 头部 */}
-        <div className="flex items-center gap-3">
-          <div className={`w-8 h-8 rounded-full flex items-center justify-center ${isDisabled ? 'bg-slate-700' : 'bg-slate-800'}`}>
-            <div className="scale-75">{getCardIcon(card.id)}</div>
-          </div>
-
-          <div className="flex flex-col">
-            <div className="flex items-center gap-2">
-               <div className={`font-bold text-base leading-tight ${isDisabled ? 'text-slate-400 line-through' : ''}`}>
-                 {card.name[lang]}
-               </div>
-               {isDisabled && (
-                 <span className="text-red-400 text-xs font-black bg-red-950/50 px-1.5 py-0.5 rounded uppercase">
-                   {lang === 'zh' ? '已禁用' : 'DISABLED'}
-                 </span>
-               )}
-            </div>
-            <div className={`text-[11px] font-mono mt-0.5 ${isDisabled ? 'text-slate-500' : 'text-yellow-300'}`}>
-              {lvlStr} · {typeStr}
-            </div>
-          </div>
-        </div>
-
-        {/* 分割线 */}
-        <div className="mt-2 h-px bg-white/10" />
-
-        {/* 描述文案 */}
-        <div className={`mt-2 text-xs leading-relaxed ${isDisabled ? 'text-slate-500' : 'text-slate-200'}`}>
-          {card.description[lang]}
-        </div>
-
-        {/* 小三角 */}
-        <div className={`
-          absolute bottom-0 left-1/2 -translate-x-1/2 translate-y-full
-          w-0 h-0
-          border-l-[8px] border-l-transparent
-          border-r-[8px] border-r-transparent
-          border-t-[8px]
-          ${isDisabled ? 'border-t-slate-800/95' : 'border-t-slate-900/95'}
-        `} />
-      </div>
-    );
-  };
 
   const copyToClipboard = (text: string, successMessage: string) => {
     if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -1604,9 +1412,6 @@ const expYpjUsedRef = useRef(false);
   const movePendingRef = useRef(false);
   const submitMove = async (cardId: string) => {
     if (!isOnline || !user || submittingMove || movePendingRef.current) return;
-    if (hoverTimer.current) clearTimeout(hoverTimer.current);
-    setHoveredCard(null);
-    setTooltipPos(null);
     movePendingRef.current = true;
     setSubmittingMove(true);
     initAudio();
@@ -1838,66 +1643,6 @@ const expYpjUsedRef = useRef(false);
           return a.cost - b.cost;
         })
       : filteredHand;
-
-  // 兜底：手牌重渲染把悬停卡片的 DOM 换掉时，可能收不到 mouseleave，
-  // 悬停的卡若已不在手牌里，直接清除提示状态，避免提示框永久卡住
-  useEffect(() => {
-    if (hoveredCard && !orderedHand.some(c => c.id === hoveredCard)) {
-      if (hoverTimer.current) clearTimeout(hoverTimer.current);
-      setHoveredCard(null);
-      setTooltipPos(null);
-    }
-  }, [orderedHand, hoveredCard]);
-
-  const getCategoryIcon = (cat: HandCategory) => {
-    switch (cat) {
-      case 'CHARGE':
-        // same style as charge skill card
-        return (
-          <Zap
-            size={48}
-            className="text-yellow-400 fill-yellow-400/20"
-          />
-        );
-
-      case 'ATTACK':
-        // default attack style (like swords / bombs)
-        return (
-          <Swords
-            size={48}
-            className="text-red-400"
-          />
-        );
-
-      case 'DEFEND':
-        return (
-          <Shield
-            size={48}
-            className="text-blue-400 fill-blue-400/20"
-          />
-        );
-
-      case 'ULTIMATE':
-        return (
-          <Skull
-            size={48}
-            className="text-purple-400"
-          />
-        );
-
-      case 'SPECIAL':
-        return (
-          <Star
-            size={48}
-            className="text-emerald-400"
-          />
-        );
-    }
-  };
-
-
-
-  const categories: HandCategory[] = ['CHARGE', 'ATTACK', 'DEFEND', 'ULTIMATE', 'SPECIAL'];
 
   // --- RENDER LOGIC ---
 
@@ -2393,7 +2138,7 @@ const expYpjUsedRef = useRef(false);
       onBack={goBackPage}
     />
 
-      <Tooltip />
+
 
       {/* 🔹 Side Buttons (Emoji & Share) */}
       <div className="hidden md:flex fixed bottom-80 right-20 z-50 flex-col gap-3 items-center">
@@ -3021,7 +2766,8 @@ const expYpjUsedRef = useRef(false);
           )}
           </div>
 
-        {/* The selected portrait and controls remain still above the left of the hand. */}
+        <div className="battle-command-dock">
+        {/* The portrait and hand share the foreground of the clearing. */}
         {myPlayer && <div className="battle-player-hud" aria-label={lang === 'zh' ? '我的状态' : 'My status'}>
           <div className={`battle-hud-portrait ${myPlayer.isDead ? 'battle-hud-dead' : ''}`}>
             {myPlayer.avatar ? <img src={avatarUrl(myPlayer.avatar)} alt={myPlayer.name} draggable={false} /> : <User size={52} />}
@@ -3054,396 +2800,14 @@ const expYpjUsedRef = useRef(false);
           }}
         />}
 
-        {/* 3. 手牌区 */}
-        <div className="pixel-hand-area h-64 bg-gradient-to-t from-black/30 via-slate-950/10 to-transparent relative z-40 flex flex-col">
-
-            <div className="battle-hand-heading"><span>{gameState.status === 'SHOWDOWN' ? (lang === 'zh' ? '招式交锋 · 回合结算' : 'CLASH · RESOLVING') : myPlayer?.selectedCardId ? (lang === 'zh' ? '已出牌 · 等待对手' : 'MOVE LOCKED · WAITING') : (lang === 'zh' ? '你的回合 · 选择招式' : 'YOUR MOVE · CHOOSE A SKILL')}</span><small>{lang === 'zh' ? '观察意图，见招拆招' : 'READ • REACT • STRIKE'}</small></div>
-            {/* HAND AREA */}
-            <div className="flex-1 w-full relative flex justify-center items-end pb-8">
-                {!myPlayer || myPlayer.isDead ? (
-                    <div className="text-slate-500 flex flex-col items-center gap-2 mb-10">
-                        <Ghost size={48} className="opacity-30" />
-                        <p>{t.dead}</p>
-                    </div>
-                ) : myPlayer.selectedCardId ? (
-                     <div className="text-green-500 flex flex-col items-center gap-2 mb-10 animate-pulse">
-                        <CheckCircle size={48} />
-                        <p className="font-bold text-xl">{t.moveLocked}</p>
-                    </div>
-                ) : (
-                    <div className={`pixel-hand-tray ${handViewMode === 'CATEGORIES' ? 'pixel-categories' : 'pixel-cards'} relative h-[250px] w-full max-w-4xl flex justify-center items-end px-10`}>
-                        
-                        {/* MODE 1: CATEGORY SELECTION (FOLDERS) */}
-                        {handViewMode === 'CATEGORIES' && (
-                          categories.map((cat, index) => {
-                            const total = categories.length;
-                            const middle = (total - 1) / 2;
-                            const offset = index - middle;
-                            const rotateDeg = offset * 4;
-                            const translateY = Math.abs(offset) * 6;
-                            const translateX = offset * 120;
-
-
-                            const isChargeDisabled =
-                              cat === 'CHARGE' && ((myPlayer?.disabledSkills || []).includes('charge') ||
-                                !!activeTutorialStep && activeTutorialStep.highlight !== 'charge');
-
-                            // STYLES
-                            let bgGradient = 'bg-slate-800';
-                            let borderClass = 'border-slate-600';
-                            let hoverGlowClass = 'hover:shadow-[0_0_30px_rgba(255,255,255,0.3)]'; 
-
-                            if (cat === 'ATTACK') {
-                              bgGradient = 'bg-gradient-to-b from-red-900 to-slate-900';
-                              borderClass = 'border-red-500';
-                              hoverGlowClass = 'hover:shadow-[0_0_40px_rgba(239,68,68,0.7)]'; 
-                            }
-                            if (cat === 'DEFEND') {
-                              bgGradient = 'bg-gradient-to-b from-blue-900 to-slate-900';
-                              borderClass = 'border-blue-500';
-                              hoverGlowClass = 'hover:shadow-[0_0_40px_rgba(59,130,246,0.7)]'; 
-                            }
-                            if (cat === 'ULTIMATE') {
-                              bgGradient = 'bg-gradient-to-b from-purple-900 to-slate-900';
-                              borderClass = 'border-purple-500';
-                              hoverGlowClass = 'hover:shadow-[0_0_40px_rgba(168,85,247,0.7)]'; 
-                            }
-                            if (cat === 'CHARGE') {
-                              bgGradient = 'bg-gradient-to-b from-yellow-900 to-slate-900';
-                              borderClass = 'border-yellow-500';
-                              hoverGlowClass = 'hover:shadow-[0_0_40px_rgba(234,179,8,0.7)]'; 
-                            }
-                            if (cat === 'SPECIAL') {
-                              bgGradient = 'bg-gradient-to-b from-emerald-900 to-slate-900';
-                              borderClass = 'border-emerald-500';
-                              hoverGlowClass = 'hover:shadow-[0_0_40px_rgba(16,185,129,0.7)]'; 
-                            }
-
-                            // 🟢 FIX: Dynamic Classes based on State
-                            // If suggested, we DISABLE standard transitions and hover transforms to prevent glitching.
-                            const standardClasses = `transition-colors duration-150 hover:z-50 ${hoverGlowClass}`;
-                            const entranceAnim = '';
-
-                            // 教程：高亮牌所在的文件夹也发光（牌藏在文件夹里，不提示根本找不到）
-                            const tutCatGlow = tutorialCategory === cat;
-
-                            return (
-                              <div
-                                key={cat}
-                                data-card-type={cat}
-                                data-tutorial-target={tutCatGlow}
-                                aria-describedby={activeTutorialStep ? 'tutorial-instruction' : undefined}
-                                role="button"
-                                tabIndex={isChargeDisabled ? -1 : 0}
-                                aria-label={t.categories[cat]}
-                                aria-disabled={isChargeDisabled}
-                                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.currentTarget.click(); } }}
-                                onClick={() => {
-                                  if (cat === 'CHARGE') {
-                                    if (isChargeDisabled) return;
-                                    if (!myPlayer || submittingMove) return; 
-
-                                    const chargeCard = knownCards.find(c => c.id === 'charge');
-                                    const canAfford = chargeCard && myPlayer.energy >= chargeCard.cost;
-
-                                    if (canAfford) {
-                                      if (isExpedition) {
-                                          handleExpeditionMove('charge');
-                                      } else {
-                                          submitMove('charge');
-                                      }
-                                    }     
-                                  } else {
-                                    selectCategory(cat);
-                                  }
-                                }}
-                                className={`
-                                  absolute w-36 h-56 rounded-2xl border-4 shadow-2xl
-                                  overflow-hidden
-                                  origin-bottom
-                                  cursor-pointer group flex flex-col items-center justify-center hand-card
-                                  ${tutCatGlow ? '' : entranceAnim}
-                                  
-                                  ${isChargeDisabled
-                                      ? 'border-slate-700 grayscale opacity-70 cursor-not-allowed'
-                                      : `${borderClass} ${tutCatGlow ? 'transition-colors duration-150' : standardClasses}`
-                                  }
-                                  ${tutCatGlow ? 'tutorial-highlight' : ''}
-                                `}
-                                style={{
-                                  // 🟢 FIX: Transform is stable. If suggested, we force the scale here.
-                                  // We removed the 'transition-all' class when isSuggested is true, so this won't jitter.
-                                  transform: `
-                                    translateX(${translateX}px) 
-                                    translateY(${translateY}px) 
-                                    rotate(${rotateDeg}deg) 
-                                  `,
-                                  zIndex: tutCatGlow ? 60 : index,
-                                  bottom: '30px',
-                                  backgroundColor: '#1a1a1a',
-                                }}
-                              >
-                                <div className={`absolute inset-0 ${bgGradient} opacity-90`} />
-                                <div className="absolute inset-0 border border-white/10 rounded-xl pointer-events-none" />
-                                
-                                <div className="absolute inset-0 bg-white/10 group-hover:translate-x-full transition-transform duration-700 ease-in-out -skew-x-12 origin-left z-10 pointer-events-none" />
-
-                                {isChargeDisabled && !activeTutorialStep && (
-                                  <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
-                                    <X className="text-red-500/80 w-24 h-24 drop-shadow-lg" strokeWidth={3} />
-                                    <span className="absolute mt-16 text-red-200 font-black text-sm bg-red-900/80 px-2 py-1 rounded">
-                                      {lang === 'zh' ? '已禁用' : 'DISABLED'}
-                                    </span>
-                                  </div>
-                                )}
-
-                                <div className="w-full h-32 flex items-center justify-center relative z-10 mt-2">
-                                  <div className="transition-transform duration-300 drop-shadow-[0_8px_8px_rgba(0,0,0,0.5)] group-hover:scale-110">
-                                    {getCategoryIcon(cat)}
-                                  </div>
-                                </div>
-
-                                <div className="mt-0 mb-2 text-white font-bold text-lg tracking-wide relative z-10 text-center drop-shadow-md">
-                                  {t.categories[cat]}
-                                </div>
-
-                                <div className="absolute inset-0 bg-white/5 group-hover:bg-white/0 pointer-events-none transition-colors" />
-                              </div>
-                            );
-                          })
-                        )}
-                        
-                        {/* MODE 2: CARDS IN SELECTED CATEGORY */}
-                        {handViewMode === 'CARDS' && (
-                           <>
-                              {/* Back Button */}
-                              <button 
-                                 onClick={goBackToCategories}
-                                 className="pixel-hand-back absolute left-4 top-1/2 -translate-y-1/2 z-[60] bg-slate-800 hover:bg-slate-700 text-white p-3 rounded-full border border-slate-600 shadow-xl transition-all hover:scale-110"
-                              >
-                                 <Undo2 size={24} />
-                              </button>
-
-                              {orderedHand.length === 0 ? (
-                                 <div className="text-slate-500 flex flex-col items-center animate-in fade-in zoom-in duration-300">
-                                    <Layers size={48} className="opacity-30 mb-2"/>
-                                    <span>No cards</span>
-                                 </div>
-                              ) : (
-                                 orderedHand.map((c, index) => {
-                                    const total = orderedHand.length;
-                                    const middle = (total - 1) / 2;
-                                    const offset = index - middle;
-                                    const rotateDeg = offset * 4; 
-                                    const translateY = Math.abs(offset) * 6;
-                                    const translateX = offset * (isSmallScreen ? 92 : 120); 
-                                    
-                                    // Check if Player has Free Uses
-                                    const hasFree = myPlayer.freeSkills?.includes(c.id) ?? false;
-
-                                    // Check Affordability
-                                    const canAfford = hasFree || myPlayer.energy >= c.cost;
-
-                                    // Check Disabled State
-                                    const isDisabled = myPlayer.disabledSkills?.includes(c.id);
-
-                                    // Count of Free Uses Absorbed
-                                    const freeCount =
-                                      myPlayer.freeSkills?.filter((id) => id === c.id).length ?? 0;
-
-                                    // Check if this card is currently popping (used with free)
-                                    const isPopping = !!poppingFree[c.id];
-
-                                    // 检查是否是临时卡
-                                    const isTemp = (myPlayer.tempSkills || []).includes(c.id);
-
-                                    const tempCount = myPlayer.tempSkills?.filter((id) => id === c.id).length ?? 0;
-
-                                    // Card Styles (Same as before)
-                                    let bgGradient = 'bg-slate-800';
-                                    let borderClass = 'border-slate-600';
-
-                                    if (c.type === 'ATTACK') { bgGradient = 'bg-gradient-to-b from-red-900 to-slate-900'; borderClass = 'border-red-500'; }
-                                    if (c.type === 'DEFEND') { bgGradient = 'bg-gradient-to-b from-blue-900 to-slate-900'; borderClass = 'border-blue-500'; }
-                                    if (c.type === 'ULTIMATE') { bgGradient = 'bg-gradient-to-b from-purple-900 to-slate-900'; borderClass = 'border-purple-500'; }
-                                    if (c.type === 'CHARGE') { bgGradient = 'bg-gradient-to-b from-yellow-900 to-slate-900'; borderClass = 'border-yellow-500'; }
-                                    if (c.type === 'SPECIAL' || c.type === 'ABSORB') { bgGradient = 'bg-gradient-to-b from-emerald-900 to-slate-900'; borderClass = 'border-emerald-500'; }
-
-                                    const isCombo = c.tags?.includes('combo');
-                                    if (isCombo) {
-                                      bgGradient =
-                                        'bg-gradient-to-b from-yellow-500 via-amber-500 to-orange-500';
-                                      borderClass = 'border-yellow-300';
-                                    }
-
-                                    let glareColor = '#ffffff'; // default
-                                    if (c.type === 'ATTACK') glareColor = '#f87171'; // Red-400 
-                                    if (c.type === 'DEFEND') glareColor = '#60a5fa'; // Blue-400 
-                                    if (c.type === 'ULTIMATE') glareColor = '#c084fc'; // Purple-400 
-                                    if (c.type === 'CHARGE') glareColor = '#facc15'; // Yellow-400 
-                                    if (c.type === 'SPECIAL' || c.type === 'ABSORB') glareColor = '#34d399'; // Emerald-400 
-                                    if (c.tags?.includes('combo')) glareColor = '#fbbf24'; // Amber-400 
-
-                                    const isHovered = hoveredCard === c.id;
-                                    // 远征前三关教学：高亮当前步骤的牌
-                                    const tutGlow = activeTutorialStep?.highlight === c.id;
-                                    const tutorialBlocked = !!activeTutorialStep && !tutGlow;
-                                    return (
-                                      <div
-                                          key={`${c.id}-${index}`}
-                                          className={`pixel-card-slot absolute ${isSmallScreen ? 'w-28' : 'w-36'}`}
-                                          style={{
-                                            zIndex: tutGlow ? 1000 : isHovered ? 999 : index,
-                                            bottom: '30px',
-                                            transform: `translateX(${translateX}px) translateY(${translateY}px)`,
-                                            // 隐形 hover 保护区：卡片上浮时光标仍停留在容器内，
-                                            // 不会误触发 mouseleave，提示框就不会反复闪烁
-                                            paddingTop: 0,
-                                            marginTop: 0,
-                                          }}
-                                          onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => handleMouseEnter(e, c.id)}
-                                          onMouseLeave={handleMouseLeave}
-                                      >
-                                       <TiltCard
-                                          disableMotion={true}
-                                          glareColor={glareColor}
-                                          data-card-type={c.type}
-                                          data-tutorial-target={tutGlow}
-                                          aria-describedby={activeTutorialStep ? 'tutorial-instruction' : undefined}
-                                          onClick={() => {
-                                            const disabled = (myPlayer?.disabledSkills || []).includes(c.id);
-                                            if (canAfford && !disabled && !submittingMove && !tutorialBlocked) {
-                                              if (isExpedition) {
-                                                  handleExpeditionMove(c.id); // <--- Expedition mode
-                                              } else {
-                                                  submitMove(c.id);           // <--- Normal Game
-                                              }
-                                            }
-                                          }}
-                                          disabled={isDisabled || !canAfford || tutorialBlocked}
-                                          className={`
-                                            relative ${isSmallScreen ? 'w-28 h-44' : 'w-36 h-56'} rounded-2xl border-4 ${borderClass}
-                                            shadow-2xl
-                                            ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''}
-                                            ${tutGlow ? 'tutorial-highlight' : ''}
-                                            ${tutorialBlocked ? 'tutorial-other-card' : ''}
-                                            origin-bottom
-                                            cursor-pointer group flex flex-col items-center overflow-hidden hand-card
-
-                                            ${isDisabled 
-                                              ? 'border-slate-700 grayscale opacity-70 cursor-not-allowed' 
-                                              : `${borderClass} ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''} ${!canAfford ? 'grayscale opacity-60' : ''}`
-                                            }
-                                          `}
-                                          style={{
-                                            backgroundColor: '#1a1a1a',
-                                            // 悬停只做视觉上浮（容器不动），hover 判定区保持稳定
-                                            transform: tutGlow ? 'rotate(0deg)' : `rotate(${rotateDeg}deg)`,
-                                          }}
-                                        >
-                                          {/* 1. Background Gradient */}
-                                          <div className={`absolute inset-0 ${bgGradient} opacity-90`}/>
-
-                                          {/* 🔥 2. SHINE EFFECT (New Animation) */}
-                                          <div className="absolute inset-0 bg-white/10 group-hover:translate-x-full transition-transform duration-700 ease-in-out -skew-x-12 origin-left z-10 pointer-events-none" />
-                                          
-                                          {/* 3. Labels & Badges */}
-                                          {hasFree && (
-                                            <div className="absolute bottom-1 left-2 text-[10px] font-bold text-emerald-300 bg-black/60 px-1 rounded z-20">
-                                              FREE
-                                            </div>
-                                          )}
-
-                                          {/* Temp Label */}
-                                          {isTemp && !hasFree && (
-                                            <div className="absolute bottom-1 left-2 text-[10px] font-bold text-orange-400 bg-black/60 px-1 rounded border border-orange-500/30 z-20">
-                                              TEMP
-                                            </div>
-                                          )}
-
-                                          {/* Cost Gem */}
-                                          <div className="absolute top-0 left-0 z-20">
-                                                <div className="w-10 h-10 bg-blue-500 rounded-br-2xl flex items-center justify-center shadow-lg border-r border-b border-blue-300">
-                                                   <span className="font-black text-white text-lg drop-shadow-md">{c.cost}</span>
-                                                </div>
-                                          </div>
-
-                                          {/* RED X OVERLAY (Disabled) */}
-                                          {isDisabled && (
-                                            <div className="absolute inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-[1px]">
-                                              <X className="text-red-500/80 w-24 h-24 drop-shadow-lg" strokeWidth={3} />
-                                              <span className="absolute mt-16 text-red-200 font-black text-sm bg-red-900/80 px-2 py-1 rounded">
-                                                {lang === 'zh' ? '已禁用' : 'DISABLED'}
-                                              </span>
-                                            </div>
-                                          )}
-
-                                          {/* Free Count (xN) */}
-                                          {freeCount > 0 && (
-                                            <div className="absolute top-0 right-1 z-30 pointer-events-none select-none">
-                                              <span className={`block text-[50px] font-black text-red-400 tracking-tight transition-transform duration-150 ease-out ${isPopping ? 'scale-110' : 'scale-100'}`}
-                                                style={{ WebkitTextStroke: '8px #991b1b', paintOrder: 'stroke fill' }}>
-                                                ×{freeCount}
-                                              </span>
-                                            </div>
-                                          )}
-
-                                          {/* Temp Count (xN) */}
-                                          {tempCount > 0 && (
-                                            <div className={`absolute ${freeCount > 0 ? 'top-10' : 'top-0'} right-1 z-30 pointer-events-none select-none`}>
-                                              <span
-                                                className="block text-[50px] font-black text-orange-400 tracking-tight"
-                                                style={{
-                                                  WebkitTextStroke: '8px #7c2d12',
-                                                  paintOrder: 'stroke fill',
-                                                }}
-                                              >
-                                                ×{tempCount}
-                                              </span>
-                                            </div>
-                                          )}
-
-                                          {/* Level Badge */}
-                                          <div className="absolute top-1.5 right-1.5 z-20 flex flex-col items-end gap-1 pointer-events-none">
-                                            {c.levelRequired > 0 && c.levelRequired < 100 && (
-                                              <div className="text-xs font-mono font-bold text-yellow-400 bg-black/70 px-1.5 py-0.5 rounded backdrop-blur-md border border-yellow-500/30 shadow-sm">
-                                                Lv.{c.levelRequired}
-                                              </div>
-                                            )}
-                                          </div>
-
-                                          {/* Icon */}
-                                          <div className="w-full h-32 flex items-center justify-center relative z-10 mt-2">
-                                                <div className="transform group-hover:scale-110 transition-transform duration-300 drop-shadow-[0_5px_5px_rgba(0,0,0,0.8)]">
-                                                   {getCardIcon(c.id)}
-                                                </div>
-                                          </div>
-
-                                          {/* Name */}      
-                                          <div className="mt-1 mb-1 text-white font-bold text-sm tracking-wide relative z-10 text-center">
-                                            {c.name[lang]}
-                                          </div>
-
-                                          {/* Description */}
-                                          <div className="flex-1 w-full bg-[#111] bg-opacity-90 p-2 text-center flex items-center justify-center border-t border-white/10 relative z-10">
-                                                <p className="text-[10px] text-slate-300 leading-tight">{c.description[lang]}</p>
-                                          </div>
-
-                                          {/* Subtle Hover Highlight */}
-                                          <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 pointer-events-none z-30 transition-colors"/>
-                                          
-                                       </TiltCard>
-                                      </div>
-                                    );
-                                 })
-                              )}
-                           </>
-                        )}
-                    </div>
-                )}
-            </div>
+        <BattleHand player={myPlayer} knownCards={knownCards} cards={orderedHand} lang={lang}
+          category={handCategory} viewMode={handViewMode} status={gameState.status} submitting={submittingMove}
+          tutorialHighlight={activeTutorialStep?.highlight} tutorialCategory={tutorialCategory} poppingFree={poppingFree}
+          onCategory={selectCategory} onBack={goBackToCategories} onPlay={id => {
+            if (isExpedition) handleExpeditionMove(id);
+            else submitMove(id);
+          }} />
         </div>
-
       </div>
 
       {/* --- REVENGE / BOUNTY CARD REVEAL ANIMATION --- */}
