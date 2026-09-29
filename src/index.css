@@ -475,9 +475,6 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
 .tutorial-reminder { display: flex; justify-content: flex-end; padding: 8px 18px; background: #152334; }
 .pixel-app .tutorial-reopen { min-height: 44px; padding: 6px 14px; border: 1px solid #718493; background: #273c50; color: #f4d698; font-size: 16px; }
 .tutorial-other-card { opacity: .5; cursor: not-allowed; }
-.tutorial-recap { border: 1px solid #92835b; background: #333b3e; padding: 12px; margin: 14px 0; text-align: left; }
-.tutorial-recap strong { color: #b0e0bb; font-size: 18px; }
-.tutorial-recap p { margin: 8px 0 0; font-size: 18px; line-height: 1.6; color: #f5e6c7; }
 @media (max-width: 767px) {
   .tutorial-dialog { padding: 22px; }
   .tutorial-dialog h2 { font-size: 24px; }

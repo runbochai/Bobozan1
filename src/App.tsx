@@ -2,6 +2,7 @@ import BattleArena from './components/BattleArena';
 import BattleFighter from './components/BattleFighter';
 import BattleStats from './components/BattleStats';
 import TutorialGuide from './components/TutorialGuide';
+import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
 import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
 import { getBattleSeat } from './logic/battleLayout';
 import BrawlCover from './components/BrawlCover';
@@ -11,8 +12,6 @@ import { tutorialEnemyMove } from './logic/expeditionTutorial';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Shield,
-  Chest,
-  Coins,
   Music,
   Zap,
   Swords,
@@ -37,7 +36,6 @@ import {
   CheckCircle,
   AlertTriangle,
   Globe,
-  Heart,
   Volume2,
   VolumeX,
   Star,
@@ -63,7 +61,7 @@ import { pickUltCutins, isLevelUltimate, ULT_CUTINS, type UltCutinPick } from '.
 import UltCutin from './components/UltCutin';
 import InventoryBar from './components/InventoryBar';
 import type { ExpeditionEnemyDef } from './data/expedition';
-import { EXPEDITION_RELICS, EXPEDITION_STAGES, EXPEDITION_TUTORIALS, EXPEDITION_LESSONS } from './data/expedition';
+import { EXPEDITION_STAGES, EXPEDITION_TUTORIALS, EXPEDITION_LESSONS } from './data/expedition';
 import { drawGachaCard } from './data/expedition';
 import {
   applyIronhide,
@@ -395,7 +393,6 @@ export default function BobozanOnline() {
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
   const [intentDismissed, setIntentDismissed] = useState<Set<string>>(new Set()); // 本回合手动点掉的意图
   const [passiveTip, setPassiveTip] = useState<string | null>(null); // 敌人被动说明：`${enemyId}|${badgeKey}`
-  const [shopShake, setShopShake] = useState<number | null>(null); // 商城买不起抖动
   const [expEquipment, setExpEquipment] = useState<string[]>([]);
   const [expGachaCardId, setExpGachaCardId] = useState<string | null>(null);
   const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
@@ -1050,7 +1047,7 @@ const expYpjUsedRef = useRef(false);
   // 2. Watch for New Match & Temp Skills
   useEffect(() => {
     // Detect if match count increased (New Game Started)
-    if (gameState.matchCount > prevMatchCountRef.current) {
+    if (!isExpedition && gameState.matchCount > prevMatchCountRef.current) {
        const me = gameState.players.find(p => p.id === myPlayerId);
        // If I have a temp skill at the start of the round, it's a Revenge Card
        if (me && me.tempSkills && me.tempSkills.length > 0) {
@@ -1060,7 +1057,7 @@ const expYpjUsedRef = useRef(false);
     }
     // Update ref
     prevMatchCountRef.current = gameState.matchCount;
-  }, [gameState.matchCount, gameState.players, myPlayerId, muted]);
+  }, [gameState.matchCount, gameState.players, myPlayerId, muted, isExpedition]);
 
   // 3. Animation Style (Spin & Flip)
   const revengeStyle = `
@@ -2690,121 +2687,13 @@ const expYpjUsedRef = useRef(false);
           </div>
         )}
 
-        {/* --- EXPEDITION REWARD（战后多选一） --- */}
+        {/* Visual rewards and supplies; native dialogs keep focus in the active step. */}
         {isExpedition && expPhase === 'reward' && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className="pixel-dialog bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-6 w-full max-w-2xl text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
-              <Crown size={40} className="mx-auto mb-2 text-amber-200" />
-              <h2 className="text-xl font-black text-white mb-1">
-                {lang === 'zh' ? `通过${EXPEDITION_STAGES[expStageIdx].name[lang]}！` : `Cleared ${EXPEDITION_STAGES[expStageIdx].name[lang]}!`}
-              </h2>
-              {completedTutorialLesson && <div className="tutorial-recap">
-                <strong>{lang === 'zh' ? (expStageIdx === 2 ? '✓ 新手三课完成！' : `✓ 第 ${expStageIdx + 1} 课完成`) : (expStageIdx === 2 ? '✓ Training complete!' : `✓ Lesson ${expStageIdx + 1} complete`)}</strong>
-                <p>{completedTutorialLesson.summary[lang]}</p>
-              </div>}
-              <p className="text-slate-400 text-sm mb-5">
-                {lang === 'zh' ? `选择一项奖励（${expRewards.length} 选 1）` : `Choose a reward (1 of ${expRewards.length})`}
-              </p>
-              <div className={`grid gap-3 ${expRewards.length >= 4 ? 'grid-cols-2 md:grid-cols-4' : 'grid-cols-1 md:grid-cols-3'}`}>
-                {expRewards.map((opt, i) => {
-                  const key = opt.kind === 'temp' ? opt.cardId : opt.kind === 'relic' ? opt.relicId : opt.kind;
-                  let icon: React.ReactNode = <Heart size={40} />;
-                  let title = '';
-                  let sub = '';
-                  if (opt.kind === 'heal') {
-                    icon = <Heart size={40} />;
-                    title = lang === 'zh' ? `治疗 +${opt.amount}` : `Heal +${opt.amount}`;
-                    sub = lang === 'zh' ? '恢复自身血量' : 'Restore your HP';
-                  } else if (opt.kind === 'maxhp') {
-                    icon = <Heart size={40} />;
-                    title = lang === 'zh' ? '体魄 +0.5' : 'Vigor +0.5';
-                    sub = lang === 'zh' ? '血量上限 +0.5（本轮远征永久）' : '+0.5 max HP for this run';
-                  } else if (opt.kind === 'temp') {
-                    const c = SKILL_DB.find(x => x.id === opt.cardId);
-                    icon = getCardIcon(opt.cardId);
-                    title = c ? c.name[lang] : opt.cardId;
-                    sub = lang === 'zh' ? `限次秘技：可用 ${opt.uses} 次` : `Limited skill: ${opt.uses} uses`;
-                  } else if (opt.kind === 'relic') {
-                    const r = EXPEDITION_RELICS.find(x => x.id === opt.relicId)!;
-                    icon = <Chest size={40} />;
-                    title = r.name[lang];
-                    sub = r.desc[lang];
-                  } else if (opt.kind === 'levelup') {
-                    icon = <ArrowUp size={40} />;
-                    title = lang === 'zh' ? `升级 · Lv.${opt.level}` : `Level Up · Lv.${opt.level}`;
-                    sub = lang === 'zh' ? '稳定升 1 级，解锁下一级技能卡' : 'Gain 1 level, unlock next-tier cards';
-                  }
-                  return (
-                    <button
-                      key={`${key}-${i}`}
-                      onClick={() => claimExpeditionReward(opt)}
-                      className="group bg-white/5 hover:bg-white/10 border border-white/10 hover:border-amber-400/60 rounded-xl p-4 transition-all hover:scale-105 active:scale-95 text-center"
-                    >
-                      <div className="pixel-item-art text-amber-200 mb-2">{icon}</div>
-                      <div className="font-bold text-white text-sm mb-1">{title}</div>
-                      <div className="text-xs text-slate-400">{sub}</div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          </div>
+          <ExpeditionRewards rewards={expRewards} lang={lang}
+            lesson={completedTutorialLesson ? expStageIdx + 1 : undefined} onChoose={claimExpeditionReward} />
         )}
-
-        {/* --- EXPEDITION SHOP（战后商城） --- */}
-        {isExpedition && expPhase === 'shop' && (
-          <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
-            <div className="pixel-dialog bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-6 w-full max-w-2xl text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
-              <Chest size={40} className="mx-auto mb-2 text-amber-200" />
-              <h2 className="text-xl font-black text-white mb-1">
-                {lang === 'zh' ? '远征商城' : 'Expedition Shop'}
-              </h2>
-              <p className="text-yellow-300 text-sm font-bold mb-5">
-                <Coins size={16} className="inline-block" /> {expGold}
-              </p>
-              <div className="grid gap-3 grid-cols-2 md:grid-cols-4 mb-6">
-                {expShop.map((item, i) => {
-                  const price = item.kind === 'tempcard' ? item.price : item.kind === 'equipment' ? item.equipment.price : item.price;
-                  const afford = expGold >= price;
-                  const card = item.kind === 'tempcard' ? SKILL_DB.find(x => x.id === item.cardId) : null;
-                  const icon = item.kind === 'tempcard' ? getCardIcon(item.cardId) : item.kind === 'equipment' ? <Shield size={40} /> : <Heart size={40} />;
-                  const title = item.kind === 'tempcard'
-                    ? (card ? card.name[lang] : item.cardId)
-                    : item.kind === 'equipment' ? item.equipment.name[lang] : (lang === 'zh' ? '疗伤药' : 'Healing Potion');
-                  const sub = item.kind === 'tempcard'
-                    ? (lang === 'zh' ? `限次秘技：可用 ${item.uses} 次` : `Limited skill: ${item.uses} uses`)
-                    : item.kind === 'equipment' ? item.equipment.desc[lang] : (lang === 'zh' ? `立即回复 ${POTION_HEAL} 点血量` : `Restore ${POTION_HEAL} HP now`);
-                  return (
-                    <div key={i} className={`bg-white/5 border border-white/10 rounded-xl p-4 text-center flex flex-col transition-opacity ${afford ? '' : 'pixel-unaffordable'}`} style={shopShake === i ? { animation: 'shop-shake 0.35s ease' } : undefined}>
-                      <style>{`@keyframes shop-shake { 0%,100% { transform: translateX(0); } 25% { transform: translateX(-6px); } 50% { transform: translateX(5px); } 75% { transform: translateX(-3px); } }`}</style>
-                      <div className="pixel-item-art text-amber-200 mb-2">{icon}</div>
-                      <div className="font-bold text-white text-sm mb-1">{title}</div>
-                      <div className="text-xs text-slate-400 mb-3 flex-1">{sub}</div>
-                      <button
-                        onClick={() => {
-                          if (!afford) {
-                            playSound('click', muted);
-                            setShopShake(i);
-                            setTimeout(() => setShopShake(null), 400);
-                            return;
-                          }
-                          buyShopItem(item, i);
-                        }}
-                        className={afford ? 'btn-gold' : 'btn rounded-xl bg-slate-700 text-slate-500 text-sm px-4 py-2 cursor-not-allowed opacity-70'}
-                      >
-                        {afford
-                          ? (lang === 'zh' ? `购买 · 🪙${price}` : `Buy · 🪙${price}`)
-                          : (lang === 'zh' ? `🪙${price} · 金币不足` : `🪙${price} · Not enough`)}
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-              <button onClick={leaveExpShop} className="btn-primary px-8 py-2.5">
-                {lang === 'zh' ? `出战 · ${EXPEDITION_STAGES[Math.min(expStageIdx + 1, EXPEDITION_STAGES.length - 1)].name[lang]}` : 'Next Battle'}
-              </button>
-            </div>
-          </div>
+        {isExpedition && expPhase === 'shop' && !expGachaCardId && (
+          <ExpeditionShop items={expShop} gold={expGold} lang={lang} onBuy={buyShopItem} onContinue={leaveExpShop} />
         )}
 
         {/* --- EXPEDITION GACHA REVEAL（抽卡展示，仿复仇模式） --- */}
@@ -3785,7 +3674,7 @@ const expYpjUsedRef = useRef(false);
       </div>
 
       {/* --- REVENGE / BOUNTY CARD REVEAL ANIMATION --- */}
-      {revengeCardId && (
+      {!isExpedition && revengeCardId && (
         <div 
            className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md cursor-pointer"
            onClick={() => {
