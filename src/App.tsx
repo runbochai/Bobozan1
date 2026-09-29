@@ -786,9 +786,6 @@ const expYpjUsedRef = useRef(false);
       if (tutorialStep?.highlight === cardId) {
         expTutIdxRef.current += 1;
         setExpTutIdx(expTutIdxRef.current);
-        if (run.stageIdx === 2 && expTutIdxRef.current >= tutSteps.length) {
-          setToastMsg(lang === 'zh' ? '🎓 教程完成！看意图、攒能量、选择克制的招式。' : '🎓 Ready! Read intent, save energy, choose your counter.');
-        }
       }
 
       setGameState(prev => ({
@@ -2689,11 +2686,6 @@ const expYpjUsedRef = useRef(false);
               <div className="text-xs font-bold text-slate-400 tracking-widest">
                 {lang === 'zh' ? `第 ${gameState.turn} 回合` : `TURN ${gameState.turn}`}
               </div>
-              {activeTutorialStep && <button type="button" className="tutorial-jump pointer-events-auto" onClick={() => {
-                const heading = document.getElementById('tutorial-heading');
-                heading?.scrollIntoView({ block: 'center', behavior: 'instant' });
-                heading?.focus({ preventScroll: true });
-              }}>{lang === 'zh' ? '查看本课指引 ↓' : 'Go to lesson ↓'}</button>}
             </div>
           </div>
         )}
@@ -2709,7 +2701,6 @@ const expYpjUsedRef = useRef(false);
               {completedTutorialLesson && <div className="tutorial-recap">
                 <strong>{lang === 'zh' ? (expStageIdx === 2 ? '✓ 新手三课完成！' : `✓ 第 ${expStageIdx + 1} 课完成`) : (expStageIdx === 2 ? '✓ Training complete!' : `✓ Lesson ${expStageIdx + 1} complete`)}</strong>
                 <p>{completedTutorialLesson.summary[lang]}</p>
-                <small>{lang === 'zh' ? '选好奖励后，可以在商城补给，也可以直接进入下一关。' : 'Choose a reward, then shop for supplies or go straight to the next battle.'}</small>
               </div>}
               <p className="text-slate-400 text-sm mb-5">
                 {lang === 'zh' ? `选择一项奖励（${expRewards.length} 选 1）` : `Choose a reward (1 of ${expRewards.length})`}
@@ -3384,21 +3375,12 @@ const expYpjUsedRef = useRef(false);
         </div>}
 
         {activeTutorialStep && myPlayer && <TutorialGuide
+          key={`${tutorialStageId}-${expTutIdx}`}
           stageId={tutorialStageId}
           stepIndex={expTutIdx}
           lang={lang}
-          energy={myPlayer.energy}
-          enemyMove={Object.values(expIntents)[0]}
           settling={submittingMove || gameState.status !== 'PLAYING'}
-          handCategory={handCategory}
-          handViewMode={handViewMode}
           onLocate={locateTutorialCard}
-          onAdvance={() => {
-            if (submittingMove || activeTutorialStep.highlight) return;
-            expTutIdxRef.current += 1;
-            setExpTutIdx(expTutIdxRef.current);
-            setExpIntents(computeExpIntents(gameState.players, expStageIdx));
-          }}
           onSkip={() => {
             if (submittingMove) return;
             expTutorialSkippedRef.current = true;

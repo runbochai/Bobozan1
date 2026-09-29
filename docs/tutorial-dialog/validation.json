@@ -1,0 +1,44 @@
+[
+  {
+    "width": 390,
+    "threeLessons": true,
+    "dialogFontAtLeast20": true,
+    "focusContained": true,
+    "keyboard": true,
+    "escapeAndReopen": true,
+    "wrongCardBlocked": true,
+    "skipAndRestart": true,
+    "shortScreen": true,
+    "errors": []
+  },
+  {
+    "width": 1440,
+    "threeLessons": true,
+    "dialogFontAtLeast20": true,
+    "focusContained": true,
+    "keyboard": true,
+    "escapeAndReopen": true,
+    "wrongCardBlocked": true,
+    "skipAndRestart": true,
+    "shortScreen": true,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "threeLessons": true,
+    "dialogFontAtLeast20": true,
+    "focusContained": true,
+    "keyboard": true,
+    "escapeAndReopen": true,
+    "wrongCardBlocked": true,
+    "skipAndRestart": true,
+    "shortScreen": true,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "english": true,
+    "reducedMotion": true,
+    "spaceToPlay": true
+  }
+]
