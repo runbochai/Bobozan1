@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ULT_CUTINS } from '../data/ultCutins';
 import { assetUrl } from '../assets';
+import ComboCutinArt from './ComboCutinArt';
 import { Zap, Shield, Sword, Star, Flame, Ghost, ArrowUp, ArrowDown, Target, Skull, Heart, Layers, Scroll } from './PixelIcons';
 
 const relatives: Record<string, string> = {
@@ -23,6 +24,7 @@ export default function PixelCardArt({ id }: { id: string }) {
   const [failed, setFailed] = useState(false);
   const portrait = ULT_CUTINS[id] ?? ULT_CUTINS[relatives[id]];
   const Symbol = symbols[id] ?? Scroll;
+  if (portrait?.combo) return <ComboCutinArt id={portrait.combo} className="pixel-card-art" />;
   if (portrait && !failed) return <img className="pixel-card-art" src={assetUrl(portrait.image)} alt="" draggable={false} onError={() => setFailed(true)} />;
   return <span className={`pixel-card-symbol pixel-symbol-${id}`}><Symbol size={44} /></span>;
 }

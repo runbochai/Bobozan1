@@ -1,0 +1,1890 @@
+{
+  "results": [
+    {
+      "label": "players-2-3627",
+      "viewport": [
+        3627,
+        1727
+      ],
+      "overflow": false,
+      "board": [
+        3627,
+        1163
+      ],
+      "sizes": [
+        465,
+        314
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-2-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        680
+      ],
+      "sizes": [
+        272,
+        184
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-2-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        680
+      ],
+      "sizes": [
+        272,
+        184
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-2-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        680
+      ],
+      "sizes": [
+        240,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-2-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        680
+      ],
+      "sizes": [
+        240,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-2-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        520
+      ],
+      "sizes": [
+        210,
+        160
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-2-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        520
+      ],
+      "sizes": [
+        164,
+        117
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-2-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        520
+      ],
+      "sizes": [
+        156,
+        112
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-3-3627",
+      "viewport": [
+        3627,
+        1727
+      ],
+      "overflow": false,
+      "board": [
+        3627,
+        1163
+      ],
+      "sizes": [
+        465,
+        314,
+        314
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-3-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        800
+      ],
+      "sizes": [
+        320,
+        216,
+        216
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-3-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        800
+      ],
+      "sizes": [
+        288,
+        202,
+        202
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-3-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        800
+      ],
+      "sizes": [
+        240,
+        180,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-3-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        800
+      ],
+      "sizes": [
+        240,
+        180,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-3-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        820
+      ],
+      "sizes": [
+        210,
+        160,
+        160
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-3-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        820
+      ],
+      "sizes": [
+        164,
+        117,
+        117
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-3-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        820
+      ],
+      "sizes": [
+        156,
+        112,
+        112
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-4-3627",
+      "viewport": [
+        3627,
+        1727
+      ],
+      "overflow": false,
+      "board": [
+        3627,
+        1163
+      ],
+      "sizes": [
+        465,
+        314,
+        314,
+        314
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-4-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        800
+      ],
+      "sizes": [
+        320,
+        216,
+        216,
+        216
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-4-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        800
+      ],
+      "sizes": [
+        288,
+        202,
+        202,
+        202
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-4-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        800
+      ],
+      "sizes": [
+        240,
+        180,
+        180,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-4-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        800
+      ],
+      "sizes": [
+        240,
+        180,
+        180,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-4-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        820
+      ],
+      "sizes": [
+        210,
+        160,
+        160,
+        160
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-4-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        820
+      ],
+      "sizes": [
+        164,
+        117,
+        117,
+        117
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-4-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        820
+      ],
+      "sizes": [
+        156,
+        112,
+        112,
+        112
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-5-3627",
+      "viewport": [
+        3627,
+        1727
+      ],
+      "overflow": false,
+      "board": [
+        3627,
+        1163
+      ],
+      "sizes": [
+        326,
+        177,
+        177,
+        177,
+        177
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-5-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        1100
+      ],
+      "sizes": [
+        307,
+        164,
+        164,
+        164,
+        164
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-5-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        1100
+      ],
+      "sizes": [
+        230,
+        158,
+        158,
+        158,
+        158
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-5-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        1100
+      ],
+      "sizes": [
+        210,
+        150,
+        150,
+        150,
+        150
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-5-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        1100
+      ],
+      "sizes": [
+        210,
+        150,
+        150,
+        150,
+        150
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-5-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        1000
+      ],
+      "sizes": [
+        174,
+        136,
+        136,
+        136,
+        136
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-5-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        1000
+      ],
+      "sizes": [
+        144,
+        113,
+        113,
+        113,
+        113
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-5-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        1000
+      ],
+      "sizes": [
+        136,
+        100,
+        100,
+        100,
+        100
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-6-3627",
+      "viewport": [
+        3627,
+        1727
+      ],
+      "overflow": false,
+      "board": [
+        3627,
+        1163
+      ],
+      "sizes": [
+        219,
+        177,
+        177,
+        177,
+        177,
+        177
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-6-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        1100
+      ],
+      "sizes": [
+        205,
+        164,
+        164,
+        164,
+        164,
+        164
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-6-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        1100
+      ],
+      "sizes": [
+        205,
+        158,
+        158,
+        158,
+        158,
+        158
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-6-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        1100
+      ],
+      "sizes": [
+        180,
+        150,
+        150,
+        150,
+        150,
+        150
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-6-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        1100
+      ],
+      "sizes": [
+        180,
+        150,
+        150,
+        150,
+        150,
+        150
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-6-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        1000
+      ],
+      "sizes": [
+        174,
+        136,
+        136,
+        136,
+        136,
+        136
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-6-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        1000
+      ],
+      "sizes": [
+        144,
+        113,
+        113,
+        113,
+        113,
+        113
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-6-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        1000
+      ],
+      "sizes": [
+        136,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-7-3627",
+      "viewport": [
+        3627,
+        1727
+      ],
+      "overflow": false,
+      "board": [
+        3627,
+        1163
+      ],
+      "sizes": [
+        219,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-7-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        1100
+      ],
+      "sizes": [
+        205,
+        164,
+        164,
+        164,
+        164,
+        164,
+        164
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-7-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        1100
+      ],
+      "sizes": [
+        205,
+        158,
+        158,
+        158,
+        158,
+        158,
+        158
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-7-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        1100
+      ],
+      "sizes": [
+        180,
+        150,
+        150,
+        150,
+        150,
+        150,
+        150
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-7-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        1100
+      ],
+      "sizes": [
+        180,
+        150,
+        150,
+        150,
+        150,
+        150,
+        150
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-7-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        1000
+      ],
+      "sizes": [
+        174,
+        136,
+        136,
+        136,
+        136,
+        136,
+        136
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-7-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        1000
+      ],
+      "sizes": [
+        144,
+        113,
+        113,
+        113,
+        113,
+        113,
+        113
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-7-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        1000
+      ],
+      "sizes": [
+        136,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-8-3627",
+      "viewport": [
+        3627,
+        1727
+      ],
+      "overflow": false,
+      "board": [
+        3627,
+        1163
+      ],
+      "sizes": [
+        219,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177,
+        177
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-8-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        1100
+      ],
+      "sizes": [
+        205,
+        164,
+        164,
+        164,
+        164,
+        164,
+        164,
+        164
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-8-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        1100
+      ],
+      "sizes": [
+        205,
+        158,
+        158,
+        158,
+        158,
+        158,
+        158,
+        158
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-8-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        1100
+      ],
+      "sizes": [
+        180,
+        150,
+        150,
+        150,
+        150,
+        150,
+        150,
+        150
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-8-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        1100
+      ],
+      "sizes": [
+        180,
+        150,
+        150,
+        150,
+        150,
+        150,
+        150,
+        150
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-8-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        1000
+      ],
+      "sizes": [
+        174,
+        136,
+        136,
+        136,
+        136,
+        136,
+        136,
+        136
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-8-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        1000
+      ],
+      "sizes": [
+        144,
+        113,
+        113,
+        113,
+        113,
+        113,
+        113,
+        113
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "players-8-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        1000
+      ],
+      "sizes": [
+        136,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100,
+        100
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-2-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        680
+      ],
+      "sizes": [
+        272,
+        184
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-2-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        680
+      ],
+      "sizes": [
+        272,
+        184
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-2-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        680
+      ],
+      "sizes": [
+        240,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-2-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        680
+      ],
+      "sizes": [
+        240,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-2-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        520
+      ],
+      "sizes": [
+        210,
+        160
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-2-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        520
+      ],
+      "sizes": [
+        164,
+        117
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-2-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        520
+      ],
+      "sizes": [
+        156,
+        112
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-3-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        800
+      ],
+      "sizes": [
+        256,
+        216,
+        216
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-3-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        800
+      ],
+      "sizes": [
+        256,
+        202,
+        202
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-3-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        800
+      ],
+      "sizes": [
+        220,
+        180,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-3-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        800
+      ],
+      "sizes": [
+        220,
+        180,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-3-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        820
+      ],
+      "sizes": [
+        210,
+        160,
+        160
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-3-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        820
+      ],
+      "sizes": [
+        164,
+        117,
+        117
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-3-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        820
+      ],
+      "sizes": [
+        156,
+        112,
+        112
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-4-1920",
+      "viewport": [
+        1920,
+        1080
+      ],
+      "overflow": false,
+      "board": [
+        1920,
+        800
+      ],
+      "sizes": [
+        256,
+        216,
+        216,
+        216
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-4-1440",
+      "viewport": [
+        1440,
+        1000
+      ],
+      "overflow": false,
+      "board": [
+        1440,
+        800
+      ],
+      "sizes": [
+        256,
+        202,
+        202,
+        202
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-4-1024",
+      "viewport": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "board": [
+        1024,
+        800
+      ],
+      "sizes": [
+        220,
+        180,
+        180,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-4-768",
+      "viewport": [
+        768,
+        1024
+      ],
+      "overflow": false,
+      "board": [
+        768,
+        800
+      ],
+      "sizes": [
+        220,
+        180,
+        180,
+        180
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-4-600",
+      "viewport": [
+        600,
+        850
+      ],
+      "overflow": false,
+      "board": [
+        600,
+        820
+      ],
+      "sizes": [
+        210,
+        160,
+        160,
+        160
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-4-390",
+      "viewport": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "board": [
+        390,
+        820
+      ],
+      "sizes": [
+        164,
+        117,
+        117,
+        117
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    },
+    {
+      "label": "expedition-4-320",
+      "viewport": [
+        320,
+        700
+      ],
+      "overflow": false,
+      "board": [
+        320,
+        820
+      ],
+      "sizes": [
+        156,
+        112,
+        112,
+        112
+      ],
+      "pairs": [],
+      "bubbleHits": [],
+      "bubblePairs": [],
+      "clipped": [],
+      "hudHits": [],
+      "selfFacing": "nw"
+    }
+  ],
+  "errors": [],
+  "motion": true,
+  "scope": "Local rendering with simulated multiplayer states; no Firebase multi-client session."
+}

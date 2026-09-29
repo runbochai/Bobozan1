@@ -1,0 +1,98 @@
+.expedition-panel {
+  position: fixed; inset: 0; margin: auto; width: min(800px, calc(100% - 32px)); max-height: calc(100dvh - 32px);
+  overflow: auto; padding: 26px; color: #f9edda; background: #18263b;
+  border: 3px solid #d5b778; box-shadow: 7px 7px 0 #080f1c, inset 0 0 0 4px #26374d;
+  font-family: 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
+  animation: loot-panel-in .24s ease-out;
+}
+.expedition-panel::backdrop { background: #07101bdb; }
+.expedition-panel-heading { display: flex; align-items: center; gap: 14px; margin-bottom: 24px; text-align: left; }
+.expedition-heading-art { display: grid; place-items: center; color: #f3d086; width: 52px; flex-shrink: 0; }
+.expedition-heading-art .expedition-loot-art { width: 52px; height: 52px; }
+.expedition-panel h2 { margin: 0; font-size: 26px; font-weight: 800; line-height: 1.25; }
+.pixel-app .expedition-panel h2:focus-visible { outline: none !important; }
+.expedition-panel-heading p { color: #b4c6cd; margin: 7px 0 0; font-size: 16px; }
+.expedition-wallet { display: flex; align-items: center; gap: 7px; margin-left: auto; color: #ffe0a0; font-size: 22px; font-weight: 800; }
+.expedition-choice-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.expedition-choice-grid[data-count='4'] { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.expedition-choice { --loot-color: #e4bc76; --loot-tint: #756036; position: relative; min-width: 0; }
+.expedition-choice.tone-rose { --loot-color: #f19aad; --loot-tint: #773f58; }
+.expedition-choice.tone-mint { --loot-color: #afe1b3; --loot-tint: #345e53; }
+.expedition-choice.tone-violet { --loot-color: #c3a0f1; --loot-tint: #543e75; }
+.expedition-choice.tone-blue { --loot-color: #a2d8ed; --loot-tint: #355b73; }
+.pixel-app .expedition-choose {
+  display: flex; flex-direction: column; align-items: center; width: 100%; height: 100%; padding: 12px 10px 0; overflow: hidden;
+  border: 2px solid #667d91; background: #233348; color: #f9edda;
+  box-shadow: 4px 5px 0 #0b1424; transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.pixel-app .expedition-choose:hover, .pixel-app .expedition-choose:focus-visible {
+  border-color: var(--loot-color); background: #2b3e54; box-shadow: 0 0 20px color-mix(in srgb, var(--loot-color) 20%, transparent), 4px 5px 0 #0b1424;
+  filter: none;
+}
+.expedition-art-stage { width: 100%; height: 152px; position: relative; display: grid; place-items: center; isolation: isolate; }
+.expedition-art-halo { position: absolute; width: 110px; height: 110px; background: radial-gradient(closest-side, var(--loot-tint), transparent); opacity: .9; z-index: -1; }
+.expedition-art-stage::after { content: ''; position: absolute; width: 82px; height: 12px; background: #0c192b; bottom: 13px; z-index: -1; clip-path: polygon(12% 0,88% 0,100% 50%,88% 100%,12% 100%,0 50%); }
+.expedition-art-float { display: grid; place-items: center; animation: loot-float 3.6s ease-in-out infinite; }
+.expedition-choice:nth-child(2n) .expedition-art-float { animation-delay: -.9s; }
+.expedition-choice:nth-child(3n) .expedition-art-float { animation-delay: -1.8s; }
+.expedition-loot-art { width: 104px; height: 104px; filter: drop-shadow(4px 5px 0 #0c1529); }
+.expedition-art-float .pixel-card-art { width: 116px; height: 116px; }
+.expedition-art-float .pixel-card-symbol { width: 88px; height: 88px; color: var(--loot-color); }
+.expedition-art-float .pixel-card-symbol svg { width: 60px; height: 60px; }
+.expedition-art-sparks { position: absolute; top: 24px; left: 18%; width: 4px; height: 4px; background: var(--loot-color); box-shadow: 78px 38px 0 var(--loot-color), 4px 78px 0 #fbe8ad; animation: loot-spark 2.8s steps(3) infinite; pointer-events: none; }
+.expedition-choice-name { font-size: 20px; line-height: 1.4; font-weight: 800; min-height: 2.8em; display: flex; align-items: center; justify-content: center; overflow-wrap: anywhere; }
+.expedition-choice-badge { color: var(--loot-color); font-size: 16px; font-weight: 700; padding: 3px 8px; margin: 7px 0 17px; background: #101e32; }
+.expedition-choice-action { display: flex; align-items: center; justify-content: center; gap: 7px; width: calc(100% + 20px); min-height: 46px; padding: 8px; border-top: 1px solid #64798a; background: #304258; color: #f9e1aa; font-size: 17px; font-weight: 700; }
+.expedition-choose:active .expedition-art-float { scale: 1.06; }
+.pixel-app .expedition-info { position: absolute; top: 5px; right: 5px; display: grid; place-items: center; width: 44px; height: 44px; border: 0; box-shadow: none; background: transparent; color: #bbcfde; font: bold 19px Georgia, serif; z-index: 1; }
+.expedition-info::before { content: ''; position: absolute; width: 24px; height: 24px; border: 1px solid currentColor; pointer-events: none; }
+.pixel-app .expedition-info[aria-expanded='true'] { color: #ffe4a5; }
+.expedition-choice.is-unaffordable .expedition-choice-action { color: #b8c5d0; background: #1b293b; }
+.expedition-choice.is-unaffordable .expedition-choice-action::after { content: '−'; color: #f1a3a3; }
+.expedition-choice.is-unaffordable .expedition-choose { border-style: dashed; }
+.expedition-detail { position: fixed; z-index: 5; width: min(320px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; background: #101d30; color: #f4e7d1; border: 2px solid var(--loot-color); padding: 16px; box-shadow: 5px 5px 0 #060e1b; text-align: left; cursor: default; }
+.expedition-detail strong { color: var(--loot-color); font-size: 19px; }
+.expedition-detail p { margin: 8px 0 0; font-size: 17px; line-height: 1.65; }
+.expedition-detail .expedition-shortfall { color: #f3aaaa; }
+.expedition-unlocks { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 8px; margin-top: 12px; }
+.expedition-unlocks > span { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 13px; text-align: center; }
+.expedition-unlocks .pixel-card-art, .expedition-unlocks .pixel-card-symbol { width: 52px; height: 52px; }
+.expedition-panel-footer { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 24px; }
+.expedition-acquired { flex: 1; min-width: 100px; font-size: 16px; color: #bce1a8; }
+.expedition-acquired > span { display: flex; align-items: center; gap: 7px; animation: loot-arrive .2s ease-out; }
+.pixel-app .expedition-continue { display: flex; align-items: center; justify-content: center; gap: 10px; margin-left: auto; min-height: 52px; padding: 10px 20px; border: 2px solid #ffe3a2; background: #d3a359; color: #211e2a; font-size: 19px; font-weight: 800; }
+@keyframes loot-arrive { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+@keyframes loot-panel-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes loot-float { 50% { transform: translateY(-5px); } }
+@keyframes loot-spark { 50% { opacity: .25; transform: translateY(-6px); } }
+@media (max-width: 640px) {
+  .expedition-panel { width: calc(100% - 24px); max-height: calc(100dvh - 24px); padding: 18px 14px; }
+  .expedition-panel-heading { gap: 10px; margin-bottom: 18px; }
+  .expedition-panel h2 { font-size: 24px; }
+  .expedition-heading-art { width: 36px; }
+  .expedition-heading-art .expedition-loot-art { width: 40px; height: 40px; }
+  .expedition-panel-heading p { font-size: 15px; }
+  .expedition-wallet { font-size: 19px; gap: 4px; }
+  .expedition-choice-grid, .expedition-choice-grid[data-count='4'] { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 12px; }
+  .expedition-choice-grid[data-count='3'] .expedition-choice:last-child { grid-column: 1 / -1; width: calc((100% - 12px) / 2); justify-self: center; }
+  .pixel-app .expedition-choose { padding: 5px 8px 0; }
+  .expedition-art-stage { height: 114px; }
+  .expedition-loot-art { width: 80px; height: 80px; }
+  .expedition-art-float .pixel-card-art { width: 86px; height: 86px; }
+  .expedition-art-float .pixel-card-symbol { width: 66px; height: 66px; }
+  .expedition-art-float .pixel-card-symbol svg { width: 46px; height: 46px; }
+  .expedition-art-halo { width: 88px; height: 88px; }
+  .expedition-art-stage::after { bottom: 7px; width: 66px; }
+  .expedition-art-sparks { left: 12%; top: 18px; box-shadow: 70px 38px 0 var(--loot-color), 3px 65px 0 #fbe8ad; }
+  .expedition-choice-name { font-size: 18px; min-height: 2.8em; }
+  .expedition-choice-badge { font-size: 15px; margin: 3px 0 10px; }
+  .expedition-choice-action { width: calc(100% + 16px); min-height: 44px; font-size: 16px; }
+  .pixel-app .expedition-info { top: 0; right: 0; }
+  .expedition-panel-footer { margin-top: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .expedition-panel, .expedition-art-float, .expedition-art-sparks, .expedition-acquired > span { animation: none; }
+  .pixel-app .expedition-choose { transition: none; }
+  .expedition-choose:active .expedition-art-float { scale: 1; }
+}
+.reduce-motion .expedition-panel, .reduce-motion .expedition-art-float, .reduce-motion .expedition-art-sparks, .reduce-motion .expedition-acquired > span { animation: none !important; }

@@ -1,0 +1,64 @@
+{
+  "results": [
+    {
+      "id": "skydragon",
+      "realExpedition": true,
+      "revealThenCutinThenField": true,
+      "settlementMs": 5032
+    },
+    {
+      "id": "doublewing",
+      "realExpedition": true,
+      "revealThenCutinThenField": true,
+      "settlementMs": 5002
+    },
+    {
+      "id": "vajra",
+      "realExpedition": true,
+      "revealThenCutinThenField": true,
+      "settlementMs": 5023
+    },
+    {
+      "id": "allbomb",
+      "realExpedition": true,
+      "revealThenCutinThenField": true,
+      "settlementMs": 5023
+    },
+    {
+      "id": "heartpoison",
+      "realExpedition": true,
+      "revealThenCutinThenField": true,
+      "settlementMs": 5024
+    },
+    {
+      "width": 1440,
+      "mixedEight": true,
+      "bad": [],
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "mixedEight": true,
+      "bad": [],
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "mixedEight": true,
+      "bad": [],
+      "overflow": false
+    },
+    {
+      "english": true,
+      "missingPortraitFallback": true
+    },
+    {
+      "inGameReducedMotion": true
+    },
+    {
+      "systemReducedMotion": true
+    }
+  ],
+  "errors": [],
+  "multiplayerScope": "Simulated local room states; not a Firebase multi-client test."
+}

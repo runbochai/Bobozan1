@@ -1,0 +1,58 @@
+[
+  {
+    "width": 1440,
+    "height": 850,
+    "fourRewards": true,
+    "upgradePreview": true,
+    "hoverOrTouch": true,
+    "escape": true,
+    "keyboard": true,
+    "modalFocus": true,
+    "shortScreen": true,
+    "buyAll": true,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "height": 850,
+    "touch": true,
+    "fourRewards": true,
+    "upgradePreview": true,
+    "hoverOrTouch": true,
+    "escape": true,
+    "keyboard": true,
+    "modalFocus": true,
+    "shortScreen": true,
+    "buyAll": true,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "height": 480,
+    "touch": true,
+    "fourRewards": true,
+    "upgradePreview": true,
+    "hoverOrTouch": true,
+    "escape": true,
+    "keyboard": true,
+    "modalFocus": true,
+    "shortScreen": true,
+    "buyAll": true,
+    "errors": []
+  },
+  {
+    "width": 768,
+    "height": 800,
+    "lang": "en",
+    "reduce": true,
+    "fourRewards": true,
+    "upgradePreview": true,
+    "hoverOrTouch": true,
+    "escape": true,
+    "keyboard": true,
+    "modalFocus": true,
+    "shortScreen": true,
+    "buyAll": true,
+    "errors": []
+  }
+]

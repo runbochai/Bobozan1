@@ -1,0 +1,32 @@
+[
+  {
+    "width": 1440,
+    "threeLessons": true,
+    "claimAndGacha": true,
+    "shopPurchase": true,
+    "unaffordableSafe": true,
+    "detailsAndEscape": true,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "threeLessons": true,
+    "claimAndGacha": true,
+    "shopPurchase": true,
+    "unaffordableSafe": true,
+    "detailsAndEscape": true,
+    "overflow": false,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "threeLessons": true,
+    "claimAndGacha": true,
+    "shopPurchase": true,
+    "unaffordableSafe": true,
+    "detailsAndEscape": true,
+    "overflow": false,
+    "errors": []
+  }
+]
