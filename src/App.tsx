@@ -1,6 +1,6 @@
 import BattleArena from './components/BattleArena';
 import BattleHand from './components/BattleHand';
-import BattleSkillFlights from './components/BattleSkillFlights';
+import BattleTableCards from './components/BattleTableCards';
 import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
 import BattleStats from './components/BattleStats';
@@ -2047,11 +2047,6 @@ const expYpjUsedRef = useRef(false);
       : null;
 
   
-  const castDelay = CARD_REVEAL_MS + (!reduceMotion && gameState.players.some(p => {
-    const card = SKILL_DB.find(c => c.id === p.selectedCardId);
-    return !p.isDead && !!card && hasBattleCutin(card);
-  }) ? ULT_CUTIN_MS : 0);
-
   // --- EMOJI ANIMATION STYLE ---
   // 包含：弹出(Pop In) -> 悬浮(Float) -> 消失(Pop Out)
   const emojiStyle = `
@@ -2434,7 +2429,7 @@ const expYpjUsedRef = useRef(false);
                       const dismissed = intentDismissed.has(p.id);
                       const toRight = pos.x < 50; // 气泡朝场地中央，避开角色
                       return (
-                        <div className={`pixel-intent absolute top-1/2 -translate-y-1/2 z-40 w-max ${toRight ? 'left-full ml-3' : 'right-full mr-3'} ${dismissed ? 'opacity-25' : ''}`}>
+                        <div data-intent-side={toRight ? 'right' : 'left'} className={`pixel-intent absolute top-1/2 -translate-y-1/2 z-40 w-max ${toRight ? 'left-full ml-3' : 'right-full mr-3'} ${dismissed ? 'opacity-25' : ''}`}>
                           <div className="flex flex-col gap-1 items-start">
                             <button
                               onClick={() => { playSound('click', muted); setIntentDismissed(prev => new Set(prev).add(p.id)); }}
@@ -2477,11 +2472,13 @@ const expYpjUsedRef = useRef(false);
                maxHp={isExpedition ? (expMaxHpRef.current[p.id] ?? MAX_HP) : MAX_HP}
                level={pMaxLvl} levelName={SKILL_DB.find(card => card.levelRequired === pMaxLvl)?.name[lang] ?? ''}
                leader={pMaxLvl > 0 && pMaxLvl === highestLevel} turn={gameState.turn}
-               showdown={gameState.status === 'SHOWDOWN'} lang={lang} castDelay={castDelay}
+               showdown={gameState.status === 'SHOWDOWN'}
                damage={damageNumbers[p.id]} hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
 
-           {gameState.status === 'SHOWDOWN' && !reduceMotion && <BattleSkillFlights key={'skills-' + gameState.matchCount + '-' + gameState.turn} players={gameState.players} delay={castDelay} />}
+           {gameState.status === 'SHOWDOWN' && <BattleTableCards key={'cards-' + gameState.matchCount + '-' + gameState.turn}
+             players={gameState.players} lang={lang} reduced={reduceMotion}
+             seatFor={i => getPlayerPosition(i, totalPlayers, myIndex)} />}
 
            {/* 必杀技演出 overlay：左侧闪入巨型立绘 + 压暗 + 喊话 + 像素特效 */}
            {ultCutins.map((u, i) => (
@@ -2767,7 +2764,7 @@ const expYpjUsedRef = useRef(false);
           </div>
 
         <div className="battle-command-dock">
-        {/* The portrait and hand share the foreground of the clearing. */}
+        {/* Status stays on the left; expedition items have their own right column. */}
         {myPlayer && <div className="battle-player-hud" aria-label={lang === 'zh' ? '我的状态' : 'My status'}>
           <div className={`battle-hud-portrait ${myPlayer.isDead ? 'battle-hud-dead' : ''}`}>
             {myPlayer.avatar ? <img src={avatarUrl(myPlayer.avatar)} alt={myPlayer.name} draggable={false} /> : <User size={52} />}
@@ -2776,11 +2773,11 @@ const expYpjUsedRef = useRef(false);
             <div className="battle-hud-name"><strong title={myPlayer.name}>{myPlayer.name}</strong><span>LVL {Math.max(0, ...myPlayer.inventory)}</span></div>
             <BattleStats player={myPlayer} maxHp={isExpedition ? (expMaxHpRef.current[myPlayer.id] ?? MAX_HP) : MAX_HP} />
           </div>
-          {isExpedition && expPhase === 'battle' && <div className="battle-hud-inventory">
+        </div>}
+          {myPlayer && isExpedition && expPhase === 'battle' && <div className="battle-hud-inventory">
             <InventoryBar gold={expGold} relics={expRelics} equipment={expEquipment} tempCards={expRunRef.current.tempCards} lang={lang} playClick={() => playSound('click', muted)} />
             {goldFly && <span key={goldFly.key} className="battle-gold-gain">+{goldFly.amount} 🪙</span>}
           </div>}
-        </div>}
 
         {activeTutorialStep && myPlayer && <TutorialGuide
           key={`${tutorialStageId}-${expTutIdx}`}

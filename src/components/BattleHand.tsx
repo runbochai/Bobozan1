@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Card, GameState, HandCategory, HandViewMode, Lang, Player } from '../types';
 import { TEXT } from '../data/translations';
@@ -6,17 +6,16 @@ import { SKILL_DB } from '../data/skills';
 import { SKILL_EFFECTS } from '../data/skillEffects';
 import PixelCardArt from './PixelCardArt';
 import SkillGlyph from './SkillGlyph';
-import { ArrowLeft, CheckCircle, Ghost, Layers, X, Zap } from './PixelIcons';
+import { ArrowLeft, CheckCircle, Ghost, Layers, Shield, Skull, Star, Swords, X, Zap } from './PixelIcons';
 import './BattleHand.css';
 
 const categories: HandCategory[] = ['CHARGE', 'ATTACK', 'DEFEND', 'ULTIMATE', 'SPECIAL'];
-const categoryArt: Record<HandCategory, string> = { CHARGE: 'charge', ATTACK: 'dragonclaw', DEFEND: 'defend', ULTIMATE: 'meteor', SPECIAL: 'heartpoison' };
+const categoryArt = { CHARGE: Zap, ATTACK: Swords, DEFEND: Shield, ULTIMATE: Skull, SPECIAL: Star };
 const categoryCaption = {
   zh: { CHARGE: '积蓄能量', ATTACK: '近身 · 远程', DEFEND: '格挡 · 守护', ULTIMATE: '必杀 · 联合', SPECIAL: '身法 · 秘技' },
   en: { CHARGE: 'Gain energy', ATTACK: 'Strike', DEFEND: 'Guard', ULTIMATE: 'Unleash', SPECIAL: 'Adapt' },
 };
 const inCategory = (card: Card, category: HandCategory) => category === 'SPECIAL' ? card.type === 'SPECIAL' || card.type === 'ABSORB' : card.type === category;
-const pose = (index: number, count: number): CSSProperties => ({ '--hand-angle': `${Math.max(-4, Math.min(4, (index - (count - 1) / 2) * 2))}deg`, '--hand-drop': `${Math.min(12, Math.abs(index - (count - 1) / 2) * 5)}px` } as CSSProperties);
 
 function HandArt({ id }: { id: string }) {
   return <span className="hand-art" aria-hidden="true"><span className="hand-art-sigil" />
@@ -77,7 +76,6 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
   const detail = knownCards.find(c => c.id === detailId);
   const isBlocked = (card: Card) => !canChoose || !!player?.disabledSkills?.includes(card.id) || (!player?.freeSkills?.includes(card.id) && (player?.energy ?? 0) < card.cost) || (!!tutorialHighlight && tutorialHighlight !== card.id);
   const play = (card?: Card) => { if (card && !isBlocked(card)) onPlay(card.id); };
-  const statusText = player?.isDead ? t.dead : status === 'SHOWDOWN' ? (lang === 'zh' ? '招式交锋' : 'CLASH') : player?.selectedCardId ? (lang === 'zh' ? '招式已就绪' : 'MOVE READY') : (lang === 'zh' ? '你的回合' : 'YOUR MOVE');
   useEffect(() => {
     const tray = trayRef.current;
     if (!tray) return;
@@ -98,7 +96,6 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
 
   return <section className="pixel-hand-area battle-hand" aria-label={lang === 'zh' ? '手牌' : 'Your hand'} data-hand-state={status === 'SHOWDOWN' ? 'clash' : locked ? 'locked' : 'ready'}>
     <div className="hand-toolbar">
-      <div className="hand-turn"><i aria-hidden="true" /><strong role="status">{statusText}</strong>{canChoose && <span>{lang === 'zh' ? '选择你的下一招' : 'Choose your next move'}</span>}</div>
       {!player?.selectedCardId && !player?.isDead && (scrollable.left || scrollable.right) && <div className="hand-scroll-controls"><span className="hand-scroll-hint">{lang === 'zh' ? '滑动选牌' : 'Browse'}</span>
         <button type="button" aria-label={lang === 'zh' ? '向左浏览手牌' : 'Scroll hand left'} disabled={!scrollable.left} onClick={() => scrollHand(-1)}><ArrowLeft size={16} /></button>
         <button type="button" aria-label={lang === 'zh' ? '向右浏览手牌' : 'Scroll hand right'} disabled={!scrollable.right} onClick={() => scrollHand(1)}><ArrowLeft size={16} className="hand-arrow-right" /></button>
@@ -116,22 +113,23 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
       </nav>}
 
       <div ref={trayRef} key={`${viewMode}-${category}`} className={`pixel-hand-tray hand-fan ${viewMode === 'CATEGORIES' ? 'hand-category-fan' : 'hand-skill-fan'}`}>
-        {viewMode === 'CATEGORIES' ? categories.map((cat, index) => {
+        {viewMode === 'CATEGORIES' ? categories.map(cat => {
+          const Icon = categoryArt[cat];
           const charge = knownCards.find(c => c.id === 'charge');
           const disabled = cat === 'CHARGE' && (!charge || isBlocked(charge));
           const highlighted = tutorialCategory === cat;
           const count = knownCards.filter(c => inCategory(c, cat)).length;
-          return <div className="hand-category-slot" key={cat} style={pose(index, 5)}>
+          return <div className="hand-category-slot" key={cat}>
             <button type="button" role="button" className={`hand-card hand-category-card ${highlighted ? 'tutorial-highlight' : ''}`} data-card-type={cat}
               data-tutorial-target={highlighted} aria-label={t.categories[cat]} aria-disabled={disabled} aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined}
               onClick={e => { if (cat === 'CHARGE') play(charge); else { keyboardCategory.current = e.detail === 0; onCategory(cat); } }}>
               <span className="hand-card-eyebrow">{cat === 'CHARGE' ? <Zap size={15} /> : <Layers size={15} />}<span>{cat === 'CHARGE' ? (lang === 'zh' ? '积蓄' : 'ENERGY') : `${count} ${lang === 'zh' ? '招' : 'SKILLS'}`}</span></span>
-              <HandArt id={categoryArt[cat]} />
+              <span className="hand-category-icon" aria-hidden="true"><Icon size={56} /></span>
               <strong className="hand-card-name">{t.categories[cat]}</strong>
               <small className="hand-category-caption">{categoryCaption[lang][cat]}</small>
             </button>
           </div>;
-        }) : cards.length === 0 ? <div className="hand-rest"><Layers size={38} /><p>{lang === 'zh' ? '还没有这一类招式' : 'No skills in this category yet'}</p></div> : cards.map((card, index) => {
+        }) : cards.length === 0 ? <div className="hand-rest"><Layers size={38} /><p>{lang === 'zh' ? '还没有这一类招式' : 'No skills in this category yet'}</p></div> : cards.map(card => {
           const freeCount = player.freeSkills?.filter(id => id === card.id).length ?? 0;
           const tempCount = player.tempSkills?.filter(id => id === card.id).length ?? 0;
           const disabled = player.disabledSkills?.includes(card.id);
@@ -139,7 +137,7 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
           const highlighted = tutorialHighlight === card.id;
           const blocked = isBlocked(card);
           const label = disabled ? (lang === 'zh' ? '已禁用' : 'Disabled') : shortage ? (lang === 'zh' ? `还需 ${shortage} 能量` : `Need ${shortage} energy`) : tutorialHighlight && !highlighted ? (lang === 'zh' ? '请跟随教学' : 'Follow the lesson') : freeCount ? `${lang === 'zh' ? '免费' : 'Free'} ×${freeCount}` : (lang === 'zh' ? '点击出招' : 'Play skill');
-          return <div className="pixel-card-slot hand-skill-slot" key={card.id} style={pose(index, cards.length)} onMouseEnter={() => setInspectedId(card.id)} onMouseLeave={() => setInspectedId(null)} onFocus={() => setInspectedId(card.id)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setInspectedId(null); }}>
+          return <div className="pixel-card-slot hand-skill-slot" key={card.id} onMouseEnter={() => setInspectedId(card.id)} onMouseLeave={() => setInspectedId(null)} onFocus={() => setInspectedId(card.id)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setInspectedId(null); }}>
             <button type="button" role="button" className={`hand-card hand-skill-card ${highlighted ? 'tutorial-highlight' : ''}`} data-card-type={card.type} data-card-id={card.id}
               data-combo={!!card.tags?.includes('combo')} data-tutorial-target={highlighted} aria-disabled={blocked} aria-label={`${card.name[lang]} · ${label}`}
               aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined} onClick={() => play(card)}>
@@ -154,9 +152,9 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
           </div>;
         })}
       </div>
-      <div className="hand-inspector">
-        {inspected ? <><SkillGlyph effect={SKILL_EFFECTS[inspected.id] ?? SKILL_EFFECTS.charge} /><div><strong>{inspected.name[lang]}</strong><span>{inspected.description[lang]}</span></div></> : <><span className="hand-inspector-star" aria-hidden="true">✦</span><span>{viewMode === 'CATEGORIES' ? (lang === 'zh' ? '攒能量，或展开一组招式' : 'Charge up, or open a skill family') : (lang === 'zh' ? '悬停查看招式 · 点击卡牌出招 · i 查看详情' : 'Hover to inspect · Play a card · i for details')}</span></>}
-      </div>
+      {viewMode === 'CARDS' && <div className="hand-inspector">
+        {inspected && <><SkillGlyph effect={SKILL_EFFECTS[inspected.id] ?? SKILL_EFFECTS.charge} /><div><strong>{inspected.name[lang]}</strong><span>{inspected.description[lang]}</span></div></>}
+      </div>}
     </>}
     {detail && canChoose && <CardDetails card={detail} lang={lang} freeCount={player?.freeSkills?.filter(id => id === detail.id).length ?? 0} onClose={() => setDetailId(null)} />}
   </section>;

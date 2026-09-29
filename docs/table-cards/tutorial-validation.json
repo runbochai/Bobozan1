@@ -1,0 +1,26 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "threeLessons": true,
+      "wrongCardBlocked": true,
+      "keyboardFocus": true,
+      "rewardAndShopContinue": true
+    },
+    {
+      "width": 390,
+      "threeLessons": true,
+      "wrongCardBlocked": true,
+      "keyboardFocus": true,
+      "rewardAndShopContinue": true
+    },
+    {
+      "width": 320,
+      "height": 480,
+      "emptyCategory": true,
+      "detailsFitShortScreen": true,
+      "deadPlayerCannotAct": true
+    }
+  ],
+  "errors": []
+}

@@ -126,7 +126,10 @@ export function getBotMove(bot: Player, allPlayers: Player[], options: Options =
   const winning = scores.filter(entry => entry.winsEveryScenario);
   const cheapestWin = Math.min(...winning.map(entry => entry.cost));
   const candidates = winning.length ? winning.filter(entry => entry.cost === cheapestWin) : scores;
-  const temperature = .2 + (1 - personality.smart) * 1.3;
+  // More uncertainty when a living opponent can spend energy. Keep the seeded
+  // choice stable across clients and vary only among similarly useful moves.
+  const opponentHasEnergy = active.some(p => p.id !== me.id && p.energy > 0);
+  const temperature = .2 + (1 - personality.smart) * 1.3 + (opponentHasEnergy ? .55 : 0);
   const contenders = candidates.filter(entry => entry.score >= candidates[0].score - temperature * 2);
   return pickWeighted(contenders.map(entry => ({ value: entry.value, weight: Math.exp((entry.score - candidates[0].score) / temperature) })), random);
 }

@@ -17,11 +17,11 @@ export function getBattleSeat(index: number, total: number, myIndex: number, com
   if (total === 2) return { x: 32, y: 29 };
   // Four fighters occupy the left foreground as well as the far edge.
   if (total === 3) return compact ? [{ x: 26, y: 27 }, { x: 74, y: 27 }][relative - 1]
-    : [{ x: 33, y: 23 }, { x: 73, y: 23 }][relative - 1];
+    : [{ x: 33, y: 26 }, { x: 73, y: 26 }][relative - 1];
   if (total === 4) return compact ? [{ x: 74, y: 25 }, { x: 27, y: 25 }, { x: 22, y: 68 }][relative - 1]
-    : [{ x: 74, y: 23 }, { x: 40, y: 23 }, { x: 19, y: 68 }][relative - 1];
-  const farSeats = [{ x: 18, y: 23 }, { x: 50, y: 23 }, { x: 82, y: 23 }];
+    : [{ x: 74, y: 26 }, { x: 40, y: 26 }, { x: 19, y: 68 }][relative - 1];
+  const farSeats = [{ x: 18, y: compact ? 23 : 20 }, { x: 50, y: compact ? 23 : 20 }, { x: 82, y: compact ? 23 : 20 }];
   const sideSeats = total === 5 ? [{ x: 18, y: 53 }] : [{ x: 18, y: 50 }, { x: 82, y: 50 }];
-  const nearSeats = [{ x: 18, y: 77 }, compact ? { x: 50, y: 60 } : { x: 49, y: 77 }];
+  const nearSeats = [{ x: 18, y: compact ? 77 : 81 }, compact ? { x: 50, y: 60 } : { x: 49, y: 81 }];
   return [...farSeats, ...sideSeats, ...nearSeats][relative - 1];
 }

@@ -53,7 +53,7 @@ function Slot({
     >
       {children}
       {open && (
-        <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-44 max-w-[70vw] rounded-xl border border-white/20 bg-slate-900/95 p-2.5 text-left shadow-2xl pointer-events-none">
+        <div className="inventory-tip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-44 max-w-[70vw] rounded-xl border border-white/20 bg-slate-900/95 p-2.5 text-left shadow-2xl pointer-events-none whitespace-normal">
           <div className="text-xs font-black text-white mb-0.5">
             {icon} {tipTitle}
           </div>
