@@ -249,14 +249,15 @@ const TiltCard = ({
   className,
   style,
   disabled,
+  disableMotion = false,
   glareColor = "#ffffff" // 👈 New Prop with default white
-}: React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean; glareColor?: string }) => {
+}: React.HTMLAttributes<HTMLDivElement> & { disabled?: boolean; glareColor?: string; disableMotion?: boolean }) => {
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotate, setRotate] = useState({ x: 0, y: 0 });
   const [glare, setGlare] = useState({ x: 50, y: 50, opacity: 0 });
 
   const handleMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (disabled || !cardRef.current) return;
+    if (disabled || disableMotion || !cardRef.current) return;
 
     const rect = cardRef.current.getBoundingClientRect();
     const width = rect.width;
@@ -288,12 +289,12 @@ const TiltCard = ({
       className={`${className} transition-transform duration-100 ease-out will-change-transform`}
       style={{
         ...style,
-        transform: `${style?.transform || ''} perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale3d(1.02, 1.02, 1.02)`,
+        transform: disableMotion ? style?.transform : `${style?.transform || ''} perspective(1000px) rotateX(${rotate.x}deg) rotateY(${rotate.y}deg) scale3d(1.02, 1.02, 1.02)`,
       }}
     >
       {children}
       
-      {!disabled && (
+      {!disabled && !disableMotion && (
         <div 
           className="absolute inset-0 pointer-events-none z-40 rounded-2xl"
           style={{
@@ -2814,20 +2815,12 @@ const expYpjUsedRef = useRef(false);
         @keyframes text-shine { 0% { background-position: 200% center; } 100% { background-position: -200% center; } }
         .animate-text-shine { background-size: 200% auto; animation: text-shine 3s linear infinite; }
 
-        @keyframes tutorial-glow {
-          0%, 100% {
-            box-shadow: 0 0 15px rgba(250, 204, 21, 0.3);
-            border-color: rgba(250, 204, 21, 0.5);
-            transform: scale(1.15) translateY(-25px);
-          }
-          50% {
-            box-shadow: 0 0 35px rgba(250, 204, 21, 0.8);
-            border-color: rgba(250, 204, 21, 1);
-            transform: scale(1.17) translateY(-25px);
-          }
-        }
-        .animate-tutorial-glow {
-          animation: tutorial-glow 2s infinite ease-in-out;
+        /* Static highlight: never animate the card's transform or opacity. */
+        .tutorial-highlight {
+          outline: 3px solid #fde047;
+          outline-offset: 3px;
+          border-color: #fde047;
+          box-shadow: 0 0 18px rgba(250, 204, 21, 0.45);
         }
           
       `}</style>
@@ -4102,13 +4095,13 @@ const expYpjUsedRef = useRef(false);
                                   overflow-hidden
                                   origin-bottom
                                   cursor-pointer group flex flex-col items-center justify-center hand-card
-                                  ${entranceAnim} 
+                                  ${tutCatGlow ? '' : entranceAnim}
                                   
                                   ${isChargeDisabled
                                       ? 'border-slate-700 grayscale opacity-70 cursor-not-allowed'
-                                      : `${borderClass} ${standardClasses}`
+                                      : `${borderClass} ${tutCatGlow ? 'transition-colors duration-150' : standardClasses}`
                                   }
-                                  ${tutCatGlow ? 'ring-4 ring-yellow-300 animate-pulse' : ''}
+                                  ${tutCatGlow ? 'tutorial-highlight' : ''}
                                 `}
                                 style={{
                                   // 🟢 FIX: Transform is stable. If suggested, we force the scale here.
@@ -4118,7 +4111,7 @@ const expYpjUsedRef = useRef(false);
                                     translateY(${translateY}px) 
                                     rotate(${rotateDeg}deg) 
                                   `,
-                                  zIndex: index,
+                                  zIndex: tutCatGlow ? 60 : index,
                                   bottom: '30px',
                                   backgroundColor: '#1a1a1a',
                                 }}
@@ -4234,18 +4227,19 @@ const expYpjUsedRef = useRef(false);
                                           key={`${c.id}-${index}`}
                                           className={`absolute ${isSmallScreen ? 'w-28' : 'w-36'}`}
                                           style={{
-                                            zIndex: isHovered ? 999 : index,
+                                            zIndex: tutGlow ? 1000 : isHovered ? 999 : index,
                                             bottom: '30px',
                                             transform: `translateX(${translateX}px) translateY(${translateY}px)`,
                                             // 隐形 hover 保护区：卡片上浮时光标仍停留在容器内，
                                             // 不会误触发 mouseleave，提示框就不会反复闪烁
-                                            paddingTop: '90px',
-                                            marginTop: '-90px',
+                                            paddingTop: tutGlow ? 0 : '90px',
+                                            marginTop: tutGlow ? 0 : '-90px',
                                           }}
                                           onMouseEnter={(e: React.MouseEvent<HTMLDivElement>) => handleMouseEnter(e, c.id)}
                                           onMouseLeave={handleMouseLeave}
                                       >
                                        <TiltCard
+                                          disableMotion={tutGlow}
                                           glareColor={glareColor}
                                           onClick={() => {
                                             const disabled = (myPlayer?.disabledSkills || []).includes(c.id);
@@ -4262,10 +4256,10 @@ const expYpjUsedRef = useRef(false);
                                             relative ${isSmallScreen ? 'w-28 h-44' : 'w-36 h-56'} rounded-2xl border-4 ${borderClass}
                                             shadow-2xl
                                             ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''}
-                                            ${tutGlow ? 'ring-4 ring-yellow-300 animate-pulse' : ''}
+                                            ${tutGlow ? 'tutorial-highlight' : ''}
                                             origin-bottom
                                             cursor-pointer group flex flex-col items-center overflow-hidden hand-card
-                                            animate-in slide-in-from-bottom-10 fade-in duration-500
+                                            ${tutGlow ? '' : 'animate-in slide-in-from-bottom-10 fade-in duration-500'}
                                             ${isDisabled 
                                               ? 'border-slate-700 grayscale opacity-70 cursor-not-allowed' 
                                               : `${borderClass} ${c.tags?.includes('combo') ? 'shadow-[0_0_28px_rgba(250,204,21,0.9)]' : ''} ${!canAfford ? 'grayscale opacity-60' : ''}`
@@ -4274,7 +4268,7 @@ const expYpjUsedRef = useRef(false);
                                           style={{
                                             backgroundColor: '#1a1a1a',
                                             // 悬停只做视觉上浮（容器不动），hover 判定区保持稳定
-                                            transform: isHovered
+                                            transform: tutGlow ? 'rotate(0deg)' : isHovered
                                               ? 'translateY(-60px) scale(1.1)' // Pop up higher on hover
                                               : `rotate(${rotateDeg}deg)`,
                                           }}
