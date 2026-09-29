@@ -1,0 +1,27 @@
+{
+  "results": {
+    "cardBeforeEffect": true,
+    "realDamageAndExpiry": true,
+    "blockDoesNotFakeDamage": true,
+    "dodgeHasNoTrajectoryOrDamage": true,
+    "lethalHitStillReacts": true,
+    "finalImpactBeforeResults": true,
+    "ultimateCastAfterCutin": true,
+    "eightPlayerCasts": 56,
+    "mobileCastNoOverflow": true,
+    "englishEightPlayerLabelsFit": true,
+    "reducedMotion": true,
+    "renderedSkills": 61,
+    "tutorial1440": {
+      "casts": 16,
+      "hits": 3,
+      "threeLessons": true
+    },
+    "tutorial390": {
+      "casts": 16,
+      "hits": 3,
+      "threeLessons": true
+    }
+  },
+  "errors": []
+}

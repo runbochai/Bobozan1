@@ -1,7 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import type { Player } from '../types';
-import type { CardType } from '../types';
+import type { Player, Lang } from '../types';
 import { directionToward, type BattleSeat } from '../logic/battleLayout';
 import { playerAvatar } from '../logic/bots';
 import BattleSprite from './BattleSprite';
@@ -19,7 +18,8 @@ interface Props {
   leader: boolean;
   turn: number;
   showdown: boolean;
-  moveType?: CardType;
+  lang: Lang;
+  castDelay: number;
   damage?: number;
   hit: boolean;
   reduceMotion: boolean;
@@ -35,17 +35,17 @@ function BattleEmoji({ emoji, at }: { emoji: string; at: number }) {
   return visible ? <span className="battle-emoji">{emoji}</span> : null;
 }
 
-export default function BattleFighter({ player, seat, self, maxHp, level, levelName, leader, turn, showdown, moveType, damage, hit, reduceMotion, intent }: Props) {
+export default function BattleFighter({ player, seat, self, maxHp, level, levelName, leader, turn, showdown, lang, castDelay, damage, hit, reduceMotion, intent }: Props) {
   const seed = player.id.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
   const direction = directionToward(seat);
-  const motion = player.isDead || reduceMotion ? 'still' : hit ? 'hit' : showdown && moveType ? 'move' : 'idle';
+  const motion = reduceMotion ? 'still' : hit ? 'hit' : player.isDead ? 'still' : showdown && player.selectedCardId ? 'move' : 'idle';
   return <div className={`battle-fighter ${self ? 'battle-fighter-self' : 'battle-fighter-enemy'} ${player.isDead ? 'battle-fighter-dead' : ''}`}
-    data-player-id={player.id} data-facing={direction} style={{ left: `${seat.x}%`, top: `${seat.y}%`, zIndex: 10 + Math.round(seat.y / 10) } as CSSProperties}>
+    data-player-id={player.id} data-facing={direction} data-hit={hit} style={{ left: `${seat.x}%`, top: `${seat.y}%`, zIndex: 10 + Math.round(seat.y / 10) } as CSSProperties}>
     <div className="battle-player-plinth" aria-hidden="true" />
-    <div className={`battle-character-motion battle-character-${motion}`} key={`${turn}-${motion}`} style={{ '--idle-delay': `${-(seed % 20) / 10}s`, '--step-x': `${(50 - seat.x) / 5}px`, '--step-y': `${(48 - seat.y) / 5}px` } as CSSProperties}>
+    <div className={`battle-character-motion battle-character-${motion}`} key={`${turn}-${motion}`} style={{ '--idle-delay': `${-(seed % 20) / 10}s`, '--cast-delay': `${castDelay}ms`, '--step-x': `${(50 - seat.x) / 5}px`, '--step-y': `${(48 - seat.y) / 5}px` } as CSSProperties}>
       <BattleSprite avatar={playerAvatar(player)} name={player.name} direction={direction} />
+      {showdown && player.selectedCardId && !player.isDead && <BattleMoveFx key={`${turn}-${player.selectedCardId}`} cardId={player.selectedCardId} lang={lang} delay={castDelay} reduced={reduceMotion} />}
     </div>
-    {!reduceMotion && showdown && moveType && !player.isDead && <BattleMoveFx key={`${turn}-${player.selectedCardId}`} type={moveType} />}
     {!reduceMotion && !!damage && <div className="battle-hit-burst" aria-hidden="true" />}
     {!!damage && <span className={`battle-damage ${reduceMotion ? 'battle-damage-still' : ''}`}>−{damage}</span>}
     {player.emoji && player.emojiAt && <BattleEmoji key={player.emojiAt} emoji={player.emoji} at={player.emojiAt} />}

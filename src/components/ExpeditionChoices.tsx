@@ -94,7 +94,7 @@ function ChoiceCard({ choice, lang, price, gold = 0, onChoose }: {
   }, [show]);
 
   return <article ref={root} className={`expedition-choice tone-${choice.tone}${affordable ? '' : ' is-unaffordable'}`} data-choice={choice.id}
-    onPointerEnter={e => { if (e.pointerType === 'mouse') { cancelLeave(); setShow(true); } }}
+    onPointerEnter={e => { if (e.pointerType === 'mouse' && window.matchMedia('(min-width: 641px)').matches) { cancelLeave(); setShow(true); } }}
     onPointerLeave={() => { if (!pinned) leaveTimer.current = setTimeout(() => setShow(false), 140); }}
     onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) close(); }}>
     <button type="button" className="expedition-choose" aria-describedby={tipId} aria-disabled={!affordable}

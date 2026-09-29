@@ -1,0 +1,64 @@
+.battle-clearing { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
+.battle-clearing > svg { width: 100%; height: 100%; }
+.battle-round-label { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 12px; color: #a7c3c6; }
+.battle-round-label > span { font: 11px 'Pixel Display', monospace; letter-spacing: 2px; }
+.battle-round-label small { color: #e8c792; font-size: 14px; }
+.clearing-motes i { position: absolute; width: 4px; height: 4px; background: #d4d4a0; opacity: .25; animation: clearing-drift 6s steps(12) infinite alternate; }
+.pixel-app.pixel-screen-battle > .pixel-backdrop { opacity: .7; }
+.battle-card-reveal { position: absolute; left: 50%; top: 43%; width: clamp(64px, 65%, 130px); aspect-ratio: 2 / 3; padding: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 5px; background: linear-gradient(145deg, #2c4055, #122035); border: 3px double var(--skill-color); box-shadow: 4px 5px #081221, 0 0 18px color-mix(in srgb, var(--skill-color) 30%, transparent); color: var(--skill-light); pointer-events: none; z-index: 45; animation: card-before-cast var(--reveal-duration) ease-out both; }
+.battle-card-reveal .pixel-card-art, .battle-card-reveal .pixel-card-symbol { width: 90%; height: 65%; object-fit: contain; }
+.battle-card-reveal .pixel-card-symbol svg { width: 75%; height: 75%; }
+.battle-card-reveal strong { font-size: clamp(10px, 1.1cqw, 16px); line-height: 1.2; text-align: center; overflow-wrap: anywhere; }
+.battle-reveal-cost { position: absolute; top: 3px; right: 5px; color: #ffe1a0; font-size: 12px; font-weight: 800; }
+.battle-character-move { animation-delay: var(--cast-delay); }
+.skill-cast { position: absolute; inset: 0; pointer-events: none; z-index: 20; color: var(--skill-color); }
+.skill-cast-aura { position: absolute; left: 50%; top: 43%; width: 115%; aspect-ratio: 1; border: 3px solid var(--skill-color); clip-path: polygon(25% 0,75% 0,100% 25%,100% 75%,75% 100%,25% 100%,0 75%,0 25%); box-shadow: inset 0 0 28px var(--skill-color); animation: skill-aura 1.45s ease-out var(--cast-delay) both; }
+.skill-cast-symbol { position: absolute; left: 50%; top: 43%; width: min(74%, 150px); aspect-ratio: 1; filter: drop-shadow(0 0 10px var(--skill-color)); animation: skill-symbol 1.5s ease-out var(--cast-delay) both; }
+.skill-glyph { display: block; width: 100%; height: 100%; overflow: visible; }
+.skill-cast-particles i { position: absolute; width: 6px; height: 6px; left: 50%; top: 43%; background: var(--skill-light); box-shadow: 0 0 7px var(--skill-color); animation: skill-scatter 1.3s steps(10) var(--particle-delay) both; }
+.skill-cast-name { position: absolute; left: 50%; bottom: 2%; transform: translateX(-50%); width: max-content; max-width: 100%; padding: 3px 10px; background: #102239ed; border-bottom: 2px solid var(--skill-color); color: var(--skill-light); font-size: clamp(12px, 1.1cqw, 18px); line-height: 1.3; text-align: center; overflow-wrap: anywhere; font-weight: 800; text-shadow: 1px 1px #07101d; animation: skill-name 1.6s ease-out var(--cast-delay) both; }
+.skill-cast-shield .skill-cast-aura { border-width: 5px; }
+.skill-cast-wing .skill-cast-symbol, .skill-cast-portal .skill-cast-symbol { animation-name: skill-rise; }
+.skill-cast-charge .skill-cast-particles i, .skill-cast-absorb .skill-cast-particles i { animation-name: skill-gather; }
+.skill-cast-absorb .skill-cast-aura { animation-name: skill-vortex; }
+.skill-cast-slash .skill-cast-symbol, .skill-cast-claw .skill-cast-symbol { animation-name: skill-cut; }
+.skill-cast-poison .skill-cast-aura, .skill-cast-steam .skill-cast-aura { background: var(--skill-color); border: 0; }
+.skill-flights { position: absolute; inset: 0; z-index: 30; pointer-events: none; overflow: hidden; }
+.skill-flight { position: absolute; width: clamp(36px, 5cqw, 80px); aspect-ratio: 1; translate: -50% -50%; animation: skill-travel 1.05s cubic-bezier(.25,.65,.65,1) var(--flight-delay) both; }
+.skill-cast[data-skill='descend'] .skill-cast-symbol { animation-name: skill-sink; }
+.skill-flight-core { display: block; width: 100%; height: 100%; transform: rotate(var(--flight-angle)) scale(var(--skill-scale)); filter: drop-shadow(0 0 9px var(--skill-color)); }
+.skill-flight-tail { position: absolute; right: 50%; top: 40%; width: 140%; height: 16%; transform-origin: right center; transform: rotate(var(--flight-angle)); background: linear-gradient(90deg, transparent, var(--skill-color)); clip-path: polygon(0 50%,30% 0,100% 20%,100% 80%,30% 100%); }
+.battle-fighter[data-hit='true'] .battle-stats { border-color: #f5ae9c; }
+.battle-fighter[data-hit='true'] .battle-health-track { box-shadow: 0 0 7px #f18485 !important; }
+.battle-fighter[data-hit='true'] .battle-character-motion { opacity: 1; }
+.battle-fighter .battle-hit-burst { inset: auto; left: 50%; top: 40%; width: 85%; aspect-ratio: 1; background: #ffdcaa; animation: skill-impact .6s steps(6) both; }
+.battle-fighter .battle-damage { z-index: 50; top: 18%; font-size: clamp(24px, 2.4cqw, 48px); }
+.battle-fighter .battle-character-hit { animation: skill-recoil .48s steps(5) both; }
+@keyframes clearing-drift { to { opacity: .55; transform: translate(8px,-16px); } }
+@keyframes card-before-cast { 0% { opacity: 0; transform: translate(-50%,-25%) rotate(-9deg) scale(.5); } 22%,75% { opacity: 1; transform: translate(-50%,-50%) rotate(-4deg) scale(1); } 100% { opacity: 0; transform: translate(-50%,-65%) rotate(0deg) scale(.7); } }
+@keyframes card-reveal-still { 0%,99.9% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes skill-reduced-reveal { from { opacity: 0; } to { opacity: 1; } }
+@keyframes skill-aura { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.3); } 22% { opacity: .7; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.3); } }
+@keyframes skill-symbol { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.4); } 24%,60% { opacity: .85; transform: translate(-50%,-50%) scale(var(--skill-scale)); } 100% { opacity: 0; transform: translate(-50%,-65%) scale(1.15); } }
+@keyframes skill-scatter { 0% { opacity: 0; transform: translate(0,0); } 25% { opacity: .85; } 100% { opacity: 0; transform: translate(var(--particle-x),var(--particle-y)); } }
+@keyframes skill-gather { 0% { opacity: 0; transform: translate(var(--particle-x),var(--particle-y)); } 25% { opacity: .85; } 100% { opacity: 0; transform: translate(0,-15px); } }
+@keyframes skill-rise { 0% { opacity: 0; transform: translate(-50%,0) scale(.5); } 30% { opacity: .85; } 100% { opacity: 0; transform: translate(-50%,-100%) scale(var(--skill-scale)); } }
+@keyframes skill-sink { 0% { opacity: 0; transform: translate(-50%,-100%) scale(.5); } 30% { opacity: .85; } 100% { opacity: 0; transform: translate(-50%,0) scale(var(--skill-scale)); } }
+@keyframes skill-vortex { 0% { opacity: 0; transform: translate(-50%,-50%) rotate(0deg) scale(1.3); } 30% { opacity: .6; } 100% { opacity: 0; transform: translate(-50%,-50%) rotate(100deg) scale(.3); } }
+@keyframes skill-cut { 0% { opacity: 0; transform: translate(-80%,-75%) scale(.5); } 30%,55% { opacity: .9; transform: translate(-50%,-50%) scale(var(--skill-scale)); } 100% { opacity: 0; transform: translate(-15%,-25%) scale(1.1); } }
+@keyframes skill-name { 0%,100% { opacity: 0; } 12%,88% { opacity: 1; } }
+@keyframes skill-travel { 0% { opacity: 0; transform: translate(0,0) scale(.4); } 12% { opacity: .95; } 82% { opacity: .9; } 100% { opacity: 0; transform: translate(var(--travel-x),var(--travel-y)) scale(.7); } }
+@keyframes skill-impact { 0% { opacity: 0; transform: translate(-50%,-50%) scale(.2); } 20% { opacity: .85; } 100% { opacity: 0; transform: translate(-50%,-50%) scale(1.2); } }
+@keyframes skill-recoil { 0%,100% { transform: translateX(0); } 20% { transform: translateX(-9px); filter: brightness(1.65); } 55% { transform: translateX(6px); } 80% { transform: translateX(-3px); } }
+.skill-cast-reduced .skill-cast-aura, .skill-cast-reduced .skill-cast-symbol, .skill-cast-reduced .skill-cast-particles { display: none; }
+.skill-cast-reduced .skill-cast-name { animation: skill-reduced-reveal 1ms linear var(--cast-delay) both; animation-duration: 1ms !important; }
+@media (prefers-reduced-motion: reduce) {
+  .skill-flights, .skill-cast-aura, .skill-cast-symbol, .skill-cast-particles, .battle-hit-burst { display: none; }
+  .skill-cast-name { animation: skill-reduced-reveal 1ms linear var(--cast-delay) both; animation-duration: 1ms !important; }
+  .clearing-motes i { animation: none; }
+  .battle-card-reveal { transform: translate(-50%,-50%); animation: card-reveal-still var(--reveal-duration) step-end both; animation-duration: var(--reveal-duration) !important; }
+}
+.reduce-motion .skill-flights, .reduce-motion .skill-cast-aura, .reduce-motion .skill-cast-symbol, .reduce-motion .skill-cast-particles, .reduce-motion .battle-hit-burst { display: none; }
+.reduce-motion .skill-cast-name { animation: skill-reduced-reveal 1ms linear var(--cast-delay) both !important; }
+.reduce-motion .clearing-motes i { animation: none !important; }
+.reduce-motion .battle-card-reveal { transform: translate(-50%,-50%); animation: card-reveal-still var(--reveal-duration) step-end both; animation-duration: var(--reveal-duration) !important; }

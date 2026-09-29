@@ -1,4 +1,6 @@
 import BattleArena from './components/BattleArena';
+import BattleSkillFlights from './components/BattleSkillFlights';
+import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
 import BattleStats from './components/BattleStats';
 import TutorialGuide from './components/TutorialGuide';
@@ -89,7 +91,6 @@ import {
 import {
   calculateTurnOutcome,
   getCardIcon,
-  getShowdownWinner,
   getPlayerCards,
   isOffensiveCard,
 } from './logic/combat';
@@ -637,7 +638,7 @@ const expYpjUsedRef = useRef(false);
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
       return !!c && isLevelUltimate(c);
     });
-    const showdownMs = ultPlayed && !reduceMotion ? 4300 : 1600;
+    const showdownMs = CARD_REVEAL_MS + (ultPlayed && !reduceMotion ? 4300 : 1600);
 
     const timer = setTimeout(() => {
       const run = expRunRef.current;
@@ -951,12 +952,11 @@ const expYpjUsedRef = useRef(false);
     }
   }, [view]);
 
-  const [activeAnimations, setActiveAnimations] = useState<{[key: string]: string}>({});
   const [damageNumbers, setDamageNumbers] = useState<{[key: string]: number}>({});
+  const [showBattleResult, setShowBattleResult] = useState(false);
   const prevPlayersRef = useRef<Player[]>([]);
+  const prevShowdownRef = useRef(false);
   
-  const [showdownAnim, setShowdownAnim] = useState(false);
-  const [slamAnim, setSlamAnim] = useState(false);
 
   // 必杀技演出 overlay（SHOWDOWN 时有人放等级终极技则播）
   const [ultCutins, setUltCutins] = useState<(UltCutinPick & { key: number })[]>([]);
@@ -1129,81 +1129,50 @@ const expYpjUsedRef = useRef(false);
     }
   }, [toastMsg]);
 
-  useEffect(() => {
-    if (gameState.status === 'SHOWDOWN') {
-      // 先重置
-      setShowdownAnim(false);
-      setSlamAnim(false);
-
-      // 先让牌从玩家飞到小桌子
-      setTimeout(() => {
-        setShowdownAnim(true);
-
-        // 0.5s 后再让最强那张牌 slam 到中心
-        setTimeout(() => {
-          setSlamAnim(true);
-        }, 500);
-      }, 50);
-    } else {
-      setShowdownAnim(false);
-      setSlamAnim(false);
-    }
-  }, [gameState.status]);
-
   // 必杀技演出：进入 SHOWDOWN 且有人放等级终极技时播 cut-in（可多个同屏一起出现，2.85s 后自动收）
   useEffect(() => {
     if (gameState.status === 'SHOWDOWN' && !reduceMotion) {
       const picks = pickUltCutins(gameState.players, SKILL_DB, lang);
       if (picks.length > 0) {
-        setUltCutins(picks.map(pick => ({ ...pick, key: gameState.turn })));
-        const t = setTimeout(() => setUltCutins([]), 2850);
-        return () => clearTimeout(t);
+        setUltCutins([]);
+        const reveal = setTimeout(() => setUltCutins(picks.map(pick => ({ ...pick, key: gameState.turn }))), CARD_REVEAL_MS);
+        const finish = setTimeout(() => setUltCutins([]), CARD_REVEAL_MS + ULT_CUTIN_MS);
+        return () => { clearTimeout(reveal); clearTimeout(finish); };
       }
     }
     setUltCutins([]);
   }, [gameState.status, gameState.turn, gameState.players, lang, reduceMotion]);
 
   useEffect(() => {
-    if (gameState.players.length > 0 && prevPlayersRef.current.length > 0) {
-      const newAnims: {[key: string]: string} = {};
-      const newDamages: {[key: string]: number} = {};
-      let hasFx = false;
-
-      gameState.players.forEach(p => {
-        const oldP = prevPlayersRef.current.find(op => op.id === p.id);
-        if (oldP) {
-          if (p.hp < oldP.hp) {
-            const diff = oldP.hp - p.hp; // 变成正数 1 / 2
-            if (diff > 0) {
-              newAnims[p.id] = 'shake';
-              newDamages[p.id] = diff;
-              hasFx = true;
-            }
-          }
-          if (p.lastCardId && p.lastCardId !== oldP.lastCardId) {
-             const card = SKILL_DB.find(c => c.id === p.lastCardId);
-             if (card) {
-               if (card.type === 'ATTACK') newAnims[p.id] = 'slash';
-               else if (card.type === 'DEFEND') newAnims[p.id] = 'shield';
-               else if (card.type === 'ULTIMATE') newAnims[p.id] = 'ultimate';
-               else if (card.type === 'CHARGE') newAnims[p.id] = 'charge';
-               hasFx = true;
-             }
-          }
-        }
-      });
-
-      if (hasFx) {
-        setActiveAnimations(newAnims);
-        setDamageNumbers(newDamages);
-        setTimeout(() => {
-          setActiveAnimations({});
-          setDamageNumbers({});
-        }, 1000);
-      }
-    }
+    const settled = prevShowdownRef.current && gameState.status !== 'SHOWDOWN';
+    const previous = prevPlayersRef.current;
     prevPlayersRef.current = gameState.players;
-  }, [gameState.players]);
+    prevShowdownRef.current = gameState.status === 'SHOWDOWN';
+    if (!settled) {
+      if (gameState.status === 'SHOWDOWN') setDamageNumbers({});
+      return;
+    }
+    const damages: Record<string, number> = {};
+    for (const player of gameState.players) {
+      const before = previous.find(p => p.id === player.id);
+      if (before && player.hp < before.hp) damages[player.id] = before.hp - player.hp;
+    }
+    setDamageNumbers(damages);
+  }, [gameState.players, gameState.status]);
+
+  useEffect(() => {
+    if (!Object.keys(damageNumbers).length) return;
+    const timer = setTimeout(() => setDamageNumbers({}), 900);
+    return () => clearTimeout(timer);
+  }, [damageNumbers]);
+
+  useEffect(() => {
+    setShowBattleResult(false);
+    if (gameState.status !== 'GAMEOVER') return;
+    // Let the final impact finish before covering the battlefield.
+    const timer = setTimeout(() => setShowBattleResult(true), reduceMotion ? 0 : 700);
+    return () => clearTimeout(timer);
+  }, [gameState.status, reduceMotion]);
 
   const [, setPoppingTemp] = useState<Record<string, boolean>>({});
   const prevTempCountsRef = useRef<Record<string, number>>({});
@@ -1441,7 +1410,8 @@ const expYpjUsedRef = useRef(false);
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
       return !!c && isLevelUltimate(c);
     });
-    const settleMs = ultPlayed && !reduceMotion ? 4700 : 2000;
+    // Every client gets time to finish; the host's motion preference cannot shorten other clients' casts.
+    const settleMs = CARD_REVEAL_MS + (ultPlayed ? 4700 : 2000);
     const timer = setTimeout(() => {
       void mutateRoom(roomCode, room => settleRoom(room, user.uid, round, lang)).catch(error => {
         console.error('Unable to settle round', error);
@@ -1449,7 +1419,7 @@ const expYpjUsedRef = useRef(false);
       });
     }, settleMs);
     return () => clearTimeout(timer);
-  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, gameState.players, user, roomCode, lang, isOnline, reduceMotion]);
+  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, gameState.players, user, roomCode, lang, isOnline]);
 
   useEffect(() => {
   if (muted || gameState.logs.length === 0) return;
@@ -1820,65 +1790,7 @@ const expYpjUsedRef = useRef(false);
   };
 
   // --- LAYOUT HELPERS ---
-  const getPlayerPosition = getBattleSeat;
-
-  const getMiniTablePosition = (index: number, total: number, myIndex: number) => {
-    if (total === 0) return { x: 50, y: 45 };
-    const step = 360 / total;
-    const angleDeg = 90 + (index - myIndex) * step;
-    const angleRad = (angleDeg * Math.PI) / 180;
-    const rx = 12; 
-    const ry = 12; 
-    return { 
-      x: 50 + rx * Math.cos(angleRad), 
-      y: 50 + ry * Math.sin(angleRad) 
-    };
-  };
-  
-  const renderShowdownCard = (cardId: string | null) => {
-    const card = SKILL_DB.find((c) => c.id === cardId);
-    if (!card) return null;
-
-    let borderColor = 'border-slate-500';
-    if (card.type === 'ATTACK') borderColor = 'border-red-500';
-    if (card.type === 'DEFEND') borderColor = 'border-blue-500';
-    if (card.type === 'ULTIMATE') borderColor = 'border-purple-500';
-    if (card.type === 'CHARGE') borderColor = 'border-yellow-500';
-    const isCombo = card.tags?.includes('combo');
-    if (isCombo) {
-      borderColor = 'border-yellow-300';
-    }
-
-    return (
-      <div data-card-type={card.type} className={`pixel-showdown-card
-        w-24 h-36 md:w-32 md:h-48
-        bg-slate-900/95 rounded-xl border-2 ${borderColor}
-        flex flex-col items-center justify-center p-2 text-center shadow-2xl
-        ring-2 ring-white/10 relative overflow-hidden transform
-        ${card.tags?.includes('combo') ? 'shadow-[0_0_30px_rgba(250,204,21,0.9)]' : ''}
-      `} onMouseEnter={(e) => handleMouseEnter(e, card.id)} onMouseLeave={handleMouseLeave}>
-         <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-transparent pointer-events-none" />
-         
-         {/* STATS BADGES (Level Only) - TOP LEFT */}
-         <div className="absolute top-2 left-2 flex flex-col items-start gap-1 pointer-events-none z-20">
-            {/* Level Badge */}
-            {card.levelRequired > 0 && card.levelRequired < 100 && (
-              <div className="text-xs font-mono font-bold text-yellow-400 bg-black/60 px-1.5 py-0.5 rounded backdrop-blur-md border border-yellow-500/30 shadow-sm">
-                Lv.{card.levelRequired}
-              </div>
-            )}
-         </div>
-
-         {/* COST - TOP RIGHT */}
-         <div className="absolute top-1 right-2 text-lg font-mono font-black text-white/90 drop-shadow-md z-20">
-           {card.cost}
-         </div>
-
-         <div className="mb-2 transform scale-125 relative z-10">{getCardIcon(card.id)}</div>
-         <div className={`text-xs md:text-sm font-bold line-clamp-2 text-white relative z-10`}>{card.name[lang]}</div>
-      </div>
-    );
-  };
+  const getPlayerPosition = (index: number, total: number, viewer: number) => getBattleSeat(index, total, viewer, isSmallScreen);
 
   // --- HAND RENDER HELPERS ---
   const filteredHand = knownCards.filter(c => {
@@ -2382,51 +2294,6 @@ const expYpjUsedRef = useRef(false);
   const myIndex = gameState.players.findIndex(p => p.id === myPlayerId);
   const totalPlayers = gameState.players.length;
   
-  // --- UPDATED ANIMATION STYLE (With Random Tilt) ---
-  const smashStyle = `
-    @keyframes smash-drop {
-      /* 1. 起始状态 */
-      0% {
-        transform: translate(-50%, -50%) scale(0.5) rotateX(0deg) rotate(0deg);
-        opacity: 0;
-      }
-      
-      /* 2. 蓄力抬起 (LIFT): 
-         持续到 60%，时间很长，营造“举起来”的沉重感。
-         rotateX(-60deg): 上宽下窄（梯形）。
-         timing-function: cubic-bezier... 让它在最高点有明显的“滞空”感。
-      */
-      60% {
-        transform: translate(-50%, -180%) scale(1.6) perspective(1000px) rotateX(-60deg) rotate(var(--slam-tilt));
-        opacity: 1;
-        animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1); /* 慢慢停在最高点 */
-      }
-
-      /* 3. 瞬间砸下 (IMPACT): 
-         从 60% 到 70% 瞬间完成，极快！
-         rotateX(0deg): 拍平。
-      */
-      70% {
-        transform: translate(-50%, -50%) scale(1.8) perspective(1000px) rotateX(0deg) rotate(var(--slam-tilt));
-      }
-
-      /* 4. 回弹 (Recoil): 稍微压扁一点 */
-      85% {
-        transform: translate(-50%, -50%) scale(1.75) perspective(1000px) rotateX(0deg) rotate(var(--slam-tilt));
-      }
-
-      /* 5. 定格 */
-      100% {
-        transform: translate(-50%, -50%) scale(1.8) perspective(1000px) rotateX(0deg) rotate(var(--slam-tilt));
-      }
-    }
-    
-    .animate-smash {
-      /* 总时长设为 0.75秒，给前面的抬起动作足够的时间展示 */
-      animation: smash-drop 0.75s forwards;
-    }
-  `;
-
   // 计算当前局获胜者 & 获得的技能
   const livingPlayers = gameState.players.filter((p) => !p.isDead);
   const winnerPlayer =
@@ -2435,11 +2302,10 @@ const expYpjUsedRef = useRef(false);
       : null;
 
   
-  // 🔥 找出本次 SHOWDOWN 里“最强卡”，用来做 slam 动画
-  const slamOwnerIds = gameState.status === 'SHOWDOWN' 
-    ? getShowdownWinner(gameState.players) 
-    : [];
-  
+  const castDelay = CARD_REVEAL_MS + (!reduceMotion && gameState.players.some(p => {
+    const card = SKILL_DB.find(c => c.id === p.selectedCardId);
+    return !p.isDead && !!card && isLevelUltimate(card);
+  }) ? ULT_CUTIN_MS : 0);
 
   // --- EMOJI ANIMATION STYLE ---
   // 包含：弹出(Pop In) -> 悬浮(Float) -> 消失(Pop Out)
@@ -2490,7 +2356,6 @@ const expYpjUsedRef = useRef(false);
         @keyframes glow-pulse { 0%, 100% { box-shadow: 0 0 5px rgba(255, 255, 255, 0.1); filter: brightness(1); } 50% { box-shadow: 0 0 30px rgba(255, 255, 255, 0.6); filter: brightness(1.3); border-color: rgba(255, 255, 255, 0.8); } } .glow-pulse { animation: glow-pulse 3s ease-in-out infinite; }
         
         /* Game Specific Animations */
-        ${smashStyle}
         ${emojiStyle}
         /* REVENGE CARD SPIN ANIMATION */
         @keyframes spin-reveal { 0% { transform: scale(0) rotateY(0deg); opacity: 0; } 20% { transform: scale(0.8) rotateY(0deg); opacity: 1; } 50% { transform: scale(1.1) rotateY(720deg); } 100% { transform: scale(1) rotateY(1080deg); } }
@@ -2822,7 +2687,7 @@ const expYpjUsedRef = useRef(false);
                       const taunt = intentTaunt(card?.type, revealed, p.id, gameState.turn, expRunRef.current.stageIdx, lang, !!expPassivesRef.current[p.id]?.deceiver);
                       const badges = passiveBadges(expPassivesRef.current[p.id], lang);
                       const dismissed = intentDismissed.has(p.id);
-                      const toRight = pos.x < 50; // 气泡朝桌心方向，不挡上面的头像
+                      const toRight = pos.x < 50; // 气泡朝场地中央，避开角色
                       return (
                         <div className={`pixel-intent absolute top-1/2 -translate-y-1/2 z-40 w-max ${toRight ? 'left-full ml-3' : 'right-full mr-3'} ${dismissed ? 'opacity-25' : ''}`}>
                           <div className="flex flex-col gap-1 items-start">
@@ -2867,98 +2732,11 @@ const expYpjUsedRef = useRef(false);
                maxHp={isExpedition ? (expMaxHpRef.current[p.id] ?? MAX_HP) : MAX_HP}
                level={pMaxLvl} levelName={SKILL_DB.find(card => card.levelRequired === pMaxLvl)?.name[lang] ?? ''}
                leader={pMaxLvl > 0 && pMaxLvl === highestLevel} turn={gameState.turn}
-               showdown={gameState.status === 'SHOWDOWN'} moveType={SKILL_DB.find(card => card.id === p.selectedCardId)?.type}
-               damage={damageNumbers[p.id]} hit={activeAnimations[p.id] === 'shake'} reduceMotion={reduceMotion} intent={intent} />;
+               showdown={gameState.status === 'SHOWDOWN'} lang={lang} castDelay={castDelay}
+               damage={damageNumbers[p.id]} hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
 
-           {/* Showdown / Card Fly Animation Layer */}
-           {gameState.status === 'SHOWDOWN' && (
-              <div className="absolute inset-0 pointer-events-none z-30">
-                {/* Inject the Animation Keyframes */}
-                <style>{smashStyle}</style>
-
-                {gameState.players.map((p, i) => {
-                  if (!p.selectedCardId || p.isDead) return null;
-
-                  // Check if this player is in the winners array
-                  const isSlamWinner = slamOwnerIds.includes(p.id);
-                  const isSlammingActive = isSlamWinner && slamAnim;
-
-                  const startPos = getPlayerPosition(i, totalPlayers, myIndex);
-                  const miniPos = getMiniTablePosition(i, totalPlayers, myIndex);
-
-                  // POSITION LOGIC
-                  let finalX = showdownAnim ? miniPos.x : startPos.x;
-                  let finalY = showdownAnim ? miniPos.y : startPos.y;
-                  
-                  if (isSlammingActive) {
-                    finalX = 50;
-                    finalY = 45;
-                  }
-                  
-                  // Calculate tilt individually inside the loop
-                  // This ensures each slamming card has a unique random angle
-                  let localSlamTilt = 0;
-                  if (isSlamWinner) {
-                     const seed = p.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0) + gameState.turn;
-                     localSlamTilt = (seed % 80) - 40; // Random between -40 and 40
-                  }
-
-                  // ANIMATION CONTROL
-                  const transitionClass = isSlammingActive
-                    ? 'transition-left transition-top duration-300' 
-                    : 'transition-all [transition-duration:1200ms] cubic-bezier(0.34,1.56,0.64,1)';
-
-                  const transformStyle = isSlammingActive
-                     ? 'translate(-50%, -50%)' // Let CSS animation handle scale/rotate
-                     : `translate(-50%, -50%) scale(${showdownAnim ? 1.0 : 0.0}) rotate(0deg)`;
-
-                  return (
-                    <div
-                      key={`card-${p.id}`}
-                      className={`
-                        absolute ${transitionClass}
-                        ${isSlammingActive ? 'z-[100] animate-smash' : 'z-30'}
-                      `}
-                      style={{
-                        left: `${finalX}%`,
-                        top: `${finalY}%`,
-                        transform: transformStyle,
-                        opacity: showdownAnim ? 1 : 0,
-                        
-                        // 🔥 Inject the local tilt variable
-                        '--slam-tilt': `${localSlamTilt}deg`, 
-                      } as React.CSSProperties} 
-                    >
-                      <div className="relative group">
-                        
-                        {/* 💥 IMPACT FX (Flash & Shockwave) */}
-                        {isSlammingActive && (
-                           <>
-                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[110%] h-[110%] bg-yellow-100/40 rounded-full blur-2xl animate-[ping_0.4s_linear_1]" />
-                             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[105%] h-[105%] bg-black/30 blur-md rounded-full -z-10" />
-                           </>
-                        )}
-
-                        {/* THE CARD */}
-                        <div className={`
-                          relative
-                          ${isSlammingActive ? 'shadow-[0_20px_60px_rgba(0,0,0,0.9)]' : ''}
-                        `}>
-                           {renderShowdownCard(p.selectedCardId)}
-                        </div>
-
-                        {/* Name Tag */}
-                        <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 text-[10px] bg-black/60 px-2 rounded-full text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity">
-                          {p.name}
-                        </div>
-
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+           {gameState.status === 'SHOWDOWN' && !reduceMotion && <BattleSkillFlights key={'skills-' + gameState.matchCount + '-' + gameState.turn} players={gameState.players} delay={castDelay} />}
 
            {/* 必杀技演出 overlay：左侧闪入巨型立绘 + 压暗 + 喊话 + 像素特效 */}
            {ultCutins.map((u, i) => (
@@ -2975,11 +2753,6 @@ const expYpjUsedRef = useRef(false);
              />
            ))}
 
-           {/* Center "VS" Text when animating */}
-           {gameState.status === 'SHOWDOWN' && !showdownAnim && (
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl font-black text-white/5 animate-pulse">VS</div>
-           )}
-
            {(music.status === 'blocked' || music.status === 'error') && (
              <button type="button" onClick={music.retry}
                className="fixed top-20 right-4 z-[100] rounded-xl bg-slate-900/95 border border-amber-500/60 px-4 py-2 text-sm text-amber-200">
@@ -2990,7 +2763,7 @@ const expYpjUsedRef = useRef(false);
            )}
 
            {/* GAME OVER OVERLAY */}
-           {gameState.status === 'GAMEOVER' && winnerPlayer && (
+           {gameState.status === 'GAMEOVER' && winnerPlayer && showBattleResult && (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-500 overflow-hidden">
                <div className="relative w-full max-w-md md:max-w-lg mx-4 animate-in zoom-in-95 duration-300 z-10">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-b from-yellow-500/20 via-purple-500/10 to-transparent blur-3xl rounded-full pointer-events-none" />
