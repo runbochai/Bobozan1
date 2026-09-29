@@ -295,3 +295,62 @@ button:focus-visible, input:focus-visible, [tabindex]:focus-visible { outline: 3
   .brawl-sticker-vs { left: 48%; top: 57%; font-size: 21px; }
   .brawl-sticker-combo { right: 0; top: 58%; font-size: 9px; padding: 3px; }
 }
+
+/* Pixel battle stage and non-interactive combat effects. */
+.pixel-screen-battle > .pixel-backdrop { opacity: .45; }
+.battle-scenery { position: absolute; inset: 0 4% 0; pointer-events: none; overflow: hidden; }
+.battle-scenery > svg { width: 100%; height: 100%; opacity: .88; }
+.arena-sigil { opacity: .35; animation: arena-breathe 4s steps(6) infinite; transform-origin: 500px 328px; }
+.arena-flame { animation: arena-fire .8s steps(2) infinite alternate; transform-origin: 0 179px; }
+.arena-flame-1 { animation-delay: -.3s; }
+.arena-round { position: absolute; top: 43%; left: 50%; transform: translate(-50%,-50%) rotate(-5deg); display: flex; flex-direction: column; align-items: center; color: #b8d5d0; text-shadow: 3px 3px #0a1725; }
+.arena-round span { font: 9px 'Pixel Display',monospace; letter-spacing: 2px; }
+.arena-round strong { font: 46px 'Pixel Display',monospace; color: #edcb91; margin: 12px 0; }
+.arena-round small { font-size: 10px; letter-spacing: 2px; }
+.battle-scenery-clash .arena-round strong { font-size: 32px; color: #ffe1a1; }
+.battle-scenery-clash .arena-sigil { stroke: #f5ae72; }
+.arena-embers i { position: absolute; width: 4px; height: 4px; background: #e9bb70; opacity: 0; animation: arena-ember 5s steps(12) infinite; }
+.battle-player-plinth { position: absolute; width: 180px; height: 38px; top: 43%; background: #0c1826b0; border-bottom: 5px solid #b27658; transform: skewX(-25deg); z-index: -1; }
+.battle-fighter-enemy .battle-player-plinth { border-color: #7ca3b6; }
+.pixel-app .battle-stats { background: #112132e8; border: 1px solid #526570; border-left: 3px solid #dfaa74; padding: 6px 9px; gap: 4px; box-shadow: 4px 4px #071220a0; }
+.battle-fighter-enemy .battle-stats { border-left-color: #7aaecb; }
+.battle-stats > div > div { box-shadow: none !important; }
+.battle-stats > .bg-black\/60 { background: transparent; border: 0; padding: 2px; }
+.pixel-app .pixel-hand-area { background: #152334 !important; border-top: 3px solid #9d7f5e; box-shadow: 0 -8px #0a1521; }
+.battle-hand-heading { position: absolute; top: 8px; left: 24px; right: 24px; display: flex; justify-content: space-between; align-items: center; color: #f0d3a3; font-size: 11px; font-weight: bold; letter-spacing: 2px; pointer-events: none; }
+.battle-hand-heading small { color: #91aaa9; font-size: 10px; }
+.pixel-hand-tray { padding-top: 32px; }
+.battle-move-fx { position: absolute; inset: -35px -65px; z-index: 45; pointer-events: none; --fx: #ffcc6e; color: var(--fx); }
+.move-guard { --fx: #71deea; }.move-strike { --fx: #ffad83; }.move-ultimate { --fx: #dca2ff; }.move-special { --fx: #89efc9; }
+.move-ring { position: absolute; width: 150px; height: 150px; left: 50%; top: 32%; margin: -75px; border: 5px solid var(--fx); box-shadow: 0 0 0 3px #101b2f; clip-path: polygon(25% 0,75% 0,100% 25%,100% 75%,75% 100%,25% 100%,0 75%,0 25%); animation: move-wave 1s steps(8) both; }
+.move-ring-second { animation-delay: .16s; border-width: 2px; }
+.move-emblem { position: absolute; left: 50%; top: 32%; transform: translate(-50%,-50%); animation: move-emblem 1.15s steps(7) both; filter: drop-shadow(4px 4px #102137); }
+.move-spark { position: absolute; top: 32%; left: 50%; width: 7px; height: 7px; background: var(--fx); box-shadow: 2px 2px #ffffffaa; animation: move-spark .85s steps(7) var(--lag) both; }
+.move-charge .move-spark { animation-name: move-gather; }
+.move-slash { position: absolute; top: 25%; left: 5%; width: 90%; height: 16px; background: #fff0d1; border-bottom: 6px solid var(--fx); transform: rotate(-35deg); clip-path: polygon(0 50%,85% 0,100% 50%,15% 100%); animation: move-slash .65s steps(5) both; }
+.move-slash-second { top: 36%; transform: rotate(28deg); animation-delay: .12s; }
+.battle-move-fx b { position: absolute; left: 50%; top: -4%; font: 14px 'Pixel Display',monospace; white-space: nowrap; text-shadow: 3px 3px #071320; animation: move-caption 1.2s steps(8) both; }
+.battle-hit-burst { position: absolute; inset: -15px; z-index: 40; pointer-events: none; background: #f7c990; clip-path: polygon(50% 0,58% 35%,90% 8%,69% 43%,100% 50%,68% 60%,90% 93%,57% 70%,50% 100%,43% 67%,8% 90%,31% 55%,0 45%,35% 39%,15% 10%,43% 33%); animation: move-wave .45s steps(5) both; }
+@keyframes arena-breathe { 50% { opacity: .65; } }
+@keyframes arena-fire { to { transform: scaleY(.78) translateX(2px); } }
+@keyframes arena-ember { 15% { opacity: .6; } 90% { opacity: 0; transform: translate(16px,-95px); } }
+@keyframes move-wave { 0% { opacity: 0; transform: scale(.25); } 20% { opacity: .85; } 100% { opacity: 0; transform: scale(1.8); } }
+@keyframes move-emblem { 0% { opacity: 0; scale: .4; } 25%,65% { opacity: .9; scale: 1; } 100% { opacity: 0; scale: 1.2; } }
+@keyframes move-spark { 0% { opacity: 0; transform: translate(0,0); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--dx),var(--dy)); } }
+@keyframes move-gather { 0% { opacity: 0; transform: translate(var(--dx),var(--dy)); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(0,0); } }
+@keyframes move-slash { 0% { opacity: 0; scale: .2 1; } 25%,50% { opacity: 1; scale: 1 1; } 100% { opacity: 0; scale: 1.2 1; } }
+@keyframes move-caption { 0% { opacity: 0; transform: translate(-50%,15px) rotate(-8deg); } 20%,65% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%,-22px) rotate(-8deg); } }
+@media (max-width:767px) {
+  .battle-scenery { inset: 0 -6%; }
+  .arena-round { top: 47%; }.arena-round strong { font-size: 25px; margin: 7px 0; }.arena-round span { font-size: 7px; }.arena-round small { font-size: 8px; }
+  .battle-player-plinth { width: 125px; height: 28px; }
+  .pixel-app .battle-stats { padding: 4px 6px; gap: 2px; }
+  .battle-hand-heading { left: 14px; right: 14px; font-size: 9px; letter-spacing: 1px; }.battle-hand-heading small { display: none; }
+  .battle-move-fx { inset: -20px -40px; }.move-ring { width: 110px; height: 110px; margin: -55px; }.battle-move-fx b { font-size: 10px; }
+}
+.arena-round { top: 51%; }
+@media (max-width:767px) {
+  .arena-round { top: 52%; left: 17%; }
+  .arena-round small { display: none; }
+  .battle-scenery-clash .arena-round strong { font-size: 13px; }
+}
