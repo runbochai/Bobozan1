@@ -1,31 +1,52 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import type { Card, GameState, HandCategory, HandViewMode, Lang, Player } from '../types';
 import { TEXT } from '../data/translations';
 import { SKILL_DB } from '../data/skills';
-import { SKILL_EFFECTS } from '../data/skillEffects';
 import { getHandCategory } from '../logic/skillLoadout';
 import { isHoloCard } from '../data/cardFinish';
 import { getEffectiveLevel, isOffensiveCard } from '../logic/combat';
 import PixelCardArt from './PixelCardArt';
-import SkillGlyph from './SkillGlyph';
 import CardHolo from './CardHolo';
 import UltimateAura from './UltimateAura';
 import { ArrowLeft, CheckCircle, Ghost, Layers, Shield, Skull, Swords, X, Zap } from './PixelIcons';
 import './BattleHand.css';
+import './CardFan.css';
+import './PaperCard.css';
+import './HandSelection.css';
 
 const categories = ['CHARGE', 'ATTACK', 'DEFEND', 'ULTIMATE'] as const;
 const categoryArt = { CHARGE: Zap, ATTACK: Swords, DEFEND: Shield, ULTIMATE: Skull };
+const categoryFinish = { CHARGE: 'gilded', ATTACK: 'copper', DEFEND: 'frost', ULTIMATE: 'amethyst' } as const;
 const categoryCaption = {
   zh: { CHARGE: '积蓄能量', ATTACK: '近身 · 远程', DEFEND: '格挡 · 身法', ULTIMATE: '必杀 · 联合' },
   en: { CHARGE: 'Gain energy', ATTACK: 'Strike', DEFEND: 'Guard · Adapt', ULTIMATE: 'Unleash' },
 };
+
+function fanPosition(index: number, count: number): CSSProperties {
+  const position = count < 2 ? 0 : (index / (count - 1) - .5) * 2;
+  return {
+    '--fan-angle': `${position * 7}deg`,
+    '--fan-offset': `${Math.pow(Math.abs(position), 1.7) * 12 - 6}px`,
+    '--fan-spread': `${position * 4}px`,
+    '--fan-order': index + 1,
+  } as CSSProperties;
+}
 
 function UltimateFolderFinish() {
   return <span className="hand-ultimate-finish" aria-hidden="true">
     <span className="hand-ultimate-facets" />
     <span className="hand-ultimate-sheen" />
     <span className="hand-ultimate-glints"><i /><i /><i /></span>
+  </span>;
+}
+
+function FolderFinish({ category }: { category: HandCategory }) {
+  if (category === 'ULTIMATE') return <UltimateFolderFinish />;
+  return <span className="hand-folder-finish" aria-hidden="true">
+    <span className="hand-folder-facets" />
+    <span className="hand-folder-sheen" />
+    <span className="hand-folder-motif"><i /><i /><i /></span>
   </span>;
 }
 
@@ -86,12 +107,15 @@ interface Props {
   onCategory: (category: HandCategory) => void;
   onBack: () => void;
   onPlay: (id: string) => void;
+  roundKey?: string;
 }
 
 /** Presentation only: the parent retains the game's card ordering and move submission. */
-export default function BattleHand({ player, knownCards, cards, lang, category, viewMode, status, submitting, tutorialHighlight, tutorialCategory, poppingFree, onCategory, onBack, onPlay }: Props) {
+export default function BattleHand({ player, knownCards, cards, lang, category, viewMode, status, submitting, tutorialHighlight, tutorialCategory, poppingFree, onCategory, onBack, onPlay, roundKey = 'local' }: Props) {
   const [inspectedId, setInspectedId] = useState<string | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [selection, setSelection] = useState<{ id: string; context: string } | null>(null);
+  const selectionRef = useRef<typeof selection>(null);
   const trayRef = useRef<HTMLDivElement>(null);
   const handRef = useRef<HTMLElement>(null);
   const ultimateRef = useRef<HTMLButtonElement>(null);
@@ -103,8 +127,26 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
   const inspected = viewMode === 'CARDS' ? cards.find(c => c.id === inspectedId) : undefined;
   const detail = knownCards.find(c => c.id === detailId);
   const isBlocked = (card: Card) => !canChoose || !!player?.disabledSkills?.includes(card.id) || (!player?.freeSkills?.includes(card.id) && (player?.energy ?? 0) < card.cost) || (!!tutorialHighlight && tutorialHighlight !== card.id);
+  const selectionContext = `${roundKey}:${player?.id ?? ''}`;
+  const chosen = selection?.context === selectionContext ? knownCards.find(card => card.id === selection.id && !isBlocked(card)) : undefined;
+  // Discard obsolete local choices before they can reappear after a reset or legality change.
+  if (selection && !chosen) setSelection(null);
   const ultimateReady = knownCards.some(card => getHandCategory(card) === 'ULTIMATE' && !isBlocked(card));
-  const play = (card?: Card) => { if (card && !isBlocked(card)) onPlay(card.id); };
+  const cancelSelection = () => { selectionRef.current = null; setSelection(null); };
+  const choose = (card?: Card) => {
+    if (!card || isBlocked(card)) return;
+    const next = chosen?.id === card.id ? null : { id: card.id, context: selectionContext };
+    selectionRef.current = next;
+    setSelection(next);
+  };
+  const confirmSelection = () => {
+    const pending = selectionRef.current;
+    const current = pending?.context === selectionContext ? knownCards.find(card => card.id === pending.id) : undefined;
+    if (!chosen || !current || chosen.id !== current.id || isBlocked(current)) return;
+    // Consume the local choice synchronously, including double taps in the same frame.
+    cancelSelection();
+    onPlay(current.id);
+  };
   useEffect(() => {
     const tray = trayRef.current;
     if (!tray) return;
@@ -123,7 +165,7 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
     trayRef.current?.scrollBy({ left: direction * trayRef.current.clientWidth * .8, behavior: reduce ? 'instant' : 'smooth' });
   };
 
-  return <section ref={handRef} className="pixel-hand-area battle-hand" aria-label={lang === 'zh' ? '手牌' : 'Your hand'} data-hand-state={status === 'SHOWDOWN' ? 'clash' : locked ? 'locked' : 'ready'}>
+  return <section ref={handRef} className="pixel-hand-area battle-hand" aria-label={lang === 'zh' ? '手牌' : 'Your hand'} data-hand-state={status === 'SHOWDOWN' ? 'clash' : locked ? 'locked' : 'ready'} onKeyDown={e => { if (e.key === 'Escape' && !detailId && chosen) { e.preventDefault(); cancelSelection(); } }}>
     <div className="hand-toolbar">
       {!player?.selectedCardId && !player?.isDead && (scrollable.left || scrollable.right) && <div className="hand-scroll-controls"><span className="hand-scroll-hint">{lang === 'zh' ? '滑动选牌' : 'Browse'}</span>
         <button type="button" aria-label={lang === 'zh' ? '向左浏览手牌' : 'Scroll hand left'} disabled={!scrollable.left} onClick={() => scrollHand(-1)}><ArrowLeft size={16} /></button>
@@ -137,38 +179,43 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
       <div className="hand-committed-copy"><CheckCircle size={26} /><strong>{status === 'SHOWDOWN' ? (lang === 'zh' ? '招式释放中' : 'CASTING') : (lang === 'zh' ? '已出牌，等待对手' : 'Locked in. Waiting…')}</strong><small>{lang === 'zh' ? '下一回合，再出新招' : 'Your hand returns next round'}</small></div>
     </div> : <>
       {viewMode === 'CARDS' && <nav className="hand-category-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
-        <button type="button" className="pixel-hand-back" onClick={e => { keyboardCategory.current = e.detail === 0; setInspectedId(null); onBack(); }} aria-label={lang === 'zh' ? '返回全部分类' : 'Back to all categories'}><ArrowLeft size={18} /></button>
+        <button type="button" className="pixel-hand-back" onClick={e => { keyboardCategory.current = e.detail === 0; setInspectedId(null); cancelSelection(); onBack(); }} aria-label={lang === 'zh' ? '返回全部分类' : 'Back to all categories'}><ArrowLeft size={18} /></button>
         {categories.map(cat => <button ref={cat === 'ULTIMATE' ? ultimateRef : undefined} type="button" key={cat} className="hand-category-tab" data-card-type={cat} aria-current={category === cat ? 'true' : undefined}
+          data-folder-finish={categoryFinish[cat]}
           data-ultimate-finish={cat === 'ULTIMATE' ? 'amethyst' : undefined}
           data-ultimate-ready={cat === 'ULTIMATE' && ultimateReady || undefined}
           aria-label={cat === 'ULTIMATE' && ultimateReady ? `${t.categories[cat]} · ${lang === 'zh' ? '可以释放' : 'Ready to play'}` : undefined}
-          onClick={() => { setInspectedId(null); onCategory(cat); }}>
-          {cat === 'ULTIMATE' && <UltimateFolderFinish />}
+          onClick={() => { setInspectedId(null); cancelSelection(); onCategory(cat); }}>
+          <FolderFinish category={cat} />
           <span>{t.categories[cat]}</span>
         </button>)}
       </nav>}
 
       <div ref={trayRef} key={`${viewMode}-${category}`} className={`pixel-hand-tray hand-fan ${viewMode === 'CATEGORIES' ? 'hand-category-fan' : 'hand-skill-fan'}`}>
-        {viewMode === 'CATEGORIES' ? categories.map(cat => {
+        {viewMode === 'CATEGORIES' ? categories.map((cat, index) => {
           const Icon = categoryArt[cat];
           const charge = knownCards.find(c => c.id === 'charge');
           const disabled = cat === 'CHARGE' && (!charge || isBlocked(charge));
           const highlighted = tutorialCategory === cat;
           const count = knownCards.filter(c => getHandCategory(c) === cat).length;
-          return <div className="hand-category-slot" key={cat}>
+          return <div className="hand-category-slot" key={cat} style={fanPosition(index, categories.length)} data-selected={cat === 'CHARGE' && chosen?.id === 'charge' || undefined}>
+            <div className="hand-card-lift">
             <button ref={cat === 'ULTIMATE' ? ultimateRef : undefined} type="button" role="button" className={`hand-card hand-category-card ${highlighted ? 'tutorial-highlight' : ''}`} data-card-type={cat}
+              data-folder-finish={categoryFinish[cat]}
+              aria-pressed={cat === 'CHARGE' ? chosen?.id === 'charge' : undefined}
               data-ultimate-finish={cat === 'ULTIMATE' ? 'amethyst' : undefined}
               data-tutorial-target={highlighted} data-ultimate-ready={cat === 'ULTIMATE' && ultimateReady || undefined}
               aria-label={`${t.categories[cat]}${cat === 'ULTIMATE' && ultimateReady ? ` · ${lang === 'zh' ? '可以释放' : 'Ready to play'}` : ''}`} aria-disabled={disabled} aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined}
-              onClick={e => { if (cat === 'CHARGE') play(charge); else { keyboardCategory.current = e.detail === 0; onCategory(cat); } }}>
-              {cat === 'ULTIMATE' && <UltimateFolderFinish />}
+              onClick={e => { if (cat === 'CHARGE') choose(charge); else { cancelSelection(); keyboardCategory.current = e.detail === 0; onCategory(cat); } }}>
+              <FolderFinish category={cat} />
               <span className="hand-card-eyebrow">{cat === 'CHARGE' ? <Zap size={15} /> : <Layers size={15} />}<span>{cat === 'CHARGE' ? (lang === 'zh' ? '积蓄' : 'ENERGY') : `${count} ${lang === 'zh' ? '招' : 'SKILLS'}`}</span></span>
               <span className="hand-category-icon" aria-hidden="true"><Icon size={56} /></span>
               <strong className="hand-card-name">{t.categories[cat]}</strong>
               <small className="hand-category-caption">{categoryCaption[lang][cat]}</small>
             </button>
+            </div>
           </div>;
-        }) : cards.length === 0 ? <div className="hand-rest"><Layers size={38} /><p>{lang === 'zh' ? '还没有这一类招式' : 'No skills in this category yet'}</p></div> : cards.map(card => {
+        }) : cards.length === 0 ? <div className="hand-rest"><Layers size={38} /><p>{lang === 'zh' ? '还没有这一类招式' : 'No skills in this category yet'}</p></div> : cards.map((card, index) => {
           const freeCount = player.freeSkills?.filter(id => id === card.id).length ?? 0;
           const tempCount = player.tempSkills?.filter(id => id === card.id).length ?? 0;
           // Cards here are already owned/available; include borrowed and combined skills too.
@@ -178,11 +225,12 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
           const shortage = freeCount ? 0 : Math.max(0, card.cost - player.energy);
           const highlighted = tutorialHighlight === card.id;
           const blocked = isBlocked(card);
-          const label = disabled ? (lang === 'zh' ? '已禁用' : 'Disabled') : shortage ? (lang === 'zh' ? `还需 ${shortage} 能量` : `Need ${shortage} energy`) : tutorialHighlight && !highlighted ? (lang === 'zh' ? '请跟随教学' : 'Follow the lesson') : freeCount ? `${lang === 'zh' ? '免费' : 'Free'} ×${freeCount}` : (lang === 'zh' ? '点击出招' : 'Play skill');
-          return <div className="pixel-card-slot hand-skill-slot" key={card.id} onMouseEnter={() => setInspectedId(card.id)} onMouseLeave={() => setInspectedId(null)} onFocus={() => setInspectedId(card.id)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setInspectedId(null); }}>
+          const label = disabled ? (lang === 'zh' ? '已禁用' : 'Disabled') : shortage ? (lang === 'zh' ? `还需 ${shortage} 能量` : `Need ${shortage} energy`) : tutorialHighlight && !highlighted ? (lang === 'zh' ? '请跟随教学' : 'Follow the lesson') : chosen?.id === card.id ? (lang === 'zh' ? '已选中' : 'Selected') : freeCount ? `${lang === 'zh' ? '免费' : 'Free'} ×${freeCount}` : (lang === 'zh' ? '点击选择' : 'Select card');
+          return <div className="pixel-card-slot hand-skill-slot" key={card.id} style={fanPosition(index, cards.length)} data-selected={chosen?.id === card.id || undefined} onMouseEnter={() => setInspectedId(card.id)} onMouseLeave={() => setInspectedId(null)} onFocus={() => setInspectedId(card.id)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setInspectedId(null); }}>
+            <div className="hand-card-lift">
             <button type="button" role="button" className={`hand-card hand-skill-card ${highlighted ? 'tutorial-highlight' : ''}`} data-card-type={getHandCategory(card)} data-card-id={card.id} data-skill-type={card.type}
               data-combo={!!card.tags?.includes('combo')} data-card-finish={holo ? 'gold-holo' : undefined} data-acquired={acquired || undefined} data-tutorial-target={highlighted} aria-disabled={blocked} aria-label={`${card.name[lang]} · ${skillRankHint(card, lang)}${acquired ? ` · ${lang === 'zh' ? '获得技能' : 'Acquired skill'}` : ''} · ${label}`}
-              aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined} onClick={() => play(card)}>
+              aria-pressed={chosen?.id === card.id} title={card.description[lang]} aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined} onClick={() => choose(card)}>
               {holo && <CardHolo />}
               {acquired && !holo && <span className="hand-acquired-sparkles" aria-hidden="true"><i /><i /><i /></span>}
               <span className="hand-cost"><Zap size={15} />{freeCount ? 0 : card.cost}</span>
@@ -193,12 +241,15 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
               {tempCount > 0 && <span className="hand-temp">{lang === 'zh' ? '限次' : 'Temp'} ×{tempCount}</span>}
             </button>
             <button className="hand-info" type="button" aria-label={`${lang === 'zh' ? '查看' : 'Details:'} ${card.name[lang]}${lang === 'zh' ? '详情' : ''}`} aria-haspopup="dialog" onClick={() => setDetailId(card.id)}>i</button>
+            </div>
           </div>;
         })}
       </div>
-      {viewMode === 'CARDS' && <div className="hand-inspector">
-        {inspected && <><SkillGlyph effect={SKILL_EFFECTS[inspected.id] ?? SKILL_EFFECTS.charge} /><div><strong>{inspected.name[lang]}</strong><small className="hand-inspector-rank">Lv.{getEffectiveLevel(inspected)}{isOffensiveCard(inspected) ? ` · T${inspected.tier}` : ''}</small><span>{inspected.description[lang]}</span></div></>}
-      </div>}
+      <div className="hand-selection-bar" data-has-selection={!!chosen}>
+        <strong aria-live="polite">{chosen?.name[lang] ?? inspected?.name[lang] ?? (lang === 'zh' ? '选牌' : 'Choose a card')}</strong>
+        <button type="button" className="hand-confirm" disabled={!chosen} onClick={confirmSelection}><CheckCircle size={16} />{lang === 'zh' ? '出牌' : 'Play'}</button>
+        <button type="button" className="hand-cancel" disabled={!chosen} onClick={cancelSelection}>{lang === 'zh' ? '取消' : 'Cancel'}</button>
+      </div>
     </>}
     <UltimateAura anchor={ultimateRef} host={handRef} active={ultimateReady} layoutKey={`${viewMode}:${category}:${cards.length}:${lang}`} />
     {detail && canChoose && <CardDetails card={detail} lang={lang} freeCount={player?.freeSkills?.filter(id => id === detail.id).length ?? 0} endless={player?.endlessLevel !== undefined} onClose={() => setDetailId(null)} />}

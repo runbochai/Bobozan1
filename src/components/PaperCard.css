@@ -1,0 +1,113 @@
+/* Warm printed stock, rendered in the same 2–4px steps as the character sprites.
+   Load after card skins. Geometry, fan angles and hover motion belong to BattleHand. */
+:is(.battle-hand, .center-table-board, .skill-loadout-picker) [data-card-type="CHARGE"] { --paper-accent: #86611c; --paper-stamp: #bb9242; }
+:is(.battle-hand, .center-table-board, .skill-loadout-picker) [data-card-type="ATTACK"] { --paper-accent: #87443a; --paper-stamp: #ae6250; }
+:is(.battle-hand, .center-table-board, .skill-loadout-picker) :is([data-card-type="DEFEND"], [data-card-type="SPECIAL"], [data-card-type="ABSORB"]) { --paper-accent: #395d6b; --paper-stamp: #638592; }
+:is(.battle-hand, .center-table-board, .skill-loadout-picker) [data-card-type="ULTIMATE"] { --paper-accent: #684a79; --paper-stamp: #93719c; }
+
+:root .pixel-app .battle-hand button.hand-card[data-card-type],
+:root .pixel-app .battle-hand .hand-locked-card[data-card-type],
+:root .pixel-app .center-table-board .table-played-card[data-card-type],
+:root .skill-loadout-picker .skill-loadout-card[data-card-type],
+:root .pixel-app .battle-hand button.hand-category-tab[data-card-type] {
+  --paper-ink: #403423;
+  --paper-muted: #695437;
+  --card-color: var(--paper-accent, #66543a);
+  --card-fill: #efdda8;
+  --paper-shadow: 0 2px 0 #ead5a1, 0 4px 0 #9e8355, 2px 5px 0 #d0b783, 3px 6px 0 #625137, 5px 8px 0 #080e1859, inset 2px 2px 0 #fff0c6, inset -2px -2px 0 #b5986455;
+  isolation: isolate;
+  color: var(--paper-ink) !important;
+  border-color: #9b7f4e !important;
+  background:
+    linear-gradient(var(--paper-stamp, #9a7941) 0 0) 9px 9px / 4px 22px no-repeat,
+    linear-gradient(#9a733835 0 0) 0 0 / 4px 12px no-repeat,
+    linear-gradient(#fff1c657 0 0) 4px 0 / 10px 2px no-repeat,
+    linear-gradient(#9673432c 0 0) 100% 100% / 10px 4px no-repeat,
+    linear-gradient(90deg, #c9a86744 0 4px, transparent 4px calc(100% - 4px), #b68e5033 calc(100% - 4px)),
+    linear-gradient(0deg, #d5b777 0 3px, #e7ce92 3px 8px, transparent 8px calc(100% - 4px), #fff0bc66 calc(100% - 4px)),
+    linear-gradient(114deg, #e6cc90 0 5%, #edd8a0 5% 18%, #f1e0b1 18% 72%, #ecd6a0 72% 91%, #e4c88d 91% 100%) !important;
+  box-shadow: var(--paper-shadow) !important;
+  text-shadow: none;
+}
+
+/* Sparse, low-contrast rectangles suggest pulp and folds; no fine photo noise. */
+:root :is(.battle-hand, .center-table-board, .skill-loadout-picker) :is(.hand-card, .hand-locked-card, .table-played-card, .skill-loadout-card)::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(#8f6b3424 0 0) 13% 18% / 4px 2px no-repeat,
+    linear-gradient(#fff5d236 0 0) 79% 22% / 6px 2px no-repeat,
+    linear-gradient(#a5804621 0 0) 88% 56% / 2px 6px no-repeat,
+    linear-gradient(#a580461a 0 0) 17% 73% / 4px 2px no-repeat,
+    linear-gradient(#fff5d240 0 0) 72% 88% / 8px 2px no-repeat,
+    linear-gradient(#b695581b 0 0) 41% 94% / 6px 2px no-repeat,
+    linear-gradient(90deg, transparent 0 73%, #af8c481a 73% calc(73% + 2px), #fff2bf42 calc(73% + 2px) calc(73% + 4px), transparent calc(73% + 4px)) 0 100% / 100% 19% no-repeat,
+    linear-gradient(135deg, transparent 0 58%, #f9eac052 58% 72%, transparent 72%) 100% 0 / 14px 14px no-repeat;
+}
+:root :is(.battle-hand, .center-table-board, .skill-loadout-picker) :is(.hand-card, .hand-locked-card, .table-played-card, .skill-loadout-card) > :not(.card-holo, .hand-folder-finish, .hand-ultimate-finish, .hand-acquired-sparkles) { z-index: 1; }
+:root .pixel-app .battle-hand :is(.hand-card, .hand-locked-card)::after,
+:root .skill-loadout-picker .skill-loadout-card::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 2px solid #94754552;
+  opacity: .62;
+  pointer-events: none;
+  clip-path: polygon(0 0, 22% 0, 22% 2px, 78% 2px, 78% 0, 100% 0, 100% 100%, 78% 100%, 78% calc(100% - 2px), 22% calc(100% - 2px), 22% 100%, 0 100%);
+}
+
+/* Existing artwork remains intact; its surrounding print and lettering become ink. */
+:root .pixel-app .battle-hand :is(.hand-card-name, .hand-locked-card > strong),
+:root .pixel-app .center-table-board .table-played-card strong,
+:root .skill-loadout-picker .skill-loadout-card > strong { color: #403423; text-shadow: none; }
+:root .pixel-app .battle-hand :is(.hand-card-eyebrow, .hand-category-caption, .hand-category-icon) { color: var(--paper-accent); filter: none; }
+:root .pixel-app .battle-hand :is(.hand-card-action, .hand-temp),
+:root .skill-loadout-picker .skill-loadout-card .skill-loadout-description { color: #695437; }
+:root .pixel-app .battle-hand .hand-card[aria-disabled="true"] .hand-card-action { color: #73483b; }
+:root .pixel-app .battle-hand button.hand-card[aria-disabled="true"] { opacity: 1 !important; filter: none !important; }
+:root .pixel-app .battle-hand .hand-card[aria-disabled="true"] :is(.hand-art, .hand-category-icon) { opacity: .48; }
+:root .pixel-app .battle-hand .hand-card[aria-disabled="true"] .hand-card-name { color: #766041; }
+:root .pixel-app .battle-hand .hand-card[aria-disabled="true"] .hand-acquired-sparkles { opacity: .3; }
+:root .pixel-app .battle-hand .hand-card[aria-disabled="true"] > .card-holo { opacity: .72; }
+:root .pixel-app .battle-hand .hand-cost,
+:root .pixel-app .center-table-board :is(.table-card-cost, .table-card-level),
+:root .skill-loadout-picker .skill-loadout-card-top { color: #584126; }
+:root .pixel-app .battle-hand .hand-card-rank,
+:root .skill-loadout-picker .skill-loadout-rank { background: #e1c78e; color: #4d3925; border-color: #9c7c48; box-shadow: inset 0 2px #f9e9bd; }
+:root .pixel-app .battle-hand .hand-card-rank[data-combo-rank="true"] { color: #795313; border-color: #a57628; background: #efd087; }
+:root .pixel-app .battle-hand .hand-info { background: #e8d19c; color: #5a452d; border-color: #967c4e; box-shadow: 2px 2px #6d583a; }
+:root :is(.battle-hand, .center-table-board, .skill-loadout-picker) :is(.hand-card, .hand-locked-card, .table-played-card, .skill-loadout-card) .pixel-card-symbol { color: var(--paper-accent, #66543a); background: #ead49b88; border-color: var(--paper-accent, #66543a); box-shadow: 2px 2px #ae8d533b; }
+:root .pixel-app .battle-hand .hand-card .pixel-card-art { filter: drop-shadow(2px 2px 0 #86694135); }
+:root .skill-loadout-picker .skill-loadout-check { color: #3e634c; }
+:root .skill-loadout-picker .skill-loadout-check > i { border-color: #8e7b55; background: #f3e4ba66; }
+:root .skill-loadout-picker .skill-loadout-card[aria-pressed="true"] { outline: 2px solid #638665; outline-offset: -5px; }
+
+/* Folder effects are a faint coating on paper, never a full coloured panel. */
+:root .pixel-app .battle-hand [data-folder-finish] > :is(.hand-folder-finish, .hand-ultimate-finish) { border-color: #a58a5338; background: none; opacity: .36; }
+:root .pixel-app .battle-hand [data-folder-finish] :is(.hand-folder-facets, .hand-ultimate-facets) { opacity: .25; }
+:root .pixel-app .battle-hand [data-folder-finish] :is(.hand-folder-motif, .hand-ultimate-glints) { opacity: .45; }
+:root .pixel-app .battle-hand [data-folder-finish="frost"] .hand-folder-motif > i { border-color: #527384; }
+:root .pixel-app .battle-hand [data-folder-finish="gilded"] .hand-folder-motif > i { background: #bd9341; box-shadow: 0 2px #e5bc6577; }
+:root .pixel-app .battle-hand .hand-category-tab[data-folder-finish] {
+  --paper-shadow: 0 2px #9d8356, inset 0 2px #fff0c577;
+  color: var(--paper-accent) !important;
+}
+:root .pixel-app .battle-hand .hand-category-tab[data-folder-finish][aria-current="true"] { color: #3f3323 !important; box-shadow: inset 0 -3px var(--paper-accent), 0 2px #8d7347 !important; }
+
+/* Rare skills keep gold foil on pale stock, rather than returning to a dark card. */
+:root .pixel-app .battle-hand :is(.hand-card, .hand-locked-card)[data-card-type][data-card-finish="gold-holo"],
+:root .pixel-app .center-table-board .table-played-card[data-card-finish="gold-holo"],
+:root .skill-loadout-picker .skill-loadout-card[data-card-finish="gold-holo"] {
+  --paper-shadow: 0 2px #efdb9d, 0 4px #aa792b, 2px 5px #dbb764, 3px 6px #694b28, 5px 8px #080e1859, inset 2px 2px #fff1be, inset -2px -2px #bf8f37;
+  border-color: #b78932 !important;
+}
+:root :is(.battle-hand, .center-table-board, .skill-loadout-picker) [data-card-finish="gold-holo"] > .card-holo { border: 2px solid #c1963e; background: linear-gradient(135deg, #e2bc6140 0 7%, transparent 7% 90%, #f2d88740 90%); box-shadow: inset 2px 2px #fff2b975, inset -2px -2px #8c672738; }
+:root :is(.battle-hand, .center-table-board, .skill-loadout-picker) [data-card-finish="gold-holo"] .card-holo-foil { background-image: linear-gradient(115deg, transparent 28%, #d99ec747 36%, #91b6e247 42%, #a0d7bc66 47%, #fff1a5a3 51%, #eaa9b657 56%, transparent 64%); }
+:root :is(.battle-hand, .center-table-board, .skill-loadout-picker) [data-card-finish="gold-holo"] .card-holo-stars > i { background: #fff3be; box-shadow: -2px 0 #bc872cab, 2px 0 #bc872cab, 0 -2px #bc872cab, 0 2px #bc872cab; }
+
+/* Table miniatures retain the same stock with fewer large decorative marks. */
+:root .pixel-app .center-table-board .table-played-card[data-card-type] { --paper-shadow: 0 2px #c4a266, 2px 4px #0a101a66, inset 0 0 0 2px #f5e5b866; }
+:root .pixel-app .center-table-board .table-played-card::before { opacity: .5; }
