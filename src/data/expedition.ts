@@ -61,7 +61,7 @@ intro: { zh: '师父：先学会攒气，再谈打架。', en: 'Master: learn to
 id: 's1', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
 name: { zh: '第 2 关 · 胆小鬼', en: 'Stage 2 · Coward'},
 rewardTier: 1,
-tip: { zh: '先储备能量，再看意图用「防」挡住攻击', en: 'Store energy, then read intent and block with [Defend]'},
+tip: { zh: '观察能量与上一张牌；习惯只是倾向，双方同时出招。', en: 'Watch Energy and the last card; habits are tendencies, and moves resolve together.'},
 enemies: [{
 id: 'coward', name: { zh: '🪵 胆小木桩', en: '🪵 Cowardly Post'}, hp: 1, inventory: [0],
 personality: P(0.35, 0.5, 0.4, 0.1),
@@ -94,7 +94,7 @@ intro: { zh: '一只野生的史莱姆跳了出来！', en: 'A wild Slime appear
 id: 's4', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
 name: { zh: '第 5 关 · 双子史莱姆', en: 'Stage 5 · Twin Slimes'},
 rewardTier: 1,
-tip: { zh: '一对二！打倒一个会触发状态重置，趁机喘息', en: 'One vs two! Knocking one out resets everyone — catch your breath'},
+tip: { zh: '三方混战，他们也会互打。每个对手都能造成伤害，淘汰不会重置你的血量。', en: 'Three-way brawl: they can hit each other too. Each opponent can hurt you; eliminations do not reset HP.'},
 enemies: [
 {
 id: 'slime_a', name: { zh: '🟢 史莱姆兄', en: '🟢 Slime Bro'}, hp: 1.5, inventory: [0],
@@ -151,7 +151,7 @@ intro: { zh: '右头：我也来！', en: 'Right Head: me too!'},
 id: 's8', chapter: { zh: '第二章 · 云雾道馆', en: 'Ch.2 · Mist Dojo'},
 name: { zh: '第 9 关 · 精英：龙爪长老', en: 'Stage 9 · Elite: Dragon Elder'},
 rewardTier: 2,
-tip: { zh: '同类技能对拼，高等级压制低等级——小心他的龙爪！', en: 'In a clash, higher level wins — beware his Dragon Claw!'},
+tip: { zh: '龙爪压过低级一费攻击，但与轰轰、六克打平。此敌有穿透，普通防守挡不住！', en: 'Dragon Claw beats lower-level one-cost attacks but ties with Double Blast or Six Cuts. This enemy pierces defense!'},
 enemies: [{
 id: 'dragon_elder', name: { zh: '🐉 龙爪长老', en: '🐉 Dragon Elder'}, hp: 3, inventory: [0, 3],
 personality: P(0.75, 0.25, 0.35, 0.7), elite: true,
@@ -274,42 +274,6 @@ intro: { zh: '塔魂：波赞只是守门人。我，即是塔。', en: 'Soul: B
 }],
 },
 ];
-
-// ============ 前三关战斗内教学 ============
-export interface ExpeditionTutorialStep {
-text: LocalizedText;
-highlight: string; // The dialog points to this card; only playing it consumes a turn.
-}
-export const EXPEDITION_LESSONS: Record<string, { title: LocalizedText; summary: LocalizedText }> = {
-s0: {
-title: { zh: '攒气与进攻', en: 'Charge & attack' },
-summary: { zh: '先攒气，再进攻。', en: 'Charge first, then attack.' },
-},
-s1: {
-title: { zh: '学会防守', en: 'Learn to defend' },
-summary: { zh: '看准敌人的攻击，用「防」挡住。', en: 'Read the attack, then block it with Defend.' },
-},
-s2: {
-title: { zh: '突破防守', en: 'Break through' },
-summary: { zh: '「咔」能破防，开始冒险吧！', en: 'Ka breaks defense. Your adventure begins!' },
-},
-};
-export const EXPEDITION_TUTORIALS: Record<string, ExpeditionTutorialStep[]> = {
-s0: [
-{ text: { zh: '点「攒」，获得 2 点能量。', en: 'Play Charge to gain 2 Energy.' }, highlight: 'charge' },
-{ text: { zh: '点「轰」，消耗 1 点能量攻击木桩。', en: 'Play Blast: spend 1 Energy to hit the dummy.' }, highlight: 'hong' },
-],
-s1: [
-{ text: { zh: '敌人也在攒气，先点「攒」准备接招。', en: 'The enemy is charging. Play Charge to prepare.' }, highlight: 'charge' },
-{ text: { zh: '气泡提示敌人要攻击！点「防」，免费挡住。', en: 'The bubble warns of an attack! Play Defend for free.' }, highlight: 'defend' },
-{ text: { zh: '挡住了！趁敌人攒气，点「轰」反击。', en: 'Blocked! Play Blast while the enemy charges.' }, highlight: 'hong' },
-],
-s2: [
-{ text: { zh: '破防需要 3 点能量，先点「攒」。', en: 'Breaking defense takes 3 Energy. Play Charge first.' }, highlight: 'charge' },
-{ text: { zh: '再点一次「攒」，备足破防的能量。', en: 'Play Charge once more to save enough Energy.' }, highlight: 'charge' },
-{ text: { zh: '点「咔」，用 3 点能量击破防守！', en: 'Play Ka: spend 3 Energy to break through!' }, highlight: 'ka' },
-],
-};
 
 // ============ 遗物 ============
 

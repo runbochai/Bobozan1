@@ -146,23 +146,32 @@ function ChoicePanel({ title, subtitle, shop, gold, children, footer }: {
   </dialog>;
 }
 
-export function ExpeditionRewards({ rewards, lang, lesson, onChoose }: {
-  rewards: RewardOption[]; lang: Lang; lesson?: number; onChoose: (reward: RewardOption) => void;
+export interface ExpeditionRunStatus { hp: number; maxHp: number; level: number; }
+function RunStatus({ status, lang }: { status?: ExpeditionRunStatus; lang: Lang }) {
+  return status && <p className="expedition-run-status"><span>♥ {status.hp} / {status.maxHp}</span><span>Lv.{status.level}</span><span>{lang === 'zh' ? '升级解锁新招，旧招不变强' : 'Levels unlock moves; old moves stay the same'}</span></p>;
+}
+
+export function ExpeditionRewards({ rewards, lang, onChoose, onReview, status }: {
+  rewards: RewardOption[]; lang: Lang; onChoose: (reward: RewardOption) => void; onReview?: () => void; status?: ExpeditionRunStatus;
 }) {
   return <ChoicePanel title={lang === 'zh' ? '选择奖励' : 'Choose a reward'}
-    subtitle={lang === 'zh' ? `${lesson ? (lesson === 3 ? '新手三课完成 · ' : `第 ${lesson} 课完成 · `) : ''}${rewards.length} 选 1` : `${lesson ? `Lesson ${lesson} complete · ` : ''}Pick 1 of ${rewards.length}`}>
+    subtitle={lang === 'zh' ? `${rewards.length} 选 1 · 仅本轮有效 · 升级解锁新招` : `Pick 1 of ${rewards.length} · This run only · Levels unlock moves`}
+    footer={onReview && <footer className="expedition-panel-footer"><button type="button" className="expedition-continue" onClick={onReview}>{lang === 'zh' ? '回顾获胜这一回合' : 'Review the winning turn'}</button></footer>}>
+    <RunStatus status={status} lang={lang} />
     <div className="expedition-choice-grid" data-count={rewards.length}>{rewards.map((reward, i) => <ChoiceCard key={i} choice={rewardChoice(reward, lang)} lang={lang} onChoose={() => onChoose(reward)} />)}</div>
   </ChoicePanel>;
 }
 
-export function ExpeditionShop({ items, gold, lang, onBuy, onContinue }: {
-  items: ShopItem[]; gold: number; lang: Lang; onBuy: (item: ShopItem, index: number) => void; onContinue: () => void;
+export function ExpeditionShop({ items, gold, lang, onBuy, onContinue, onReview, status }: {
+  items: ShopItem[]; gold: number; lang: Lang; onBuy: (item: ShopItem, index: number) => void; onContinue: () => void; onReview?: () => void; status?: ExpeditionRunStatus;
 }) {
   const [acquired, setAcquired] = useState<Choice | null>(null);
   useEffect(() => { if (!acquired) return; const timer = setTimeout(() => setAcquired(null), 1800); return () => clearTimeout(timer); }, [acquired]);
   return <ChoicePanel shop title={lang === 'zh' ? '远征商城' : 'Expedition shop'} subtitle={lang === 'zh' ? '战前补给' : 'Prepare for battle'} gold={gold}
     footer={<footer className="expedition-panel-footer"><div className="expedition-acquired" role="status" aria-live="polite">{acquired && <span key={acquired.id}><CheckCircle size={20} />{lang === 'zh' ? '获得 ' : 'Got '}{acquired.name}</span>}</div>
+      {onReview && <button type="button" className="expedition-continue" onClick={onReview}>{lang === 'zh' ? '上回合复盘' : 'Last turn review'}</button>}
       <button type="button" className="expedition-continue" onClick={onContinue}><Swords size={22} />{lang === 'zh' ? '继续出战' : 'Next battle'}</button></footer>}>
+    <RunStatus status={status} lang={lang} />
     <div className="expedition-choice-grid" data-count={items.length}>{items.map((item, i) => {
       const choice = shopChoice(item, lang);
       const price = item.kind === 'equipment' ? item.equipment.price : item.price;
