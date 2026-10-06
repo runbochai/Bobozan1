@@ -66,7 +66,9 @@ function historyRates(player: Player, cards: Card[], history?: Record<string, st
 /** Explicit public snapshot: spreading a Player would read selectedCardId getters. */
 function publicCombatant(player: Player): Player {
   return { id: player.id, name: player.name, isBot: player.isBot, hp: player.hp, energy: player.energy,
-    isDead: player.isDead, inventory: [...player.inventory], layer: player.layer, tempLayerMod: player.tempLayerMod,
+    isDead: player.isDead, inventory: [...player.inventory],
+    ...(player.skillLoadout ? { skillLoadout: [...player.skillLoadout] } : {}),
+    layer: player.layer, tempLayerMod: player.tempLayerMod,
     selectedCardId: null, lastCardId: player.lastCardId, lastAction: null, kills: player.kills,
     freeSkills: [...(player.freeSkills ?? [])], tempSkills: [...(player.tempSkills ?? [])],
     disabledSkills: [...(player.disabledSkills ?? [])], dmgBonus: player.dmgBonus,

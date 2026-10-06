@@ -1,9 +1,10 @@
 import React from 'react';
 import PixelCardArt from '../components/PixelCardArt';
-import type { Card, Player, LogEntry, Lang, CardType } from '../types';
+import type { Card, Player, LogEntry, Lang } from '../types';
 import { TEXT } from '../data/translations';
 import { SKILL_DB } from '../data/skills';
 import { FINAL_LEVEL, MAX_HP } from '../data/constants';
+import { autoSelectSkillLoadout, COMBO_COMPONENTS, getRetainedSkillIds, grantSkillLevel, hasSkillOverflow, isAcquiredSkill } from './skillLoadout';
 
 // --- ICON HELPER ---
 export const getCardIcon = (id: string) => React.createElement(PixelCardArt, { id });
@@ -263,6 +264,7 @@ export const calculateTurnOutcome = (
     .map((p) => ({
       ...p,
       inventory: [...p.inventory],
+      ...(p.skillLoadout ? { skillLoadout: [...p.skillLoadout] } : {}),
       disabledSkills: [...(p.disabledSkills || [])],
       freeSkills: [...(p.freeSkills || [])],
       tempSkills: [...(p.tempSkills || [])],
@@ -271,7 +273,7 @@ export const calculateTurnOutcome = (
     .filter((p) => !p.isDead);
 
   const deadPlayers = currentPlayers
-    .map((p) => ({ ...p }))
+    .map((p) => ({ ...p, inventory: [...p.inventory], ...(p.skillLoadout ? { skillLoadout: [...p.skillLoadout] } : {}) }))
     .filter((p) => p.isDead);
 
   // 1. APPLY COSTS / LAYER TAGS
@@ -616,30 +618,12 @@ export const calculateTurnOutcome = (
             type: 'win' 
           });
       } else {
-          // Standard Win Logic (Give Skill)
-          const newLvl = matchCount;
-          const newCards = SKILL_DB.filter(c => c.levelRequired === newLvl);
-          // ... (Existing skill unlock logic) ...
-          let typeToCheck: CardType | null = null;
-          if (newCards.some(c => c.type === 'ULTIMATE')) typeToCheck = 'ULTIMATE';
-          else if (newCards.some(c => c.type === 'ATTACK')) typeToCheck = 'ATTACK';
-          else if (newCards.some(c => c.type === 'DEFEND')) typeToCheck = 'DEFEND';
-          const isSpecial = !typeToCheck || newCards.some(c => c.type === 'SPECIAL');
-          let count = 0;
-          if (typeToCheck && !isSpecial) {
-            winner.inventory.forEach(lvl => {
-               if (lvl === 0) return;
-               const cardsAtLvl = SKILL_DB.filter(c => c.levelRequired === lvl);
-               if (cardsAtLvl.some(c => c.type === typeToCheck)) count++;
-            });
-          }
-          if (typeToCheck && count >= 4 && !winner.inventory.includes(newLvl)) {
-             winner.pendingLevel = newLvl;
-             logs.push({ turn, text: lang === 'zh' ? `🏆 ${winner.name} 获胜! (需弃牌)` : `🏆 ${winner.name} WINS! (Full slots)`, type: 'win' });
-          } else {
-            if (!winner.inventory.includes(newLvl)) winner.inventory.push(newLvl);
-            logs.push({ turn, text: lang === 'zh' ? `🏆 ${winner.name} 获胜! (获得 Lv${matchCount})` : `🏆 ${winner.name} WINS! (Got Lv${matchCount})`, type: 'win' });
-          }
+          const awarded = grantSkillLevel(winner, matchCount);
+          Object.assign(winner, winner.isBot ? autoSelectSkillLoadout(awarded) : awarded);
+          const overflow = hasSkillOverflow(winner);
+          logs.push({ turn, text: lang === 'zh'
+            ? `🏆 ${winner.name} 获胜! (${overflow ? '选择保留技能' : `获得 Lv${matchCount}`})`
+            : `🏆 ${winner.name} WINS! (${overflow ? 'Choose retained skills' : `Got Lv${matchCount}`})`, type: 'win' });
       }
     } else {
       logs.push({ turn, text: lang === 'zh' ? `平局!` : `Draw!`, type: 'death' });
@@ -650,6 +634,7 @@ export const calculateTurnOutcome = (
 };
 
 export const getPlayerCards = (p: Player, allPlayers?: Player[]) => {
+  const retained = new Set(getRetainedSkillIds(p));
   const hongTianUnlocked = allPlayers
     ? allPlayers.some((pl) => pl.inventory.includes(20))
     : false;
@@ -658,14 +643,11 @@ export const getPlayerCards = (p: Player, allPlayers?: Player[]) => {
     // 🔥 关键修复：检查这张卡是否是临时卡
     const isTempSkill = p.tempSkills?.includes(c.id) ?? false;
 
-    // 如果是 Lv100 且不是临时卡，才隐藏
-    if (c.levelRequired === 100 && !isTempSkill) return false;
-
     const hasFreeSkill = p.freeSkills?.includes(c.id) ?? false;
     
     // 只要 仓库有 OR 是基础 OR 有免费 OR 有临时，都算拥有
     const hasSkill =
-      p.inventory.includes(c.levelRequired) ||
+      retained.has(c.id) ||
       c.levelRequired === 0 ||
       hasFreeSkill ||
       isTempSkill;
@@ -676,26 +658,22 @@ export const getPlayerCards = (p: Player, allPlayers?: Player[]) => {
     return hasSkill && specialCond;
   });
 
-  const inv = p.inventory;
-  const has = (lvl: number) => inv.includes(lvl);
   const tryAddCombo = (id: string) => {
     const c = SKILL_DB.find((x) => x.id === id);
-    if (c) knownCards.push(c);
+    if (c && !knownCards.some(card => card.id === id)) knownCards.push(c);
   };
 
-  if (has(1) && has(2) && has(3)) tryAddCombo('skydragon');
-  if (has(2) && has(5)) tryAddCombo('doublewing');
-  if (has(8) && has(10) && has(11)) tryAddCombo('vajra');
-  if (has(20) && has(21)) {
-    tryAddCombo('allbomb');
-    tryAddCombo('heartpoison');
+  for (const [id, components] of Object.entries(COMBO_COMPONENTS)) {
+    if (components.every(component => retained.has(component))) tryAddCombo(id);
   }
 
   // SHARED SKILL LOGIC
   if (allPlayers) {
-    // Check if anyone (including self) enabled sharing and has the required level
-    const anyoneSharingDragon = allPlayers.some(pl => pl.isShared && pl.inventory.includes(3)); // Lv3 = Dragon
-    const anyoneSharing9g = allPlayers.some(pl => pl.isShared && pl.inventory.includes(18));   // Lv18 = 9g
+    // Unlock history alone cannot lend a skill that the owner discarded.
+    const dragon = SKILL_DB.find(card => card.id === 'dragondef')!;
+    const nine = SKILL_DB.find(card => card.id === 'ninedef')!;
+    const anyoneSharingDragon = allPlayers.some(pl => pl.isShared && isAcquiredSkill(pl, dragon));
+    const anyoneSharing9g = allPlayers.some(pl => pl.isShared && isAcquiredSkill(pl, nine));
 
     if (anyoneSharingDragon) {
        const c = SKILL_DB.find(x => x.id === 'dragondef');

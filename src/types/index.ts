@@ -1,7 +1,7 @@
 // --- 1. TYPE DEFINITIONS ---
 export type Lang = 'zh' | 'en';
 export type CardType = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE' | 'ABSORB' | 'SPECIAL';
-export type HandCategory = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE' | 'SPECIAL';
+export type HandCategory = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE';
 export type HandViewMode = 'CATEGORIES' | 'CARDS';
 
 export interface LocalizedText {
@@ -29,6 +29,8 @@ export interface Player {
   energy: number;
   isDead: boolean;
   inventory: number[];
+  /** Retained permanent skill IDs, oldest first. Missing means a legacy unlock history; overflow requires a choice. */
+  skillLoadout?: string[];
   layer: number;
   tempLayerMod: number;
   selectedCardId: string | null;

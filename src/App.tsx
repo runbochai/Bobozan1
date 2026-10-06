@@ -2,6 +2,9 @@ import BattleArena from './components/BattleArena';
 import { useBattleBounds } from './components/useBattleBounds';
 import './components/CenteredTable.css';
 import BattleHand from './components/BattleHand';
+import SkillLoadoutPicker from './components/SkillLoadoutPicker';
+import { SKILL_SLOT_LIMIT, getHandCategory, getSkillOverflow, hasSkillOverflow, normalizeSkillLoadout,
+  autoSelectSkillLoadout, isAcquiredSkill, resolveSkillLoadout, sortHandCards, type SkillSelections } from './logic/skillLoadout';
 import BattleTableCards from './components/BattleTableCards';
 import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
@@ -87,7 +90,7 @@ import { firebaseErrorMessage } from './config/firebaseConfig';
 import { useBackgroundMusic } from './audio/useBackgroundMusic';
 import { assetUrl, avatarUrl } from './assets';
 import { mutateRoom, createUniqueRoom } from './services/rooms';
-import { advanceRoom, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './logic/room';
+import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './logic/room';
 import type { User as FirebaseUser } from 'firebase/auth';
 import './components/BattleViewport.css';
 import ExpeditionCoach from './components/ExpeditionCoach';
@@ -263,6 +266,9 @@ export default function BobozanOnline() {
     document.documentElement.classList.toggle('reduce-motion', reduceMotion);
   }, [reduceMotion]);
   const [submittingMove, setSubmittingMove] = useState(false);
+  const [choosingSkills, setChoosingSkills] = useState(false);
+  const choosingSkillsRef = useRef(false);
+  const [skillChoiceError, setSkillChoiceError] = useState('');
 
   const [leaderboardMode, setLeaderboardMode] = useState<'MINIMIZED' | 'TOP3' | 'EXPANDED'>('MINIMIZED');
 
@@ -389,6 +395,7 @@ export default function BobozanOnline() {
 
   const handleExpeditionMove = (cardId: string) => {
     if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle') return;
+    if (hasSkillOverflow(expRunRef.current)) return;
     if (gameState.status !== 'PLAYING') return;
     const myId = expMyId();
     const me = gameState.players.find(p => p.id === myId);
@@ -498,7 +505,7 @@ export default function BobozanOnline() {
   };
 
   const leaveExpShop = (route: ExpeditionRoute = 'rest') => {
-    if (expPhase !== 'shop' || expeditionBusyRef.current) return;
+    if (expPhase !== 'shop' || expeditionBusyRef.current || hasSkillOverflow(expRunRef.current)) return;
     playSound('confirm', muted);
     expRunRef.current = takeExpeditionRoute(expRunRef.current, route);
     setupExpeditionBattle(expRunRef.current.stageIdx + 1);
@@ -1078,27 +1085,42 @@ export default function BobozanOnline() {
     } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
 
-  const handleDiscardSkill = async (discardLvl: number) => {
-    if (!isOnline || !user) return;
+  const handleKeepSkills = async (keptIds: string[]) => {
+    if (choosingSkillsRef.current || (!isExpedition && (!isOnline || !user))) return;
+    const source = isExpedition ? expRunRef.current : myPlayer;
+    if (!source) return;
+    const groups = getSkillOverflow(source);
+    if (!groups.length) return;
+    const selections: SkillSelections = Object.fromEntries(groups.map(group =>
+      [group.category, keptIds.filter(id => group.cards.some(card => card.id === id))]));
+    choosingSkillsRef.current = true;
+    setChoosingSkills(true);
+    setSkillChoiceError('');
     try {
-      await mutateRoom(roomCode, room => {
-        if (room.status !== 'GAMEOVER') return null;
-        return patchPlayer(room, user.uid, p => {
-          if (!p.pendingLevel || (discardLvl !== p.pendingLevel && !p.inventory.includes(discardLvl))) return p;
-          const inventory = discardLvl === p.pendingLevel ? [...p.inventory]
-            : [...new Set([...p.inventory.filter(l => l !== discardLvl), p.pendingLevel])].sort((a, b) => a - b);
-          return { ...p, inventory, pendingLevel: null };
-        });
-      });
+      if (isExpedition) {
+        const run = resolveSkillLoadout(expRunRef.current, selections);
+        if (!run) throw new Error('Skill selection changed');
+        expRunRef.current = run;
+        setGameState(previous => ({ ...previous, players: previous.players.map(player => player.id === expMyId()
+          ? { ...player, inventory: [...run.inventory], skillLoadout: [...run.skillLoadout], pendingLevel: null } : player) }));
+      } else {
+        await mutateRoom(roomCode, room => choosePlayerSkills(room, user!.uid, selections));
+      }
       playSound('click', muted);
-    } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
+    } catch {
+      setSkillChoiceError(lang === 'zh' ? '保存失败，请重试。' : 'Could not save. Please retry.');
+    } finally {
+      choosingSkillsRef.current = false;
+      setChoosingSkills(false);
+    }
   };
 
   const toggleShare = async () => {
     if (!isOnline || !user) return;
     try {
       await mutateRoom(roomCode, room => patchPlayer(room, user.uid, p =>
-        p.inventory.includes(3) || p.inventory.includes(18) ? { ...p, isShared: !p.isShared } : p));
+        ['dragondef', 'ninedef'].some(id => isAcquiredSkill(p, SKILL_DB.find(card => card.id === id)!))
+          ? { ...p, isShared: !p.isShared } : p));
       playSound('click', muted);
     } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
   };
@@ -1152,9 +1174,10 @@ export default function BobozanOnline() {
       const expectedMatch = gameState.matchCount;
       await mutateRoom(roomCode, room => {
         if (room.hostId !== user.uid || room.status !== 'GAMEOVER' || room.matchCount !== expectedMatch) return null;
-        if (room.players.some(p => p.pendingLevel)) throw new Error('Please finish choosing reward skills first');
+        const preparedPlayers = room.players.map(p => p.isBot ? autoSelectSkillLoadout(p) : normalizeSkillLoadout(p));
+        if (preparedPlayers.some(hasSkillOverflow)) throw new Error('Please finish choosing reward skills first');
     // 3. Reset Players Logic (with UNDEFINED protection)
-    const resetPlayers = room.players.map((p) => {
+    const resetPlayers = preparedPlayers.map((p) => {
       const isSurvivor = !p.isDead;
       const newLoseStreak = isSurvivor ? 0 : (p.loseStreak || 0) + 1;
 
@@ -1281,52 +1304,22 @@ export default function BobozanOnline() {
   const { bounds: tableBounds, ref: tableRef } = useBattleBounds();
   const getPlayerPosition = (index: number, total: number, viewer: number) => getBattleSeat(index, total, viewer, isSmallScreen, tableBounds);
 
-  // --- HAND RENDER HELPERS ---
-  const filteredHand = knownCards.filter(c => {
-    if (handCategory === 'SPECIAL') return c.type === 'SPECIAL' || c.type === 'ABSORB';
-    return c.type === handCategory;
-  });
-
-  const baseUltIds = new Set(['ka', 'ji', 'kajifen', 'kajisuper']);
-
-  const orderedHand =
-    handCategory === 'ATTACK'
-      ? [...filteredHand].sort((a, b) => {
-          const aAdv = a.levelRequired > 0;
-          const bAdv = b.levelRequired > 0;
-
-          // advanced (lvl>0) first
-          if (aAdv !== bAdv) return aAdv ? -1 : 1;
-
-          // force hong (basic Blast) more to the right
-          if (a.id === 'hong' && b.id !== 'hong') return 1;
-          if (b.id === 'hong' && a.id !== 'hong') return -1;
-
-          // fallback ordering
-          if (a.levelRequired !== b.levelRequired)
-            return a.levelRequired - b.levelRequired;
-          return a.cost - b.cost;
-        })
-      : handCategory === 'ULTIMATE'
-      ? [...filteredHand].sort((a, b) => {
-          const aAdv = a.levelRequired > 0;
-          const bAdv = b.levelRequired > 0;
-
-          // advanced (lvl>0) ultimates first
-          if (aAdv !== bAdv) return aAdv ? -1 : 1;
-
-          const aBase = baseUltIds.has(a.id);
-          const bBase = baseUltIds.has(b.id);
-
-          // push base ults (Ka / Ji / 咔叽粉 / 超粉) to the right
-          if (aBase !== bBase) return aBase ? 1 : -1;
-
-          // fallback ordering
-          if (a.levelRequired !== b.levelRequired)
-            return a.levelRequired - b.levelRequired;
-          return a.cost - b.cost;
-        })
-      : filteredHand;
+  // Category folders do not change the skill's actual combat type.
+  const orderedHand = myPlayer ? sortHandCards(myPlayer,
+    knownCards.filter(card => getHandCategory(card) === handCategory)) : [];
+  const skillHolder = isExpedition ? expRunRef.current : myPlayer;
+  const skillOverflow = skillHolder ? getSkillOverflow(skillHolder) : [];
+  const expNeedsSkillChoice = isExpedition && skillOverflow.length > 0;
+  const latestSkillLevel = skillHolder ? normalizeSkillLoadout(skillHolder).inventory.at(-1) : undefined;
+  const skillGroups = skillOverflow.map(group => ({ ...group,
+    cards: sortHandCards(skillHolder!, group.cards),
+    newIds: group.cards.filter(card => card.levelRequired === latestSkillLevel).map(card => card.id),
+  }));
+  const skillSelectionOverlay = (view === 'GAME' || view === 'LOBBY') && skillGroups.length > 0
+    && gameState.status !== 'SHOWDOWN' && (gameState.status !== 'PLAYING' || !myPlayer?.selectedCardId)
+    ? <SkillLoadoutPicker key={skillGroups.map(group => group.cards.map(card => card.id).join(',')).join('|')}
+        groups={skillGroups} lang={lang} limit={SKILL_SLOT_LIMIT} busy={choosingSkills} error={skillChoiceError}
+        onConfirm={handleKeepSkills} /> : null;
 
   // --- RENDER LOGIC ---
 
@@ -1571,6 +1564,7 @@ export default function BobozanOnline() {
 
   if (view === 'LOBBY') return (
     <div className="pixel-app pixel-screen-lobby min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+      {skillSelectionOverlay}
       
       <PixelBackdrop scene="lobby" />
 
@@ -1794,6 +1788,7 @@ export default function BobozanOnline() {
   return (
     <div className={`pixel-app pixel-screen-battle ${!isExpedition ? 'pixel-screen-multiplayer' : ''} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
       {learningOverlay}
+      {skillSelectionOverlay}
 
       {/* 1. BACKGROUND LAYERS & STYLES */}
       <style>{`
@@ -1851,7 +1846,7 @@ export default function BobozanOnline() {
       <div className="battle-social-controls hidden md:flex absolute top-[76px] right-4 z-50 gap-3 items-center">
         
         {/* 1. SHARE BUTTON (Only visible if you have Lv3 or Lv18) */}
-        {myPlayer && (myPlayer.inventory.includes(3) || myPlayer.inventory.includes(18)) && (
+        {myPlayer && ['dragondef', 'ninedef'].some(id => isAcquiredSkill(myPlayer, SKILL_DB.find(card => card.id === id)!)) && (
           <div className="relative group">
              <button
                onClick={toggleShare}
@@ -2014,7 +2009,7 @@ export default function BobozanOnline() {
             status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: Math.max(...expRunRef.current.inventory) }}
             onChoose={claimExpeditionReward} onReview={expRecap ? () => setExpHelp('recap') : undefined} />
         )}
-        {isExpedition && expPhase === 'shop' && (
+        {isExpedition && expPhase === 'shop' && !expNeedsSkillChoice && (
           <ExpeditionShop items={expShop} gold={expGold} lang={lang} onBuy={buyShopItem} onContinue={() => leaveExpShop()}
             onRoute={leaveExpShop} routeAvailable={expStageIdx >= 2}
             status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: Math.max(...expRunRef.current.inventory) }}
@@ -2242,13 +2237,13 @@ export default function BobozanOnline() {
                                      <button
                                         onClick={nextMatchHost}
                                         // Wait if anyone is pending a swap
-                                        disabled={gameState.players.some(p => p.pendingLevel != null)}
-                                        className={`w-full py-3 rounded-xl font-black text-lg shadow-lg flex items-center justify-center gap-2 transition-all ${gameState.players.some(p => p.pendingLevel != null) ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700' : 'bg-yellow-500 hover:bg-yellow-400 text-slate-900 active:scale-95'}`}
+                                        disabled={gameState.players.some(p => !p.isBot && hasSkillOverflow(p))}
+                                        className={`w-full py-3 rounded-xl font-black text-lg shadow-lg flex items-center justify-center gap-2 transition-all ${gameState.players.some(p => !p.isBot && hasSkillOverflow(p)) ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700' : 'bg-yellow-500 hover:bg-yellow-400 text-slate-900 active:scale-95'}`}
                                      >
-                                        {gameState.players.some(p => p.pendingLevel != null) ? (
+                                        {gameState.players.some(p => !p.isBot && hasSkillOverflow(p)) ? (
                                            <>
                                              <Loader size={20} className="animate-spin text-slate-500" />
-                                             <span className="text-sm">{lang === 'zh' ? '等待胜者弃牌...' : 'Waiting for discard...'}</span>
+                                             <span className="text-sm">{lang === 'zh' ? '等待选择技能…' : 'Waiting for skill choices…'}</span>
                                            </>
                                         ) : (
                                            <>
@@ -2260,8 +2255,8 @@ export default function BobozanOnline() {
                                    ) : (
                                      <div className="text-center text-slate-500 text-xs animate-pulse flex items-center justify-center gap-2">
                                         <Loader size={16} className="animate-spin" />
-                                        {gameState.players.some(p => p.pendingLevel != null) 
-                                          ? (lang === 'zh' ? '等待弃牌...' : 'Waiting for discard...') 
+                                        {gameState.players.some(p => !p.isBot && hasSkillOverflow(p))
+                                          ? (lang === 'zh' ? '等待选择技能…' : 'Waiting for skill choices…')
                                           : (lang === 'zh' ? '等待下一局...' : 'Waiting for host...')}
                                      </div>
                                    )
@@ -2407,7 +2402,7 @@ export default function BobozanOnline() {
           </div>}
 
         <BattleHand player={myPlayer} knownCards={knownCards} cards={orderedHand} lang={lang}
-          category={handCategory} viewMode={handViewMode} status={gameState.status} submitting={submittingMove}
+          category={handCategory} viewMode={handViewMode} status={gameState.status} submitting={submittingMove || skillOverflow.length > 0}
           poppingFree={poppingFree}
           onCategory={selectCategory} onBack={goBackToCategories} onPlay={id => {
             if (isExpedition) handleExpeditionMove(id);
@@ -2605,79 +2600,6 @@ export default function BobozanOnline() {
         </div>
       )}
       
-      {/* --- SKILL REPLACEMENT MODAL --- */}
-      {myPlayer && myPlayer.pendingLevel && (
-        <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center p-4 animate-in fade-in duration-300">
-           
-           <div className="text-center mb-8">
-             <h2 className="text-3xl font-black text-white mb-2">
-               {lang === 'zh' ? '技能槽已满!' : 'SKILL SLOTS FULL!'}
-             </h2>
-             <p className="text-slate-300">
-               {lang === 'zh' 
-                 ? '除基础技能外，同类技能上限为 4 张。请选择一张【丢弃】。' 
-                 : 'Limit 4 skills (excluding basic) per type. Choose one to DISCARD.'}
-             </p>
-           </div>
-
-           <div className="flex flex-wrap gap-4 justify-center items-center max-w-5xl">
-              {(() => {
-                 const newLvl = myPlayer.pendingLevel!;
-                 const newCardInfo = SKILL_DB.find(c => c.levelRequired === newLvl);
-                 const type = newCardInfo?.type || 'ATTACK'; 
-                 
-                 const existingLvls = myPlayer.inventory.filter(lvl => {
-                    if (lvl === 0) return false; 
-                    const cards = SKILL_DB.filter(c => c.levelRequired === lvl);
-                    return cards.some(c => c.type === type);
-                 });
-
-                 const allOptions = [...existingLvls, newLvl].sort((a,b) => a-b);
-
-                 return allOptions.map(lvl => {
-                    const card = SKILL_DB.find(c => c.levelRequired === lvl && c.type === type) 
-                                 || SKILL_DB.find(c => c.levelRequired === lvl)!; 
-                    
-                    const isNew = lvl === newLvl;
-
-                    return (
-                      <div key={lvl} className="flex flex-col items-center gap-2">
-                        {isNew ? (
-                          <span className="text-green-400 font-bold text-xs animate-bounce">
-                            {lang === 'zh' ? '新技能' : 'NEW'}
-                          </span>
-                        ) : (
-                          <span className="text-slate-500 font-bold text-xs">
-                            Lv.{lvl}
-                          </span>
-                        )}
-
-                        <div 
-                          onClick={() => handleDiscardSkill(lvl)}
-                          className={`
-                            w-28 h-40 rounded-xl border-2 cursor-pointer relative overflow-hidden group transition-all hover:scale-105 hover:shadow-2xl
-                            ${isNew ? 'border-green-500 shadow-[0_0_15px_rgba(34,197,94,0.4)]' : 'border-slate-600 hover:border-red-500'}
-                          `}
-                        >
-                           <div className="absolute inset-0 bg-slate-900/90" />
-                           <div className="absolute inset-0 bg-red-500/80 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity z-50 font-black text-white text-lg">
-                              {lang === 'zh' ? '丢弃' : 'DISCARD'}
-                           </div>
-
-                           <div className="relative z-10 flex flex-col items-center justify-center h-full p-2 text-center pointer-events-none">
-                              <div className="text-[10px] font-mono text-yellow-500 mb-1">Lv.{card.levelRequired}</div>
-                              <div className="scale-100 mb-1">{getCardIcon(card.id)}</div>
-                              <div className="font-bold text-white text-xs leading-tight mb-1">{card.name[lang]}</div>
-                              <div className="text-[9px] text-slate-400 leading-tight line-clamp-2">{card.description[lang]}</div>
-                           </div>
-                        </div>
-                      </div>
-                    );
-                 });
-              })()}
-           </div>
-        </div>
-      )}
     </div>
   );
 }

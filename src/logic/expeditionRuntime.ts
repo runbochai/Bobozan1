@@ -5,10 +5,11 @@ import { EXPEDITION_STAGES, EXPEDITION_VIGOR_HP, EXPEDITION_WARMUP_ENERGY, EXPED
   drawGachaCard, type ExpeditionEnemyDef } from '../data/expedition';
 import { calculateTurnOutcome } from './combat';
 import { consumeExpeditionCard, EXPEDITION_START_HP, EXPEDITION_MAX_HP, EXPEDITION_MAX_LEVEL, goldForWin, POTION_HEAL, type RewardOption, type ShopItem } from './expedition';
+import { grantSkillLevel, normalizeSkillLoadout, type SkillLoadoutState } from './skillLoadout';
 
 export type ExpeditionRoute = 'rest' | 'risk';
 export type ExpeditionHistory = Record<string, string[]>;
-export interface ExpeditionRun {
+export interface ExpeditionRun extends SkillLoadoutState {
   stageIdx: number; relics: string[]; inventory: number[]; hp: number; maxHp: number;
   tempCards: { cardId: string; usesLeft: number }[]; gold: number; equipment: string[];
   ironShirtUsed: boolean; dollUsed: boolean; route: ExpeditionRoute;
@@ -20,6 +21,7 @@ export interface ExpeditionBattleMemory {
 }
 export const EXPEDITION_HERO_ID = 'exp_me';
 const cloneRun = (run: ExpeditionRun): ExpeditionRun => ({ ...run, relics: [...run.relics], inventory: [...run.inventory],
+  ...(run.skillLoadout ? { skillLoadout: [...run.skillLoadout] } : {}),
   tempCards: run.tempCards.map(card => ({ ...card })), equipment: [...run.equipment] });
 const levelOf = (run: ExpeditionRun) => Math.max(0, ...run.inventory);
 const addCard = (run: ExpeditionRun, cardId: string, uses: number) => {
@@ -29,7 +31,7 @@ const addCard = (run: ExpeditionRun, cardId: string, uses: number) => {
 };
 
 export function createExpeditionRun(): ExpeditionRun {
-  return { stageIdx: 0, relics: [], inventory: [0], hp: EXPEDITION_START_HP, maxHp: EXPEDITION_START_HP,
+  return { stageIdx: 0, relics: [], inventory: [0], skillLoadout: [], hp: EXPEDITION_START_HP, maxHp: EXPEDITION_START_HP,
     tempCards: [], gold: 0, equipment: [], ironShirtUsed: false, dollUsed: false, route: 'rest' };
 }
 
@@ -58,7 +60,7 @@ function turnStart(players: Player[], run: ExpeditionRun, memory: ExpeditionBatt
 
 export function setupExpeditionStage(previous: ExpeditionRun, stageIdx: number,
   identity: { name: string; avatar: string; lang: Lang }, random = Math.random) {
-  const run = cloneRun(previous), stage = EXPEDITION_STAGES[stageIdx];
+  const run: ExpeditionRun = normalizeSkillLoadout(cloneRun(previous)), stage = EXPEDITION_STAGES[stageIdx];
   if (!stage) throw new Error('Unknown expedition stage');
   run.stageIdx = stageIdx;
   const logs: LogEntry[] = [{ turn: 1, text: `${stage.chapter[identity.lang]} · ${stage.name[identity.lang]}`, type: 'info' }];
@@ -76,7 +78,7 @@ export function setupExpeditionStage(previous: ExpeditionRun, stageIdx: number,
     energyDrain: enemy.passive?.energyDrain ?? 0, pierce: enemy.passive?.pierce ?? false,
   }));
   const hero: Player = { ...base, id: EXPEDITION_HERO_ID, name: identity.name, avatar: identity.avatar, isBot: false,
-    hp: run.hp, energy: 0, inventory: [...run.inventory], tempSkills: run.tempCards.map(card => card.cardId),
+    hp: run.hp, energy: 0, inventory: [...run.inventory], skillLoadout: [...(run.skillLoadout ?? [])], tempSkills: run.tempCards.map(card => card.cardId),
     dmgBonus: run.equipment.includes('waraxe') ? .5 : 0 };
   const memory: ExpeditionBattleMemory = { ironhideUsed: false, whetstoneUsed: false, adrenalineUsed: false,
     maxHp: Object.fromEntries([hero, ...enemies].map(player => [player.id, player.id === hero.id ? run.maxHp : player.hp])),
@@ -166,7 +168,7 @@ export function takeExpeditionReward(previous: ExpeditionRun, reward: RewardOpti
     const gain = Math.min(EXPEDITION_VIGOR_HP, Math.max(0, EXPEDITION_MAX_HP - run.maxHp));
     run.maxHp += gain; run.hp = Math.min(run.maxHp, run.hp + gain);
   }
-  if (reward.kind === 'levelup' && reward.level === levelOf(run) + 1 && reward.level <= EXPEDITION_MAX_LEVEL) run.inventory.push(reward.level);
+  if (reward.kind === 'levelup' && reward.level === levelOf(run) + 1 && reward.level <= EXPEDITION_MAX_LEVEL) Object.assign(run, grantSkillLevel(run, reward.level));
   if (reward.kind === 'temp') addCard(run, reward.cardId, reward.uses);
   if (reward.kind === 'relic' && !run.relics.includes(reward.relicId)) run.relics.push(reward.relicId);
   return run;
@@ -191,7 +193,7 @@ export function buyExpeditionItem(previous: ExpeditionRun, item: ShopItem, rando
       const gain = Math.min(1, Math.max(0, EXPEDITION_MAX_HP - run.maxHp));
       run.maxHp += gain; run.hp = Math.min(run.maxHp, run.hp + 1);
     }
-    if (id === 'levelbadge' && levelOf(run) < EXPEDITION_MAX_LEVEL) run.inventory.push(levelOf(run) + 1);
+    if (id === 'levelbadge' && levelOf(run) < EXPEDITION_MAX_LEVEL) Object.assign(run, grantSkillLevel(run, levelOf(run) + 1));
     if (id === 'skillcharm') addCard(run, drawGachaCard(levelOf(run), run.stageIdx, random).cardId, EXPEDITION_SKILLCHARM_USES);
   }
   return run;

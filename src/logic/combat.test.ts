@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import type { Player } from '../types';
 import { SKILL_DB } from '../data/skills';
 import { calculateTurnOutcome } from './combat';
+import { getSkillOverflow, hasSkillOverflow } from './skillLoadout';
 
 const player = (id: string, selectedCardId: string, patch: Partial<Player> = {}): Player => ({
   id, name: id, isBot: false, hp: 3, energy: 10, inventory: [0],
@@ -57,14 +58,22 @@ test('default multiplayer still resets survivors while damageTaken excludes the 
   assert.equal(result.damageTaken.victim, 1);
 });
 
-test('default multiplayer still grants victory skills and full-slot pending upgrades', () => {
+test('multiplayer victory awards every new skill and prompts each overflowing category separately', () => {
   const defeated = player('loser', 'charge', { hp: 1 });
   const result = calculateTurnOutcome([player('winner', 'hong'), defeated], 1, 1, 'zh');
   assert.deepEqual(result.winner?.inventory, [0, 1]);
   const full = calculateTurnOutcome([
     player('winner', 'hong', { inventory: [0, 1, 2, 3, 4] }), defeated,
   ], 1, 5, 'zh');
-  assert.equal(full.winner?.pendingLevel, 5);
+  assert.deepEqual(full.winner?.inventory, [0, 1, 2, 3, 4, 5]);
+  assert.deepEqual(getSkillOverflow(full.winner!).map(group => group.category), ['ATTACK', 'ULTIMATE']);
+  assert.ok(full.winner?.skillLoadout?.includes('madian'));
+  assert.ok(full.winner?.skillLoadout?.includes('hangman'));
+  const bot = calculateTurnOutcome([
+    player('winner', 'hong', { isBot: true, inventory: [0, 1, 2, 3, 4] }), defeated,
+  ], 1, 5, 'zh');
+  assert.equal(hasSkillOverflow(bot.winner!), false);
+  assert.ok(bot.winner?.skillLoadout?.includes('hangman'));
 });
 
 test('damage reduction saves a 1 HP player before death and kill credit are decided', () => {

@@ -2,6 +2,7 @@ import type { GameState, Lang, Player } from '../types';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../data/constants';
 import { calculateTurnOutcome, getPlayerCards } from './combat';
 import { getBotMove } from './botAI';
+import { autoSelectSkillLoadout, hasSkillOverflow, normalizeSkillLoadout, resolveSkillLoadout, type SkillSelections } from './skillLoadout';
 
 export type RoomPatch = Partial<GameState> | null;
 export type RoundId = Pick<GameState, 'turn' | 'matchCount'>;
@@ -30,10 +31,20 @@ export function patchPlayer(room: GameState, uid: string, update: (p: Player) =>
   return { players: room.players.map(p => p.id === uid ? update(p) : p) };
 }
 
+export function choosePlayerSkills(room: GameState, uid: string, selections: SkillSelections): RoomPatch {
+  if (room.status === 'SHOWDOWN') throw new Error('Round has changed');
+  const player = room.players.find(p => p.id === uid);
+  if (!player || player.isBot || (room.status === 'PLAYING' && player.selectedCardId)) throw new Error('Skill choice is unavailable');
+  const resolved = resolveSkillLoadout(player, selections);
+  if (!resolved) throw new Error('Invalid or stale skill choice');
+  return patchPlayer(room, uid, () => resolved);
+}
+
 export function submitPlayerMove(room: GameState, uid: string, cardId: string, round: RoundId): RoomPatch {
   if (room.status !== 'PLAYING' || !sameRound(room, round)) throw new Error('Round has changed');
   const player = room.players.find(p => p.id === uid);
   if (!player || player.isDead || player.selectedCardId) throw new Error('Move is already locked or player is inactive');
+  if (hasSkillOverflow(player)) throw new Error('Choose retained skills first');
   const card = getPlayerCards(player, room.players).find(c => c.id === cardId);
   if (!card || player.disabledSkills?.includes(cardId)) throw new Error('Unavailable card');
   if (!player.freeSkills?.includes(cardId) && player.energy < card.cost) throw new Error('Insufficient energy');
@@ -43,16 +54,22 @@ export function submitPlayerMove(room: GameState, uid: string, cardId: string, r
 export function startRoom(room: GameState, uid: string, lang: Lang): RoomPatch {
   if (room.hostId !== uid || room.status !== 'LOBBY') return null;
   if (room.players.length < MIN_PLAYERS) throw new Error('needPlayers');
-  return { status: 'PLAYING', logs: [{ turn: 1, text: lang === 'zh' ? '游戏开始!' : 'Game Started!', type: 'info' }, ...room.logs] };
+  const players = room.players.map(player => player.isBot ? autoSelectSkillLoadout(player) : normalizeSkillLoadout(player));
+  if (players.some(player => !player.isBot && hasSkillOverflow(player))) throw new Error('Choose retained skills first');
+  return { players, status: 'PLAYING', logs: [{ turn: 1, text: lang === 'zh' ? '游戏开始!' : 'Game Started!', type: 'info' }, ...room.logs] };
 }
 
 export function advanceRoom(room: GameState, uid: string): RoomPatch {
   if (room.hostId !== uid || room.status !== 'PLAYING') return null;
   const active = room.players.filter(p => !p.isDead);
+  // A legacy client may already have locked a move. Finish that reveal first;
+  // editing the loadout while locked is forbidden, so blocking it here would deadlock.
+  if (active.some(p => !p.isBot && !p.selectedCardId && hasSkillOverflow(p))) return null;
   // A departure can leave one survivor. Resolve it without waiting for another move.
   if (active.length > 1 && active.some(p => !p.isBot && !p.selectedCardId)) return null;
-  const players = room.players.map(p => !p.isDead && !p.selectedCardId
-    ? { ...p, selectedCardId: active.length <= 1 ? 'charge' : getBotMove(p, room.players, room) }
+  const prepared = room.players.map(player => player.isBot && !player.selectedCardId ? autoSelectSkillLoadout(player) : player);
+  const players = prepared.map(p => !p.isDead && !p.selectedCardId
+    ? { ...p, selectedCardId: active.length <= 1 ? 'charge' : getBotMove(p, prepared, room) }
     : p);
   return { players, status: 'SHOWDOWN' };
 }
