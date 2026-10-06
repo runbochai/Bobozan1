@@ -6,7 +6,7 @@ import { SKILL_DB } from '../src/data/skills';
 import { getEffectiveLevel, getPlayerCards, isOffensiveCard } from '../src/logic/combat';
 import { expeditionBotMove, expeditionMoveWeights } from '../src/logic/expeditionAI';
 import { autoSelectSkillLoadout, hasSkillOverflow } from '../src/logic/skillLoadout';
-import { genRewardOptions, genShopItems, type RewardOption, type ShopItem } from '../src/logic/expedition';
+import { EXPEDITION_MAX_LEVEL, genRewardOptions, genShopItems, type RewardOption, type ShopItem } from '../src/logic/expedition';
 import {
   EXPEDITION_HERO_ID, createExpeditionRun, setupExpeditionStage, settleExpeditionRound,
   recordExpeditionHistory, takeExpeditionReward, buyExpeditionItem, takeExpeditionRoute,
@@ -62,7 +62,7 @@ function shopScore(run: ExpeditionRun, item: ShopItem): number {
   if (item.kind === 'potion') return run.maxHp - run.hp >= 1 ? 30 : 0;
   if (item.kind === 'tempcard') return run.gold >= 40 ? 2 : 0;
   return ({ waraxe: 20, bloodsword: 19, lifegem: run.maxHp < 5 || run.hp < run.maxHp ? 18 : 0,
-    levelbadge: levelOf(run) < 5 ? 11 : 0, doll: 10, treasurepot: 8, moneytree: 7, luckydice: 5, skillcharm: 4 } as Record<string, number>)[item.equipment.id] ?? 0;
+    levelbadge: levelOf(run) < EXPEDITION_MAX_LEVEL ? 11 : 0, doll: 10, treasurepot: 8, moneytree: 7, luckydice: 5, skillcharm: 4 } as Record<string, number>)[item.equipment.id] ?? 0;
 }
 
 function predictMove(run: ExpeditionRun, memory: ExpeditionBattleMemory, players: Player[], history: ExpeditionHistory,
@@ -186,14 +186,16 @@ for (const strategy of strategies) {
   const summary = {
     strategy, seeds, passed3: results.filter(result => result.cleared >= 3).length / seeds,
     passed6: results.filter(result => result.cleared >= 6).length / seeds,
-    passed17: results.filter(result => result.cleared >= 17).length / seeds,
+    passedAll: results.filter(result => result.cleared >= EXPEDITION_STAGES.length).length / seeds,
+    maxLevelReached: Math.max(...results.map(result => result.level)),
+    runsAboveLevel5: results.filter(result => result.level > 5).length,
     medianCleared: quantile(results.map(result => result.cleared), .5),
     medianTurns: quantile(results.map(result => result.turns), .5),
     p95Turns: quantile(results.map(result => result.turns), .95),
     stalled: results.filter(result => result.stalled).length,
     loadoutChoices: results.reduce((sum, result) => sum + result.loadoutChoices, 0),
     routes: results.reduce((sum, result) => ({ rest: sum.rest + result.routes.rest, risk: sum.risk + result.routes.risk }), { rest: 0, risk: 0 }),
-    stages: EXPEDITION_STAGES.map((stage, index) => ({ stage: index + 1, name: stage.name.en,
+    stages: EXPEDITION_STAGES.map((stage, index) => ({ stage: index + 1, id: stage.id, name: stage.name.en,
       reached: results.filter(result => result.stageTurns[index]).length,
       cleared: results.filter(result => result.cleared > index).length,
       lost: results.filter(result => result.cleared === index && !result.stalled).length,
@@ -204,7 +206,7 @@ for (const strategy of strategies) {
   console.log(JSON.stringify(summary));
 }
 const report = {
-  generatedAt: new Date().toISOString(), seeds, routePolicy, maxTurnsPerStage: maxTurns,
+  generatedAt: new Date().toISOString(), seeds, stageCount: EXPEDITION_STAGES.length, routePolicy, maxTurnsPerStage: maxTurns,
   method: 'Shared production runtime; enemy intents committed first; separate seeded streams; reader sees public distributions and last three revealed cards, never sampled intents; exact one-opponent / 16 sampled multi-opponent forecasts.',
   economyPolicy: `Identical deterministic reward and one-purchase-per-shop-slot rules for all strategies. Prefer emergency healing, learned levels, useful relics; potions when missing at least 1 HP, then equipment. Route: ${routePolicy}; adaptive means risk at full HP, otherwise rest, after stage 3.`,
   skillPolicy: 'After each reward or purchase, the simulated player keeps the latest three permanent skills per category through the production loadout resolver. Basics and temporary/absorbed/derived cards do not use slots. Fixed expedition enemy rosters are unchanged; each stage asserts the player has no unresolved overflow.',

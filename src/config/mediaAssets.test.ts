@@ -7,7 +7,7 @@ import { ULT_CUTINS } from '../data/ultCutins';
 
 test('all expedition portraits and ultimate character paths resolve to WebP assets', () => {
   const paths = new Set([
-    ...EXPEDITION_STAGES.flatMap(stage => stage.enemies.map(enemy => `avatars/enemies/${enemy.id}.webp`)),
+    ...EXPEDITION_STAGES.flatMap(stage => stage.enemies.map(enemy => `avatars/enemies/${enemy.avatarId ?? enemy.id}.webp`)),
     ...Object.values(ULT_CUTINS).map(def => def.image),
     ...AVATAR_OPTIONS.map(avatar => avatar.path).filter(path => path.endsWith('.webp')),
   ]);

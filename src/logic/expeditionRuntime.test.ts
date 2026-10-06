@@ -13,6 +13,7 @@ import { getSkillOverflow, grantSkillLevel, hasSkillOverflow, resolveSkillLoadou
 
 const identity = { name: 'Tester', avatar: 'avatars/dragon.webp', lang: 'zh' as const };
 const seeded = () => .25;
+const stageIndex = (id: string) => EXPEDITION_STAGES.findIndex(stage => stage.id === id);
 const start = (patch: Partial<ExpeditionRun> = {}, stage = 0) => setupExpeditionStage({ ...createExpeditionRun(), ...patch }, stage, identity, seeded);
 type Battle = Pick<ReturnType<typeof setupExpeditionStage>, 'run' | 'memory' | 'players'>;
 const hero = (battle: Battle) => battle.players.find(player => player.id === EXPEDITION_HERO_ID)!;
@@ -46,7 +47,7 @@ test('every stage starts enemies at zero Energy and lets a fresh hero safely Cha
 test('starting a run gives 3 HP while another death cannot reset expedition survivors or change multiplayer defaults', () => {
   assert.equal(createExpeditionRun().hp, 3);
   assert.equal(MAX_HP, 1, 'Multiplayer still starts with one HP');
-  const battle = start({}, 4);
+  const battle = start({}, stageIndex('s4'));
   const revealed = battle.players.map((player, i) => ({ ...player, energy: 3,
     hp: i === 2 ? 1 : 3, selectedCardId: i === 0 ? 'defend' : i === 1 ? 'hong' : 'charge' }));
   const multiplayer = calculateTurnOutcome(revealed, 1, 1, 'zh');
@@ -103,7 +104,7 @@ test('Whetstone refunds the first actual Ultimate, never a normal attack or a se
 });
 
 test('Counter Gloves rewards real defense once per turn, excluding missed and armor-stopped shots', () => {
-  const block = play(start({ relics: ['fjqt'] }, 4), 'defend', 'hong', {}, { energy: 5 });
+  const block = play(start({ relics: ['fjqt'] }, stageIndex('s4')), 'defend', 'hong', {}, { energy: 5 });
   assert.equal(block.defendedHits[EXPEDITION_HERO_ID], 2);
   assert.equal(hero(block).energy, 1, 'One refund even against two attackers');
   const dodge = play(start({ relics: ['fjqt'], inventory: [0, 2] }), 'smallfly', 'hong', {}, { energy: 5 });

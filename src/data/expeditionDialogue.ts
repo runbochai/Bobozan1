@@ -36,6 +36,16 @@ const pair = (zh: string, en: string, otherZh: string, otherEn: string): LinePai
 
 /** Every opponent has their own wording, including both members of a pair. */
 export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
+  veteran: { voice: 'patient-veteran', lines: {
+    opening: pair('牌比你老，脑子可未必。', 'Older cards. Not always wiser.', '坐稳。经验也会犯错。', 'Sit tight. Experience can be wrong.'),
+    hurt: pair('好，没白让你坐下。', 'Good. You earned that seat.', '这招，倒不像个新来的。', 'That was no rookie move.'),
+    blocked: pair('只看牌面，可过不了这桌。', 'The card face is not the whole game.', '力气收一收，脑子动一动。', 'Less force. A little more thought.'),
+    pattern: pair('第三遍了，要我替你念吗？', 'Third time. Shall I recite it?', '熟练归熟练，别只会这套。', 'Practiced. But try another routine.'),
+    empty: pair('年纪大了，也得喘口气。', 'Even veterans need a breath.', '我歇会儿。你怎么想？', 'Taking a moment. Your thoughts?'),
+    ready: pair('盯着我的手？别忘看自己。', 'Watching my hand? Watch yourself.', '有底气，也不能乱来。', 'Confidence is no excuse to rush.'),
+    crowd: pair('围桌的人多，心别跟着乱。', 'A crowded table. Keep a clear head.', '看一边，别把另一边忘了。', 'Do not forget the other side.'),
+    idle: pair('先出手的，未必先占便宜。', 'The first move need not be the best.', '看明白了？还是猜明白了？', 'Did you see it, or just guess?'),
+  } },
   dummy: { voice: 'clockwork', lines: {
     opening: pair('练习开始。请别拆零件。', 'Practice starts. Mind the parts.', '检测到新人。你好，别紧张。', 'Newcomer detected. Easy now.'),
     hurt: pair('外壳凹了。记录为进步。', 'Dent detected. Yours is progress.', '疼痛模块……谁装的？', 'Who installed the pain module?'),

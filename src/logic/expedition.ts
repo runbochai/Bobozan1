@@ -4,6 +4,7 @@ EXPEDITION_EQUIPMENTS,
 EXPEDITION_RELICS,
 EXPEDITION_STAGES,
 EXPEDITION_MAX_HP,
+EXPEDITION_SKILL_LEVELS,
 drawGachaCard,
 expeditionSecretPool,
 type ExpeditionEquipment,
@@ -17,6 +18,7 @@ export {
   EXPEDITION_START_HP, EXPEDITION_MAX_HP, EXPEDITION_VIGOR_HP,
   EXPEDITION_WARMUP_ENERGY, EXPEDITION_MONEYTREE_CAP, EXPEDITION_SKILLCHARM_USES,
   EXPEDITION_REST_HEAL, EXPEDITION_CHALLENGE_HP, EXPEDITION_CHALLENGE_GOLD,
+  EXPEDITION_SKILL_LEVELS, EXPEDITION_MAX_LEVEL,
 } from '../data/expedition';
 
 export const EXPEDITION_BEST_KEY = 'bobozan-expedition-best';
@@ -152,8 +154,14 @@ export type RewardOption =
 | { kind: 'temp'; cardId: string; uses: number}
 | { kind: 'relic'; relicId: string};
 
-/** Players and enemies share the same level ceiling; secrets add limited tools. */
-export const EXPEDITION_MAX_LEVEL = 5;
+/** Only real unlock levels count; combinations and malformed save values are not levels. */
+export const expeditionLevel = (inventory: readonly number[]): number =>
+  Math.max(0, ...inventory.filter(level => EXPEDITION_SKILL_LEVELS.includes(level)));
+
+export function nextExpeditionLevel(inventory: readonly number[]): number | null {
+  const current = expeditionLevel(inventory);
+  return EXPEDITION_SKILL_LEVELS.find(level => level > current) ?? null;
+}
 
 function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {
 const a = [...arr];
@@ -176,8 +184,9 @@ rng: () => number = Math.random,
 const rest: RewardOption[] = [];
 const guaranteed: RewardOption[] = [];
 // Growth and recovery remain choices; neither is hidden by a bad reward roll.
-const curMax = Math.max(0, ...inventory);
-if (curMax < EXPEDITION_MAX_LEVEL) guaranteed.push({ kind: 'levelup', level: curMax + 1});
+const curMax = expeditionLevel(inventory);
+const nextLevel = nextExpeditionLevel(inventory);
+if (nextLevel !== null) guaranteed.push({ kind: 'levelup', level: nextLevel});
 const injured = hp < Math.min(maxHp, EXPEDITION_MAX_HP);
 if (injured) guaranteed.push({ kind: 'heal', amount: 1});
 if (maxHp < EXPEDITION_MAX_HP) rest.push({ kind: 'maxhp'});
@@ -243,7 +252,7 @@ pushCard();
 const remainingBattles = Math.max(0, EXPEDITION_STAGES.length - stageIdx - 1);
 const unowned = shuffle(
 EXPEDITION_EQUIPMENTS.filter(
-(e) =>!ownedEquipment.includes(e.id) && (e.id !== 'levelbadge' || maxLevel < EXPEDITION_MAX_LEVEL)
+(e) =>!ownedEquipment.includes(e.id) && (e.id !== 'levelbadge' || nextExpeditionLevel([maxLevel]) !== null)
   && (!['moneytree', 'treasurepot'].includes(e.id) || remainingBattles * 4 >= e.price)
   && (e.id !== 'doll' || !context.dollUsed)
   && (e.id !== 'lifegem' || !((context.maxHp ?? 0) >= EXPEDITION_MAX_HP && (context.hp ?? 0) >= (context.maxHp ?? 0)))

@@ -4,7 +4,7 @@ import { EXPEDITION_STAGES, EXPEDITION_VIGOR_HP, EXPEDITION_WARMUP_ENERGY, EXPED
   EXPEDITION_SKILLCHARM_USES, EXPEDITION_REST_HEAL, EXPEDITION_CHALLENGE_HP, EXPEDITION_CHALLENGE_GOLD,
   drawGachaCard, type ExpeditionEnemyDef } from '../data/expedition';
 import { calculateTurnOutcome } from './combat';
-import { consumeExpeditionCard, EXPEDITION_START_HP, EXPEDITION_MAX_HP, EXPEDITION_MAX_LEVEL, goldForWin, POTION_HEAL, type RewardOption, type ShopItem } from './expedition';
+import { consumeExpeditionCard, EXPEDITION_START_HP, EXPEDITION_MAX_HP, expeditionLevel, nextExpeditionLevel, goldForWin, POTION_HEAL, type RewardOption, type ShopItem } from './expedition';
 import { grantSkillLevel, normalizeSkillLoadout, type SkillLoadoutState } from './skillLoadout';
 
 export type ExpeditionRoute = 'rest' | 'risk';
@@ -23,12 +23,26 @@ export const EXPEDITION_HERO_ID = 'exp_me';
 const cloneRun = (run: ExpeditionRun): ExpeditionRun => ({ ...run, relics: [...run.relics], inventory: [...run.inventory],
   ...(run.skillLoadout ? { skillLoadout: [...run.skillLoadout] } : {}),
   tempCards: run.tempCards.map(card => ({ ...card })), equipment: [...run.equipment] });
-const levelOf = (run: ExpeditionRun) => Math.max(0, ...run.inventory);
+const levelOf = (run: ExpeditionRun) => expeditionLevel(run.inventory);
 const addCard = (run: ExpeditionRun, cardId: string, uses: number) => {
   const found = run.tempCards.find(card => card.cardId === cardId);
   if (found) found.usesLeft += uses;
   else run.tempCards.push({ cardId, usesLeft: uses });
 };
+
+/** Adapt only to public progression, never to a hidden choice or the player's current move. */
+export function resolveExpeditionEnemyLoadout(enemy: ExpeditionEnemyDef, playerInventory: readonly number[]): Pick<Player, 'inventory' | 'skillLoadout'> {
+  if (!Number.isFinite(enemy.levelAdvantage) || !(enemy.levelAdvantage! > 0)) return { inventory: [...enemy.inventory] };
+  const targetLevel = expeditionLevel(playerInventory) + Math.max(1, Math.floor(enemy.levelAdvantage!));
+  const attacks = SKILL_DB.filter(card => card.type === 'ATTACK' && card.tier === 2
+    && card.levelRequired > 0 && card.levelRequired < 100
+    && !card.tags?.some(tag => ['combo', 'pierce_basic', 'break_basic', 'break_mid_def', 'hit_up', 'hit_down'].includes(tag)))
+    .sort((a, b) => a.levelRequired - b.levelRequired);
+  // The normal early encounter always has a higher real attack available.
+  // An artificial maximum-level save gets the strongest existing card, never a fake Lv.24.
+  const attack = attacks.find(card => card.levelRequired >= targetLevel) ?? attacks.at(-1);
+  return attack ? { inventory: [0, attack.levelRequired], skillLoadout: [attack.id] } : { inventory: [...enemy.inventory] };
+}
 
 export function createExpeditionRun(): ExpeditionRun {
   return { stageIdx: 0, relics: [], inventory: [0], skillLoadout: [], hp: EXPEDITION_START_HP, maxHp: EXPEDITION_START_HP,
@@ -72,11 +86,18 @@ export function setupExpeditionStage(previous: ExpeditionRun, stageIdx: number,
   const base = { isDead: false, layer: 0, tempLayerMod: 0, selectedCardId: null, lastCardId: null, lastAction: null,
     disabledSkills: [], freeSkills: [], kills: 0, tempSkills: [] };
   const enemies: Player[] = stage.enemies.map(enemy => ({ ...base, id: `exp_${stage.id}_${enemy.id}`,
-    name: enemy.name[identity.lang], avatar: `avatars/enemies/${enemy.id}.webp`, isBot: true,
+    name: enemy.name[identity.lang], avatar: `avatars/enemies/${enemy.avatarId ?? enemy.id}.webp`, isBot: true,
     hp: enemy.hp + (run.route === 'risk' && stageIdx >= 3 ? EXPEDITION_CHALLENGE_HP : 0), energy: enemy.passive?.startEnergy ?? 0,
-    inventory: [...enemy.inventory], dmgBonus: enemy.passive?.attackBonus ?? 0,
+    ...resolveExpeditionEnemyLoadout(enemy, run.inventory), dmgBonus: enemy.passive?.attackBonus ?? 0,
     energyDrain: enemy.passive?.energyDrain ?? 0, pierce: enemy.passive?.pierce ?? false,
   }));
+  for (const [index, enemy] of stage.enemies.entries()) {
+    if (enemy.levelAdvantage && expeditionLevel(enemies[index].inventory) <= levelOf(run)) {
+      logs.push({ turn: 1, type: 'info', text: identity.lang === 'zh'
+        ? `${enemy.name.zh}已使用现有最高等级技能，本战不再高于你的等级。`
+        : `${enemy.name.en} uses the highest existing skill level; this encounter does not exceed your level.` });
+    }
+  }
   const hero: Player = { ...base, id: EXPEDITION_HERO_ID, name: identity.name, avatar: identity.avatar, isBot: false,
     hp: run.hp, energy: 0, inventory: [...run.inventory], skillLoadout: [...(run.skillLoadout ?? [])], tempSkills: run.tempCards.map(card => card.cardId),
     dmgBonus: run.equipment.includes('waraxe') ? .5 : 0 };
@@ -168,7 +189,7 @@ export function takeExpeditionReward(previous: ExpeditionRun, reward: RewardOpti
     const gain = Math.min(EXPEDITION_VIGOR_HP, Math.max(0, EXPEDITION_MAX_HP - run.maxHp));
     run.maxHp += gain; run.hp = Math.min(run.maxHp, run.hp + gain);
   }
-  if (reward.kind === 'levelup' && reward.level === levelOf(run) + 1 && reward.level <= EXPEDITION_MAX_LEVEL) Object.assign(run, grantSkillLevel(run, reward.level));
+  if (reward.kind === 'levelup' && reward.level === nextExpeditionLevel(run.inventory)) Object.assign(run, grantSkillLevel(run, reward.level));
   if (reward.kind === 'temp') addCard(run, reward.cardId, reward.uses);
   if (reward.kind === 'relic' && !run.relics.includes(reward.relicId)) run.relics.push(reward.relicId);
   return run;
@@ -181,7 +202,7 @@ export function buyExpeditionItem(previous: ExpeditionRun, item: ShopItem, rando
   if (item.kind === 'equipment' && (
     (item.equipment.id === 'doll' && run.dollUsed)
     || (item.equipment.id === 'lifegem' && run.maxHp >= EXPEDITION_MAX_HP && run.hp >= run.maxHp)
-    || (item.equipment.id === 'levelbadge' && levelOf(run) >= EXPEDITION_MAX_LEVEL)
+    || (item.equipment.id === 'levelbadge' && nextExpeditionLevel(run.inventory) === null)
   )) return run;
   run.gold -= price;
   if (item.kind === 'potion') run.hp = Math.min(run.maxHp, run.hp + POTION_HEAL);
@@ -193,7 +214,8 @@ export function buyExpeditionItem(previous: ExpeditionRun, item: ShopItem, rando
       const gain = Math.min(1, Math.max(0, EXPEDITION_MAX_HP - run.maxHp));
       run.maxHp += gain; run.hp = Math.min(run.maxHp, run.hp + 1);
     }
-    if (id === 'levelbadge' && levelOf(run) < EXPEDITION_MAX_LEVEL) Object.assign(run, grantSkillLevel(run, levelOf(run) + 1));
+    const nextLevel = nextExpeditionLevel(run.inventory);
+    if (id === 'levelbadge' && nextLevel !== null) Object.assign(run, grantSkillLevel(run, nextLevel));
     if (id === 'skillcharm') addCard(run, drawGachaCard(levelOf(run), run.stageIdx, random).cardId, EXPEDITION_SKILLCHARM_USES);
   }
   return run;

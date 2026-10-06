@@ -14,9 +14,9 @@ const context = (patch: Partial<ExpeditionDialogueContext> = {}): ExpeditionDial
 const cue = (value: ExpeditionDialogueContext) => getExpeditionLine(value, 'zh').id.split(':')[1];
 const cues: ExpeditionDialogueCue[] = ['opening', 'hurt', 'blocked', 'pattern', 'empty', 'ready', 'crowd', 'idle'];
 
-test('all 23 current enemies have individual voices and complete bilingual situations', () => {
+test('all current enemies have individual voices and complete bilingual situations', () => {
   const enemies = EXPEDITION_STAGES.flatMap(stage => stage.enemies.map(enemy => enemy.id));
-  assert.equal(enemies.length, 23);
+  assert.equal(enemies.length, 24);
   assert.deepEqual(Object.keys(EXPEDITION_DIALOGUE).sort(), [...enemies].sort());
   assert.equal(new Set(Object.values(EXPEDITION_DIALOGUE).map(profile => profile.voice)).size, enemies.length);
   for (const enemyId of enemies) {

@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Card, HandCategory, Lang } from '../types';
 import { TEXT } from '../data/translations';
+import { getEffectiveLevel, isOffensiveCard } from '../logic/combat';
 import PixelCardArt from './PixelCardArt';
 import { CheckCircle, Zap } from './PixelIcons';
 import './SkillLoadoutPicker.css';
@@ -60,9 +61,10 @@ export default function SkillLoadoutPicker({ groups, lang, limit, busy = false, 
           <div className="skill-loadout-cards">{ordered.map(card => {
             const selected = kept.includes(card.id);
             const isNew = group.newIds.includes(card.id);
+            const rank = `Lv.${getEffectiveLevel(card)}${isOffensiveCard(card) ? ` · T${card.tier}` : ''}`;
             return <button type="button" key={card.id} className="skill-loadout-card" data-card-type={group.category} data-new={isNew}
-              aria-pressed={selected} disabled={busy} onClick={() => toggle(card.id)} title={card.description[lang]}>
-              <span className="skill-loadout-card-top"><span><Zap size={14} />{card.cost}</span>{isNew && <b>{zh ? '新' : 'NEW'}</b>}
+              aria-pressed={selected} disabled={busy} onClick={() => toggle(card.id)} title={`${zh ? '技能等级' : 'Skill level'} ${rank} · ${card.description[lang]}`}>
+              <span className="skill-loadout-card-top"><span><Zap size={14} />{card.cost}</span><span className="skill-loadout-rank" aria-label={`${zh ? '技能等级' : 'Skill level'} Lv.${getEffectiveLevel(card)}`}>Lv.{getEffectiveLevel(card)}</span>{isNew && <b>{zh ? '新' : 'NEW'}</b>}
                 <span className="skill-loadout-check" aria-hidden="true">{selected ? <CheckCircle size={20} /> : <i />}</span>
               </span>
               <span className="skill-loadout-art" aria-hidden="true"><PixelCardArt id={card.id} /></span>

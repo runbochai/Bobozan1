@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react';
 import type { Lang, Player } from '../types';
 import { SKILL_DB } from '../data/skills';
 import { TEXT } from '../data/translations';
-import { getShowdownWinner } from '../logic/combat';
+import { getEffectiveLevel, getShowdownWinner } from '../logic/combat';
 import type { BattleBounds, BattleSeat } from '../logic/battleLayout';
 import { tableCardPositions } from '../logic/tableCardLayout';
 import PixelCardArt from './PixelCardArt';
@@ -25,7 +25,7 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
       const { x, y, width, cardHeight, ownerHeight, ownerGap, compact } = position;
       const start = seatFor(index);
       const cost = player.freeSkills?.includes(card.id) ? 0 : card.cost;
-      const label = `${player.name}: ${card.name[lang]} · ${cost} ${lang === 'zh' ? '能量' : 'energy'}`;
+      const label = `${player.name}: ${card.name[lang]} · Lv.${getEffectiveLevel(card)} · ${cost} ${lang === 'zh' ? '能量' : 'energy'}`;
       return <div className="table-card-flight" key={player.id} data-player-id={player.id} data-compact={compact}
         role="img" aria-label={label} title={label} style={{
         left: `${x}%`, top: `${y}%`, width, '--played-width': `${width}px`, '--played-height': `${cardHeight}px`,
