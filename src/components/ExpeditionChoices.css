@@ -63,7 +63,21 @@
 .pixel-app .expedition-continue { display: flex; align-items: center; justify-content: center; gap: 10px; margin-left: auto; min-height: 52px; padding: 10px 20px; border: 2px solid #ffe3a2; background: #d3a359; color: #211e2a; font-size: 19px; font-weight: 800; }
 @keyframes loot-arrive { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
 .expedition-run-status { display:flex; flex-wrap:wrap; gap:8px 20px; margin:0 0 18px; color:#e5d6a9; font:600 17px/1.5 system-ui,sans-serif; }
-.expedition-run-status span:last-child { color:#a6bcc4; font-size:15px; }
+.expedition-run-status span:last-child { color:#a6bcc4; }
+.expedition-routes { width:100%; }
+.expedition-route-options { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.pixel-app .expedition-route { display:flex; align-items:center; justify-content:center; gap:10px; min-width:0; min-height:78px; padding:10px; border:2px solid #95ba9e; background:#264c43; color:#f2eddb; text-align:left; cursor:pointer; }
+.pixel-app .expedition-route-risk { border-color:#d6a168; background:#654337; }
+.expedition-route > svg { flex-shrink:0; }
+.expedition-route strong { display:block; font-size:18px; line-height:1.4; }
+.expedition-route small { display:block; font-size:13px; line-height:1.5; color:#d2dfd3; margin-top:3px; }
+.expedition-route-risk small { color:#f5d5b5; }
+.expedition-route-details { margin-top:8px; color:#b5c8cc; font-size:14px; }
+.expedition-route-details summary { cursor:pointer; min-height:36px; padding:6px 0; }
+.expedition-route-details p { line-height:1.6; margin:4px 0 0; }
+.pixel-app .expedition-review { min-height:40px; padding:8px 12px; color:#dacfae; background:#213646; border:1px solid #647b83; font-size:14px; }
+.expedition-continue small { font-size:13px; }
+.expedition-route:focus-visible,.expedition-route-details summary:focus-visible,.expedition-review:focus-visible { outline:3px solid #ffe2a1; outline-offset:3px; }
 @keyframes loot-panel-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes loot-float { 50% { transform: translateY(-5px); } }
 @keyframes loot-spark { 50% { opacity: .25; transform: translateY(-6px); } }
@@ -91,6 +105,10 @@
   .expedition-choice-action { width: calc(100% + 16px); min-height: 44px; font-size: 16px; }
   .pixel-app .expedition-info { top: 0; right: 0; }
   .expedition-panel-footer { margin-top: 18px; }
+  .expedition-route-options { gap:8px; }
+  .pixel-app .expedition-route { flex-direction:column; align-items:flex-start; gap:5px; padding:10px; }
+  .expedition-route strong { font-size:16px; }
+  .expedition-route small { font-size:13px; }
 }
 @media (prefers-reduced-motion: reduce) {
   .expedition-panel, .expedition-art-float, .expedition-art-sparks, .expedition-acquired > span { animation: none; }

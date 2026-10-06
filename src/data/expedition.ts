@@ -1,6 +1,16 @@
 import type { LocalizedText} from '../types';
 import { SKILL_DB } from './skills';
 
+export const EXPEDITION_START_HP = 3;
+export const EXPEDITION_MAX_HP = 5;
+export const EXPEDITION_VIGOR_HP = 0.5;
+export const EXPEDITION_WARMUP_ENERGY = 1;
+export const EXPEDITION_MONEYTREE_CAP = 4;
+export const EXPEDITION_SKILLCHARM_USES = 5;
+export const EXPEDITION_REST_HEAL = 0.5;
+export const EXPEDITION_CHALLENGE_HP = 0.5;
+export const EXPEDITION_CHALLENGE_GOLD = 4;
+
 // ============ 远征模式：关卡 / 敌人 / 遗物 / 剧情 ============
 
 export interface ExpeditionPersonality {
@@ -50,7 +60,7 @@ export const EXPEDITION_STAGES: ExpeditionStage[] = [
 id: 's0', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
 name: { zh: '第 1 关 · 木桩', en: 'Stage 1 · Dummy'},
 rewardTier: 1,
-tip: { zh: '点击「攒」获得能量，能量是出牌的燃料', en: 'Click [Charge] to gain Energy — the fuel for every move'},
+tip: { zh: '攒到能量，抓住对手补气的空当。', en: 'Build Energy, then catch a refill.'},
 enemies: [{
 id: 'dummy', name: { zh: '🤖 训练假人', en: '🤖 Training Dummy'}, hp: 1, inventory: [0],
 personality: P(0.1, 0.1, 0.9, 0),
@@ -61,10 +71,10 @@ intro: { zh: '师父：先学会攒气，再谈打架。', en: 'Master: learn to
 id: 's1', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
 name: { zh: '第 2 关 · 胆小鬼', en: 'Stage 2 · Coward'},
 rewardTier: 1,
-tip: { zh: '观察能量与上一张牌；习惯只是倾向，双方同时出招。', en: 'Watch Energy and the last card; habits are tendencies, and moves resolve together.'},
+tip: { zh: '先防住进攻；等它补气时反击。', en: 'Block an attack; counter during a refill.'},
 enemies: [{
 id: 'coward', name: { zh: '🪵 胆小木桩', en: '🪵 Cowardly Post'}, hp: 1, inventory: [0],
-personality: P(0.35, 0.5, 0.4, 0.1),
+personality: P(0.6, 0.25, 0.5, 0.1),
 intro: { zh: '木桩瑟瑟发抖……但它偶尔也会还手！', en: 'The post trembles… but sometimes it fights back!'},
 }],
 },
@@ -72,11 +82,11 @@ intro: { zh: '木桩瑟瑟发抖……但它偶尔也会还手！', en: 'The pos
 id: 's2', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
 name: { zh: '第 3 关 · 龟缩', en: 'Stage 3 · Turtle'},
 rewardTier: 1,
-tip: { zh: '防守可以被击破！攒 3 费以上用「终极技能」', en: 'Defenses can be broken! Save 3+ Energy for [Ultimate]'},
+tip: { zh: '它爱防守。攒够 3 能量，用咔破防。', en: 'It likes Defend. Save 3 Energy for Ka.'},
 enemies: [{
 id: 'turtle', name: { zh: '🐢 龟缩假人', en: '🐢 Turtling Dummy'}, hp: 1, inventory: [0],
-personality: P(0.2, 0.85, 0.4, 0.1),
-intro: { zh: '它只会缩着！用终极技能砸开它！', en: 'It only turtles! Smash it open with your Ultimate!'},
+personality: P(0.2, 0.75, 0.5, 0.1),
+intro: { zh: '它经常防守，也会变招。', en: 'It often Defends, but can change its mind.'},
 }],
 },
 // ---------- 第一章 · 山脚 ----------
@@ -84,9 +94,10 @@ intro: { zh: '它只会缩着！用终极技能砸开它！', en: 'It only turtl
 id: 's3', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
 name: { zh: '第 4 关 · 史莱姆', en: 'Stage 4 · Slime'},
 rewardTier: 1,
+tip: { zh: '天马只花 1 费；用轰轰或六克可以打平。', en: 'Pegasus costs 1; Double Blast or Six Cuts can tie it.'},
 enemies: [{
-id: 'slime', name: { zh: '🟢 史莱姆', en: '🟢 Slime'}, hp: 1.5, inventory: [0],
-personality: P(0.4, 0.3, 0.5, 0.2),
+id: 'slime', name: { zh: '🟢 史莱姆', en: '🟢 Slime'}, hp: 1.5, inventory: [0, 1],
+personality: P(0.5, 0.3, 0.5, 0.2),
 intro: { zh: '一只野生的史莱姆跳了出来！', en: 'A wild Slime appeared!'},
 }],
 },
@@ -94,10 +105,10 @@ intro: { zh: '一只野生的史莱姆跳了出来！', en: 'A wild Slime appear
 id: 's4', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
 name: { zh: '第 5 关 · 双子史莱姆', en: 'Stage 5 · Twin Slimes'},
 rewardTier: 1,
-tip: { zh: '三方混战，他们也会互打。每个对手都能造成伤害，淘汰不会重置你的血量。', en: 'Three-way brawl: they can hit each other too. Each opponent can hurt you; eliminations do not reset HP.'},
+tip: { zh: '留意两人的能量；他们也会互相攻击。', en: 'Watch both Energy bars; they can hit each other.'},
 enemies: [
 {
-id: 'slime_a', name: { zh: '🟢 史莱姆兄', en: '🟢 Slime Bro'}, hp: 1.5, inventory: [0],
+id: 'slime_a', name: { zh: '🟢 史莱姆兄', en: '🟢 Slime Bro'}, hp: 1, inventory: [0],
 personality: P(0.45, 0.25, 0.5, 0.2),
 intro: { zh: '我们兄弟同心！', en: 'Brothers fight as one!'},
 },
@@ -112,11 +123,11 @@ intro: { zh: '其利断金！', en: 'Together we are strong!'},
 id: 's5', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
 name: { zh: '第 6 关 · 精英：铁壁', en: 'Stage 6 · Elite: Iron Wall'},
 rewardTier: 1,
+tip: { zh: '攻、防、攒都会出。习惯是线索，不是答案。', en: 'Attack, Defend, or Charge: a habit is a clue, not a promise.'},
 enemies: [{
-id: 'ironwall', name: { zh: '🦍 铁壁阿强', en: '🦍 Iron Wall Qiang'}, hp: 3, inventory: [0],
-personality: P(0.25, 0.85, 0.4, 0.3), elite: true,
-passive: { attackBonus: 0.5 },
-intro: { zh: '阿强：我的防守，固若金汤！', en: 'Qiang: my defense is impenetrable!'},
+id: 'ironwall', name: { zh: '🦍 铁壁阿强', en: '🦍 Iron Wall Qiang'}, hp: 2, inventory: [0, 1],
+personality: P(0.55, 0.55, 0.55, 0.3), elite: true,
+intro: { zh: '阿强：猜猜我这次会不会防。', en: 'Qiang: will I Defend this time?'},
 }],
 },
 // ---------- 第二章 · 云雾道馆 ----------
@@ -151,11 +162,10 @@ intro: { zh: '右头：我也来！', en: 'Right Head: me too!'},
 id: 's8', chapter: { zh: '第二章 · 云雾道馆', en: 'Ch.2 · Mist Dojo'},
 name: { zh: '第 9 关 · 精英：龙爪长老', en: 'Stage 9 · Elite: Dragon Elder'},
 rewardTier: 2,
-tip: { zh: '龙爪压过低级一费攻击，但与轰轰、六克打平。此敌有穿透，普通防守挡不住！', en: 'Dragon Claw beats lower-level one-cost attacks but ties with Double Blast or Six Cuts. This enemy pierces defense!'},
+tip: { zh: '龙爪压过天马；轰轰、六克仍能打平。', en: 'Dragon Claw beats Pegasus; Double Blast and Six Cuts still tie.'},
 enemies: [{
 id: 'dragon_elder', name: { zh: '🐉 龙爪长老', en: '🐉 Dragon Elder'}, hp: 3, inventory: [0, 3],
 personality: P(0.75, 0.25, 0.35, 0.7), elite: true,
-passive: { pierce: true },
 intro: { zh: '长老：感受龙爪的等级压制吧！', en: 'Elder: feel the pressure of the Dragon Claw!'},
 }],
 },
@@ -196,11 +206,10 @@ intro: { zh: '影弟：一起上！', en: 'Shadow Lil: together!'},
 id: 's11', chapter: { zh: '第三章 · 黑风岭', en: 'Ch.3 · Black Wind Ridge'},
 name: { zh: '第 12 关 · 精英：吊死鬼', en: 'Stage 12 · Elite: Hangman'},
 rewardTier: 3,
-tip: { zh: '必杀技可以压制常规终极技能，注意他的起手！', en: 'SUPERs beat normal Ults — watch his opener!'},
+tip: { zh: '同档普通终极比等级；基础叽能与它打平。', en: 'Ordinary Ults compare levels; basic Ji can still tie.'},
 enemies: [{
-id: 'hangman', name: { zh: '👻 吊死鬼', en: '👻 Hangman'}, hp: 3.5, inventory: [0, 5],
+id: 'hangman', name: { zh: '👻 吊死鬼', en: '👻 Hangman'}, hp: 3, inventory: [0, 2, 5],
 personality: P(0.65, 0.3, 0.35, 0.8), elite: true,
-passive: { energyDrain: 1 },
 intro: { zh: '吊死鬼：终极？我的更终极。', en: 'Hangman: ultimate? Mine is more ultimate.'},
 }],
 },
@@ -241,9 +250,9 @@ intro: { zh: '右卫：塔主不容打扰！', en: 'Right Guard: the Lord must n
 id: 's14', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
 name: { zh: '第 15 关 · 精英：诈唬大师', en: 'Stage 15 · Elite: Bluff Master'},
 rewardTier: 3,
-tip: { zh: '诈唬大师满嘴跑火车：它喊"我要打你"时，可能真要动手，也可能只是在攒能量——别全信，也别全不信', en: 'The Bluff Master is full of lies: when it shouts "I\'m coming for you", it may mean it — or be secretly charging. Trust, but verify' },
+tip: { zh: '别只信台词；用能量和出牌历史判断。', en: 'Read Energy and history, not just the taunt.' },
 enemies: [{
-id: 'bluffer', name: { zh: '🎭 诈唬大师', en: '🎭 Bluff Master'}, hp: 3.5, inventory: [0, 3, 5, 7],
+id: 'bluffer', name: { zh: '🎭 诈唬大师', en: '🎭 Bluff Master'}, hp: 3.5, inventory: [0, 2, 3, 5],
 personality: P(0.5, 0.35, 0.6, 0.55), elite: true,
 passive: { deceiver: true },
 intro: { zh: '诈唬大师：我的话，你敢信吗？', en: 'Bluff Master: dare you believe a word I say?'},
@@ -253,23 +262,21 @@ intro: { zh: '诈唬大师：我的话，你敢信吗？', en: 'Bluff Master: da
 id: 's15', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
 name: { zh: '第 16 关 · Boss：塔主波赞', en: 'Stage 16 · Boss: Lord Bozan'},
 rewardTier: 3,
-tip: { zh: '塔主 4 血、每回合护甲 0.5 点，半血狂暴（能量+2、伤害+0.5），还会锐吸/奥吸收你的技能——速战速决！', en: 'Lord: 4 HP, 0.5 armor/turn, enrages at half HP, absorbs skills — end it fast!'},
+tip: { zh: '塔主也要攒气。防攻击，抓补气，别白交终极。', en: 'The Lord must Charge too. Block attacks, catch refills, time your Ult.'},
 enemies: [{
-id: 'lord_bozan', name: { zh: '👑 塔主波赞', en: '👑 Lord Bozan'}, hp: 4, inventory: [0, 3, 5, 6, 12],
+id: 'lord_bozan', name: { zh: '👑 塔主波赞', en: '👑 Lord Bozan'}, hp: 4, inventory: [0, 2, 3, 5],
 personality: P(0.7, 0.35, 0.25, 1.0), boss: true,
-passive: { startEnergy: 2, energyPerTurn: 1, enrageEnergy: 2, enrageDmg: 0.5, armorPerTurn: 0.5},
-intro: { zh: '波赞：能爬到这里，值得我亲自出手。半血之后，你会后悔的。', en: 'Bozan: reaching my tower earns you my personal attention. You will regret it once I enrage.'},
+intro: { zh: '波赞：同样的规则，看谁猜得准。', en: 'Bozan: same rules. Let us see who reads better.'},
 }],
 },
 {
 id: 's16', chapter: { zh: '终章 · 塔心', en: 'Finale · Tower Heart'},
 name: { zh: '第 17 关 · Boss：远古塔魂', en: 'Stage 17 · Boss: Ancient Tower Soul'},
 rewardTier: 3,
-tip: { zh: '塔魂披挂头盔/手盔/脚盔攻防，每回合护甲 0.5 点、能量 +1，攻击无视防御——它即是塔本身！', en: 'The Soul wields helm/hand/foot arms, 0.5 armor & +1 energy per turn, attacks pierce defense — it IS the tower!'},
+tip: { zh: '最后一战：看能量、读习惯，联合技也能被反制。', en: 'Final table: read Energy and habits. Combos have counters too.'},
 enemies: [{
-id: 'tower_soul', name: { zh: '🌑 远古塔魂', en: '🌑 Ancient Tower Soul'}, hp: 5, inventory: [0, 8, 10, 11],
+id: 'tower_soul', name: { zh: '🌑 远古塔魂', en: '🌑 Ancient Tower Soul'}, hp: 5, inventory: [0, 1, 2, 3, 5],
 personality: P(0.55, 0.7, 0.3, 0.9), boss: true,
-passive: { startEnergy: 1, energyPerTurn: 1, armorPerTurn: 0.5, pierce: true },
 intro: { zh: '塔魂：波赞只是守门人。我，即是塔。', en: 'Soul: Bozan was merely the gatekeeper. I am the tower.'},
 }],
 },
@@ -294,7 +301,7 @@ desc: { zh: '每场战斗第一次受到伤害时，伤害 -0.5', en: 'First dam
 {
 id: 'rxyd', icon: '🥋', rarity: 'common',
 name: { zh: '热身腰带', en: 'Warm-up Belt'},
-desc: { zh: '每场战斗第 1 回合 +2 能量', en: '+2 Energy on the first turn of each battle'},
+desc: { zh: '每场战斗第 1 回合 +1 能量', en: '+1 Energy on the first turn of each battle'},
 },
 {
 id: 'fjqt', icon: '🥊', rarity: 'common',
@@ -339,6 +346,7 @@ export const LEVEL_REWARD_INFO: Record<number, LocalizedText> = {
 1: { zh: 'Lv1 · 天马 / 流星坠', en: 'Lv1 · Pegasus / Meteor'},
 2: { zh: 'Lv2 · 冰剑 / 小飞 / 玄天冰剑', en: 'Lv2 · Ice Sword / Small Fly / Mystic Ice'},
 3: { zh: 'Lv3 · 龙爪 / 火焰龙爪 / 龙爪防', en: 'Lv3 · Dragon Claw / Fire Claw / Claw Def'},
+4: { zh: 'Lv4 · 热奶 / 热锅炉', en: 'Lv4 · Hot Milk / Boiler'},
 5: { zh: 'Lv5 · 马甸 / 吊死鬼 / 大飞', en: 'Lv5 · Madian / Hangman / Big Fly'},
 8: { zh: 'Lv8 · 头盔攻 / 头盔防', en: 'Lv8 · Helm Atk / Helm Def'},
 };
@@ -346,19 +354,30 @@ export const LEVEL_REWARD_INFO: Record<number, LocalizedText> = {
 export const REWARD_LEVEL_POOL: Record<1 | 2 | 3, number[]> = {
 1: [1, 2, 3],
 2: [2, 3, 5],
-3: [3, 5, 8],
+3: [3, 4, 5],
 };
 
-// 限次秘技卡池：从全部技能里随机抽（进攻 / 防守 / 特殊都有），类似复仇模式抽卡。
-// 排除 0 级基础牌（抽出来没意思）、攒气牌和系统保留牌（100 级）。
+// Secrets stay close to the run's level. Levels 6–7 add late-run absorption and
+// partial penetration, without inaccessible layer attacks or Lv.23 shortcuts.
 export const EXPEDITION_GACHA_POOL: string[] = SKILL_DB.filter(
-(c) => c.levelRequired >= 1 && c.levelRequired < 100 && c.type !== 'CHARGE'
+(c) => c.levelRequired >= 1 && c.levelRequired <= 7 && c.type !== 'CHARGE'
 ).map((c) => c.id);
 
-/** 抽一张限次秘技：返回卡 id 与使用次数（1-3 次） */
-export function drawGachaCard(): { cardId: string; uses: number } {
-const cardId = EXPEDITION_GACHA_POOL[Math.floor(Math.random() * EXPEDITION_GACHA_POOL.length)];
-const uses = 1 + Math.floor(Math.random() * 3);
+export function expeditionSecretPool(maxLevel = 0, stageIdx = 0): string[] {
+const level = Number.isFinite(maxLevel) ? Math.max(0, Math.min(5, Math.floor(maxLevel))) : 0;
+const stage = Number.isFinite(stageIdx) ? Math.max(0, Math.floor(stageIdx)) : 0;
+const highest = Math.min(7, level + (stage >= 6 ? 2 : 1));
+return EXPEDITION_GACHA_POOL.filter(id => {
+  const required = SKILL_DB.find(card => card.id === id)!.levelRequired;
+  return required > level && required <= highest;
+});
+}
+
+/** Draw a new nearby-level secret, never a copy of the run's existing levels. */
+export function drawGachaCard(maxLevel = 0, stageIdx = 0, rng: () => number = Math.random): { cardId: string; uses: number } {
+const pool = expeditionSecretPool(maxLevel, stageIdx);
+const cardId = pool[Math.min(pool.length - 1, Math.max(0, Math.floor(rng() * pool.length)))];
+const uses = 1 + Math.min(2, Math.max(0, Math.floor(rng() * 3)));
 return { cardId, uses };
 }
 
@@ -375,7 +394,7 @@ export const EXPEDITION_EQUIPMENTS: ExpeditionEquipment[] = [
 id: 'waraxe', icon: '🗡️',
 name: { zh: '狂战斧', en: 'War Axe'},
 desc: { zh: '你的所有伤害 +0.5', en: '+0.5 to all damage you deal'},
-price: 30,
+price: 35,
 },
 {
 id: 'bloodsword', icon: '🩸',
@@ -386,7 +405,7 @@ price: 25,
 {
 id: 'lifegem', icon: '❤️',
 name: { zh: '生命宝石', en: 'Life Gem'},
-desc: { zh: '血量上限 +1（并回复 1 点）', en: '+1 max HP (and heal 1)'},
+desc: { zh: '血量上限 +1（最高 5），并回复 1 点', en: '+1 max HP (up to 5), and heal 1'},
 price: 20,
 },
 {
@@ -404,7 +423,7 @@ price: 22,
 {
 id: 'moneytree', icon: '🌱',
 name: { zh: '摇钱树', en: 'Money Tree'},
-desc: { zh: '每场战斗开始时，获得当前金币 10%（至少 1）', en: 'Gain 10% of your gold (min 1) at each battle start'},
+desc: { zh: '每场战斗开始获得当前金币 10%（最少 1，最多 4）', en: 'Gain 10% of your gold at battle start (min 1, max 4)'},
 price: 28,
 },
 {
@@ -416,13 +435,13 @@ price: 35,
 {
 id: 'levelbadge', icon: '🎖️',
 name: { zh: '升级徽章', en: 'Level Badge'},
-desc: { zh: '永久升 1 级（上限 5 级）', en: 'Permanently gain 1 level (max Lv.5)'},
+desc: { zh: '本轮升 1 级（上限 5 级）', en: 'Gain 1 level for this run (max Lv.5)'},
 price: 35,
 },
 {
 id: 'skillcharm', icon: '📿',
 name: { zh: '技能护符', en: 'Skill Charm'},
-desc: { zh: '随机一张卡变为本轮永久可用', en: 'A random card becomes permanently usable this run'},
-price: 40,
+desc: { zh: '获得一张附近等级的未学秘技，可用 5 次；仍需支付能量', en: 'Gain 5 uses of an unlearned nearby-level skill; normal Energy costs apply'},
+price: 24,
 },
 ];

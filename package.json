@@ -9,6 +9,7 @@
     "lint": "eslint .",
     "preview": "vite preview",
     "test": "node --import tsx --test src/logic/*.test.ts src/config/*.test.ts src/audio/*.test.ts",
+    "simulate:expedition": "node --import tsx scripts/simulate-expedition.ts",
     "check:config": "node --import tsx scripts/check-firebase-config.ts",
     "build:deploy": "npm run check:config && npm run build"
   },

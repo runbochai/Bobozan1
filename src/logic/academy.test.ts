@@ -188,7 +188,7 @@ test('upgrading unlocks Pegasus and a fresh expedition returns to basic cards', 
   assert.equal(resolvePracticeRound(item, 0, 'pegasus').passed, true);
   assert.equal(resolvePracticeRound(item, 0, 'hong').passed, false);
   assert.deepEqual(hero(getPracticePlayers(item, 1)).inventory, [0]);
-  assert.equal(hero(getPracticePlayers(item, 1)).hp, 1);
+  assert.equal(hero(getPracticePlayers(item, 1)).hp, 3);
   assert.equal(hero(getPracticePlayers(item, 1)).energy, 0);
   assert.equal(resolvePracticeRound(item, 1, 'charge').passed, true);
 });

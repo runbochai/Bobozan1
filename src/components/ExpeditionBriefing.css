@@ -18,6 +18,24 @@
 .exp-recap-cards strong { display:block; color:#f4ce84; font-size:16px; }
 .exp-recap-log { list-style:disc; padding-left:20px; margin:20px 0; }
 .exp-recap-log li { padding-bottom:8px; }
+.exp-briefing .exp-recap-result { color:#f3dca8; margin:16px 0; font-size:17px; font-weight:600; }
+.exp-briefing-details { margin:14px 0 18px; border-top:1px solid #4b6571; padding-top:10px; }
+.exp-briefing-details summary { cursor:pointer; color:#b7ced5; min-height:36px; padding:5px 0; }
+.exp-briefing-details summary:focus-visible { outline:2px solid #f4cf70; outline-offset:3px; }
+.exp-briefing-details p { margin:10px 0; }
+.exp-briefing-rules { gap:12px; }
+.exp-briefing-rules .pixel-card-art,.exp-briefing-rules .pixel-card-symbol { width:44px; height:48px; }
+.exp-briefing-rules .pixel-card-symbol svg { width:34px; height:34px; }
+.exp-recap-cards figure { margin:0; flex:1 1 0; min-width:0; max-width:115px; }
+.exp-recap-cards figcaption { overflow-wrap:anywhere; }
+@media(max-width:480px) {
+  .exp-recap-cards { gap:8px; }
+  .exp-recap-cards figure { padding:8px 3px; }
+  .exp-recap-cards .pixel-card-art,.exp-recap-cards .pixel-card-symbol { width:52px; height:52px; }
+  .exp-recap-cards .pixel-card-symbol svg { width:36px; height:36px; }
+  .exp-recap-cards figcaption { font-size:13px; }
+  .exp-recap-cards strong { font-size:14px; }
+}
 .exp-help-actions { display:flex; gap:8px; padding-top:6px; pointer-events:auto; }
 .exp-help-actions button { font-size:13px; color:#f0dba1; background:#152432e8; border:1px solid #657a83; padding:5px 9px; min-height:36px; }
 .exp-help-actions button:disabled { opacity:.45; }
