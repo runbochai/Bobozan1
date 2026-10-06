@@ -1,7 +1,8 @@
-/** Reproduce with: node --import tsx scripts/simulate-expedition.ts --seeds=200 --out=report.json */
+/** Reproduce with: node --import tsx scripts/simulate-expedition.ts --difficulty=normal --seeds=200 --out=report.json */
 import { writeFileSync } from 'node:fs';
 import type { Card, Player } from '../src/types';
 import { EXPEDITION_STAGES } from '../src/data/expedition';
+import { getExpeditionDifficulty, type ExpeditionDifficulty } from '../src/data/expeditionDifficulty';
 import { SKILL_DB } from '../src/data/skills';
 import { getEffectiveLevel, getPlayerCards, isOffensiveCard } from '../src/logic/combat';
 import { expeditionBotMove, expeditionMoveWeights } from '../src/logic/expeditionAI';
@@ -19,11 +20,14 @@ const cardById = new Map(SKILL_DB.map(card => [card.id, card]));
 const option = (key: string, fallback: string) => process.argv.find(arg => arg.startsWith(`--${key}=`))?.slice(key.length + 3) ?? fallback;
 const seeds = Number(option('seeds', '200'));
 if (!Number.isInteger(seeds) || seeds < 1) throw new Error('--seeds must be a positive integer');
+const difficultyOption = option('difficulty', 'beginner');
+if (difficultyOption !== 'beginner' && difficultyOption !== 'normal') throw new Error('--difficulty must be beginner or normal');
+const difficulty: ExpeditionDifficulty = difficultyOption;
 const routePolicy = option('route', 'adaptive');
 if (!['adaptive', 'rest', 'risk'].includes(routePolicy)) throw new Error('--route must be adaptive, rest or risk');
 const strategies = option('strategies', allStrategies.join(',')).split(',') as Strategy[];
 if (strategies.some(strategy => !allStrategies.includes(strategy))) throw new Error('Unknown strategy');
-const output = option('out', 'expedition-simulation.json');
+const output = option('out', `expedition-simulation-${difficulty}.json`);
 const maxTurns = 80;
 
 /** Every decision has its own stream: forecast draws never advance actual enemy RNG. */
@@ -125,7 +129,7 @@ interface RunResult {
   loadoutChoices: number;
 }
 function simulate(strategy: Strategy, seed: number): RunResult {
-  let run = createExpeditionRun();
+  let run = createExpeditionRun(difficulty);
   const stats: RunResult = { seed, cleared: 0, turns: 0, stalled: false, routes: { rest: 0, risk: 0 },
     stageTurns: [], moves: {}, hp: run.hp, level: 0, damageTaken: 0, blocks: 0, loadoutChoices: 0 };
   const keepLatestSkills = (rewarded: ExpeditionRun): ExpeditionRun => {
@@ -184,7 +188,7 @@ for (const strategy of strategies) {
   const results = Array.from({ length: seeds }, (_, index) => simulate(strategy, index + 1));
   details[strategy] = results;
   const summary = {
-    strategy, seeds, passed3: results.filter(result => result.cleared >= 3).length / seeds,
+    strategy, seeds, difficulty, passed3: results.filter(result => result.cleared >= 3).length / seeds,
     passed6: results.filter(result => result.cleared >= 6).length / seeds,
     passedAll: results.filter(result => result.cleared >= EXPEDITION_STAGES.length).length / seeds,
     maxLevelReached: Math.max(...results.map(result => result.level)),
@@ -206,7 +210,8 @@ for (const strategy of strategies) {
   console.log(JSON.stringify(summary));
 }
 const report = {
-  generatedAt: new Date().toISOString(), seeds, stageCount: EXPEDITION_STAGES.length, routePolicy, maxTurnsPerStage: maxTurns,
+  generatedAt: new Date().toISOString(), seeds, difficulty: getExpeditionDifficulty(difficulty),
+  stageCount: EXPEDITION_STAGES.length, routePolicy, maxTurnsPerStage: maxTurns,
   method: 'Shared production runtime; enemy intents committed first; separate seeded streams; reader sees public distributions and last three revealed cards, never sampled intents; exact one-opponent / 16 sampled multi-opponent forecasts.',
   economyPolicy: `Identical deterministic reward and one-purchase-per-shop-slot rules for all strategies. Prefer emergency healing, learned levels, useful relics; potions when missing at least 1 HP, then equipment. Route: ${routePolicy}; adaptive means risk at full HP, otherwise rest, after stage 3.`,
   skillPolicy: 'After each reward or purchase, the simulated player keeps the latest three permanent skills per category through the production loadout resolver. Basics and temporary/absorbed/derived cards do not use slots. Fixed expedition enemy rosters are unchanged; each stage asserts the player has no unresolved overflow.',

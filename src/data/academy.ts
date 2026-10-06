@@ -1,5 +1,6 @@
 import type { LocalizedText } from '../types';
 import { EXPEDITION_STAGES, EXPEDITION_START_HP } from './expedition';
+import { EXPEDITION_DIFFICULTIES } from './expeditionDifficulty';
 
 export type AcademyGoal = 'gain-energy' | 'block' | 'hit' | 'tie' | 'survive';
 
@@ -60,7 +61,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
     rounds: [{
       hero: fighter(1), enemy: fighter(0), enemyMove: 'charge', choices: ['charge', 'hong', 'defend'], goal: 'hit',
       prompt: text('命中正在攒的对手。', 'Hit the charging opponent.'),
-      explanation: text('轰花 1 能量，命中造成基础 1 点伤害，也会打断攒。本题按多人模式的 1 生命练习；远征开局有 3 生命。', 'Blast costs 1 energy and deals 1 base damage on a hit, interrupting Charge. This exercise uses multiplayer’s 1 HP; expedition starts with 3 HP.'),
+      explanation: text('轰花 1 能量，命中造成基础 1 点伤害，也会打断攒。本题按多人模式的 1 生命练习；新手远征开局有 3 生命。', 'Blast costs 1 energy and deals 1 base damage on a hit, interrupting Charge. This exercise uses multiplayer’s 1 HP; Beginner expedition starts with 3 HP.'),
     }],
   },
   {
@@ -98,7 +99,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
       },
       {
         hero: { ...fighter(0), hp: EXPEDITION_START_HP }, enemy: fighter(0), enemyMove: 'charge', choices: ['charge', 'defend'], goal: 'gain-energy',
-        opponentHint: text(`独立预设：远征阵亡后开启了全新一轮。现在回到基础技能、${EXPEDITION_START_HP} 生命、0 能量。`, `Independent preset: a new expedition has started after defeat. You are back to basic skills, ${EXPEDITION_START_HP} HP, and 0 energy.`),
+        opponentHint: text(`独立预设：新手远征阵亡后开启了全新一轮。现在回到基础技能、${EXPEDITION_START_HP} 生命、0 能量。`, `Independent preset: a new Beginner expedition has started after defeat. You are back to basic skills, ${EXPEDITION_START_HP} HP, and 0 energy.`),
         prompt: text('在新一轮远征的起点，重新攒出 2 能量。', 'At the start of a fresh expedition, build 2 energy again.'),
         explanation: text('远征重开会清空上一轮金币、物品、遗物与技能；课程完成记录与远征最高进度保留。联机阵亡不是远征重开：联机已获得的技能不会因阵亡而清空。', 'A new expedition clears the previous run’s gold, items, relics, and skills; completed lessons and your best expedition progress stay recorded. Multiplayer death is different: earned multiplayer skills are retained.'),
       },
@@ -275,7 +276,9 @@ export const RULE_TOPICS: RuleTopic[] = [
   {
     id: 'expedition', title: text('远征与练习', 'Expedition and practice'),
     items: [
-      text(`远征共有 ${EXPEDITION_STAGES.length} 关，每轮从 3 生命、Lv.0 起步。升级可继续解锁技能库中的全部常规等级，每类仍最多保留 3 个新技能；等级高不代表旧牌自动增强。`, `Expedition has ${EXPEDITION_STAGES.length} stages. Each run starts at 3 HP and Lv.0. Upgrades can unlock every regular skill level; keep up to 3 acquired skills per category. Higher level does not automatically strengthen old cards.`),
+      text(`远征共有 ${EXPEDITION_STAGES.length} 关，两种难度均从 Lv.0 起步。新手以 ${EXPEDITION_DIFFICULTIES.beginner.startHp} 生命开局，敌人无难度伤害加成，战斗金币保持原倍率。`, `Expedition has ${EXPEDITION_STAGES.length} stages. Both difficulties start at Lv.0. Beginner starts with ${EXPEDITION_DIFFICULTIES.beginner.startHp} HP, no difficulty damage bonus for enemies, and the usual battle gold.`),
+      text(`普通以 ${EXPEDITION_DIFFICULTIES.normal.startHp} 生命及上限开局，敌人每次命中伤害 +${EXPEDITION_DIFFICULTIES.normal.enemyDamageBonus}，整笔胜利金币 ×${EXPEDITION_DIFFICULTIES.normal.goldMultiplier}。防住、打平或躲开不会凭空掉血；摇钱树等非战斗收入不翻倍。`, `Normal starts with ${EXPEDITION_DIFFICULTIES.normal.startHp} HP and max HP. Enemy hits deal +${EXPEDITION_DIFFICULTIES.normal.enemyDamageBonus} damage; the complete victory gold award is ×${EXPEDITION_DIFFICULTIES.normal.goldMultiplier}. Blocks, ties and dodges do not cause automatic damage. Non-battle income such as Money Tree is not doubled.`),
+      text('两种难度的最高进度分别记录，旧版本成绩保留在新手。升级可继续解锁全部常规等级，每类仍最多保留 3 个新技能；等级高不代表旧牌自动增强。', 'Best progress is saved separately for each difficulty; earlier records stay in Beginner. Upgrades still unlock all regular levels, with up to 3 acquired skills per category. Higher level does not automatically strengthen old cards.'),
       text('远征中的金币、物品、遗物与技能属于这一轮；通关或阵亡后重新开始，会清空本轮收集。', 'Expedition gold, items, relics, and skills belong to the current run. Starting again after victory or death clears that collection.'),
       text('途中退出或刷新不会保存本轮进度；仅历史最佳与已完成课程会保留在本机。', 'Leaving or refreshing does not save the current run. Only your best record and completed lessons are kept on this device.'),
       text('铁布衫、替身人偶触发时保留至多 0.5 生命；保命不等于防住或减伤，保命前的命中伤害达到 1 时，攒仍会被打断。', 'Iron Shirt and Stand-in Doll preserve up to 0.5 HP when triggered. Surviving is not a block or damage reduction: if damage before this protection reaches 1, Charge remains interrupted.'),

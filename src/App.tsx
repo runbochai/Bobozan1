@@ -65,6 +65,7 @@ import { pickUltCutins, hasBattleCutin, ULT_CUTINS, type UltCutinPick } from './
 import UltCutin from './components/UltCutin';
 import InventoryBar from './components/InventoryBar';
 import { EXPEDITION_STAGES } from './data/expedition';
+import { getExpeditionDifficulty, type ExpeditionDifficulty } from './data/expeditionDifficulty';
 import {
   expeditionBotMove,
   genRewardOptions,
@@ -318,7 +319,9 @@ export default function BobozanOnline() {
   const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
   const [expEquipment, setExpEquipment] = useState<string[]>([]);
+  const [expDifficulty, setExpDifficulty] = useState<ExpeditionDifficulty>('beginner');
   const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
+  const expDifficultyConfig = getExpeditionDifficulty(expDifficulty);
   // 移动端手牌缩放
   const [isSmallScreen, setIsSmallScreen] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => {
@@ -378,10 +381,16 @@ export default function BobozanOnline() {
     setExpIntents(computeExpIntents(battle.players, stageIdx));
   };
 
-  const startExpedition = () => {
+  const selectExpeditionDifficulty = (difficulty: ExpeditionDifficulty) => {
+    setExpDifficulty(difficulty);
+    setExpBest(loadExpeditionBest(difficulty));
+  };
+
+  const startExpedition = (difficulty: ExpeditionDifficulty = expDifficulty) => {
     playSound('confirm', muted);
     clearExpeditionTimers();
-    expRunRef.current = createExpeditionRun();
+    expRunRef.current = createExpeditionRun(difficulty);
+    selectExpeditionDifficulty(difficulty);
     expDialogueSeedRef.current = Math.floor(Math.random() * 0x7fffffff);
     setExpRelics([]);
     setExpGold(0);
@@ -454,12 +463,12 @@ export default function BobozanOnline() {
         cards: playersWithMoves.filter(p => !p.isDead && p.selectedCardId).map(p => ({ name: p.name, id: p.selectedCardId! })),
       });
       if (lost) {
-        saveExpeditionBest(run.stageIdx);
-        setExpBest(loadExpeditionBest());
+        saveExpeditionBest(run.stageIdx, run.difficulty);
+        setExpBest(loadExpeditionBest(run.difficulty));
         setExpPhase('runover');
       } else if (won) {
-        saveExpeditionBest(run.stageIdx + 1);
-        setExpBest(loadExpeditionBest());
+        saveExpeditionBest(run.stageIdx + 1, run.difficulty);
+        setExpBest(loadExpeditionBest(run.difficulty));
         setGoldFly({ amount: result.gold, key: Date.now() });
         expeditionTimersRef.current.push(setTimeout(() => setGoldFly(null), 1500));
         setExpRewards(genRewardOptions(run.hp, run.maxHp, run.relics, run.relics.includes('cbt') ? 4 : 3, run.inventory, run.stageIdx));
@@ -1329,10 +1338,11 @@ export default function BobozanOnline() {
     startLabel={isExpedition && view === 'GAME' ? (lang === 'zh' ? '返回远征' : 'Return to expedition') : undefined}
     onClose={() => setAcademyTab(null)} onStartExpedition={() => {
       setAcademyTab(null);
-      if (!(isExpedition && view === 'GAME')) startExpedition();
+      if (!(isExpedition && view === 'GAME')) setExpHelp('intro');
     }} /> : expHelp ? <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
+      difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty} best={expBest}
       onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
-      onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? startExpedition : undefined} /> : null;
+      onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} /> : null;
 
   if (view === 'NAME_INPUT') return (
     <div className="pixel-app pixel-screen-title brawl-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
@@ -1441,7 +1451,7 @@ export default function BobozanOnline() {
             </div>
             <div className="flex gap-4 w-full max-w-md justify-center">
               <button
-                onClick={startExpedition}
+                onClick={() => setExpHelp('intro')}
                 className="btn-expedition group relative flex-1 overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
@@ -1465,7 +1475,7 @@ export default function BobozanOnline() {
             <button type="button" className="btn-secondary px-6 py-3 text-lg" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '规则 / 自选练习' : 'Rules / Practice'}</button>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
-                {lang === 'zh' ? `🏆 历史最佳：第 ${expBest} 关` : `🏆 Best: Stage ${expBest}`}
+                {lang === 'zh' ? `🏆 ${expDifficultyConfig.label[lang]}最佳：第 ${expBest} 关` : `🏆 ${expDifficultyConfig.label[lang]} best: Stage ${expBest}`}
               </div>
             )}
 
@@ -1993,7 +2003,7 @@ export default function BobozanOnline() {
         {isExpedition && expPhase === 'battle' && (
           <div className="pixel-exp-hud expedition-learning-hud absolute top-3 left-3 z-50 pointer-events-none">
             <div className="expedition-learning-heading">
-              <div><strong>{EXPEDITION_STAGES[expStageIdx].name[lang]}</strong><small>{lang === 'zh' ? '第 ' + gameState.turn + ' 回合' : 'Turn ' + gameState.turn}{expRunRef.current.route === 'risk' ? (lang === 'zh' ? ' · 挑战' : ' · Challenge') : ''}</small></div>
+              <div><strong>{EXPEDITION_STAGES[expStageIdx].name[lang]}</strong><small><span className={`exp-difficulty-badge exp-difficulty-badge--${expDifficulty}`}>{expDifficultyConfig.label[lang]}</span> · {lang === 'zh' ? '第 ' + gameState.turn + ' 回合' : 'Turn ' + gameState.turn}{expRunRef.current.route === 'risk' ? (lang === 'zh' ? ' · 挑战' : ' · Challenge') : ''}</small></div>
               <div className="exp-help-actions">
                 <button type="button" disabled={submittingMove} onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则' : 'Rules'}</button>
                 <button type="button" disabled={!expRecap || submittingMove} onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '复盘' : 'Review'}</button>
@@ -2028,15 +2038,15 @@ export default function BobozanOnline() {
                 {lang === 'zh' ? `倒在${EXPEDITION_STAGES[expStageIdx].name[lang]}` : `Fell at ${EXPEDITION_STAGES[expStageIdx].name[lang]}`}
               </p>
               <p className="text-amber-300/90 text-sm mb-6">
-                {lang === 'zh' ? `历史最佳：第 ${expBest} 关` : `Best: Stage ${expBest}`}
+                {lang === 'zh' ? `${expDifficultyConfig.label[lang]}最佳：第 ${expBest} 关` : `${expDifficultyConfig.label[lang]} best: Stage ${expBest}`}
               </p>
-              <p className="text-slate-200 text-base mb-4">{lang === 'zh' ? '重开：Lv.0 · ♥3 · 金币0。装备重置，最佳记录保留。' : 'Restart: Lv.0 · ♥3 · 0 gold. Gear resets; your best remains.'}</p>
+              <p className="text-slate-200 text-base mb-4">{lang === 'zh' ? `重开：Lv.0 · ♥${expDifficultyConfig.startHp} · 金币0。装备重置，最佳记录保留。` : `Restart: Lv.0 · ♥${expDifficultyConfig.startHp} · 0 gold. Gear resets; your best remains.`}</p>
               <div className="flex gap-3 justify-center mb-5">
                 <button type="button" onClick={() => setExpHelp('recap')} className="text-amber-200 underline">{lang === 'zh' ? '败因' : 'Review'}</button>
                 <button type="button" onClick={() => setAcademyTab('lessons')} className="text-sky-200 underline">{lang === 'zh' ? '练一手' : 'Practice'}</button>
               </div>
               <div className="flex gap-3 justify-center">
-                <button onClick={startExpedition} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
+                <button onClick={() => startExpedition(expRunRef.current.difficulty)} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
                   {lang === 'zh' ? '再来一轮' : 'Retry'}
                 </button>
                 <button onClick={() => leaveRoom()} className="px-6 py-2.5 rounded-xl bg-slate-800 border border-slate-600 font-bold text-slate-300 hover:text-white hover:scale-105 active:scale-95 transition-all">
@@ -2054,11 +2064,11 @@ export default function BobozanOnline() {
               <div className="text-5xl mb-3">🏆</div>
               <h2 className="text-2xl font-black text-amber-300 mb-2">{lang === 'zh' ? '登顶成功！' : 'Tower Conquered!'}</h2>
               <p className="text-slate-400 text-sm mb-6">
-                {lang === 'zh' ? `已通过全部 ${EXPEDITION_STAGES.length} 关。新一轮会重置成长；历史最佳和已学课程保留。` : `All ${EXPEDITION_STAGES.length} stages cleared. A new run resets growth; your best record and lessons remain.`}
+                {lang === 'zh' ? `${expDifficultyConfig.label[lang]} · 已通过全部 ${EXPEDITION_STAGES.length} 关。新一轮会重置成长；历史最佳和已学课程保留。` : `${expDifficultyConfig.label[lang]} · All ${EXPEDITION_STAGES.length} stages cleared. A new run resets growth; your best record and lessons remain.`}
               </p>
               {expRecap && <button type="button" className="text-amber-200 underline mb-4" onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '回顾最后一战' : 'Review the final battle'}</button>}
               <div className="flex gap-3 justify-center">
-                <button onClick={startExpedition} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
+                <button onClick={() => startExpedition(expRunRef.current.difficulty)} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
                   {lang === 'zh' ? '再来一轮' : 'Retry'}
                 </button>
                 <button onClick={() => leaveRoom()} className="px-6 py-2.5 rounded-xl bg-slate-800 border border-slate-600 font-bold text-slate-300 hover:text-white hover:scale-105 active:scale-95 transition-all">
