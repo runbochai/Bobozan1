@@ -9,6 +9,7 @@ import {
   type ExpeditionRun,
 } from './expeditionRuntime';
 import type { Player } from '../types';
+import { getSkillOverflow, grantSkillLevel, hasSkillOverflow, resolveSkillLoadout } from './skillLoadout';
 
 const identity = { name: 'Tester', avatar: 'avatars/dragon.webp', lang: 'zh' as const };
 const seeded = () => .25;
@@ -180,4 +181,42 @@ test('bounded equipment effects agree with their descriptions across stage setup
   const charm = buyExpeditionItem(battle.run, gear('skillcharm'), seeded);
   assert.equal(charm.tempCards.reduce((sum, card) => sum + card.usesLeft, 0), 6, 'One dice use plus five charm uses');
   assert.deepEqual(before, snapshot);
+});
+
+test('expedition upgrades and the level badge expose independent choices that survive the next stage', () => {
+  let initial = createExpeditionRun();
+  for (let level = 1; level <= 3; level++) initial = takeExpeditionReward(initial, { kind: 'levelup', level });
+  const before = structuredClone(initial);
+  assert.equal(hasSkillOverflow(initial), false);
+  const reward = takeExpeditionReward(initial, { kind: 'levelup', level: 4 });
+  const badge = buyExpeditionItem({ ...initial, gold: 100 }, gear('levelbadge'), seeded);
+  assert.deepEqual(reward.skillLoadout, badge.skillLoadout);
+  assert.deepEqual(getSkillOverflow(reward).map(group => group.category), ['ATTACK', 'ULTIMATE']);
+  const picked = resolveSkillLoadout(reward, { ATTACK: ['pegasus', 'icesword', 'dragonclaw'], ULTIMATE: ['iceult', 'fireclaw', 'boiler'] })!;
+  const next = setupExpeditionStage(picked, 5, identity, seeded);
+  assert.deepEqual(next.run.skillLoadout, picked.skillLoadout);
+  assert.deepEqual(hero(next).skillLoadout, picked.skillLoadout);
+  assert.notEqual(hero(next).skillLoadout, picked.skillLoadout, 'No shared mutable arrays');
+  const hand = getPlayerCards(hero(next), next.players).map(card => card.id);
+  assert.ok(!hand.includes('hotmilk') && !hand.includes('meteor'));
+  assert.ok(hand.includes('boiler') && hand.includes('pegasus') && hand.includes('skydragon'));
+  const fifth = grantSkillLevel(picked, 5);
+  assert.ok(fifth.skillLoadout.includes('madian') && fifth.skillLoadout.includes('hangman'));
+  assert.ok(!fifth.skillLoadout.includes('hotmilk'));
+  assert.deepEqual(initial, before);
+});
+
+test('legacy expedition saves expose overflow without pruning fixed enemy rosters or temporary abilities', () => {
+  const legacy: ExpeditionRun = { ...createExpeditionRun(), inventory: [0, 1, 2, 3, 4],
+    tempCards: [{ cardId: 'skydragon', usesLeft: 2 }] };
+  delete legacy.skillLoadout;
+  const battle = setupExpeditionStage(legacy, 16, identity, seeded);
+  assert.equal(hasSkillOverflow(battle.run), true);
+  assert.ok(hero(battle).tempSkills?.includes('skydragon'));
+  for (const enemy of battle.players.filter(player => player.isBot)) {
+    assert.equal(enemy.skillLoadout, undefined, 'Encounter definitions keep their fixed skill sets');
+  }
+  const choices = resolveSkillLoadout(battle.run, { ATTACK: [], ULTIMATE: [] })!;
+  const replay = setupExpeditionStage(choices, 16, identity, seeded);
+  assert.ok(getPlayerCards(hero(replay), replay.players).some(card => card.id === 'skydragon'));
 });

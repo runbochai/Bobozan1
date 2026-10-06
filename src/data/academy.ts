@@ -266,7 +266,8 @@ export const RULE_TOPICS: RuleTopic[] = [
     id: 'multiplayer', title: text('联机成长与重置', 'Multiplayer progression'),
     items: [
       text('技能表最高 Lv.23。联机胜者按局数领新技能；第 23 局起转为最终击杀榜，不再发升级奖励。最终成绩看累计击杀，不只看最后存活。', 'The skill list reaches Lv.23. Multiplayer winners earn skills by match number; from match 23, the final kill leaderboard replaces upgrade rewards. Overall results use total kills, not just the last survivor.'),
-      text('普通攻击、防御、终极各有 4 个非基础技能槽；对应类别满时，需要换掉一项或放弃新奖励。特殊、联合另算。', 'Attack, Defense, and Ultimate categories each have 4 non-basic skill slots. A full category requires replacing a skill or declining the reward. Special skills and combos are handled separately.'),
+      text('攻击、防守、终极各最多保留 3 个新技能，超出后分别选择。基础牌始终保留；临时、吸收、共享和联合技不占名额。', 'Keep up to 3 acquired skills each in Attack, Defense, and Ultimate; choose separately when full. Basic cards stay. Temporary, absorbed, shared, and combo skills do not use slots.'),
+      text('特殊技能已归入对应分类：吸取、封印和身法在防守里。新获得的技能排在左边；换下一个技能不影响同等级的其他技能。', 'Special tools are grouped by role: absorption, disabling, and movement are in Defense. New acquisitions appear first. Replacing one skill does not remove other skills of the same level.'),
       text('联机阵亡不会抹去已获得的技能。下一局恢复生命、能量归零，保留技能库。', 'Dying in multiplayer does not erase earned skills. The next match restores HP and resets energy while keeping the inventory.'),
       text('有人淘汰且还有至少两人存活时，幸存者生命恢复到 1、能量和层数归零，并清除封印及吸取的免费技能；技能库保留。', 'When someone is eliminated with at least two players still alive, survivors reset to 1 HP, 0 energy, and layer 0; disables and absorbed free skills clear, but the inventory stays.'),
     ],

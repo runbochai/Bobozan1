@@ -1,0 +1,88 @@
+{
+  "hand": {
+    "viewports": [
+      [
+        1024,
+        768
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        1440,
+        1000
+      ]
+    ],
+    "statesPerViewport": 11,
+    "categories": [
+      "CHARGE",
+      "ATTACK",
+      "DEFEND",
+      "ULTIMATE"
+    ],
+    "passed": [
+      "Special/absorb cards categorized as defense without changing combat type",
+      "Acquired skills sorted before basic cards",
+      "Gold borders and pixel sparkle visible",
+      "Purple flames only for a legal playable ultimate, including free cards",
+      "Disabled, dead, locked and showdown states do not show ready flames",
+      "System and in-app reduced motion remain static",
+      "Battlefield dimensions unchanged"
+    ]
+  },
+  "picker": {
+    "viewports": [
+      [
+        1024,
+        768
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ]
+    ],
+    "passed": [
+      "New cards first; three default choices per overflowing category",
+      "Over three blocks confirmation; zero through three accepted",
+      "Native dialog keyboard focus and internal scrolling",
+      "English and Chinese fit"
+    ]
+  },
+  "expedition": {
+    "viewports": [
+      [
+        1024,
+        768
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "passed": [
+      "Level 3 to 4 reward prompts separate attack and ultimate choices",
+      "Keeping two per category returns to shop; next stage preserves selections",
+      "Level badge purchase uses same picker and charges once",
+      "Death restart clears skills and restores basic starting run",
+      "Real battlefield dimensions unchanged between category and skills view"
+    ]
+  },
+  "multiplayerUI": {
+    "statuses": [
+      "GAMEOVER",
+      "LOBBY",
+      "PLAYING"
+    ],
+    "passed": [
+      "Legacy overflowing loadouts display appropriate groups",
+      "Default selection is valid and confirmation enabled"
+    ],
+    "scope": "Controlled local App state, supported by room transaction unit tests; not a live two-client Firestore session. No online transaction sent during browser QA."
+  },
+  "browserErrors": 0
+}

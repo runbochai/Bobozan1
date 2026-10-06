@@ -5,6 +5,7 @@ import { EXPEDITION_STAGES } from '../src/data/expedition';
 import { SKILL_DB } from '../src/data/skills';
 import { getEffectiveLevel, getPlayerCards, isOffensiveCard } from '../src/logic/combat';
 import { expeditionBotMove, expeditionMoveWeights } from '../src/logic/expeditionAI';
+import { autoSelectSkillLoadout, hasSkillOverflow } from '../src/logic/skillLoadout';
 import { genRewardOptions, genShopItems, type RewardOption, type ShopItem } from '../src/logic/expedition';
 import {
   EXPEDITION_HERO_ID, createExpeditionRun, setupExpeditionStage, settleExpeditionRound,
@@ -121,15 +122,23 @@ function chooseMove(strategy: Strategy, run: ExpeditionRun, memory: ExpeditionBa
 interface RunResult {
   seed: number; cleared: number; turns: number; stalled: boolean; routes: { rest: number; risk: number };
   stageTurns: number[]; moves: Record<string, number>; hp: number; level: number; damageTaken: number; blocks: number;
+  loadoutChoices: number;
 }
 function simulate(strategy: Strategy, seed: number): RunResult {
   let run = createExpeditionRun();
   const stats: RunResult = { seed, cleared: 0, turns: 0, stalled: false, routes: { rest: 0, risk: 0 },
-    stageTurns: [], moves: {}, hp: run.hp, level: 0, damageTaken: 0, blocks: 0 };
+    stageTurns: [], moves: {}, hp: run.hp, level: 0, damageTaken: 0, blocks: 0, loadoutChoices: 0 };
+  const keepLatestSkills = (rewarded: ExpeditionRun): ExpeditionRun => {
+    if (hasSkillOverflow(rewarded)) stats.loadoutChoices++;
+    return autoSelectSkillLoadout(rewarded);
+  };
   for (let stageIdx = 0; stageIdx < EXPEDITION_STAGES.length; stageIdx++) {
     const setup = setupExpeditionStage(run, stageIdx, { name: 'Simulated player', avatar: '🐉', lang: 'en' }, randomFor('setup', seed, stageIdx));
     let { players, memory } = setup;
     run = setup.run;
+    if (hasSkillOverflow(run) || hasSkillOverflow(players.find(player => player.id === EXPEDITION_HERO_ID)!)) {
+      throw new Error('Simulated player entered a stage with unresolved skill choices');
+    }
     let history: ExpeditionHistory = {}, won = false, lost = false;
     for (let turn = 1; turn <= maxTurns; turn++) {
       // Draw all enemy intents before the hero acts, without exposing them to its policy.
@@ -156,10 +165,10 @@ function simulate(strategy: Strategy, seed: number): RunResult {
     if (stageIdx === EXPEDITION_STAGES.length - 1) break;
     const rewards = genRewardOptions(run.hp, run.maxHp, run.relics, run.relics.includes('cbt') ? 4 : 3,
       run.inventory, stageIdx, randomFor('rewards', seed, stageIdx));
-    run = takeExpeditionReward(run, [...rewards].sort((a, b) => rewardScore(run, b) - rewardScore(run, a))[0]);
+    run = keepLatestSkills(takeExpeditionReward(run, [...rewards].sort((a, b) => rewardScore(run, b) - rewardScore(run, a))[0]));
     const shop = genShopItems(run.equipment, levelOf(run), stageIdx, randomFor('shop', seed, stageIdx), run);
     for (const item of [...shop].sort((a, b) => shopScore(run, b) - shopScore(run, a))) {
-      if (shopScore(run, item) > 0) run = buyExpeditionItem(run, item, randomFor('purchase', seed, stageIdx, JSON.stringify(item)));
+      if (shopScore(run, item) > 0) run = keepLatestSkills(buyExpeditionItem(run, item, randomFor('purchase', seed, stageIdx, JSON.stringify(item))));
     }
     const route = stageIdx < 2 || routePolicy === 'rest' ? 'rest'
       : routePolicy === 'risk' || run.hp >= run.maxHp ? 'risk' : 'rest';
@@ -182,6 +191,7 @@ for (const strategy of strategies) {
     medianTurns: quantile(results.map(result => result.turns), .5),
     p95Turns: quantile(results.map(result => result.turns), .95),
     stalled: results.filter(result => result.stalled).length,
+    loadoutChoices: results.reduce((sum, result) => sum + result.loadoutChoices, 0),
     routes: results.reduce((sum, result) => ({ rest: sum.rest + result.routes.rest, risk: sum.risk + result.routes.risk }), { rest: 0, risk: 0 }),
     stages: EXPEDITION_STAGES.map((stage, index) => ({ stage: index + 1, name: stage.name.en,
       reached: results.filter(result => result.stageTurns[index]).length,
@@ -197,7 +207,8 @@ const report = {
   generatedAt: new Date().toISOString(), seeds, routePolicy, maxTurnsPerStage: maxTurns,
   method: 'Shared production runtime; enemy intents committed first; separate seeded streams; reader sees public distributions and last three revealed cards, never sampled intents; exact one-opponent / 16 sampled multi-opponent forecasts.',
   economyPolicy: `Identical deterministic reward and one-purchase-per-shop-slot rules for all strategies. Prefer emergency healing, learned levels, useful relics; potions when missing at least 1 HP, then equipment. Route: ${routePolicy}; adaptive means risk at full HP, otherwise rest, after stage 3.`,
-  limitations: ['Read-history is an informed model-based benchmark, not an estimate of a human beginner.', '80-round unfinished stages are counted as stalls, not victories.', 'Fixed reward/shop/route policy is one policy, not an exhaustive balance search.'],
+  skillPolicy: 'After each reward or purchase, the simulated player keeps the latest three permanent skills per category through the production loadout resolver. Basics and temporary/absorbed/derived cards do not use slots. Fixed expedition enemy rosters are unchanged; each stage asserts the player has no unresolved overflow.',
+  limitations: ['Read-history is an informed model-based benchmark, not an estimate of a human beginner.', '80-round unfinished stages are counted as stalls, not victories.', 'Fixed reward/shop/route policy is one policy, not an exhaustive balance search.', 'All strategies keep the newest skills; this does not optimize retained combo ingredients or represent every human loadout choice.'],
   summaries, details,
 };
 writeFileSync(output, JSON.stringify(report, null, 2) + '\n');

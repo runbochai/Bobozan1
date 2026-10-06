@@ -85,7 +85,9 @@ function scoreOutcome(before: Player[], after: Player[], botId: string, personal
 
 /** A bounded one-turn search. Never uses a participant's locked, unrevealed move. */
 export function getBotMove(bot: Player, allPlayers: Player[], options: Options = {}): string {
-  const players = allPlayers.map(p => ({ ...p, selectedCardId: null }))
+  const players = allPlayers.map(p => ({ ...p, selectedCardId: null,
+    ...(p.skillLoadout ? { skillLoadout: [...p.skillLoadout] } : {}),
+  }))
     .sort((a, b) => a.id.localeCompare(b.id));
   const active = players.filter(p => !p.isDead);
   const me = active.find(p => p.id === bot.id);

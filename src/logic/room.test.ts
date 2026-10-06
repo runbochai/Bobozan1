@@ -1,9 +1,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { GameState, Player } from '../types';
-import { advanceRoom, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './room';
+import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './room';
 import { calculateTurnOutcome } from './combat';
 import { MAX_PLAYERS } from '../data/constants';
+import { hasSkillOverflow } from './skillLoadout';
 
 const player = (id: string, patch: Partial<Player> = {}): Player => ({
   id, name: id, isBot: false, hp: 2, energy: 4, isDead: false,
@@ -106,6 +107,55 @@ test('move validation rejects unknown, unowned, disabled, unaffordable and dead-
 test('absorbed skills can be submitted without energy', () => {
   const state = room({ players: [player('a', { energy: 0, freeSkills: ['hong'] }), player('b')] });
   assert.equal(submitPlayerMove(state, 'a', 'hong', state)?.players?.[0].selectedCardId, 'hong');
+});
+
+test('legacy overflow blocks play until a validated per-skill choice, and discarded skills cannot be submitted', () => {
+  const state = room({ players: [player('a', { inventory: [0, 1, 2, 3, 4] }), player('b')] });
+  const before = structuredClone(state);
+  assert.throws(() => startRoom({ ...state, status: 'LOBBY' }, 'a', 'zh'), /Choose retained/);
+  assert.throws(() => submitPlayerMove(state, 'a', 'charge', state), /Choose retained/);
+  assert.equal(advanceRoom(state, 'a'), null);
+  assert.throws(() => choosePlayerSkills(state, 'a', { ATTACK: ['hong'], ULTIMATE: [] }), /Invalid/);
+  const patch = choosePlayerSkills(state, 'a', { ATTACK: ['icesword', 'dragonclaw', 'hotmilk'], ULTIMATE: ['meteor'] });
+  const ready = { ...state, ...patch };
+  assert.equal(hasSkillOverflow(ready.players[0]), false);
+  assert.throws(() => submitPlayerMove(ready, 'a', 'pegasus', ready), /Unavailable/);
+  assert.equal(submitPlayerMove(ready, 'a', 'meteor', ready)?.players?.[0].selectedCardId, 'meteor');
+  assert.deepEqual(state, before);
+});
+
+test('skill choices cannot change a locked move or reveal, but a completed legacy match may retain a stale card ID', () => {
+  const state = room({ players: [player('a', { inventory: [0, 1, 2, 3, 4], selectedCardId: 'pegasus' }), player('b')] });
+  const selections = { ATTACK: ['dragonclaw'], ULTIMATE: ['meteor'] };
+  assert.throws(() => choosePlayerSkills(state, 'a', selections), /unavailable/);
+  assert.throws(() => choosePlayerSkills({ ...state, status: 'SHOWDOWN' }, 'a', selections), /Round/);
+  assert.equal(hasSkillOverflow(choosePlayerSkills({ ...state, status: 'GAMEOVER' }, 'a', selections)!.players![0]), false);
+});
+
+test('an already locked legacy round finishes before requiring loadout choices, avoiding a migration deadlock', () => {
+  const legacy = room({ players: [
+    player('a', { inventory: [0, 1, 2, 3, 4], selectedCardId: 'defend' }),
+    player('b', { selectedCardId: 'charge' }),
+  ] });
+  const shown = { ...legacy, ...advanceRoom(legacy, 'a') };
+  assert.equal(shown.status, 'SHOWDOWN');
+  const next = { ...shown, ...settleRoom(shown, 'a', shown, 'zh') };
+  assert.equal(next.status, 'PLAYING');
+  assert.equal(next.players[0].selectedCardId, null);
+  assert.equal(hasSkillOverflow(next.players[0]), true);
+  assert.throws(() => submitPlayerMove(next, 'a', 'charge', next), /Choose retained/);
+  assert.ok(choosePlayerSkills(next, 'a', { ATTACK: ['pegasus'], ULTIMATE: ['meteor'] }));
+});
+
+test('multiplayer bots resolve legacy overflow automatically before choosing a legal move', () => {
+  const state = room({ status: 'LOBBY', players: [player('a'), player('bot', { isBot: true, inventory: [0, 1, 2, 3, 4, 5] })] });
+  const started = { ...state, ...startRoom(state, 'a', 'zh') };
+  assert.equal(hasSkillOverflow(started.players[1]), false);
+  const ready = { ...started, ...submitPlayerMove(started, 'a', 'charge', started) };
+  const shown = advanceRoom(ready, 'a');
+  assert.equal(shown?.status, 'SHOWDOWN');
+  assert.equal(hasSkillOverflow(shown!.players![1]), false);
+  assert.ok(shown!.players![1].selectedCardId);
 });
 
 test('settlement is idempotent and ignores callbacks from old matches', () => {
