@@ -1,0 +1,149 @@
+{
+  "scope": "Real local expedition App; remote requests blocked. No gameplay logic changes.",
+  "measure": "Maximum absolute change in board/table document x,y,width,height at a fixed viewport.",
+  "devices": [
+    {
+      "viewport": [
+        1440,
+        1000
+      ],
+      "states": 30,
+      "beforeMaxDeltaPx": {
+        "board": 96,
+        "table": 72.2
+      },
+      "afterMaxDeltaPx": {
+        "board": 0,
+        "table": 0
+      },
+      "handAndHudReachable": true,
+      "lastInventoryItemTooltipInViewport": true,
+      "browserErrors": 0
+    },
+    {
+      "viewport": [
+        1024,
+        640
+      ],
+      "states": 12,
+      "beforeMaxDeltaPx": null,
+      "afterMaxDeltaPx": {
+        "board": 0,
+        "table": 0
+      },
+      "handAndHudReachable": true,
+      "lastInventoryItemTooltipInViewport": true,
+      "browserErrors": 0
+    },
+    {
+      "viewport": [
+        1024,
+        768
+      ],
+      "states": 26,
+      "beforeMaxDeltaPx": {
+        "board": 46,
+        "table": 34.5
+      },
+      "afterMaxDeltaPx": {
+        "board": 0,
+        "table": 0
+      },
+      "handAndHudReachable": true,
+      "lastInventoryItemTooltipInViewport": true,
+      "browserErrors": 0
+    },
+    {
+      "viewport": [
+        768,
+        1024
+      ],
+      "states": 26,
+      "beforeMaxDeltaPx": {
+        "board": 79,
+        "table": 59.4
+      },
+      "afterMaxDeltaPx": {
+        "board": 0,
+        "table": 0
+      },
+      "handAndHudReachable": true,
+      "lastInventoryItemTooltipInViewport": true,
+      "browserErrors": 0
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "states": 26,
+      "beforeMaxDeltaPx": {
+        "board": 87,
+        "table": 72.3
+      },
+      "afterMaxDeltaPx": {
+        "board": 0,
+        "table": 0
+      },
+      "handAndHudReachable": true,
+      "lastInventoryItemTooltipInViewport": true,
+      "browserErrors": 0
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "states": 26,
+      "beforeMaxDeltaPx": {
+        "board": 0,
+        "table": 0
+      },
+      "afterMaxDeltaPx": {
+        "board": 0,
+        "table": 0
+      },
+      "handAndHudReachable": true,
+      "lastInventoryItemTooltipInViewport": true,
+      "browserErrors": 0
+    }
+  ],
+  "checks": [
+    "Category overview and all 5 skill categories",
+    "Desktop hover inspector; card details open/close",
+    "Coach collapse/restore and details open/close",
+    "Gold tooltip and full inventory with last-item tooltip",
+    "Locked, showdown and dead hand states",
+    "Full skill list and horizontal scroll toolbar"
+  ],
+  "rotation": {
+    "sequence": [
+      [
+        1024,
+        768
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        1024,
+        640
+      ],
+      [
+        1024,
+        768
+      ]
+    ],
+    "states": 9,
+    "fixedViewportTableDeltaPx": 0
+  },
+  "previews": [
+    "desktop-categories.webp",
+    "desktop-skills-expanded.webp"
+  ],
+  "notes": [
+    "Short landscape viewports retain a 320px battlefield and allow page scrolling; hand and HUD are reachable at the document bottom.",
+    "The hand intentionally overlaps the table."
+  ]
+}
