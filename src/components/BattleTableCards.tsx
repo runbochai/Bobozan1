@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import type { Lang, Player } from '../types';
 import { TEXT } from '../data/translations';
+import { isHoloCard } from '../data/cardFinish';
 import { getEffectiveLevel, getPlayerCard } from '../logic/cardLevels';
 import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS, CARD_FLIGHT_MS,
   CARD_LAND_MS, CARD_LANDING_MS, CARD_RELEASE_MS } from '../data/battleTiming';
@@ -10,6 +11,7 @@ import { playerAvatar } from '../logic/bots';
 import { tableCardPositions } from '../logic/tableCardLayout';
 import { tableCardClash } from '../logic/tableCardMotion';
 import PixelCardArt from './PixelCardArt';
+import CardHolo from './CardHolo';
 import { Zap } from './PixelIcons';
 
 /** Present every revealed play, then compare them together without predicting a winner. */
@@ -76,7 +78,9 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
       } as CSSProperties}>
         <div className="table-card-compare">
           <div className="table-card-surface">
-            <div className="pixel-showdown-card table-played-card" data-card-type={card.type} data-card-id={card.id}>
+            <div className="pixel-showdown-card table-played-card" data-card-type={card.type} data-card-id={card.id}
+              data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}>
+              {isHoloCard(card) && <CardHolo />}
               <span className="table-card-level">Lv.{getEffectiveLevel(card)}</span>
               <span className="table-card-cost"><Zap size={12} />{cost}</span>
               <PixelCardArt id={card.id} />
