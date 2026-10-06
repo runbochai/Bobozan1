@@ -16,6 +16,7 @@ interface Props {
   maxHp: number;
   level: number;
   viewerLevel?: number;
+  endless?: boolean;
   lang: Lang;
   turn: number;
   showdown: boolean;
@@ -34,7 +35,7 @@ function BattleEmoji({ emoji, at }: { emoji: string; at: number }) {
   return visible ? <span className="battle-emoji">{emoji}</span> : null;
 }
 
-export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, lang, turn, showdown, damage, hit, reduceMotion, intent }: Props) {
+export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, turn, showdown, damage, hit, reduceMotion, intent }: Props) {
   const seed = player.id.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
   const direction = seat.facing ?? directionToward(seat);
   const motion = reduceMotion ? 'still' : hit ? 'hit' : player.isDead ? 'still' : showdown && player.selectedCardId ? 'move' : 'idle';
@@ -54,7 +55,7 @@ export default function BattleFighter({ player, seat, bounds, self, maxHp, level
     {player.isDead && <Skull size={26} className="battle-dead-mark" />}
     {!self && <div className="table-seat-status" style={{ left: `calc(50% + ${getBattleStatusOffset(seat, self, bounds)}px)` }}>
       <div className="battle-fighter-name" title={player.name}><span>{player.name}</span>{!player.isDead && !showdown && player.selectedCardId && <CheckCircle size={13} />}</div>
-      <BattleLevelBadge level={level} viewerLevel={viewerLevel} name={player.name} lang={lang} />
+      <BattleLevelBadge level={level} viewerLevel={viewerLevel} endless={endless} name={player.name} lang={lang} />
       <BattleStats player={player} maxHp={maxHp} />
     </div>}
     {!self && intent}

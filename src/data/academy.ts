@@ -276,14 +276,23 @@ export const RULE_TOPICS: RuleTopic[] = [
   {
     id: 'expedition', title: text('远征与练习', 'Expedition and practice'),
     items: [
-      text(`远征共有 ${EXPEDITION_STAGES.length} 关，两种难度均从 Lv.0 起步。新手以 ${EXPEDITION_DIFFICULTIES.beginner.startHp} 生命开局，敌人无难度伤害加成，战斗金币保持原倍率。`, `Expedition has ${EXPEDITION_STAGES.length} stages. Both difficulties start at Lv.0. Beginner starts with ${EXPEDITION_DIFFICULTIES.beginner.startHp} HP, no difficulty damage bonus for enemies, and the usual battle gold.`),
+      text(`新手和普通远征共有 ${EXPEDITION_STAGES.length} 关，均从 Lv.0 起步。新手以 ${EXPEDITION_DIFFICULTIES.beginner.startHp} 生命开局，敌人无难度伤害加成，战斗金币保持原倍率。`, `Beginner and Normal expeditions have ${EXPEDITION_STAGES.length} stages and start at Lv.0. Beginner starts with ${EXPEDITION_DIFFICULTIES.beginner.startHp} HP, no difficulty damage bonus for enemies, and the usual battle gold.`),
       text(`普通以 ${EXPEDITION_DIFFICULTIES.normal.startHp} 生命及上限开局，敌人每次命中伤害 +${EXPEDITION_DIFFICULTIES.normal.enemyDamageBonus}，整笔胜利金币 ×${EXPEDITION_DIFFICULTIES.normal.goldMultiplier}。防住、打平或躲开不会凭空掉血；摇钱树等非战斗收入不翻倍。`, `Normal starts with ${EXPEDITION_DIFFICULTIES.normal.startHp} HP and max HP. Enemy hits deal +${EXPEDITION_DIFFICULTIES.normal.enemyDamageBonus} damage; the complete victory gold award is ×${EXPEDITION_DIFFICULTIES.normal.goldMultiplier}. Blocks, ties and dodges do not cause automatic damage. Non-battle income such as Money Tree is not doubled.`),
-      text('两种难度的最高进度分别记录，旧版本成绩保留在新手。升级可继续解锁全部常规等级，每类仍最多保留 3 个新技能；等级高不代表旧牌自动增强。', 'Best progress is saved separately for each difficulty; earlier records stay in Beginner. Upgrades still unlock all regular levels, with up to 3 acquired skills per category. Higher level does not automatically strengthen old cards.'),
-      text('远征中的金币、物品、遗物与技能属于这一轮；通关或阵亡后重新开始，会清空本轮收集。', 'Expedition gold, items, relics, and skills belong to the current run. Starting again after victory or death clears that collection.'),
+      text('各难度的最高进度分别记录，旧版本成绩保留在新手。新手和普通升级可解锁全部常规等级，每类最多保留 3 个新技能；旧牌不随角色升级增强。', 'Best progress is saved separately for each difficulty; earlier records stay in Beginner. Beginner and Normal unlock all regular levels, keeping up to 3 acquired skills per category. Older cards do not grow with character level in these modes.'),
+      text('新手和普通中的金币、物品、遗物与技能属于这一轮；通关或阵亡后重新开始，会清空本轮收集。无尽死亡后的继续挑战会保留成长。', 'Beginner and Normal gold, items, relics, and skills belong to the current run; starting again after victory or death clears them. Continuing Endless after defeat keeps growth.'),
       text('途中退出或刷新不会保存本轮进度；仅历史最佳与已完成课程会保留在本机。', 'Leaving or refreshing does not save the current run. Only your best record and completed lessons are kept on this device.'),
       text('铁布衫、替身人偶触发时保留至多 0.5 生命；保命不等于防住或减伤，保命前的命中伤害达到 1 时，攒仍会被打断。', 'Iron Shirt and Stand-in Doll preserve up to 0.5 HP when triggered. Surviving is not a block or damage reduction: if damage before this protection reaches 1, Charge remains interrupted.'),
       text('练习只保存已完成课程，不改联机战绩、远征物品或技能。每题使用标明的预设状态，可反复尝试。', 'Practice saves completed lessons only. It does not change multiplayer scores or expedition items and skills. Each exercise uses the stated preset and can be retried.'),
       text('能量和出牌历史提供线索，不会保证下一招。0 能量也能防守；看不见意图时，要接受判断可能失误。', 'Energy and move history are clues, not guarantees. At 0 energy a player can still Defend; hidden intent always leaves room for a wrong read.'),
+    ],
+  },
+  {
+    id: 'endless', title: text('无尽远征', 'Endless expedition'),
+    items: [
+      text('无尽从 1 生命开局，没有额外伤害或金币倍率。每赢一战，你升 1 级并进入下一关；关卡循环延续，没有通关终点。', 'Endless starts at 1 HP with no extra damage or gold multiplier. Each win raises your level by 1 and advances through a repeating stage sequence with no final stage.'),
+      text('倒下后恢复生命，保留等级、技能、金币、遗物与装备重试当前关。敌人至少比你高 1 级；每输一次，敌方再升 1 级。', 'After defeat, restore HP and retry the current stage with levels, skills, gold, relics and gear intact. Enemies stay at least one level above you; each loss adds another enemy level.'),
+      text('无尽中永久保留的普通攻击与终极随当前等级成长，用于同档比较；基础牌、联合技和临时吸收牌仍按原规则。等级不额外增加伤害，每类仍最多保留 3 个新技能。', 'In Endless, retained ordinary attacks and Ultimates grow with your current level for same-tier comparisons. Basic cards, combos and temporary or absorbed skills keep their rules. Levels add no damage; each category still holds up to 3 acquired skills.'),
+      text('退出或刷新仍不保存本轮，只保留最高进度和练习记录。', 'Leaving or refreshing still does not save this run; only best progress and practice records remain.'),
     ],
   },
 ];

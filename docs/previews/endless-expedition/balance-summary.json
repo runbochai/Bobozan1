@@ -1,0 +1,121 @@
+{
+  "seeds": 10,
+  "battlesPerSeed": 40,
+  "maxTurnsPerBattle": 80,
+  "method": "Production runtime and public-history AI on both sides. Enemy moves are committed first and never revealed to the hero policy. Defeats revive the settled run; victories grant rewards and use the ordinary shop.",
+  "limitations": [
+    "AI benchmark, not human win rates.",
+    "Fixed newest-skill and healing-focused shop policy.",
+    "An unfinished battle at 80 turns is reported as stalled, never a victory."
+  ],
+  "summary": {
+    "attempts": 400,
+    "wins": 202,
+    "defeats": 198,
+    "stalled": 0,
+    "maxHeroLevel": 32,
+    "maxEnemyLevel": 33
+  },
+  "perSeed": [
+    {
+      "seed": 1,
+      "wins": 14,
+      "defeats": 26,
+      "stalled": 0,
+      "turns": 499,
+      "level": 14,
+      "enemyLevel": 27,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 2,
+      "wins": 26,
+      "defeats": 14,
+      "stalled": 0,
+      "turns": 422,
+      "level": 26,
+      "enemyLevel": 27,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 3,
+      "wins": 19,
+      "defeats": 21,
+      "stalled": 0,
+      "turns": 464,
+      "level": 19,
+      "enemyLevel": 22,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 4,
+      "wins": 32,
+      "defeats": 8,
+      "stalled": 0,
+      "turns": 383,
+      "level": 32,
+      "enemyLevel": 33,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 5,
+      "wins": 31,
+      "defeats": 9,
+      "stalled": 0,
+      "turns": 308,
+      "level": 31,
+      "enemyLevel": 32,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 6,
+      "wins": 13,
+      "defeats": 27,
+      "stalled": 0,
+      "turns": 307,
+      "level": 13,
+      "enemyLevel": 28,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 7,
+      "wins": 14,
+      "defeats": 26,
+      "stalled": 0,
+      "turns": 350,
+      "level": 14,
+      "enemyLevel": 27,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 8,
+      "wins": 11,
+      "defeats": 29,
+      "stalled": 0,
+      "turns": 403,
+      "level": 11,
+      "enemyLevel": 30,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 9,
+      "wins": 22,
+      "defeats": 18,
+      "stalled": 0,
+      "turns": 434,
+      "level": 22,
+      "enemyLevel": 23,
+      "progressionPreserved": true
+    },
+    {
+      "seed": 10,
+      "wins": 20,
+      "defeats": 20,
+      "stalled": 0,
+      "turns": 526,
+      "level": 20,
+      "enemyLevel": 23,
+      "progressionPreserved": true
+    }
+  ]
+}

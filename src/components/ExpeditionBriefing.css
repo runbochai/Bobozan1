@@ -1,13 +1,15 @@
 .exp-briefing { width:min(650px,calc(100vw - 24px)); max-height:calc(100dvh - 24px); margin:auto; padding:22px; overflow:auto; color:#eee4cb; background:#142330; border:3px solid #b39768; box-shadow:7px 7px 0 #090f1c; font:16px/1.6 system-ui,sans-serif; }
 .exp-briefing::backdrop { background:#070c18dc; }
-.exp-difficulty-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:12px; min-width:0; margin:18px 0 12px; padding:0; border:0; }
+.exp-difficulty-options { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; min-width:0; margin:18px 0 12px; padding:0; border:0; }
 .exp-difficulty-option { position:relative; display:flex; flex-direction:column; gap:8px; min-width:0; padding:14px; border:2px solid #506d7a; background:#1b303c; box-shadow:3px 3px #09141c; cursor:pointer; }
 .exp-difficulty-option[data-selected="true"] { border-color:#ecd08b; background:#2a3d3f; box-shadow:3px 3px #09141c,inset 0 0 0 2px #8b7850; }
 .exp-difficulty-option[data-difficulty="normal"][data-selected="true"] { background:#3b3333; }
+.exp-difficulty-option[data-difficulty="endless"][data-selected="true"] { background:#373047; border-color:#ccb0ed; box-shadow:3px 3px #09141c,inset 0 0 0 2px #807096; }
 .exp-difficulty-option:focus-within { outline:3px solid #f4cf70; outline-offset:3px; }
 .exp-difficulty-heading { display:flex; align-items:center; justify-content:space-between; gap:8px; }
 .exp-difficulty-heading strong { font-size:22px; line-height:1.25; color:#c1e2d2; }
 .exp-difficulty-option[data-difficulty="normal"] .exp-difficulty-heading strong { color:#f4ce9e; }
+.exp-difficulty-option[data-difficulty="endless"] .exp-difficulty-heading strong { color:#d6b8f3; }
 .exp-difficulty-heading input { flex:none; width:20px; height:20px; margin:0; accent-color:#eac878; cursor:pointer; }
 .exp-difficulty-health { display:flex; align-items:center; gap:7px; margin:3px 0; color:#f29ca5; }
 .exp-difficulty-health b { font:800 29px/1 ui-monospace,monospace; }
@@ -18,11 +20,16 @@
 .exp-briefing .exp-difficulty-best { margin:0 0 8px; color:#d4c6a7; font-size:14px; }
 .exp-difficulty-badge--beginner { color:#b6e5ce; }
 .exp-difficulty-badge--normal { color:#ffd18f; }
+.exp-difficulty-badge--endless { color:#d6b8f3; }
 .exp-difficulty-dialog .exp-briefing-details { margin:10px 0 12px; padding-top:6px; }
 .exp-difficulty-dialog .exp-briefing-details summary { min-height:32px; }
 @media(max-width:480px) {
-  .exp-difficulty-options { gap:10px; margin-top:14px; }
+  .exp-difficulty-options { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
   .exp-difficulty-option { padding:11px 9px; }
+  .exp-difficulty-option[data-difficulty="endless"] { grid-column:1 / -1; display:grid; grid-template-columns:1fr 1.35fr; align-items:center; column-gap:12px; }
+  .exp-difficulty-option[data-difficulty="endless"] .exp-difficulty-heading { grid-column:1; grid-row:1; }
+  .exp-difficulty-option[data-difficulty="endless"] .exp-difficulty-health { grid-column:1; grid-row:2; }
+  .exp-difficulty-option[data-difficulty="endless"] .exp-difficulty-stat { grid-column:2; }
   .exp-difficulty-heading strong { font-size:21px; }
   .exp-difficulty-stat { font-size:13px; gap:5px; }
   .exp-difficulty-dialog h2 { font-size:21px; line-height:1.3; }

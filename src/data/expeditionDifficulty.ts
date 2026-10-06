@@ -1,7 +1,7 @@
 import type { LocalizedText } from '../types';
 import { EXPEDITION_START_HP } from './expedition';
 
-export type ExpeditionDifficulty = 'beginner' | 'normal';
+export type ExpeditionDifficulty = 'beginner' | 'normal' | 'endless';
 export interface ExpeditionDifficultyConfig {
   id: ExpeditionDifficulty;
   label: LocalizedText;
@@ -13,11 +13,12 @@ export interface ExpeditionDifficultyConfig {
 export const EXPEDITION_DIFFICULTIES: Record<ExpeditionDifficulty, ExpeditionDifficultyConfig> = {
   beginner: { id: 'beginner', label: { zh: '新手', en: 'Beginner' }, startHp: EXPEDITION_START_HP, enemyDamageBonus: 0, goldMultiplier: 1 },
   normal: { id: 'normal', label: { zh: '普通', en: 'Normal' }, startHp: 1, enemyDamageBonus: .5, goldMultiplier: 2 },
+  endless: { id: 'endless', label: { zh: '无尽', en: 'Endless' }, startHp: 1, enemyDamageBonus: 0, goldMultiplier: 1 },
 };
 
 /** Missing or unrecognized settings retain the original expedition rules. */
 export function normalizeExpeditionDifficulty(value: unknown): ExpeditionDifficulty {
-  return value === 'normal' ? 'normal' : 'beginner';
+  return value === 'normal' || value === 'endless' ? value : 'beginner';
 }
 
 export function getExpeditionDifficulty(value?: unknown): ExpeditionDifficultyConfig {

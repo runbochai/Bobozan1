@@ -1,6 +1,7 @@
 // src/data/ultCutins.ts
 // 等级必杀和联合技能的像素立绘、喊话与过场特效。
 import type { Card, Player } from '../types';
+import { getEffectiveLevel, withPlayerCardLevel } from '../logic/cardLevels';
 
 export type UltFx = 'meteor' | 'slash' | 'burst' | 'wave' | 'ice' | 'steam' | 'stars' | 'beam' | 'palm' | 'kick' | 'wings' | 'guard' | 'detonation' | 'poison';
 export type ComboCutinId = 'skydragon' | 'doublewing' | 'vajra' | 'allbomb' | 'heartpoison';
@@ -133,7 +134,7 @@ export function pickUltCutins(players: Player[], skillDb: Card[], lang: 'zh' | '
     if (!card || !hasBattleCutin(card)) continue;
     const cutin = ULT_CUTINS[card.id];
     if (!cutin) continue;
-    picks.push({ def: cutin, playerName: p.name, skillName: card.name[lang], level: card.levelRequired, tier: card.tier });
+    picks.push({ def: cutin, playerName: p.name, skillName: card.name[lang], level: getEffectiveLevel(withPlayerCardLevel(p, card)), tier: card.tier });
   }
   return picks
     .sort((a, b) => b.tier - a.tier) // sort 稳定，同 tier 保持出场顺序

@@ -1,8 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { Lang, Player } from '../types';
-import { SKILL_DB } from '../data/skills';
 import { TEXT } from '../data/translations';
-import { getEffectiveLevel, getShowdownWinner } from '../logic/combat';
+import { getEffectiveLevel, getPlayerCard, getShowdownWinner } from '../logic/combat';
 import type { BattleBounds, BattleSeat } from '../logic/battleLayout';
 import { tableCardPositions } from '../logic/tableCardLayout';
 import PixelCardArt from './PixelCardArt';
@@ -13,7 +12,7 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
   players: Player[]; lang: Lang; seatFor: (index: number) => BattleSeat; reduced: boolean; bounds: BattleBounds;
 }) {
   const played = players.flatMap((player, index) => {
-    const card = SKILL_DB.find(c => c.id === player.selectedCardId);
+    const card = getPlayerCard(player, player.selectedCardId);
     return !player.isDead && card ? [{ player, card, index }] : [];
   });
   const highlighted = getShowdownWinner(players);

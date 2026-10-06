@@ -15,6 +15,8 @@ export interface Card {
   cost: number;
   type: CardType;
   levelRequired: number; 
+  /** Endless-only effective rank; the unlock level and ordinary card rules stay unchanged. */
+  combatLevel?: number;
   tier: number; 
   description: LocalizedText;
   tags?: string[];
@@ -31,6 +33,8 @@ export interface Player {
   inventory: number[];
   /** Retained permanent skill IDs, oldest first. Missing means a legacy unlock history; overflow requires a choice. */
   skillLoadout?: string[];
+  /** Endless expedition rank, independent of the finite skill-unlock catalog. */
+  endlessLevel?: number;
   layer: number;
   tempLayerMod: number;
   selectedCardId: string | null;

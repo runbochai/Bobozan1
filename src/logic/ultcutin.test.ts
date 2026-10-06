@@ -84,3 +84,15 @@ test('mixed cut-ins keep tier priority, stable ties and exclude dead or unknown 
   assert.equal(JSON.stringify(players), snapshot);
   assert.equal(hasBattleCutin({ ...SKILL_DB.find(c => c.id === 'skydragon')!, id: 'unknown-combo' }), false);
 });
+
+test('endless cut-ins show actual retained skill levels without raising combos or borrowed skills', () => {
+  const players = [
+    p({ id: 'retained', selectedCardId: 'meteor', inventory: [0, 1], skillLoadout: ['meteor'], endlessLevel: 26 }),
+    p({ id: 'borrowed', selectedCardId: 'meteor', tempSkills: ['meteor'], endlessLevel: 26 }),
+    p({ id: 'combo', selectedCardId: 'skydragon', inventory: [0, 1, 2, 3], endlessLevel: 26 }),
+  ];
+  const picks = pickUltCutins(players, SKILL_DB, 'zh');
+  assert.equal(picks.find(pick => pick.def.skillId === 'skydragon')!.level, 3);
+  assert.deepEqual(picks.filter(pick => pick.def.skillId === 'meteor').map(pick => pick.level), [26, 1]);
+  assert.equal(SKILL_DB.find(card => card.id === 'meteor')!.levelRequired, 1);
+});

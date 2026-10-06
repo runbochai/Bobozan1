@@ -10,6 +10,7 @@
     "preview": "vite preview",
     "test": "node --import tsx --test src/logic/*.test.ts src/config/*.test.ts src/audio/*.test.ts",
     "simulate:expedition": "node --import tsx scripts/simulate-expedition.ts",
+    "simulate:endless": "node --import tsx scripts/simulate-endless.ts",
     "check:config": "node --import tsx scripts/check-firebase-config.ts",
     "build:deploy": "npm run check:config && npm run build"
   },
