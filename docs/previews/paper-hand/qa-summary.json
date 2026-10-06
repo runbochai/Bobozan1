@@ -1,0 +1,103 @@
+{
+  "scope": "Chrome desktop and touch viewport emulation of the real local App. Layout/preview exposes controlled legal temporary skills; confirmation tests use natural beginner expedition. No remote multiplayer rooms; not physical Safari/iPad hardware.",
+  "hand": {
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        1024,
+        768
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ]
+    ],
+    "expected": 5,
+    "failures": [],
+    "errors": [],
+    "testHarnessNote": "The first touch-end check ran while momentum scrolling remained active. Follow-up waited 500ms after touchend and compared current max/left; all three affected sizes reach the final card."
+  },
+  "flames": {
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        1024,
+        768
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ]
+    ],
+    "expected": 5,
+    "failures": [],
+    "errors": []
+  },
+  "selection": {
+    "scope": "Natural beginner expedition, real AI and combat; no injected player state or clock overrides.",
+    "viewports": [
+      [
+        1024,
+        768
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ]
+    ],
+    "failures": [],
+    "errors": []
+  },
+  "checks": [
+    "Warm yellow pixel paper, ink names/costs and folded page edges remain readable in both category and skill views.",
+    "Four category colours and finishes remain present; affordable ultimate flames rise in screen-up direction, following both resting rotation and hover/focus transforms.",
+    "Each of 6 and 10 attack cards is checked for hover/focus clipping and real details-button activation at all five sizes; 80 details interactions total.",
+    "Touch contexts use taps and actual swipe input. Coarse-pointer skills retain fan angles with wider spacing so details buttons stay exposed.",
+    "Board/table rectangles remain unchanged across categories, temporary skill count changes, hover/focus and locked-card states.",
+    "Natural expedition verifies staged selection, persistent lifting after pointer departure, same-card cancellation, Cancel/Escape, unaffordable blocking, details preserving selection and two actual confirmed rounds. No action frames or committed moves appear before confirmation.",
+    "Energy/disabled/free/locked/dead flame gating, no horizontal page overflow and both app/OS reduced-motion are verified."
+  ],
+  "fixedDuringQA": "Transparent outer slot hitboxes intercepted an adjacent info button on tablet. Outer slots now ignore pointer input; real card faces receive it. Coarse pointers receive 8px skill gaps while desktop keeps an overlapping fan.",
+  "interactions": 80,
+  "previews": {
+    "statics": [
+      "desktop-selected-pointer-away.webp",
+      "phone-selected-skill.webp"
+    ],
+    "animation": {
+      "file": "paper-fan-and-hover.webp",
+      "width": 880,
+      "height": 462,
+      "frames": 88,
+      "durationMs": 8817,
+      "bytes": 599408,
+      "method": "Normal CSS/canvas playback with actual mouse hover, selection, cancellation and confirmed combat; approximately 100ms samples. No fake clock or image redrawing."
+    }
+  }
+}

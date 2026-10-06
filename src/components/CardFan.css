@@ -1,0 +1,50 @@
+/* Only paper faces move; empty overlap space never blocks a neighbouring card. */
+.pixel-app .pixel-hand-area.battle-hand .pixel-hand-tray.hand-fan {
+  --fan-card-height: var(--hand-card-height, 200px);
+  height: calc(var(--fan-card-height) + 82px);
+  padding: 54px 32px 22px;
+  gap: 0;
+  scroll-padding-inline: 32px;
+  overscroll-behavior-x: contain;
+}
+.pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot) {
+  z-index: var(--fan-order, 1);
+  overflow: visible;
+  pointer-events: none;
+}
+.pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot) + :is(.hand-category-slot, .hand-skill-slot) { margin-left: -18px; }
+.pixel-app .battle-hand .hand-card-lift {
+  position: relative;
+  pointer-events: auto;
+  width: 100%;
+  transform-origin: 50% 95%;
+  transform: translateY(var(--fan-offset, 0px)) rotate(var(--fan-angle, 0deg));
+  transition: transform 180ms steps(6, end);
+}
+.pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot):focus-within { z-index: 30; }
+.pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot):has(:focus-visible) .hand-card-lift { transform: translateY(-20px) rotate(0deg); }
+@media (hover: hover) and (pointer: fine) {
+  .pixel-app .battle-hand .hand-fan:hover .hand-card-lift { transform: translate(var(--fan-spread, 0px), var(--fan-offset, 0px)) rotate(var(--fan-angle, 0deg)); }
+  .pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot):hover { z-index: 30; }
+  .pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot):hover .hand-card-lift,
+  .pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot):has(:focus-visible) .hand-card-lift { transform: translateY(-20px) rotate(0deg); }
+  /* Keep hover while the lifted face moves away from the pointer; no touch hitbox. */
+  .pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot):hover .hand-card-lift::after { content: ''; position: absolute; inset: -8px -18px -26px; z-index: -1; pointer-events: auto; }
+}
+@media (hover: none), (pointer: coarse) {
+  .pixel-app .pixel-hand-area.battle-hand .pixel-hand-tray.hand-skill-fan { column-gap: 8px; }
+  .pixel-app .battle-hand .hand-fan.hand-skill-fan > .hand-skill-slot + .hand-skill-slot { margin-left: 0; }
+}
+@media (min-width: 1600px) {
+  .pixel-app .pixel-hand-area.battle-hand .pixel-hand-tray.hand-fan { --fan-card-height: var(--hand-card-height, 220px); }
+}
+@media (max-width: 767px) {
+  .pixel-app .pixel-hand-area.battle-hand .pixel-hand-tray.hand-fan { --fan-card-height: var(--hand-card-height, 183px); padding-inline: 24px; scroll-padding-inline: 24px; }
+  .pixel-app .battle-hand .hand-category-fan > .hand-category-slot + .hand-category-slot { margin-left: -12px; }
+  .pixel-app .battle-hand .hand-skill-fan > .hand-skill-slot + .hand-skill-slot { margin-left: -10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-app .battle-hand .hand-card-lift { transition: none; }
+}
+.reduce-motion .pixel-app .battle-hand .hand-card-lift,
+.reduce-motion.pixel-app .battle-hand .hand-card-lift { transition: none; }

@@ -1,6 +1,6 @@
 .ultimate-aura { position: absolute; display: none; z-index: 8; overflow: hidden; pointer-events: none; user-select: none; }
 .ultimate-aura[data-visible="true"] { display: block; }
 .ultimate-aura * { pointer-events: none; }
-.ultimate-aura-anchor { position: absolute; left: var(--aura-x); top: var(--aura-y); width: var(--aura-w); height: var(--aura-h); }
+.ultimate-aura-anchor { position: absolute; left: var(--aura-x); top: var(--aura-y); width: var(--aura-w); height: var(--aura-h); transform: var(--aura-transform, none); transform-origin: 0 0; }
 .ultimate-aura-anchor::before { content: ''; position: absolute; inset: -2px; border: 1px solid #ddbeff55; box-shadow: 0 0 0 2px #b58de314, 0 0 12px 3px #ac7fdf17, inset 0 0 8px #d3acfa17; }
 .ultimate-aura-fire { position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; }
