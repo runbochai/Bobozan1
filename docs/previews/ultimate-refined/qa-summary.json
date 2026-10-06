@@ -1,0 +1,52 @@
+{
+  "scope": "Chrome viewport emulation of the real local App using controlled public test players; no room writes. Not physical iPad/Safari hardware.",
+  "viewports": [
+    [
+      768,
+      1024
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ],
+    [
+      1440,
+      1000
+    ],
+    [
+      1024,
+      768
+    ]
+  ],
+  "expected": 5,
+  "failures": [],
+  "errors": [],
+  "checks": [
+    "Ultimate folder and category tab retain amethyst facets, diagonal reflection and edge glints at zero energy; ordinary folders do not receive them.",
+    "Affordable enabled ultimate moves display transparent canvas flames; insufficient energy, disabled moves, locked cards and dead players suppress them; a free ultimate qualifies.",
+    "Canvas alpha contains visible pixels and frame hashes change during normal playback. Hidden and app/OS reduced-motion canvases remain unchanged; reduced-motion CSS reflections stop but static material remains.",
+    "Clicking neighboring folders and card details works through the transparent decorations. Actual horizontal skill tray scrolling and category tabs remain aligned without horizontal page overflow.",
+    "Energy toggles do not change board/table/hand geometry; aura anchor tracks folder/tab position, including toolbar height changes."
+  ],
+  "fixedDuringQA": "Opening a category inserts a 33px toolbar without resizing the fixed hand or button; observation now includes hand child elements so the flame follows the tab.",
+  "shortLandscape": "844x390 permits vertical scrolling by design. Layout was compared in document coordinates and offscreen decorations stay hidden.",
+  "previews": {
+    "statics": [
+      "ipad-reflection-and-ready.webp",
+      "phone-reflection-and-ready.webp"
+    ],
+    "animation": {
+      "file": "reflection-to-purple-flames.webp",
+      "width": 848,
+      "height": 281,
+      "frames": 57,
+      "durationMs": 6012,
+      "bytes": 265704,
+      "method": "Normal canvas/CSS rendering sampled approximately every 100ms; energy changes from 0 to 4 after 20 frames. No fake clocks."
+    }
+  }
+}

@@ -21,6 +21,14 @@ const categoryCaption = {
   en: { CHARGE: 'Gain energy', ATTACK: 'Strike', DEFEND: 'Guard · Adapt', ULTIMATE: 'Unleash' },
 };
 
+function UltimateFolderFinish() {
+  return <span className="hand-ultimate-finish" aria-hidden="true">
+    <span className="hand-ultimate-facets" />
+    <span className="hand-ultimate-sheen" />
+    <span className="hand-ultimate-glints"><i /><i /><i /></span>
+  </span>;
+}
+
 function HandArt({ id }: { id: string }) {
   return <span className="hand-art" aria-hidden="true"><span className="hand-art-sigil" />
     <PixelCardArt key={id} id={id} />
@@ -131,9 +139,11 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
       {viewMode === 'CARDS' && <nav className="hand-category-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
         <button type="button" className="pixel-hand-back" onClick={e => { keyboardCategory.current = e.detail === 0; setInspectedId(null); onBack(); }} aria-label={lang === 'zh' ? '返回全部分类' : 'Back to all categories'}><ArrowLeft size={18} /></button>
         {categories.map(cat => <button ref={cat === 'ULTIMATE' ? ultimateRef : undefined} type="button" key={cat} className="hand-category-tab" data-card-type={cat} aria-current={category === cat ? 'true' : undefined}
+          data-ultimate-finish={cat === 'ULTIMATE' ? 'amethyst' : undefined}
           data-ultimate-ready={cat === 'ULTIMATE' && ultimateReady || undefined}
           aria-label={cat === 'ULTIMATE' && ultimateReady ? `${t.categories[cat]} · ${lang === 'zh' ? '可以释放' : 'Ready to play'}` : undefined}
           onClick={() => { setInspectedId(null); onCategory(cat); }}>
+          {cat === 'ULTIMATE' && <UltimateFolderFinish />}
           <span>{t.categories[cat]}</span>
         </button>)}
       </nav>}
@@ -147,9 +157,11 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
           const count = knownCards.filter(c => getHandCategory(c) === cat).length;
           return <div className="hand-category-slot" key={cat}>
             <button ref={cat === 'ULTIMATE' ? ultimateRef : undefined} type="button" role="button" className={`hand-card hand-category-card ${highlighted ? 'tutorial-highlight' : ''}`} data-card-type={cat}
+              data-ultimate-finish={cat === 'ULTIMATE' ? 'amethyst' : undefined}
               data-tutorial-target={highlighted} data-ultimate-ready={cat === 'ULTIMATE' && ultimateReady || undefined}
               aria-label={`${t.categories[cat]}${cat === 'ULTIMATE' && ultimateReady ? ` · ${lang === 'zh' ? '可以释放' : 'Ready to play'}` : ''}`} aria-disabled={disabled} aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined}
               onClick={e => { if (cat === 'CHARGE') play(charge); else { keyboardCategory.current = e.detail === 0; onCategory(cat); } }}>
+              {cat === 'ULTIMATE' && <UltimateFolderFinish />}
               <span className="hand-card-eyebrow">{cat === 'CHARGE' ? <Zap size={15} /> : <Layers size={15} />}<span>{cat === 'CHARGE' ? (lang === 'zh' ? '积蓄' : 'ENERGY') : `${count} ${lang === 'zh' ? '招' : 'SKILLS'}`}</span></span>
               <span className="hand-category-icon" aria-hidden="true"><Icon size={56} /></span>
               <strong className="hand-card-name">{t.categories[cat]}</strong>

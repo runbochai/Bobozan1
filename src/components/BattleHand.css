@@ -142,3 +142,62 @@
 }
 .reduce-motion.pixel-app .battle-hand .hand-card .hand-acquired-sparkles > i,
 .reduce-motion .pixel-app .battle-hand .hand-card .hand-acquired-sparkles > i { animation: none !important; opacity: .7; }
+
+/* A polished amethyst cover is present even before an ultimate can be played. */
+.pixel-app .battle-hand button.hand-category-card[data-ultimate-finish="amethyst"],
+.pixel-app .battle-hand button.hand-category-tab[data-ultimate-finish="amethyst"] {
+  isolation: isolate;
+  overflow: hidden;
+  --card-color: #d9bff0;
+  background: linear-gradient(145deg, #775886 0%, #463450 22%, #2c293e 48%, #463155 76%, #775387 100%) !important;
+  border-color: #be9cd7 !important;
+  box-shadow: 4px 5px #080f1c, inset 1px 1px #f4ddff60, inset -1px -1px #1b192e !important;
+}
+.pixel-app .battle-hand [data-ultimate-finish="amethyst"] > :not(.hand-ultimate-finish) { position: relative; z-index: 1; }
+.pixel-app .battle-hand [data-ultimate-finish="amethyst"] > .hand-ultimate-finish {
+  position: absolute;
+  display: block;
+  inset: 3px;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  border: 1px solid #dfc6f13d;
+  background: linear-gradient(155deg, #ead6ff12 0 23%, transparent 23% 72%, #bfcaff12 72% 100%);
+}
+.hand-ultimate-finish * { pointer-events: none; }
+.hand-ultimate-facets { position: absolute; display: block; inset: 0; background: linear-gradient(138deg, transparent 0 18%, #f3dcff1c 18% 18.7%, transparent 18.7% 68%, #c7bcf714 68% 69%, transparent 69%), linear-gradient(32deg, #a797d722 0 9%, transparent 9% 86%, #f4d9fa1e 86% 100%); }
+.pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-finish .hand-ultimate-sheen {
+  position: absolute;
+  display: block;
+  inset: 0;
+  background: linear-gradient(113deg, transparent 36%, #c3caff10 42%, #f5e9ff50 46%, #fff7ff7d 47%, #dab8fa29 50%, transparent 56%);
+  background-size: 280% 100%;
+  background-position: 145% 0;
+  animation: hand-amethyst-sheen 7.2s steps(42, end) infinite !important;
+}
+.hand-ultimate-glints { position: absolute; display: block; inset: 2px; }
+.pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-glints > i { position: absolute; width: 2px; height: 2px; background: #f9eaff; box-shadow: -2px 0 #c9b5ed66, 2px 0 #c9b5ed66, 0 -2px #c9b5ed66, 0 2px #c9b5ed66; animation: hand-amethyst-glint 4.8s steps(5, end) infinite !important; }
+.hand-ultimate-glints > i:nth-child(1) { left: 2px; top: 12%; }
+.hand-ultimate-glints > i:nth-child(2) { right: 2px; top: 58%; animation-delay: -1.7s !important; }
+.hand-ultimate-glints > i:nth-child(3) { left: 34%; bottom: 2px; animation-delay: -3.1s !important; }
+.pixel-app .battle-hand button.hand-category-tab[data-ultimate-finish="amethyst"] { color: #e7d6f3; box-shadow: inset 1px 1px #f1d8ff35, inset -1px -1px #1b192e !important; }
+.pixel-app .battle-hand .hand-category-tab[data-ultimate-finish="amethyst"][aria-current="true"] { border-color: #ebd5ff !important; box-shadow: inset 0 -2px #c39bdc, inset 1px 1px #f1d8ff35 !important; color: #fff0ff; }
+.pixel-app .battle-hand .hand-category-tab > .hand-ultimate-finish { inset: 1px; border: 0; }
+.hand-category-tab .hand-ultimate-glints > i:nth-child(2), .hand-category-tab .hand-ultimate-glints > i:nth-child(3) { display: none; }
+@keyframes hand-amethyst-sheen { 0%, 7% { background-position: 145% 0; opacity: .45; } 42%, 55% { background-position: -45% 0; opacity: .8; } 100% { background-position: -45% 0; opacity: .45; } }
+@keyframes hand-amethyst-glint { 0%, 100% { opacity: .24; } 35%, 50% { opacity: .78; } 75% { opacity: .36; } }
+@media (max-width: 767px) {
+  .pixel-app .battle-hand .hand-category-card > .hand-ultimate-finish { inset: 2px; }
+  .hand-category-card .hand-ultimate-glints > i:nth-child(3) { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-finish .hand-ultimate-sheen,
+  .pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-glints > i { animation: none !important; opacity: .5; }
+  .pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-finish .hand-ultimate-sheen { background-position: 58% 0; }
+}
+.reduce-motion .pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-finish .hand-ultimate-sheen,
+.reduce-motion .pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-glints > i,
+.reduce-motion.pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-finish .hand-ultimate-sheen,
+.reduce-motion.pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-glints > i { animation: none !important; opacity: .5; }
+.reduce-motion .pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-finish .hand-ultimate-sheen,
+.reduce-motion.pixel-app .battle-hand [data-ultimate-finish="amethyst"] .hand-ultimate-finish .hand-ultimate-sheen { background-position: 58% 0; }
