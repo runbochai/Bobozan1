@@ -3,7 +3,7 @@ import { SKILL_DB } from '../data/skills';
 import { EXPEDITION_SKILL_LEVELS, EXPEDITION_VIGOR_HP, EXPEDITION_WARMUP_ENERGY, EXPEDITION_MONEYTREE_CAP,
   EXPEDITION_SKILLCHARM_USES, EXPEDITION_REST_HEAL, EXPEDITION_CHALLENGE_HP, EXPEDITION_CHALLENGE_GOLD,
   drawGachaCard, expeditionSecretPool, type ExpeditionEnemyDef } from '../data/expedition';
-import { calculateTurnOutcome } from './combat';
+import { calculateTurnOutcome, getPlayerLevel } from './combat';
 import { consumeExpeditionCard, EXPEDITION_MAX_HP, expeditionLevel, nextExpeditionLevel, genRewardOptions, goldForWin, POTION_HEAL, type RewardOption, type ShopItem } from './expedition';
 import { grantSkillLevel, normalizeSkillLoadout, type SkillLoadoutState } from './skillLoadout';
 import { getExpeditionDifficulty, normalizeExpeditionDifficulty, type ExpeditionDifficulty } from '../data/expeditionDifficulty';
@@ -249,12 +249,16 @@ export function settleExpeditionRound(previous: ExpeditionRun, previousMemory: E
     note(`过关 · 金币 +${gold}`, `Cleared · +${gold} gold`);
     if (run.difficulty === 'endless') {
       run.endlessClearedStageIdx = run.stageIdx;
-      run.endlessLevel = (run.endlessLevel ?? levelOf(run)) + 1;
+      // Read this encounter's actual participants, including opponents defeated
+      // on earlier turns. The run's enemy level may already target a future fight.
+      const defeatedLevels = revealed.filter(player => player.id !== heroId).map(getPlayerLevel);
+      run.endlessLevel = Math.max(run.endlessLevel ?? levelOf(run), ...defeatedLevels.map(level => level + 1));
       run.endlessEnemyLevel = Math.max(run.endlessEnemyLevel ?? 1, run.endlessLevel + 1);
       if (EXPEDITION_SKILL_LEVELS.includes(run.endlessLevel)) Object.assign(run, grantSkillLevel(run, run.endlessLevel));
       changeHero(player => ({ ...player, endlessLevel: run.endlessLevel, inventory: [...run.inventory],
         skillLoadout: [...(run.skillLoadout ?? [])] }));
-      note(`无尽等级提升至 Lv.${run.endlessLevel}。`, `Endless level increased to Lv.${run.endlessLevel}.`);
+      note(`战胜最高 Lv.${Math.max(0, ...defeatedLevels)} 的对手，升至 Lv.${run.endlessLevel}。`,
+        `Defeated opponents up to Lv.${Math.max(0, ...defeatedLevels)}; advanced to Lv.${run.endlessLevel}.`);
     }
   }
   run.hp = Math.max(0, Math.min(run.maxHp, players.find(player => player.id === heroId)!.hp));

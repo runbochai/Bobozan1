@@ -1,0 +1,34 @@
+{
+  "scope": "Natural local start/menu navigation. Network writes blocked; no multiplayer backend assertion.",
+  "viewports": [
+    [
+      1440,
+      900
+    ],
+    [
+      1024,
+      768
+    ],
+    [
+      768,
+      1024
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ]
+  ],
+  "viewsChecked": 10,
+  "startingButtonsVisibleAndClickable": true,
+  "coverFixedDuringAvatarSelectionAndHomeScroll": true,
+  "menuPanelsTransparent": true,
+  "homeRoomInputReachable": true,
+  "shortLandscapeHomeUsesNaturalScroll": true,
+  "horizontalOverflow": false,
+  "pageErrors": 0,
+  "englishMobileKeyboardEntry": true
+}

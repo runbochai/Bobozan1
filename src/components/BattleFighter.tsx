@@ -18,7 +18,7 @@ interface Props {
   viewerLevel?: number;
   endless?: boolean;
   lang: Lang;
-  turn: number;
+  roundKey: string;
   showdown: boolean;
   damage?: number;
   hit: boolean;
@@ -35,19 +35,21 @@ function BattleEmoji({ emoji, at }: { emoji: string; at: number }) {
   return visible ? <span className="battle-emoji">{emoji}</span> : null;
 }
 
-export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, turn, showdown, damage, hit, reduceMotion, intent }: Props) {
+export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, roundKey, showdown, damage, hit, reduceMotion, intent }: Props) {
   const seed = player.id.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
   const direction = seat.facing ?? directionToward(seat);
-  const motion = reduceMotion ? 'still' : hit ? 'hit' : player.isDead ? 'still' : showdown && player.selectedCardId ? 'move' : 'idle';
+  const dealing = showdown && !player.isDead && !!player.selectedCardId;
+  const motion = reduceMotion ? 'still' : hit ? 'hit' : player.isDead || dealing ? 'still' : 'idle';
   const figure = getBattleFigure(seat, self, bounds);
   const foreground = figure.foreground;
   return <div className={`battle-fighter ${self ? 'battle-fighter-self' : 'battle-fighter-enemy'} ${!self && seat.y > 65 ? 'battle-fighter-near' : ''} ${player.isDead ? 'battle-fighter-dead' : ''}`}
     data-player-id={player.id} data-facing={direction} data-edge={seat.edge} data-depth={foreground ? 'front' : 'back'} data-hit={hit}
     data-seat-x={seat.x} data-seat-y={seat.y}
     style={{ '--model-size':`${seat.size}px`, '--seat-anchor': self ? .5 : .55, left: `${figure.x}%`, top: `${figure.y}%` } as CSSProperties}>
-    <div className={`battle-character-motion battle-character-${motion}`} key={`${turn}-${motion}`}
-      style={{ '--idle-delay': `${-(seed % 20) / 10}s`, '--step-x': `${(50 - seat.x) / 5}px`, '--step-y': `${(48 - seat.y) / 5}px` } as CSSProperties}>
-      <BattleSprite avatar={playerAvatar(player)} name={player.name} direction={direction} />
+    <div className={`battle-character-motion battle-character-${motion}`}
+      style={{ '--idle-delay': `${-(seed % 20) / 10}s` } as CSSProperties}>
+      <BattleSprite avatar={playerAvatar(player)} name={player.name} direction={direction}
+        actionKey={dealing ? `${roundKey}:${player.id}` : undefined} reduced={reduceMotion} handPerspective={self} />
     </div>
     {!reduceMotion && !!damage && <div className="battle-hit-burst" aria-hidden="true" />}
     {!!damage && <span className={`battle-damage ${reduceMotion ? 'battle-damage-still' : ''}`}>−{damage}</span>}

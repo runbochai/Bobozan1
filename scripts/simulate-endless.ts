@@ -67,6 +67,9 @@ for (let seed = 1; seed <= seeds; seed++) {
       assert.ok(getPlayerCards(hero, players).some(card => card.id === move && !hero.disabledSkills?.includes(card.id)
         && (hero.freeSkills?.includes(card.id) || card.cost <= hero.energy)), 'Hero move must be legal');
       const revealed = players.map(player => ({ ...player, selectedCardId: player.isDead ? null : player.id === EXPEDITION_HERO_ID ? move : committed.get(player.id)! }));
+      const previousLevel = run.endlessLevel!;
+      const earnedLevel = Math.max(...revealed.filter(player => player.id !== EXPEDITION_HERO_ID).map(getPlayerLevel)) + 1;
+      const previousInventory = [...run.inventory];
       history = recordExpeditionHistory(history, revealed);
       const settled = settleExpeditionRound(run, memory, revealed, turn, 'en', randomFor(seed, attempt, turn, 'settle'));
       ({ run, players, memory } = settled);
@@ -84,6 +87,9 @@ for (let seed = 1; seed <= seeds; seed++) {
         assert.equal(run.hp, run.maxHp);
       } else {
         result.wins++;
+        assert.equal(run.endlessLevel, earnedLevel, 'Victory earns the highest defeated enemy level plus one');
+        assert.ok(previousInventory.every(level => run.inventory.includes(level)), 'Old unlock history survives a jump');
+        assert.ok(run.inventory.filter(level => !previousInventory.includes(level)).every(level => level === earnedLevel), 'Do not grant skipped tiers');
         run = autoSelectSkillLoadout(run);
         const rewards = genExpeditionRewards(run, randomFor(seed, attempt, 'reward'));
         assert.ok(rewards.length >= 3 && rewards.every(reward => reward.kind !== 'levelup'));
@@ -92,7 +98,7 @@ for (let seed = 1; seed <= seeds; seed++) {
         for (const item of [...shop].sort((a, b) => shopScore(run, b) - shopScore(run, a))) if (shopScore(run, item) > 0) run = buyExpeditionItem(run, item, randomFor(seed, attempt, 'buy'));
         run = takeExpeditionRoute(run, 'rest');
       }
-      assert.equal(run.endlessLevel, result.wins, 'Each victory raises the hero exactly once');
+      assert.equal(run.endlessLevel, settled.won ? earnedLevel : previousLevel, 'Growth is tied to the actual defeated enemy, not the win count');
       assert.equal(run.endlessDefeats, result.defeats, 'Each defeat raises enemies exactly once');
       break;
     }

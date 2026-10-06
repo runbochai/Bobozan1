@@ -1,12 +1,14 @@
 import BattleArena from './components/BattleArena';
 import { useBattleBounds } from './components/useBattleBounds';
+import { useSystemReducedMotion } from './components/useSystemReducedMotion';
 import './components/CenteredTable.css';
 import BattleHand from './components/BattleHand';
 import SkillLoadoutPicker from './components/SkillLoadoutPicker';
 import { SKILL_SLOT_LIMIT, getHandCategory, getSkillOverflow, hasSkillOverflow, normalizeSkillLoadout,
   autoSelectSkillLoadout, isAcquiredSkill, resolveSkillLoadout, sortHandCards, type SkillSelections } from './logic/skillLoadout';
 import BattleTableCards from './components/BattleTableCards';
-import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
+import { CARD_LAND_MS, CARD_COMPARE_IMPACT_MS, CARD_REVEAL_MS, ULT_CUTIN_MS,
+  captureBattleRound, remainingBattleTime, showdownDurationMs, type BattleRoundClock } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
 import BattleLevelBadge from './components/BattleLevelBadge';
 import BattleStats from './components/BattleStats';
@@ -265,11 +267,15 @@ export default function BobozanOnline() {
   const [playerName, setPlayerName] = useState('');
   const [lang, setLang] = useState<Lang>('zh'); 
   const [muted, setMuted] = useState(false);
-  const [reduceMotion, setReduceMotion] = useState(() => {
+  const [reduceMotionPreference, setReduceMotion] = useState(() => {
     try { return localStorage.getItem('bobozan-reduce-motion') === '1'; } catch { return false; }
   });
+  const systemReducedMotion = useSystemReducedMotion();
+  const reduceMotion = reduceMotionPreference || systemReducedMotion;
   useEffect(() => {
-    try { localStorage.setItem('bobozan-reduce-motion', reduceMotion ? '1' : '0'); } catch { /* ignore */ }
+    try { localStorage.setItem('bobozan-reduce-motion', reduceMotionPreference ? '1' : '0'); } catch { /* ignore */ }
+  }, [reduceMotionPreference]);
+  useEffect(() => {
     document.documentElement.classList.toggle('reduce-motion', reduceMotion);
   }, [reduceMotion]);
   const [submittingMove, setSubmittingMove] = useState(false);
@@ -458,7 +464,7 @@ export default function BobozanOnline() {
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
       return !!c && hasBattleCutin(c);
     });
-    const showdownMs = CARD_REVEAL_MS + (ultPlayed && !reduceMotion ? 4300 : 1600);
+    const showdownMs = showdownDurationMs(ultPlayed, 'expedition', reduceMotion);
 
     const timer = setTimeout(() => {
       const result = settleExpeditionRound(expRunRef.current, expBattleRef.current, playersWithMoves, gameState.turn, lang);
@@ -481,7 +487,8 @@ export default function BobozanOnline() {
       if (lost) {
         saveExpeditionBest(run.stageIdx, run.difficulty);
         setExpBest(loadExpeditionBest(run.difficulty));
-        setExpPhase('runover');
+        // Let the settled hit read before the defeat panel covers the table.
+        expeditionTimersRef.current.push(setTimeout(() => setExpPhase('runover'), reduceMotion ? 0 : 700));
       } else if (won) {
         saveExpeditionBest(run.stageIdx + 1, run.difficulty);
         setExpBest(loadExpeditionBest(run.difficulty));
@@ -602,7 +609,10 @@ export default function BobozanOnline() {
   
 
   // 必杀及联合技过场。
-  const [ultCutins, setUltCutins] = useState<(UltCutinPick & { key: number })[]>([]);
+  const [ultCutins, setUltCutins] = useState<(UltCutinPick & { key: string })[]>([]);
+  const battleRoundRef = useRef<BattleRoundClock<{
+    players: Player[]; lang: Lang; cutinsPlayed: boolean; soundsPlayed: number[]; motionStopped: boolean;
+  }> | null>(null);
 
   
 
@@ -762,19 +772,53 @@ export default function BobozanOnline() {
     }
   }, [toastMsg]);
 
-  // 亮牌之后播放必杀或联合技过场；多人可以同时演出。
+  const battleRoundKey = `${isExpedition ? `expedition-${expStageIdx}` : roomCode}:${gameState.matchCount}:${gameState.turn}`;
+  // Room chatter and language changes must not restart a committed turn.
   useEffect(() => {
-    if (gameState.status === 'SHOWDOWN' && !reduceMotion) {
-      const picks = pickUltCutins(gameState.players, SKILL_DB, lang);
-      if (picks.length > 0) {
+    battleRoundRef.current = gameState.status === 'SHOWDOWN'
+      ? captureBattleRound(battleRoundRef.current, battleRoundKey,
+        { players: gameState.players, lang, cutinsPlayed: false, soundsPlayed: [], motionStopped: reduceMotion }, Date.now())
+      : null;
+    if (reduceMotion && battleRoundRef.current) battleRoundRef.current.snapshot.motionStopped = true;
+  }, [battleRoundKey, gameState.status, gameState.players, lang, reduceMotion]);
+
+  // Raise, release, land, compare, then play ultimate/combo cut-ins.
+  useEffect(() => {
+    const presentation = battleRoundRef.current;
+    if (gameState.status === 'SHOWDOWN' && presentation?.key === battleRoundKey && !reduceMotion
+      && !presentation.snapshot.motionStopped && !presentation.snapshot.cutinsPlayed) {
+      const picks = pickUltCutins(presentation.snapshot.players, SKILL_DB, presentation.snapshot.lang);
+      const finishIn = remainingBattleTime(presentation.startedAt, CARD_REVEAL_MS + ULT_CUTIN_MS, Date.now());
+      if (picks.length > 0 && finishIn > 0) {
         setUltCutins([]);
-        const reveal = setTimeout(() => setUltCutins(picks.map(pick => ({ ...pick, key: gameState.turn }))), CARD_REVEAL_MS);
-        const finish = setTimeout(() => setUltCutins([]), CARD_REVEAL_MS + ULT_CUTIN_MS);
+        const reveal = setTimeout(() => {
+          presentation.snapshot.cutinsPlayed = true;
+          setUltCutins(picks.map(pick => ({ ...pick, key: presentation.key })));
+        }, remainingBattleTime(presentation.startedAt, CARD_REVEAL_MS, Date.now()));
+        const finish = setTimeout(() => setUltCutins([]), finishIn);
         return () => { clearTimeout(reveal); clearTimeout(finish); };
       }
     }
     setUltCutins([]);
-  }, [gameState.status, gameState.turn, gameState.players, lang, reduceMotion]);
+  }, [gameState.status, battleRoundKey, reduceMotion]);
+
+  useEffect(() => {
+    const presentation = battleRoundRef.current;
+    if (muted || gameState.status !== 'SHOWDOWN' || presentation?.key !== battleRoundKey) return;
+    const played = presentation.snapshot.players.filter(player => !player.isDead && player.selectedCardId);
+    if (!played.length) return;
+    const beats = [{ at: CARD_LAND_MS, sound: 'card_slam' as const },
+      ...(played.length > 1 ? [{ at: CARD_COMPARE_IMPACT_MS, sound: 'card_clash' as const }] : [])];
+    const timers = beats.flatMap(({ at, sound }) => {
+      const wait = remainingBattleTime(presentation.startedAt, at, Date.now());
+      if (!wait || presentation.snapshot.soundsPlayed.includes(at)) return [];
+      return [setTimeout(() => {
+        presentation.snapshot.soundsPlayed.push(at);
+        playSound(sound, false);
+      }, wait)];
+    });
+    return () => timers.forEach(clearTimeout);
+  }, [muted, gameState.status, battleRoundKey]);
 
   useEffect(() => {
     const settled = prevShowdownRef.current && gameState.status !== 'SHOWDOWN';
@@ -937,25 +981,28 @@ export default function BobozanOnline() {
     });
   }, [isOnline, roomCode, user, resetRoom, t.roomNotFound, lang]);
 
+  const battleHostUid = user?.uid;
   useEffect(() => {
-    if (!isOnline || gameState.status !== 'SHOWDOWN' || gameState.hostId !== user?.uid) return;
+    if (!isOnline || !battleHostUid || gameState.status !== 'SHOWDOWN' || gameState.hostId !== battleHostUid) return;
+    const presentation = battleRoundRef.current;
+    if (!presentation || presentation.key !== battleRoundKey) return;
     const round = { turn: gameState.turn, matchCount: gameState.matchCount };
     // 组合技也必须等待完整过场再结算。
-    const ultPlayed = gameState.players.some(p => {
+    const ultPlayed = presentation.snapshot.players.some(p => {
       if (p.isDead || !p.selectedCardId) return false;
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
       return !!c && hasBattleCutin(c);
     });
     // Every client gets time to finish; the host's motion preference cannot shorten other clients' casts.
-    const settleMs = CARD_REVEAL_MS + (ultPlayed ? 4700 : 2000);
+    const settleMs = showdownDurationMs(ultPlayed, 'room');
     const timer = setTimeout(() => {
-      void mutateRoom(roomCode, room => settleRoom(room, user.uid, round, lang)).catch(error => {
+      void mutateRoom(roomCode, room => settleRoom(room, battleHostUid, round, presentation.snapshot.lang)).catch(error => {
         console.error('Unable to settle round', error);
-        setToastMsg(firebaseErrorMessage(error, lang));
+        setToastMsg(firebaseErrorMessage(error, presentation.snapshot.lang));
       });
-    }, settleMs);
+    }, remainingBattleTime(presentation.startedAt, settleMs, Date.now()));
     return () => clearTimeout(timer);
-  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, gameState.players, user, roomCode, lang, isOnline]);
+  }, [gameState.status, gameState.hostId, gameState.turn, gameState.matchCount, battleRoundKey, battleHostUid, roomCode, isOnline]);
 
   useEffect(() => {
   if (muted || gameState.logs.length === 0) return;
@@ -1143,7 +1190,7 @@ export default function BobozanOnline() {
   };
 
   const toggleShare = async () => {
-    if (!isOnline || !user) return;
+    if (isExpedition || !isOnline || !user) return;
     try {
       await mutateRoom(roomCode, room => patchPlayer(room, user.uid, p =>
         ['dragondef', 'ninedef'].some(id => isAcquiredSkill(p, SKILL_DB.find(card => card.id === id)!))
@@ -1361,7 +1408,7 @@ export default function BobozanOnline() {
       onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} /> : null;
 
   if (view === 'NAME_INPUT') return (
-    <div className="pixel-app pixel-screen-title brawl-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-title brawl-title-screen brawl-menu-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       {learningOverlay}
       
       <PixelBackdrop scene="title" />
@@ -1383,7 +1430,7 @@ export default function BobozanOnline() {
       {/* ================= CONTENT ================= */}
       <div className="pixel-title-content relative z-10 flex flex-col items-center w-full max-w-2xl px-4">
         
-        <header className="pixel-title-header brawl-title-header">
+        <header className="pixel-title-header brawl-title-header brawl-menu-backdrop">
           <BrawlCover />
           <div className="brawl-logo">
             <h1 className="pixel-wordmark">{t.title}</h1>
@@ -1502,10 +1549,11 @@ export default function BobozanOnline() {
   );
 
   if (view === 'HOME') return (
-    <div className="pixel-app pixel-screen-home min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-home brawl-menu-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       {learningOverlay}
       
       <PixelBackdrop scene="home" />
+      <div className="brawl-menu-backdrop" aria-hidden="true"><BrawlCover /></div>
 
       {/* ================= MAIN CONTENT ================= */}
       
@@ -1525,7 +1573,7 @@ export default function BobozanOnline() {
 
         <div className="pixel-panel relative backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden p-8 md:p-10 flex flex-col gap-8 animate-in fade-in zoom-in duration-300">
             
-            <header className="pixel-section-heading"><span className="pixel-kicker">MULTIPLAYER</span><h1>{lang === 'zh' ? '冒险者公会' : 'Adventurers Guild'}</h1><p>{lang === 'zh' ? '创建房间，或输入伙伴的房间码。' : 'Create a room or join your party.'}</p></header>
+            <header className="pixel-section-heading"><span className="pixel-kicker">MULTIPLAYER</span><h1>{lang === 'zh' ? '多人游戏' : 'Multiplayer'}</h1><p>{lang === 'zh' ? '创建房间，或输入房间码。' : 'Create a room or enter a room code.'}</p></header>
             {/* User Profile */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
@@ -1874,7 +1922,7 @@ export default function BobozanOnline() {
       <div className="battle-social-controls hidden md:flex absolute top-[76px] right-4 z-50 gap-3 items-center">
         
         {/* 1. SHARE BUTTON (Only visible if you have Lv3 or Lv18) */}
-        {myPlayer && ['dragondef', 'ninedef'].some(id => isAcquiredSkill(myPlayer, SKILL_DB.find(card => card.id === id)!)) && (
+        {!isExpedition && myPlayer && ['dragondef', 'ninedef'].some(id => isAcquiredSkill(myPlayer, SKILL_DB.find(card => card.id === id)!)) && (
           <div className="relative group">
              <button
                onClick={toggleShare}
@@ -2121,7 +2169,7 @@ export default function BobozanOnline() {
                line={line.text} speaker={p.name} side={pos.x > 50 ? 'left' : 'right'} reduceMotion={reduceMotion} /> : undefined;
              return <BattleFighter key={p.id} player={p} seat={pos} bounds={tableBounds} self={isMe}
                maxHp={isExpedition ? (expBattleRef.current.maxHp[p.id] ?? MAX_HP) : MAX_HP}
-               level={pMaxLvl} viewerLevel={myPlayer ? getPlayerLevel(myPlayer) : undefined} endless={isExpedition && isEndless} lang={lang} turn={gameState.turn}
+               level={pMaxLvl} viewerLevel={myPlayer ? getPlayerLevel(myPlayer) : undefined} endless={isExpedition && isEndless} lang={lang} roundKey={battleRoundKey}
                showdown={gameState.status === 'SHOWDOWN'}
                damage={damageNumbers[p.id]} hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
