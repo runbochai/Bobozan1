@@ -4,12 +4,14 @@ import { EXPEDITION_STAGES, EXPEDITION_VIGOR_HP, EXPEDITION_WARMUP_ENERGY, EXPED
   EXPEDITION_SKILLCHARM_USES, EXPEDITION_REST_HEAL, EXPEDITION_CHALLENGE_HP, EXPEDITION_CHALLENGE_GOLD,
   drawGachaCard, type ExpeditionEnemyDef } from '../data/expedition';
 import { calculateTurnOutcome } from './combat';
-import { consumeExpeditionCard, EXPEDITION_START_HP, EXPEDITION_MAX_HP, expeditionLevel, nextExpeditionLevel, goldForWin, POTION_HEAL, type RewardOption, type ShopItem } from './expedition';
+import { consumeExpeditionCard, EXPEDITION_MAX_HP, expeditionLevel, nextExpeditionLevel, goldForWin, POTION_HEAL, type RewardOption, type ShopItem } from './expedition';
 import { grantSkillLevel, normalizeSkillLoadout, type SkillLoadoutState } from './skillLoadout';
+import { getExpeditionDifficulty, normalizeExpeditionDifficulty, type ExpeditionDifficulty } from '../data/expeditionDifficulty';
 
 export type ExpeditionRoute = 'rest' | 'risk';
 export type ExpeditionHistory = Record<string, string[]>;
 export interface ExpeditionRun extends SkillLoadoutState {
+  difficulty?: ExpeditionDifficulty;
   stageIdx: number; relics: string[]; inventory: number[]; hp: number; maxHp: number;
   tempCards: { cardId: string; usesLeft: number }[]; gold: number; equipment: string[];
   ironShirtUsed: boolean; dollUsed: boolean; route: ExpeditionRoute;
@@ -21,6 +23,7 @@ export interface ExpeditionBattleMemory {
 }
 export const EXPEDITION_HERO_ID = 'exp_me';
 const cloneRun = (run: ExpeditionRun): ExpeditionRun => ({ ...run, relics: [...run.relics], inventory: [...run.inventory],
+  difficulty: normalizeExpeditionDifficulty(run.difficulty),
   ...(run.skillLoadout ? { skillLoadout: [...run.skillLoadout] } : {}),
   tempCards: run.tempCards.map(card => ({ ...card })), equipment: [...run.equipment] });
 const levelOf = (run: ExpeditionRun) => expeditionLevel(run.inventory);
@@ -44,8 +47,9 @@ export function resolveExpeditionEnemyLoadout(enemy: ExpeditionEnemyDef, playerI
   return attack ? { inventory: [0, attack.levelRequired], skillLoadout: [attack.id] } : { inventory: [...enemy.inventory] };
 }
 
-export function createExpeditionRun(): ExpeditionRun {
-  return { stageIdx: 0, relics: [], inventory: [0], skillLoadout: [], hp: EXPEDITION_START_HP, maxHp: EXPEDITION_START_HP,
+export function createExpeditionRun(difficulty: ExpeditionDifficulty = 'beginner'): ExpeditionRun {
+  const config = getExpeditionDifficulty(difficulty);
+  return { difficulty: config.id, stageIdx: 0, relics: [], inventory: [0], skillLoadout: [], hp: config.startHp, maxHp: config.startHp,
     tempCards: [], gold: 0, equipment: [], ironShirtUsed: false, dollUsed: false, route: 'rest' };
 }
 
@@ -58,6 +62,16 @@ export function recordExpeditionHistory(history: ExpeditionHistory, revealed: re
   return next;
 }
 
+/** Recompute from source rules so stale snapshots and repeated setup never stack the bonus. */
+function attackDamageBonus(player: Player, run: ExpeditionRun, memory: ExpeditionBattleMemory): number {
+  const self = player.id === EXPEDITION_HERO_ID;
+  const passive = memory.passives[player.id];
+  const enraged = player.hp <= (memory.maxHp[player.id] ?? player.hp) / 2;
+  return (self && run.equipment.includes('waraxe') ? .5 : passive?.attackBonus ?? 0)
+    + (enraged ? passive?.enrageDmg ?? 0 : 0)
+    + (self ? 0 : getExpeditionDifficulty(run.difficulty).enemyDamageBonus);
+}
+
 function turnStart(players: Player[], run: ExpeditionRun, memory: ExpeditionBattleMemory, first: boolean) {
   return players.map(player => {
     if (player.isDead) return player;
@@ -66,8 +80,7 @@ function turnStart(players: Player[], run: ExpeditionRun, memory: ExpeditionBatt
     return { ...player,
       energy: player.energy + (first && player.id === EXPEDITION_HERO_ID && run.relics.includes('rxyd') ? EXPEDITION_WARMUP_ENERGY : 0)
         + (enraged ? passive?.enrageEnergy ?? passive?.energyPerTurn ?? 0 : passive?.energyPerTurn ?? 0),
-      dmgBonus: (player.id === EXPEDITION_HERO_ID && run.equipment.includes('waraxe') ? .5 : passive?.attackBonus ?? 0)
-        + (enraged ? passive?.enrageDmg ?? 0 : 0),
+      dmgBonus: attackDamageBonus(player, run, memory),
     };
   });
 }
@@ -116,7 +129,10 @@ export function settleExpeditionRound(previous: ExpeditionRun, previousMemory: E
   const before = revealed.find(player => player.id === heroId);
   if (!before) throw new Error('Expedition player missing');
   const protection = has('tbs') && !run.ironShirtUsed ? 'tbs' : run.equipment.includes('doll') && !run.dollUsed ? 'doll' : null;
-  const result = calculateTurnOutcome(revealed, turn, run.stageIdx + 1, lang, { mode: 'expedition',
+  // The settlement boundary also normalizes old/restored snapshots before the
+  // first hit. Energy, costs and non-damaging moves still use ordinary combat.
+  const prepared = revealed.map(player => ({ ...player, dmgBonus: attackDamageBonus(player, run, memory) }));
+  const result = calculateTurnOutcome(prepared, turn, run.stageIdx + 1, lang, { mode: 'expedition',
     damageReduction: Object.fromEntries(revealed.map(player => [player.id, player.id === heroId
       ? has('ypj') && !memory.ironhideUsed ? .5 : 0 : memory.passives[player.id]?.armorPerTurn ?? 0])),
     lethalProtection: protection ? { [heroId]: .5 } : undefined,
@@ -169,8 +185,9 @@ export function settleExpeditionRound(previous: ExpeditionRun, previousMemory: E
   run.tempCards = consumeExpeditionCard(run.tempCards, before.freeSkills?.includes(before.selectedCardId ?? '') ? null : before.selectedCardId);
   changeHero(player => ({ ...player, tempSkills: run.tempCards.map(card => card.cardId) }));
   const lost = after.isDead, won = !lost && players.every(player => player.id === heroId || player.isDead);
-  const gold = won ? goldForWin(run.stageIdx, EXPEDITION_STAGES[run.stageIdx], random)
-    + (run.equipment.includes('treasurepot') ? 4 : 0) + (run.route === 'risk' && run.stageIdx >= 3 ? EXPEDITION_CHALLENGE_GOLD : 0) : 0;
+  const gold = won ? (goldForWin(run.stageIdx, EXPEDITION_STAGES[run.stageIdx], random)
+    + (run.equipment.includes('treasurepot') ? 4 : 0) + (run.route === 'risk' && run.stageIdx >= 3 ? EXPEDITION_CHALLENGE_GOLD : 0))
+    * getExpeditionDifficulty(run.difficulty).goldMultiplier : 0;
   if (won) {
     if (has('zstai')) changeHero(player => ({ ...player, hp: Math.min(run.maxHp, player.hp + .5) }));
     run.gold += gold;

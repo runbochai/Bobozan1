@@ -13,6 +13,7 @@ type ExpeditionPersonality,
 type ExpeditionStage,
 } from '../data/expedition';
 import type { Lang } from '../types';
+import type { ExpeditionDifficulty } from '../data/expeditionDifficulty';
 
 export {
   EXPEDITION_START_HP, EXPEDITION_MAX_HP, EXPEDITION_VIGOR_HP,
@@ -22,21 +23,26 @@ export {
 } from '../data/expedition';
 
 export const EXPEDITION_BEST_KEY = 'bobozan-expedition-best';
+export const EXPEDITION_BEST_KEYS: Record<ExpeditionDifficulty, string> = {
+beginner: EXPEDITION_BEST_KEY,
+normal: 'bobozan-expedition-best-normal',
+};
+const bestKey = (difficulty: ExpeditionDifficulty) => EXPEDITION_BEST_KEYS[difficulty === 'normal' ? 'normal' : 'beginner'];
 
-export function loadExpeditionBest(): number {
+export function loadExpeditionBest(difficulty: ExpeditionDifficulty = 'beginner'): number {
 try {
-const value = Number(localStorage.getItem(EXPEDITION_BEST_KEY) || 0);
+const value = Number(localStorage.getItem(bestKey(difficulty)) || 0);
 return Number.isInteger(value) && value >= 0 && value <= EXPEDITION_STAGES.length ? value : 0;
 } catch {
 return 0;
 }
 }
 
-export function saveExpeditionBest(cleared: number): void {
+export function saveExpeditionBest(cleared: number, difficulty: ExpeditionDifficulty = 'beginner'): void {
 if (!Number.isInteger(cleared) || cleared < 0 || cleared > EXPEDITION_STAGES.length) return;
 try {
-const prev = loadExpeditionBest();
-if (cleared > prev) localStorage.setItem(EXPEDITION_BEST_KEY, String(cleared));
+const prev = loadExpeditionBest(difficulty);
+if (cleared > prev) localStorage.setItem(bestKey(difficulty), String(cleared));
 } catch {
 /* ignore */
 }

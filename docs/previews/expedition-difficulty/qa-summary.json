@@ -1,0 +1,157 @@
+{
+  "scope": "Local real App. Natural difficulty selection, keyboard navigation, start and practice return. Read-only runtime inspection; retry verified from a controlled local death state. No multiplayer requests.",
+  "devices": [
+    {
+      "viewport": [
+        1024,
+        768
+      ],
+      "default": "beginner",
+      "selectionBounds": {
+        "dialogInViewport": true,
+        "startInViewport": true,
+        "horizontalOverflow": false
+      },
+      "normal": {
+        "mode": "normal",
+        "hp": 1,
+        "maxHp": 1,
+        "enemyDamageBonus": 0.5
+      },
+      "beginner": {
+        "mode": "beginner",
+        "hp": 3,
+        "enemyDamageBonus": 0
+      },
+      "retry": {
+        "mode": "normal",
+        "hp": 1,
+        "gold": 0
+      },
+      "tableStable": true,
+      "pageErrors": 0
+    },
+    {
+      "viewport": [
+        768,
+        1024
+      ],
+      "default": "beginner",
+      "selectionBounds": {
+        "dialogInViewport": true,
+        "startInViewport": true,
+        "horizontalOverflow": false
+      },
+      "normal": {
+        "mode": "normal",
+        "hp": 1,
+        "maxHp": 1,
+        "enemyDamageBonus": 0.5
+      },
+      "beginner": {
+        "mode": "beginner",
+        "hp": 3,
+        "enemyDamageBonus": 0
+      },
+      "retry": {
+        "mode": "normal",
+        "hp": 1,
+        "gold": 0
+      },
+      "tableStable": true,
+      "pageErrors": 0
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "default": "beginner",
+      "selectionBounds": {
+        "dialogInViewport": true,
+        "startInViewport": true,
+        "horizontalOverflow": false
+      },
+      "normal": {
+        "mode": "normal",
+        "hp": 1,
+        "maxHp": 1,
+        "enemyDamageBonus": 0.5
+      },
+      "beginner": {
+        "mode": "beginner",
+        "hp": 3,
+        "enemyDamageBonus": 0
+      },
+      "retry": {
+        "mode": "normal",
+        "hp": 1,
+        "gold": 0
+      },
+      "tableStable": true,
+      "pageErrors": 0
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "default": "beginner",
+      "selectionBounds": {
+        "dialogInViewport": true,
+        "startInViewport": true,
+        "horizontalOverflow": false
+      },
+      "normal": {
+        "mode": "normal",
+        "hp": 1,
+        "maxHp": 1,
+        "enemyDamageBonus": 0.5
+      },
+      "beginner": {
+        "mode": "beginner",
+        "hp": 3,
+        "enemyDamageBonus": 0
+      },
+      "retry": {
+        "mode": "normal",
+        "hp": 1,
+        "gold": 0
+      },
+      "tableStable": true,
+      "pageErrors": 0
+    }
+  ],
+  "additional": [
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "englishDialogInView": true,
+      "englishStartInView": true,
+      "noOverflow": true,
+      "zeroBestHidden": true,
+      "practicePreservesSelection": true,
+      "pageErrors": 0
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "englishDialogInView": true,
+      "englishStartInView": true,
+      "noOverflow": true,
+      "zeroBestHidden": true,
+      "practicePreservesSelection": true,
+      "pageErrors": 0
+    }
+  ],
+  "keyboard": "Native radio arrow keys and Escape passed",
+  "bestRecords": "Selecting Beginner shows its own stage 6; Normal shows its own stage 2. Zero is hidden.",
+  "previews": [
+    "choice-mobile.webp",
+    "normal-ipad.webp"
+  ]
+}
