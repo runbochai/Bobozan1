@@ -275,7 +275,7 @@ export const RULE_TOPICS: RuleTopic[] = [
   {
     id: 'expedition', title: text('远征与练习', 'Expedition and practice'),
     items: [
-      text(`远征共有 ${EXPEDITION_STAGES.length} 关，每轮从 3 生命、Lv.0 起步。普通升级与敌人等级最高 Lv.5；限次秘技可提供更高等级的招式。`, `Expedition has ${EXPEDITION_STAGES.length} stages. Each run starts at 3 HP and Lv.0. Normal upgrades and enemy levels cap at Lv.5; limited skills can offer higher-level moves.`),
+      text(`远征共有 ${EXPEDITION_STAGES.length} 关，每轮从 3 生命、Lv.0 起步。升级可继续解锁技能库中的全部常规等级，每类仍最多保留 3 个新技能；等级高不代表旧牌自动增强。`, `Expedition has ${EXPEDITION_STAGES.length} stages. Each run starts at 3 HP and Lv.0. Upgrades can unlock every regular skill level; keep up to 3 acquired skills per category. Higher level does not automatically strengthen old cards.`),
       text('远征中的金币、物品、遗物与技能属于这一轮；通关或阵亡后重新开始，会清空本轮收集。', 'Expedition gold, items, relics, and skills belong to the current run. Starting again after victory or death clears that collection.'),
       text('途中退出或刷新不会保存本轮进度；仅历史最佳与已完成课程会保留在本机。', 'Leaving or refreshing does not save the current run. Only your best record and completed lessons are kept on this device.'),
       text('铁布衫、替身人偶触发时保留至多 0.5 生命；保命不等于防住或减伤，保命前的命中伤害达到 1 时，攒仍会被打断。', 'Iron Shirt and Stand-in Doll preserve up to 0.5 HP when triggered. Surviving is not a block or damage reduction: if damage before this protection reaches 1, Charge remains interrupted.'),

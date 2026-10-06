@@ -1,0 +1,63 @@
+{
+  "scope": "Local real App with controlled advanced-stage and multiplayer initial states; subsequent reward, shop, skill selection, card details, badge dialogs, charge settlement and restart use actual UI clicks. External requests blocked; no live multiplayer transaction.",
+  "viewports": [
+    [
+      1024,
+      768
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ]
+  ],
+  "levelBadgeChecks": {
+    "scenarios": 6,
+    "enemyBadges": 24,
+    "clipped": 0,
+    "initialCenterHitFailures": 0,
+    "unchangedActorGeometry": true
+  },
+  "progression": {
+    "viewports": [
+      [
+        1024,
+        768
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "reward": "5 -> 6",
+    "badge": "5 -> 6 and 6 -> 7",
+    "level7Overflow": "Attack and Ultimate each explicitly kept at 3; Defense kept at 2",
+    "nextStageRetainsSelection": true,
+    "deathRestartLevel": 0
+  },
+  "trial": {
+    "player3": "enemy 4, +1",
+    "player5": "enemy 8, +3",
+    "realChargeSettlement": "Completed on both sizes; enemy level persisted"
+  },
+  "cardLevels": {
+    "basic": 0,
+    "madian": 5,
+    "absorb": 6,
+    "skyDragonCombo": 3,
+    "details": "Own skill level; offensive tier only; optional level explanation"
+  },
+  "layout": {
+    "tableExpansionMaxDelta": 0,
+    "shortLandscape": "Natural scrolling remains; badges are within board rather than clipped"
+  },
+  "pageErrors": 0,
+  "previews": [
+    "trial-ipad.webp",
+    "level6-hand.webp",
+    "mobile-multiplayer-levels.webp"
+  ]
+}

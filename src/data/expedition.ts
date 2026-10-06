@@ -25,6 +25,10 @@ id: string;
 name: LocalizedText;
 hp: number;
 inventory: number[]; // 等级 deck
+/** Only this encounter adapts its attack to the player's public level. */
+levelAdvantage?: number;
+/** Reuse an existing portrait and character atlas without changing enemy identity. */
+avatarId?: string;
 personality: ExpeditionPersonality;
 intro: LocalizedText; // 开场白
 passive?: {
@@ -54,7 +58,7 @@ tip?: LocalizedText;
 const P = (aggression: number, defense: number, charge: number, smart: number): ExpeditionPersonality =>
 ({ aggression, defense, charge, smart});
 
-export const EXPEDITION_STAGES: ExpeditionStage[] = [
+const expeditionStages: ExpeditionStage[] = [
 // ---------- 序章 · 新手村 ----------
 {
 id: 's0', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
@@ -99,6 +103,18 @@ enemies: [{
 id: 'slime', name: { zh: '🟢 史莱姆', en: '🟢 Slime'}, hp: 1.5, inventory: [0, 1],
 personality: P(0.5, 0.3, 0.5, 0.2),
 intro: { zh: '一只野生的史莱姆跳了出来！', en: 'A wild Slime appeared!'},
+}],
+},
+{
+id: 's17', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
+name: { zh: '第 5 关 · 越级试炼', en: 'Stage 5 · Veteran Trial'},
+rewardTier: 1,
+tip: { zh: '别硬撞更高等级的普通招；能防、能打平，也能抓攒。', en: 'Do not clash blindly with the stronger skill. Block, tie, or catch a Charge.' },
+enemies: [{
+id: 'veteran', avatarId: 'knight', name: { zh: '🛡️ 守关前辈', en: '🛡️ Gate Veteran' },
+hp: 1.5, inventory: [0, 1], levelAdvantage: 1,
+personality: P(0.5, 0.3, 0.6, 0.35),
+intro: { zh: '前辈：牌比你老，脑子可未必。', en: 'Veteran: older cards. Not necessarily wiser.' },
 }],
 },
 {
@@ -282,6 +298,15 @@ intro: { zh: '塔魂：波赞只是守门人。我，即是塔。', en: 'Soul: B
 },
 ];
 
+// Keep encounter IDs stable when inserting a lesson; only the visible sequence changes.
+export const EXPEDITION_STAGES: ExpeditionStage[] = expeditionStages.map((stage, index) => ({
+  ...stage,
+  name: {
+    zh: stage.name.zh.replace(/^第 \d+ 关/, `第 ${index + 1} 关`),
+    en: stage.name.en.replace(/^Stage \d+/, `Stage ${index + 1}`),
+  },
+}));
+
 // ============ 遗物 ============
 
 export interface RelicDef {
@@ -342,14 +367,15 @@ desc: { zh: '战后奖励 4 选 1', en: 'Choose 1 of 4 rewards after battle'},
 
 // ============ 等级奖励展示 ============
 
-export const LEVEL_REWARD_INFO: Record<number, LocalizedText> = {
-1: { zh: 'Lv1 · 天马 / 流星坠', en: 'Lv1 · Pegasus / Meteor'},
-2: { zh: 'Lv2 · 冰剑 / 小飞 / 玄天冰剑', en: 'Lv2 · Ice Sword / Small Fly / Mystic Ice'},
-3: { zh: 'Lv3 · 龙爪 / 火焰龙爪 / 龙爪防', en: 'Lv3 · Dragon Claw / Fire Claw / Claw Def'},
-4: { zh: 'Lv4 · 热奶 / 热锅炉', en: 'Lv4 · Hot Milk / Boiler'},
-5: { zh: 'Lv5 · 马甸 / 吊死鬼 / 大飞', en: 'Lv5 · Madian / Hangman / Big Fly'},
-8: { zh: 'Lv8 · 头盔攻 / 头盔防', en: 'Lv8 · Helm Atk / Helm Def'},
-};
+const regularSkills = SKILL_DB.filter(card => card.levelRequired > 0 && card.levelRequired < 100 && !card.tags?.includes('combo'));
+/** Available content, not an expedition-specific progression cap. */
+export const EXPEDITION_SKILL_LEVELS = [...new Set(regularSkills.map(card => card.levelRequired))].sort((a, b) => a - b);
+export const EXPEDITION_MAX_LEVEL = Math.max(0, ...EXPEDITION_SKILL_LEVELS);
+export const LEVEL_REWARD_INFO: Record<number, LocalizedText> = Object.fromEntries(EXPEDITION_SKILL_LEVELS.map(level => {
+  const cards = regularSkills.filter(card => card.levelRequired === level);
+  return [level, { zh: `Lv${level} · ${cards.map(card => card.name.zh).join(' / ')}`,
+    en: `Lv${level} · ${cards.map(card => card.name.en).join(' / ')}` }];
+}));
 
 export const REWARD_LEVEL_POOL: Record<1 | 2 | 3, number[]> = {
 1: [1, 2, 3],
@@ -357,23 +383,30 @@ export const REWARD_LEVEL_POOL: Record<1 | 2 | 3, number[]> = {
 3: [3, 4, 5],
 };
 
-// Secrets stay close to the run's level. Levels 6–7 add late-run absorption and
-// partial penetration, without inaccessible layer attacks or Lv.23 shortcuts.
-export const EXPEDITION_GACHA_POOL: string[] = SKILL_DB.filter(
-(c) => c.levelRequired >= 1 && c.levelRequired <= 7 && c.type !== 'CHARGE'
-).map((c) => c.id);
+// Near-level secrets grow with the run. A lone upward/downward attack would be
+// unusable before room-wide movement unlocks, so it stays out of random secrets.
+export const EXPEDITION_GACHA_POOL: string[] = regularSkills.filter(card =>
+  card.type !== 'CHARGE' && !card.tags?.some(tag => tag === 'hit_up' || tag === 'hit_down')
+).map(card => card.id);
 
 export function expeditionSecretPool(maxLevel = 0, stageIdx = 0): string[] {
-const level = Number.isFinite(maxLevel) ? Math.max(0, Math.min(5, Math.floor(maxLevel))) : 0;
+const level = Number.isFinite(maxLevel) ? Math.max(0, Math.min(EXPEDITION_MAX_LEVEL, Math.floor(maxLevel))) : 0;
 const stage = Number.isFinite(stageIdx) ? Math.max(0, Math.floor(stageIdx)) : 0;
-const highest = Math.min(7, level + (stage >= 6 ? 2 : 1));
-return EXPEDITION_GACHA_POOL.filter(id => {
+const highest = Math.min(EXPEDITION_MAX_LEVEL, level + (stage >= 6 ? 2 : 1));
+const nearby = EXPEDITION_GACHA_POOL.filter(id => {
   const required = SKILL_DB.find(card => card.id === id)!.levelRequired;
   return required > level && required <= highest;
 });
+if (nearby.length) return nearby;
+// At the end of available content (or a gap containing only layer attacks),
+// gear still grants real limited-use cards instead of an undefined card ID.
+return EXPEDITION_GACHA_POOL.filter(id => {
+  const required = SKILL_DB.find(card => card.id === id)!.levelRequired;
+  return required >= Math.max(1, level - 2) && required <= level;
+});
 }
 
-/** Draw a new nearby-level secret, never a copy of the run's existing levels. */
+/** Prefer a new nearby level; at the content end, grant another limited-use tool. */
 export function drawGachaCard(maxLevel = 0, stageIdx = 0, rng: () => number = Math.random): { cardId: string; uses: number } {
 const pool = expeditionSecretPool(maxLevel, stageIdx);
 const cardId = pool[Math.min(pool.length - 1, Math.max(0, Math.floor(rng() * pool.length)))];
@@ -435,13 +468,13 @@ price: 35,
 {
 id: 'levelbadge', icon: '🎖️',
 name: { zh: '升级徽章', en: 'Level Badge'},
-desc: { zh: '本轮升 1 级（上限 5 级）', en: 'Gain 1 level for this run (max Lv.5)'},
+desc: { zh: '升到下个技能等级；全部解锁后不再出售', en: 'Unlock the next skill level; unavailable once all levels are learned'},
 price: 35,
 },
 {
 id: 'skillcharm', icon: '📿',
 name: { zh: '技能护符', en: 'Skill Charm'},
-desc: { zh: '获得一张附近等级的未学秘技，可用 5 次；仍需支付能量', en: 'Gain 5 uses of an unlearned nearby-level skill; normal Energy costs apply'},
+desc: { zh: '获得一张附近等级的限次秘技，可用 5 次；仍需支付能量', en: 'Gain 5 uses of a nearby-level skill; normal Energy costs apply'},
 price: 24,
 },
 ];

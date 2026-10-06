@@ -16,6 +16,7 @@
 .exp-recap-cards figure { padding:10px; background:#263746; border:1px solid #677b83; text-align:center; width:115px; }
 .exp-recap-cards .pixel-card-art,.exp-recap-cards .pixel-card-symbol { width:70px; height:65px; object-fit:contain; margin:0 auto; display:grid; place-items:center; }
 .exp-recap-cards strong { display:block; color:#f4ce84; font-size:16px; }
+.exp-recap-skill-level { display:block; color:#bad4e4; font:700 12px/1.5 system-ui,sans-serif; margin-top:3px; }
 .exp-recap-log { list-style:disc; padding-left:20px; margin:20px 0; }
 .exp-recap-log li { padding-bottom:8px; }
 .exp-briefing .exp-recap-result { color:#f3dca8; margin:16px 0; font-size:17px; font-weight:600; }

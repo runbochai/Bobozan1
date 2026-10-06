@@ -1,11 +1,12 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import type { Player } from '../types';
+import type { Lang, Player } from '../types';
 import { directionToward, getBattleFigure, getBattleStatusOffset, type BattleBounds, type BattleSeat } from '../logic/battleLayout';
 import { playerAvatar } from '../logic/bots';
 import BattleSprite from './BattleSprite';
 import BattleStats from './BattleStats';
-import { CheckCircle, Crown, Skull } from './PixelIcons';
+import { CheckCircle, Skull } from './PixelIcons';
+import BattleLevelBadge from './BattleLevelBadge';
 
 interface Props {
   player: Player;
@@ -14,8 +15,8 @@ interface Props {
   self: boolean;
   maxHp: number;
   level: number;
-  levelName: string;
-  leader: boolean;
+  viewerLevel?: number;
+  lang: Lang;
   turn: number;
   showdown: boolean;
   damage?: number;
@@ -33,7 +34,7 @@ function BattleEmoji({ emoji, at }: { emoji: string; at: number }) {
   return visible ? <span className="battle-emoji">{emoji}</span> : null;
 }
 
-export default function BattleFighter({ player, seat, bounds, self, maxHp, level, levelName, leader, turn, showdown, damage, hit, reduceMotion, intent }: Props) {
+export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, lang, turn, showdown, damage, hit, reduceMotion, intent }: Props) {
   const seed = player.id.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
   const direction = seat.facing ?? directionToward(seat);
   const motion = reduceMotion ? 'still' : hit ? 'hit' : player.isDead ? 'still' : showdown && player.selectedCardId ? 'move' : 'idle';
@@ -53,7 +54,7 @@ export default function BattleFighter({ player, seat, bounds, self, maxHp, level
     {player.isDead && <Skull size={26} className="battle-dead-mark" />}
     {!self && <div className="table-seat-status" style={{ left: `calc(50% + ${getBattleStatusOffset(seat, self, bounds)}px)` }}>
       <div className="battle-fighter-name" title={player.name}><span>{player.name}</span>{!player.isDead && !showdown && player.selectedCardId && <CheckCircle size={13} />}</div>
-      {level > 0 && <div className="battle-level" title={levelName}>{leader && <Crown size={13} />}LVL {level}</div>}
+      <BattleLevelBadge level={level} viewerLevel={viewerLevel} name={player.name} lang={lang} />
       <BattleStats player={player} maxHp={maxHp} />
     </div>}
     {!self && intent}

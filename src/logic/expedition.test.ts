@@ -11,6 +11,7 @@ import {
   pickThreat,
   shopCardPrice,
   intentRevealed,
+  EXPEDITION_MAX_LEVEL,
 } from './expedition';
 import { EXPEDITION_GACHA_POOL, EXPEDITION_EQUIPMENTS, drawGachaCard } from '../data/expedition';
 import { SKILL_DB } from '../data/skills';
@@ -128,9 +129,9 @@ test('升级奖励：稳定 +1 级，满级后不再出现，无开局能量奖�
     }
     if (lv && lv.kind === 'levelup') assert.equal(lv.level, 2, 'levelup should be exactly +1');
   }
-  // 满级（5 级）：不再出升级
+  // Only the end of the existing skill catalog stops progression.
   for (let i = 0; i < 20; i++) {
-    const opts = genRewardOptions(3, 3, [], 3, [0, 1, 2, 3, 4, 5]);
+    const opts = genRewardOptions(3, 3, [], 3, [0, EXPEDITION_MAX_LEVEL]);
     assert.ok(opts.every((o) => o.kind !== 'levelup'), 'no levelup at max level');
   }
 });
@@ -150,8 +151,8 @@ test('applyIronhide：每场战斗首次受伤 -0.5，之后不再减', () => {
   assert.equal(r4.hp, 2);
 });
 
-test('关卡配置合法：17 关，含一打三，双 Boss，敌人等级有高低', () => {
-  assert.equal(EXPEDITION_STAGES.length, 17);
+test('关卡配置合法：18 关，含动态高阶对手、一打三和双 Boss', () => {
+  assert.equal(EXPEDITION_STAGES.length, 18);
   for (const s of EXPEDITION_STAGES) {
     assert.ok(s.enemies.length >= 1 && s.enemies.length <= 3, `${s.id}: bad enemy count`);
     for (const e of s.enemies) {
@@ -173,14 +174,14 @@ test('关卡配置合法：17 关，含一打三，双 Boss，敌人等级有高
     const tiers = s.enemies.map((e) => Math.max(...e.inventory));
     assert.ok(new Set(tiers).size >= 2, `${s.id}: triple enemies should have mixed tiers`);
   }
-  const boss = EXPEDITION_STAGES[15].enemies[0];
-  assert.ok(boss.boss, 'stage 16 must be a boss');
+  const boss = EXPEDITION_STAGES.find(stage => stage.id === 's15')!.enemies[0];
+  assert.ok(boss.boss, 'the tower lord must remain a boss');
   assert.ok(boss.hp >= 4, 'boss should have extra HP');
   assert.equal(boss.passive?.startEnergy ?? 0, 0, 'boss must earn its first attack');
-  const finalBoss = EXPEDITION_STAGES[16].enemies[0];
-  assert.ok(finalBoss.boss, 'stage 17 must be a boss');
+  const finalBoss = EXPEDITION_STAGES.at(-1)!.enemies[0];
+  assert.ok(finalBoss.boss, 'the final encounter must remain a boss');
   // 新精英：诈唬大师（第 15 关，虚假意图）
-  const blufferStage = EXPEDITION_STAGES[14];
+  const blufferStage = EXPEDITION_STAGES.find(stage => stage.id === 's14')!;
   assert.ok(blufferStage.name.zh.includes('诈唬大师'), 'stage 15 should be the Bluff Master');
   const bluffer = blufferStage.enemies[0];
   assert.ok(bluffer.elite, 'bluffer must be elite');
@@ -203,12 +204,12 @@ test('遗物配置合法：9 个，id 唯一，无聚气丹（太赖已砍）', 
 });
 
 test('抽卡池：附近等级的实用秘技，保留后期吸收选项', () => {
-  assert.ok(EXPEDITION_GACHA_POOL.length > 10 && EXPEDITION_GACHA_POOL.length < 45);
+  assert.ok(EXPEDITION_GACHA_POOL.length > 30);
   const types = new Set<string>();
   for (const id of EXPEDITION_GACHA_POOL) {
     const c = SKILL_DB.find((x) => x.id === id)!;
     assert.ok(c, `card exists: ${id}`);
-    assert.ok(c.levelRequired >= 1 && c.levelRequired <= 7, `tier ok: ${id}`);
+    assert.ok(c.levelRequired >= 1 && c.levelRequired <= EXPEDITION_MAX_LEVEL, `tier ok: ${id}`);
     assert.notEqual(c.type, 'CHARGE');
     types.add(c.type);
   }
@@ -257,7 +258,7 @@ test('商城：4 件商品（2 卡 + 1 装备 + 疗伤药），装备不重复�
     const items = genShopItems(all, 5);
     assert.ok(items.every((x) => x.kind !== 'equipment'), 'no equipment when all owned');
   }
-  const noBadge = genShopItems([], 5);
+  const noBadge = genShopItems([], EXPEDITION_MAX_LEVEL);
   assert.ok(noBadge.every((x) => x.kind !== 'equipment' || x.equipment.id !== 'levelbadge'), 'no level badge at max level');
 });
 

@@ -1,7 +1,11 @@
 import type { LocalizedText, Player } from '../types';
+import { EXPEDITION_STAGES } from './expedition';
+import { SKILL_DB } from './skills';
+import { getRetainedSkillIds } from '../logic/skillLoadout';
 
 /** Public, already visible information only. Never pass a committed enemy move here. */
-export type ExpeditionPublicFighter = Pick<Player, 'id' | 'hp' | 'energy' | 'isDead'>;
+export type ExpeditionPublicFighter = Pick<Player, 'id' | 'hp' | 'energy' | 'isDead'>
+  & Partial<Pick<Player, 'inventory' | 'skillLoadout'>>;
 export interface ExpeditionLessonResult {
   damageTaken: number;
   defendedHits: number;
@@ -31,8 +35,8 @@ const text = (zh: string, en: string): LocalizedText => ({ zh, en });
 export function getExpeditionLesson(context: ExpeditionLessonContext): ExpeditionLessonHint {
   const { stageIdx, hero, opponents, legalCardIds, lastResult, recap } = context;
   const alive = opponents.filter(player => !player.isDead);
-  switch (stageIdx) {
-    case 0: return {
+  switch (EXPEDITION_STAGES[stageIdx]?.id) {
+    case 's0': return {
       id: 'charge-opening',
       text: hero.energy < 1
         ? text('先攒能量，再找机会出手。', 'Build energy, then look for an opening.')
@@ -40,7 +44,7 @@ export function getExpeditionLesson(context: ExpeditionLessonContext): Expeditio
       detail: text('攒通常获得 2 能量；本回合受到 1 点伤害会打断它。双方同时出牌，攻击能命中正在攒的对手，但习惯不保证下一招。', 'Charge normally gains 2 energy; taking 1 damage interrupts it. Moves resolve together: attacks hit a charging opponent, but habits do not guarantee the next move.'),
       cardIds: ['charge', 'hong'], relation: '→',
     };
-    case 1: return {
+    case 's1': return {
       id: 'defend-counter',
       text: alive.length > 0 && alive.every(player => player.energy === 0) && hero.energy > 0
         ? text('对手能量见底，是寻找反击的机会。', 'An empty energy bar can open a counterattack.')
@@ -48,13 +52,13 @@ export function getExpeditionLesson(context: ExpeditionLessonContext): Expeditio
       detail: text('防不花能量，可以挡普通攻击。挡下后观察对手剩余能量；没能量也可能防守，反击并不保证命中。终极和穿透攻击是例外。', 'Defend costs no energy and stops basic attacks. Watch the energy left afterward: an empty opponent may still Defend, so a counter is not guaranteed. Ultimates and piercing attacks are exceptions.'),
       cardIds: ['defend', 'hong'], relation: '→',
     };
-    case 2: return {
+    case 's2': return {
       id: 'break-defense',
       text: text('咔需 3 能量，能破普通防。', 'Ka costs 3 energy and breaks basic Defend.'),
       detail: text('攒够能量后，咔能突破普通防守，射程是自身及上下各 1 层。对手仍可能换招；什么时候出手，由你判断。', 'Ka breaks basic Defend and reaches your layer and one above or below. The opponent can change moves; you decide when to act.'),
       cardIds: ['ka', 'defend'], relation: '>',
     };
-    case 3: return legalCardIds.includes('pegasus') ? {
+    case 's3': return legalCardIds.includes('pegasus') ? {
       id: 'one-energy-upgrade',
       text: text('天马 1 费胜轰；与 2 费轰轰打平。', '1-energy Pegasus beats Blast, but ties Double Blast.'),
       detail: text('升级解锁新招，并不让旧牌加伤。天马和轰都是 1 费，天马档位更高；天马与 2 费轰轰打平，双方仍扣能量。', 'Levels unlock new moves rather than adding damage to old ones. Pegasus and Blast each cost 1, but Pegasus has the higher tier. It ties 2-energy Double Blast; both still spend energy.'),
@@ -65,19 +69,38 @@ export function getExpeditionLesson(context: ExpeditionLessonContext): Expeditio
       detail: text('轰轰比轰强，基础命中伤害仍是 1。升级后的一费天马也能压过轰，并与二费轰轰打平；拿到升级奖励后可在手牌中查看新招。', 'Double Blast is stronger than Blast but still deals 1 base damage. An unlocked 1-energy Pegasus also beats Blast and ties Double Blast. New moves appear in your hand when you take a level reward.'),
       cardIds: ['hong2', 'hong'], relation: '>',
     };
-    case 4: return {
+    case 's17': {
+      const enemy = alive[0];
+      const retained = enemy?.inventory ? getRetainedSkillIds({ inventory: enemy.inventory, skillLoadout: enemy.skillLoadout }) : [];
+      const attack = SKILL_DB.filter(card => retained.includes(card.id) && card.type === 'ATTACK' && card.tier === 2)
+        .sort((a, b) => b.levelRequired - a.levelRequired)[0];
+      const higher = !!attack && !!hero.inventory && attack.levelRequired > Math.max(0, ...hero.inventory);
+      return {
+        id: 'veteran-counterplay',
+        text: attack
+          ? text(`${attack.name.zh} Lv.${attack.levelRequired}；轰轰可打平。`, `${attack.name.en} Lv.${attack.levelRequired}; Double Blast ties it.`)
+          : text('防住、打平，或抓住攒的空当。', 'Block, tie, or catch a Charge.'),
+        detail: text(
+          `${higher ? '前辈保留的普通招比你当前等级高，同档普通招硬碰会被压制。' : '同档普通技能相撞时比较技能等级。'}普通防能挡下他的普通招；轰轰或六克能与二档攻击打平，双方仍花能量。等他攒时用轰反击，仍要猜他是否换招。人物等级不会给旧牌加伤。`,
+          `${higher ? 'The veteran has a higher-level ordinary skill; a lower-level same-tier clash loses. ' : 'Same-tier ordinary skills compare their skill levels. '}Defend blocks this ordinary attack. Double Blast or 6g Strike ties it, spending energy on both sides. Blast can catch a Charge, but the veteran may change moves. Player level does not add damage to old cards.`,
+        ),
+        cardIds: attack ? ['hong2', attack.id] : ['defend', 'hong2'],
+        ...(attack ? { relation: '=' as const } : {}),
+      };
+    }
+    case 's4': return {
       id: 'every-opponent',
       text: text('挡住或打平一人，还要留意另一人。', 'Blocking or tying one foe does not stop the others.'),
       detail: text('每个对手分别结算；你和一人打平，另一人仍可能命中。敌人之间也会互打。清掉所有对手才过关，淘汰不会重置你的血量。', 'Each opponent resolves separately. A third fighter can still hit you during a tie. Enemies can hit each other too. Defeat them all to clear the stage; eliminations do not reset your HP.'),
       cardIds: ['hong', 'hong', 'hong2'],
     };
-    case 5: return {
+    case 's5': return {
       id: 'read-history',
       text: text('听他说什么，再看他实际怎么出。', 'Hear what they say; watch what they actually play.'),
       detail: text('有人嘴硬，有人虚张声势。对白不是出牌预告；把话音、剩余能量和刚才的出招放在一起，自己判断。需要回顾时可打开回合复盘。', 'Some boast; some bluff. Dialogue is not a move preview. Consider their words, energy and what they just played, then make your own read. Turn review is available when you need it.'),
       cardIds: [],
     };
-    case 6: return {
+    case 's6': return {
       id: 'same-tier-level',
       text: text('同档看技能等级；轰轰能打平二档。', 'Same tier? Compare skill levels. Double Blast ties tier 2.'),
       detail: text('龙爪（Lv.3）和天马（Lv.1）都是 1 费、二档普通攻击，龙爪等级更高，因此压过天马。Lv.0 的 2 费轰轰是例外，会与二档攻击打平，双方仍扣能量；它不能保证打平更高档的招式。', 'Dragon Claw (Lv.3) and Pegasus (Lv.1) are both 1-energy, tier-2 basic attacks. Dragon Claw wins on skill level. The Lv.0, 2-energy Double Blast is an exception: it ties tier-2 attacks and both sides spend energy. This does not guarantee a tie with higher tiers.'),

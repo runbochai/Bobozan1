@@ -17,7 +17,7 @@ const seeded = (seed: number) => () => {
 };
 
 test('every encounter starts with affordable counterplay under multiplayer card rules', () => {
-  assert.equal(EXPEDITION_STAGES.length, 17);
+  assert.equal(EXPEDITION_STAGES.length, 18);
   for (const stage of EXPEDITION_STAGES) for (const enemy of stage.enemies) {
     assert.ok(enemy.inventory.every(level => level >= 0 && level <= EXPEDITION_MAX_LEVEL), enemy.id);
     assert.ok(enemy.hp <= EXPEDITION_MAX_HP, enemy.id);
@@ -31,7 +31,7 @@ test('every encounter starts with affordable counterplay under multiplayer card 
     assert.ok(freeMoves.every(card => card.type === 'CHARGE' || card.type === 'DEFEND'), 'No unavoidable opening attack: ' + enemy.id);
   }
   assert.deepEqual(EXPEDITION_STAGES[3].enemies[0].inventory, [0, 1]);
-  assert.equal(EXPEDITION_STAGES[4].enemies.length, 2);
+  assert.equal(EXPEDITION_STAGES.find(stage => stage.id === 's4')!.enemies.length, 2);
 });
 
 test('growth, recovery and both route effects have explicit finite limits', () => {
@@ -47,13 +47,13 @@ test('growth, recovery and both route effects have explicit finite limits', () =
 });
 
 test('injured heroes always see healing and unfinished levels always see the next upgrade', () => {
-  for (let level = 0; level <= 5; level++) for (const maxHp of [3, 4, 5]) for (const injury of [0, .5, 2]) for (let seed = 0; seed < 40; seed++) {
+  for (const level of [0, 1, 4, 5, 6, 10, 18, 22, 23]) for (const maxHp of [3, 4, 5]) for (const injury of [0, .5, 2]) for (let seed = 0; seed < 40; seed++) {
     const inventory = Array.from({ length: level + 1 }, (_, index) => index);
     const options = genRewardOptions(maxHp - injury, maxHp, [], 3, inventory, 10, seeded(seed));
     assert.equal(options.length, 3);
     assert.equal(options.some(option => option.kind === 'heal'), injury > 0);
     const upgrade = options.find(option => option.kind === 'levelup');
-    assert.equal(upgrade?.level, level < 5 ? level + 1 : undefined);
+    assert.equal(upgrade?.level, level < EXPEDITION_MAX_LEVEL ? level + 1 : undefined);
     if (maxHp === 5) assert.ok(options.every(option => option.kind !== 'maxhp'));
     const keys = options.map(option => option.kind === 'temp' ? 'temp:' + option.cardId : option.kind);
     assert.equal(new Set(keys).size, options.length, 'No repeated choices');
@@ -77,15 +77,15 @@ test('nearby secrets remain unknown, affordable in scope, and useful after reach
 
 test('fully grown builds receive useful unique secrets instead of capped growth or owned relics', () => {
   const allRelics = EXPEDITION_RELICS.map(relic => relic.id);
-  const options = genRewardOptions(5, 5, allRelics, 4, [0, 1, 2, 3, 4, 5], 16, seeded(7));
-  assert.equal(options.length, 3, 'Only three distinct unknown tools remain; do not invent a useless fourth reward');
+  const options = genRewardOptions(5, 5, allRelics, 4, [0, EXPEDITION_MAX_LEVEL], 17, seeded(7));
+  assert.equal(options.length, expeditionSecretPool(EXPEDITION_MAX_LEVEL, 17).length, 'Do not invent duplicate choices after exhausting nearby skills');
   assert.ok(options.every(option => option.kind === 'temp'));
-  assert.equal(new Set(options.map(option => option.kind === 'temp' && option.cardId)).size, 3);
+  assert.equal(new Set(options.map(option => option.kind === 'temp' && option.cardId)).size, options.length);
 });
 
 test('shops do not sell owned gear, max-level badges or economy items that cannot repay before the finale', () => {
   for (let seed = 0; seed < 100; seed++) {
-    const shop = genShopItems(['waraxe'], 5, 14, seeded(seed));
+    const shop = genShopItems(['waraxe'], EXPEDITION_MAX_LEVEL, EXPEDITION_STAGES.length - 3, seeded(seed));
     assert.equal(shop.length, 4);
     assert.ok(shop.some(item => item.kind === 'potion'));
     for (const item of shop) {

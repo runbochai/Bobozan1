@@ -5,6 +5,7 @@ import { TEXT } from '../data/translations';
 import { SKILL_DB } from '../data/skills';
 import { SKILL_EFFECTS } from '../data/skillEffects';
 import { getHandCategory } from '../logic/skillLoadout';
+import { getEffectiveLevel, isOffensiveCard } from '../logic/combat';
 import PixelCardArt from './PixelCardArt';
 import SkillGlyph from './SkillGlyph';
 import { ArrowLeft, CheckCircle, Ghost, Layers, Shield, Skull, Swords, X, Zap } from './PixelIcons';
@@ -28,6 +29,12 @@ function HandArt({ id }: { id: string }) {
   </span>;
 }
 
+function skillRankHint(card: Card, lang: Lang) {
+  const level = getEffectiveLevel(card);
+  const tier = isOffensiveCard(card) ? ` · ${lang === 'zh' ? '攻击档位' : 'Attack tier'} T${card.tier}` : '';
+  return `${lang === 'zh' ? '技能等级' : 'Skill level'} Lv.${level}${tier}${card.tags?.includes('combo') ? ` · ${lang === 'zh' ? '联合' : 'Combo'}` : ''}`;
+}
+
 function CardDetails({ card, lang, freeCount, onClose }: { card: Card; lang: Lang; freeCount: number; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -45,7 +52,15 @@ function CardDetails({ card, lang, freeCount, onClose }: { card: Card; lang: Lan
     <HandArt id={card.id} />
     <h2 id="hand-detail-name">{card.name[lang]}</h2>
     <p className="hand-detail-type">{TEXT[lang].skillType[card.type]} · <Zap size={16} /> {freeCount ? <><s>{card.cost}</s> 0 · {lang === 'zh' ? '免费' : 'Free'} ×{freeCount}</> : card.cost}</p>
+    <dl className="hand-detail-ranks">
+      <div><dt>{lang === 'zh' ? '技能等级' : 'Skill level'}</dt><dd>Lv.{getEffectiveLevel(card)}{card.tags?.includes('combo') && <small>{lang === 'zh' ? '联合' : 'Combo'}</small>}</dd></div>
+      {isOffensiveCard(card) && <div><dt>{lang === 'zh' ? '攻击档位' : 'Attack tier'}</dt><dd>T{card.tier}</dd></div>}
+    </dl>
     <p>{card.description[lang]}</p>
+    <details className="hand-detail-rank-guide"><summary>{lang === 'zh' ? '等级与档位' : 'Levels and tiers'}</summary>
+      <p>{lang === 'zh' ? '这里是这张牌自己的等级。角色升级解锁新招，不会让旧招变强；能量费用也不是伤害。' : 'This is the card’s own level. Character upgrades unlock new moves; they do not strengthen old moves. Energy cost is not damage.'}</p>
+      {isOffensiveCard(card) && <p>{lang === 'zh' ? '对攻先比较档位，同档再按技能规则比较等级。轰轰、六克等招式有打平例外。' : 'Attack clashes compare tiers first, then apply level rules within a tier. Moves such as Double Blast and 6g have tie exceptions.'}</p>}
+    </details>
   </dialog>, document.body);
 }
 
@@ -152,11 +167,11 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
           const label = disabled ? (lang === 'zh' ? '已禁用' : 'Disabled') : shortage ? (lang === 'zh' ? `还需 ${shortage} 能量` : `Need ${shortage} energy`) : tutorialHighlight && !highlighted ? (lang === 'zh' ? '请跟随教学' : 'Follow the lesson') : freeCount ? `${lang === 'zh' ? '免费' : 'Free'} ×${freeCount}` : (lang === 'zh' ? '点击出招' : 'Play skill');
           return <div className="pixel-card-slot hand-skill-slot" key={card.id} onMouseEnter={() => setInspectedId(card.id)} onMouseLeave={() => setInspectedId(null)} onFocus={() => setInspectedId(card.id)} onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setInspectedId(null); }}>
             <button type="button" role="button" className={`hand-card hand-skill-card ${highlighted ? 'tutorial-highlight' : ''}`} data-card-type={getHandCategory(card)} data-card-id={card.id} data-skill-type={card.type}
-              data-combo={!!card.tags?.includes('combo')} data-acquired={acquired || undefined} data-tutorial-target={highlighted} aria-disabled={blocked} aria-label={`${card.name[lang]}${acquired ? ` · ${lang === 'zh' ? '获得技能' : 'Acquired skill'}` : ''} · ${label}`}
+              data-combo={!!card.tags?.includes('combo')} data-acquired={acquired || undefined} data-tutorial-target={highlighted} aria-disabled={blocked} aria-label={`${card.name[lang]} · ${skillRankHint(card, lang)}${acquired ? ` · ${lang === 'zh' ? '获得技能' : 'Acquired skill'}` : ''} · ${label}`}
               aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined} onClick={() => play(card)}>
               {acquired && <span className="hand-acquired-sparkles" aria-hidden="true"><i /><i /><i /></span>}
               <span className="hand-cost"><Zap size={15} />{freeCount ? 0 : card.cost}</span>
-              <span className="hand-card-rank">{card.tags?.includes('combo') ? (lang === 'zh' ? '联合' : 'COMBO') : card.levelRequired > 0 && card.levelRequired < 100 ? `Lv.${card.levelRequired}` : ''}</span>
+              <span className="hand-card-rank" data-combo-rank={!!card.tags?.includes('combo')} title={skillRankHint(card, lang)}>Lv.{getEffectiveLevel(card)}</span>
               <HandArt id={card.id} />
               <strong className="hand-card-name">{card.name[lang]}</strong>
               <span className="hand-card-action" data-free-pop={!!poppingFree[card.id]}>{label}</span>
@@ -167,7 +182,7 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
         })}
       </div>
       {viewMode === 'CARDS' && <div className="hand-inspector">
-        {inspected && <><SkillGlyph effect={SKILL_EFFECTS[inspected.id] ?? SKILL_EFFECTS.charge} /><div><strong>{inspected.name[lang]}</strong><span>{inspected.description[lang]}</span></div></>}
+        {inspected && <><SkillGlyph effect={SKILL_EFFECTS[inspected.id] ?? SKILL_EFFECTS.charge} /><div><strong>{inspected.name[lang]}</strong><small className="hand-inspector-rank">Lv.{getEffectiveLevel(inspected)}{isOffensiveCard(inspected) ? ` · T${inspected.tier}` : ''}</small><span>{inspected.description[lang]}</span></div></>}
       </div>}
     </>}
     {detail && canChoose && <CardDetails card={detail} lang={lang} freeCount={player?.freeSkills?.filter(id => id === detail.id).length ?? 0} onClose={() => setDetailId(null)} />}

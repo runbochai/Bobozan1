@@ -39,7 +39,8 @@
 .pixel-app .battle-hand .pixel-hand-back { position: relative !important; top: auto !important; left: auto !important; min-width: 34px; height: 34px; display: grid; place-items: center; border: 1px solid #718c9a; background: #1e2c40; color: #dfdbca; box-shadow: none; }
 .pixel-app .battle-hand button.hand-skill-card { padding-top: 29px; }
 .hand-cost { position: absolute; top: 7px; left: 7px; display: flex; align-items: center; gap: 3px; color: #ffe2a4; font-size: 16px; font-weight: 900; }
-.hand-card-rank { position: absolute; top: 11px; right: 31px; color: var(--card-color); font-size: 10px; font-weight: bold; }
+.hand-card-rank { position: absolute; top: 9px; right: 37px; padding: 1px 4px; border: 1px solid #9fb5b777; color: #f0e5bd; background: #102330e8; font-size: 12px; line-height: 16px; font-weight: bold; white-space: nowrap; }
+.hand-card-rank[data-combo-rank="true"] { border-color: #c69ce2; color: #ead4ff; }
 .hand-skill-card .hand-card-name { font-size: 14px; }
 .hand-card-action { display: block; color: #ece2c9; margin-top: 6px; font-size: 11px; line-height: 1.4; }
 .hand-card[aria-disabled="true"] .hand-card-action { color: #ffd2bd; }
@@ -49,6 +50,7 @@
 .hand-inspector .skill-glyph { width: 34px; height: 34px; flex-shrink: 0; }
 .hand-inspector > div { text-align: left; }
 .hand-inspector strong { color: #ecdbb5; font-size: 13px; margin-right: 10px; }
+.hand-inspector-rank { display: inline-block; margin-right: 10px; color: #f2d897; font-size: 12px; white-space: nowrap; }
 .hand-inspector span { line-height: 1.6; }
 .hand-rest { min-height: 220px; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 12px; color: #bbc9c1; }
 .hand-committed { display: flex; justify-content: center; align-items: center; gap: 24px; min-height: 230px; padding: 20px; }
@@ -64,6 +66,14 @@
 .hand-detail-dialog h2 { font-size: 23px; font-weight: bold; margin: 10px 0; }
 .hand-detail-dialog p { font-size: 17px; line-height: 1.75; }
 .hand-detail-dialog .hand-detail-type { display: flex; align-items: center; gap: 5px; font-size: 13px; color: #b2d5c4; margin-bottom: 14px; }
+.hand-detail-ranks { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin: 0 0 14px; }
+.hand-detail-ranks > div { padding: 8px 10px; border: 1px solid #6f8490; background: #142331; }
+.hand-detail-ranks dt { color: #bccbcc; font-size: 12px; }
+.hand-detail-ranks dd { display: flex; align-items: center; gap: 7px; margin: 3px 0 0; color: #f1d797; font-size: 19px; font-weight: 800; }
+.hand-detail-ranks dd small { color: #d9bcee; font-size: 12px; }
+.hand-detail-rank-guide { margin-top: 14px; padding-top: 10px; border-top: 1px solid #536b77; }
+.hand-detail-rank-guide summary { color: #c5d8d5; font-size: 14px; cursor: pointer; }
+.hand-detail-dialog .hand-detail-rank-guide p { margin: 8px 0 0; color: #bacbca; font-size: 14px; line-height: 1.65; }
 .hand-detail-close { position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid #709695; background: #213e46; }
 @media (min-width: 1600px) {
   .battle-command-dock { grid-template-columns: minmax(260px, 1fr) minmax(0, 940px) minmax(200px, 1fr); margin-top: -220px; }
@@ -102,7 +112,7 @@
   .battle-hand .hand-card .pixel-card-art { width: 70px; height: 70px; }
   .battle-hand .hand-art .pixel-card-symbol { width: 52px; height: 52px; }
   .hand-skill-card .hand-card-name { font-size: 13px; }
-  .hand-card-rank { right: 7px; top: 32px; font-size: 9px; }
+  .hand-card-rank { right: 7px; top: 32px; }
   .hand-temp { top: 51px; font-size: 9px; }
   .hand-card-action { font-size: 10px; }
   .pixel-app .battle-hand .hand-category-tab { min-width: 40px; padding: 5px 7px; font-size: 11px; }

@@ -8,6 +8,7 @@ import { SKILL_SLOT_LIMIT, getHandCategory, getSkillOverflow, hasSkillOverflow, 
 import BattleTableCards from './components/BattleTableCards';
 import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
+import BattleLevelBadge from './components/BattleLevelBadge';
 import BattleStats from './components/BattleStats';
 import BattleAcademy from './components/BattleAcademy';
 import ExpeditionBriefing, { type ExpeditionRecap } from './components/ExpeditionBriefing';
@@ -83,6 +84,7 @@ import {
 import {
   getCardIcon,
   getPlayerCards,
+  getEffectiveLevel,
 } from './logic/combat';
 import { initAudio, playSound } from './audio/sound';
 import { auth, db, firebaseConfigured, firebaseInitError } from './firebase';
@@ -1998,8 +2000,8 @@ export default function BobozanOnline() {
               </div>
             </div>
             {myPlayer && <ExpeditionCoach stageIdx={expStageIdx} turn={gameState.turn} lang={lang}
-              hero={{ id: myPlayer.id, hp: myPlayer.hp, energy: myPlayer.energy, isDead: myPlayer.isDead }}
-              opponents={gameState.players.filter(p => p.id !== myPlayer.id).map(({ id, hp, energy, isDead }) => ({ id, hp, energy, isDead }))}
+              hero={{ id: myPlayer.id, hp: myPlayer.hp, energy: myPlayer.energy, isDead: myPlayer.isDead, inventory: [...myPlayer.inventory], skillLoadout: myPlayer.skillLoadout }}
+              opponents={gameState.players.filter(p => p.id !== myPlayer.id).map(({ id, hp, energy, isDead, inventory, skillLoadout }) => ({ id, hp, energy, isDead, inventory: [...inventory], skillLoadout }))}
               history={expHistory} legalCardIds={getPlayerCards(myPlayer, gameState.players).map(card => card.id)}
               lastResult={expLastResult} recap={expRecap} />}
           </div>
@@ -2085,14 +2087,12 @@ export default function BobozanOnline() {
              const pos = getPlayerPosition(i, totalPlayers, myIndex);
              const isMe = p.id === myPlayerId;
              const pMaxLvl = Math.max(0, ...p.inventory);
-             const highestLevel = Math.max(0, ...gameState.players.flatMap(player => player.inventory));
              const line = expeditionDialogue.get(p.id);
              const intent = line ? <ExpeditionSpeech key={`${expStageIdx}-${gameState.turn}-${p.id}`}
                line={line.text} speaker={p.name} side={pos.x > 50 ? 'left' : 'right'} reduceMotion={reduceMotion} /> : undefined;
              return <BattleFighter key={p.id} player={p} seat={pos} bounds={tableBounds} self={isMe}
                maxHp={isExpedition ? (expBattleRef.current.maxHp[p.id] ?? MAX_HP) : MAX_HP}
-               level={pMaxLvl} levelName={SKILL_DB.find(card => card.levelRequired === pMaxLvl)?.name[lang] ?? ''}
-               leader={pMaxLvl > 0 && pMaxLvl === highestLevel} turn={gameState.turn}
+               level={pMaxLvl} viewerLevel={myPlayer ? Math.max(0, ...myPlayer.inventory) : undefined} lang={lang} turn={gameState.turn}
                showdown={gameState.status === 'SHOWDOWN'}
                damage={damageNumbers[p.id]} hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
@@ -2392,7 +2392,7 @@ export default function BobozanOnline() {
             {myPlayer.avatar ? <img src={avatarUrl(myPlayer.avatar)} alt={myPlayer.name} draggable={false} /> : <User size={52} />}
           </div>
           <div className="battle-hud-details">
-            <div className="battle-hud-name"><strong title={myPlayer.name}>{myPlayer.name}</strong><span>LVL {Math.max(0, ...myPlayer.inventory)}</span></div>
+            <div className="battle-hud-name"><strong title={myPlayer.name}>{myPlayer.name}</strong><BattleLevelBadge level={Math.max(0, ...myPlayer.inventory)} self name={myPlayer.name} lang={lang} /></div>
             <BattleStats player={myPlayer} maxHp={isExpedition ? (expBattleRef.current.maxHp[myPlayer.id] ?? MAX_HP) : MAX_HP} />
           </div>
         </div>}
@@ -2474,7 +2474,7 @@ export default function BobozanOnline() {
 
                           {/* Level & Icon */}
                           <div className="relative z-10 flex flex-col items-center gap-4">
-                             <div className="text-lg font-mono text-yellow-500">Lv.{card.levelRequired}</div>
+                             <div className="text-lg font-mono text-yellow-500">Lv.{getEffectiveLevel(card)}</div>
                              <div className="scale-[2.0] drop-shadow-xl">{getCardIcon(card.id)}</div>
                           </div>
 

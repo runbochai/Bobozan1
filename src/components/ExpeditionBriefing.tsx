@@ -5,6 +5,7 @@ import PixelCardArt from './PixelCardArt';
 import { SKILL_DB } from '../data/skills';
 import { EXPEDITION_STAGES, EXPEDITION_START_HP } from '../data/expedition';
 import { MAX_HP } from '../data/constants';
+import { getEffectiveLevel, isOffensiveCard } from '../logic/combat';
 import './ExpeditionBriefing.css';
 
 export interface ExpeditionRecap {
@@ -32,7 +33,12 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
         : recap.energyAfter > recap.energyBefore
           ? (zh ? `生命保住了，能量增加 ${recap.energyAfter - recap.energyBefore}。` : `HP held steady; energy rose by ${recap.energyAfter - recap.energyBefore}.`)
           : (zh ? '生命没有减少；具体攻防结果可以展开查看。' : 'HP did not decrease. Open the details for the actual move interactions.'));
-  const recapCards = (cards: ExpeditionRecap['cards']) => <div className="exp-recap-cards">{cards.map((card, index) => <figure key={`${card.name}-${index}`}><PixelCardArt id={card.id} /><figcaption>{card.name}<strong>{SKILL_DB.find(skill => skill.id === card.id)?.name[lang]}</strong></figcaption></figure>)}</div>;
+  const recapCards = (cards: ExpeditionRecap['cards']) => <div className="exp-recap-cards">{cards.map((card, index) => {
+    const skill = SKILL_DB.find(item => item.id === card.id);
+    return <figure key={`${card.name}-${index}`}><PixelCardArt id={card.id} /><figcaption>{card.name}<strong>{skill?.name[lang]}</strong>
+      {skill && <small className="exp-recap-skill-level">Lv.{getEffectiveLevel(skill)}{isOffensiveCard(skill) ? ` · ${zh ? `${skill.tier}档` : `Tier ${skill.tier}`}` : ''}</small>}
+    </figcaption></figure>;
+  })}</div>;
   useEffect(() => {
     const element = dialog.current!;
     const previous = document.activeElement as HTMLElement | null;
@@ -63,7 +69,7 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
       <details className="exp-briefing-details"><summary>{zh ? '更多规则' : 'More rules'}</summary>
         <p>{zh ? `打过全部 ${EXPEDITION_STAGES.length} 关即通关。每关击败所有对手才能领奖；对手之间也会互打。` : `Clear all ${EXPEDITION_STAGES.length} stages to win. Defeat every opponent for a reward; they can hit each other too.`}</p>
         <p>{zh ? '双方同时出牌，台词不是出牌预告。攒通常获得 2 能量，受到 1 点伤害会被打断。' : 'Moves resolve together. Dialogue is not a move preview. Charge normally gains 2 energy; taking 1 damage interrupts it.'}</p>
-        <p>{zh ? '本轮升级最高 Lv.5，只解锁新招，不增强旧牌。重开时等级、金币、遗物、装备和秘技清空。' : 'Levels unlock moves up to Lv.5 this run; old moves are unchanged. Restart clears levels, gold, relics, gear and limited skills.'}</p>
+        <p>{zh ? '升级沿完整技能表解锁新招，不再限制到 Lv.5；旧牌不会变强。重开时等级、金币、遗物、装备和秘技清空。' : 'Leveling follows the full skill list without the old Lv.5 restriction; old moves stay unchanged. Restart clears levels, gold, relics, gear and limited skills.'}</p>
         <p>{zh ? `远征从 ${EXPEDITION_START_HP} 血开始，装备只在本轮有效。多人从 ${MAX_HP} 血开始：淘汰后若至少两人存活，幸存者回到 ${MAX_HP} 血，能量和层数归零；远征没有这次重置。基础攻防规则相同。` : `Expedition starts at ${EXPEDITION_START_HP} HP; gear lasts for this run. Multiplayer starts at ${MAX_HP} HP: after an elimination with at least two survivors, their HP resets to ${MAX_HP}, energy and layer to 0. Expedition has no such reset. Basic combat rules are shared.`}</p>
       </details>
     </>}

@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { getExpeditionLesson, type ExpeditionLessonContext } from '../data/expeditionLessons';
 import { SKILL_DB } from '../data/skills';
+import { EXPEDITION_STAGES } from '../data/expedition';
 import type { Player } from '../types';
 import { calculateTurnOutcome, getPlayerCards } from './combat';
 import { recordExpeditionHistory } from './expeditionRuntime';
@@ -11,8 +12,9 @@ const fighter = (id: string, selectedCardId: string, patch: Partial<Player> = {}
   isDead: false, layer: 0, tempLayerMod: 0, selectedCardId, lastCardId: null, lastAction: null,
   ...patch,
 });
-const context = (stageIdx: number, patch: Partial<ExpeditionLessonContext> = {}): ExpeditionLessonContext => ({
-  stageIdx, turn: 2, hero: fighter('hero', 'charge'), opponents: [fighter('enemy', 'charge')],
+const context = (stageId: number, patch: Partial<ExpeditionLessonContext> = {}): ExpeditionLessonContext => ({
+  stageIdx: EXPEDITION_STAGES.findIndex(stage => stage.id === `s${stageId}`),
+  turn: 2, hero: fighter('hero', 'charge'), opponents: [fighter('enemy', 'charge')],
   history: {}, legalCardIds: ['charge', 'hong', 'hong2', 'defend', 'ka'], ...patch,
 });
 const card = (id: string) => {
@@ -172,4 +174,54 @@ test('adaptive coaching reports an actual hit even when post-combat healing mask
     recap: { hpBefore: 3, hpAfter: 3, energyBefore: 0, energyAfter: 2 },
   }));
   assert.equal(hint.id, 'last-hit', 'HP deltas alone must not be misreported as a tie, a block or an energy-only turn');
+});
+
+test('the inserted veteran lesson keeps every existing encounter and coach attached to its stable ID', () => {
+  assert.deepEqual(EXPEDITION_STAGES.slice(0, 6).map(stage => stage.id), ['s0', 's1', 's2', 's3', 's17', 's4']);
+  assert.deepEqual(EXPEDITION_STAGES.filter(stage => stage.id !== 's17').map(stage => stage.id),
+    Array.from({ length: 17 }, (_, index) => `s${index}`));
+  EXPEDITION_STAGES.forEach((stage, index) => {
+    assert.ok(stage.name.zh.startsWith(`第 ${index + 1} 关`));
+    assert.ok(stage.name.en.startsWith(`Stage ${index + 1} ·`));
+  });
+  assert.equal(getExpeditionLesson(context(4)).id, 'every-opponent');
+  assert.equal(getExpeditionLesson(context(5)).id, 'read-history');
+});
+
+test('veteran coaching uses the publicly retained attack and its real block, tie and counterplay', () => {
+  const opponent = fighter('enemy', 'helmetatk', { inventory: [0, 8], skillLoadout: ['helmetatk'] });
+  const publicEnemy = Object.defineProperty({ ...opponent }, 'selectedCardId', {
+    get() { throw new Error('Coach read the committed veteran move'); },
+  });
+  const hint = getExpeditionLesson(context(17, {
+    hero: fighter('hero', 'hong2', { inventory: [0, 5] }), opponents: [publicEnemy],
+  }));
+  assert.equal(hint.id, 'veteran-counterplay');
+  assert.match(hint.text.zh, /头盔攻 Lv\.8/);
+  assert.match(hint.detail.zh, /比你当前等级高/);
+  assert.deepEqual(hint.cardIds, ['hong2', 'helmetatk']);
+  assert.equal(hint.relation, '=');
+  const tied = duel(hint.cardIds[0], hint.cardIds[1]);
+  assert.equal(tied.damageTaken.hero, 0);
+  assert.equal(tied.damageTaken.enemy, 0);
+  const blocked = duel('defend', 'helmetatk');
+  assert.equal(blocked.damageTaken.hero, 0);
+  assert.equal(blocked.defendedHits.hero, 1);
+  assert.equal(duel('madian', 'helmetatk').damageTaken.hero, 1, 'Lower ordinary skills really lose the clash');
+  assert.equal(duel('hong', 'charge').damageTaken.enemy, 1, 'The same basic counterattack remains useful');
+});
+
+test('maximum-content-level and missing-public-data lessons never claim an invented higher level', () => {
+  const same = getExpeditionLesson(context(17, {
+    hero: fighter('hero', 'hong', { inventory: [0, 23] }),
+    opponents: [fighter('enemy', 'charge', { inventory: [0, 23], skillLoadout: ['poison'] })],
+  }));
+  assert.match(same.text.zh, /Lv\.23/);
+  assert.doesNotMatch(same.detail.zh, /比你当前等级高|24/);
+  const missing = getExpeditionLesson(context(17, {
+    opponents: [{ id: 'enemy', hp: 1.5, energy: 0, isDead: false }],
+  }));
+  assert.deepEqual(missing.cardIds, ['defend', 'hong2']);
+  assert.equal(missing.relation, undefined);
+  assert.doesNotMatch(missing.text.zh, /更高|必败|必定/);
 });

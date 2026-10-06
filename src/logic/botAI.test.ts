@@ -30,7 +30,7 @@ test('multiplayer bots use one dedicated robot while humans and expedition retai
 
 test('all selectable portraits, the robot and every expedition enemy resolve to a saved full-body atlas', () => {
   const portraits = [...AVATAR_OPTIONS.map(a => a.path), BOT_AVATAR,
-    ...new Set(EXPEDITION_STAGES.flatMap(s => s.enemies.map(e => `avatars/enemies/${e.id}.webp`)))];
+    ...new Set(EXPEDITION_STAGES.flatMap(s => s.enemies.map(e => `avatars/enemies/${e.avatarId ?? e.id}.webp`)))];
   for (const portrait of portraits) {
     const atlas = battleCharacterAtlas(portrait);
     assert.ok(atlas, portrait);

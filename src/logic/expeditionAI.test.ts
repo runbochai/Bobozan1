@@ -4,6 +4,9 @@ import type { Player } from '../types';
 import { SKILL_DB } from '../data/skills';
 import { getPlayerCards } from './combat';
 import { expeditionBotMove, expeditionMoveWeights, pickThreat } from './expeditionAI';
+import { EXPEDITION_STAGES } from '../data/expedition';
+import { createExpeditionRun, setupExpeditionStage } from './expeditionRuntime';
+import { autoSelectSkillLoadout, grantSkillLevel } from './skillLoadout';
 
 const personality = { aggression: 0.5, defense: 0.55, charge: 0.5, smart: 0.9 };
 const make = (id: string, patch: Partial<Player> = {}): Player => ({
@@ -21,6 +24,28 @@ function seeded(seed: number) {
 }
 const probability = (weights: ReturnType<typeof expeditionMoveWeights>, ...types: string[]) => weights
   .filter(entry => types.includes(entry.type)).reduce((sum, entry) => sum + entry.probability, 0);
+
+test('the veteran can use its actual higher skill while leaving genuine charge and defense counterplay', () => {
+  const stageIdx = EXPEDITION_STAGES.findIndex(stage => stage.id === 's17');
+  const definition = EXPEDITION_STAGES[stageIdx].enemies[0];
+  for (let level = 0; level <= 5; level++) {
+    let run = createExpeditionRun();
+    for (let learned = 1; learned <= level; learned++) run = autoSelectSkillLoadout(grantSkillLevel(run, learned));
+    const battle = setupExpeditionStage(run, stageIdx, { name: 'Practice', avatar: '🐉', lang: 'en' }, () => .5);
+    const [hero, veteran] = battle.players;
+    const attack = SKILL_DB.find(card => veteran.skillLoadout?.includes(card.id) && card.type === 'ATTACK')!;
+    assert.ok(attack && attack.levelRequired > level);
+    assert.equal(veteran.energy, 0);
+    const opening = expeditionMoveWeights(veteran, battle.players, definition.personality, hero.id);
+    assert.deepEqual(new Set(opening.map(entry => entry.cardId)), new Set(['charge', 'defend']));
+    const charged = { ...veteran, energy: 2 }, readyHero = { ...hero, energy: 2 };
+    const weights = expeditionMoveWeights(charged, [readyHero, charged], definition.personality, hero.id);
+    for (const id of [attack.id, 'charge', 'defend']) {
+      assert.ok(weights.some(entry => entry.cardId === id && entry.probability > 0), `${level}/${id}: missing real alternative`);
+    }
+    assert.ok(weights.every(entry => !['gun', 'machete', 'wave'].includes(entry.cardId)));
+  }
+});
 
 test('type probabilities are normalized and more weaker moves do not inflate a category', () => {
   const enemy = make('enemy', { energy: 2, inventory: [0, 5] }), hero = make('hero');

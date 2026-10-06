@@ -17,9 +17,10 @@
 .skill-loadout-card:disabled { opacity: .6; cursor: wait; }
 .skill-loadout-card-top { display: flex; align-items: center; width: 100%; gap: 5px; color: #efd38b; font-size: 13px; }
 .skill-loadout-card-top > span:first-child { display: flex; align-items: center; gap: 2px; }
-.skill-loadout-card-top > b { padding: 1px 4px; margin-left: auto; color: #1b2531; background: #ebc567; font-size: 10px; }
+.skill-loadout-card-top > b { position: absolute; top: 36px; right: 9px; z-index: 1; padding: 1px 4px; color: #1b2531; background: #ebc567; font-size: 10px; }
+.skill-loadout-rank { margin-left: 3px; padding: 1px 4px; border: 1px solid #81979d; color: #f1e3b8; background: #142632; font-size: 11px; line-height: 16px; font-weight: 800; white-space: nowrap; }
 .skill-loadout-check { display: grid; place-items: center; width: 22px; height: 22px; margin-left: auto; color: #d9edb3; }
-.skill-loadout-card-top > b + .skill-loadout-check { margin-left: 3px; }
+.skill-loadout-card-top > b + .skill-loadout-check { margin-left: auto; }
 .skill-loadout-check > i { display: block; width: 16px; height: 16px; border: 1px solid #91a3a7; }
 .skill-loadout-art { display: grid; place-items: center; width: 100%; height: 82px; margin: 5px 0; pointer-events: none; }
 .skill-loadout-art .pixel-card-art { width: 74px; height: 74px; }

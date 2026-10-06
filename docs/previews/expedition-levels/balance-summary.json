@@ -1,0 +1,114 @@
+{
+  "stageCount": 18,
+  "seedsPerStrategy": 200,
+  "strategies": [
+    {
+      "strategy": "random",
+      "passedAll": 0,
+      "maxLevelReached": 5,
+      "runsAboveLevel5": 0,
+      "stalled": 0,
+      "loadoutChoices": 16,
+      "veteran": {
+        "stage": 5,
+        "id": "s17",
+        "name": "Stage 5 · Veteran Trial",
+        "reached": 44,
+        "cleared": 12,
+        "lost": 32,
+        "stalled": 0,
+        "medianTurns": 11
+      }
+    },
+    {
+      "strategy": "charge-attack",
+      "passedAll": 0.015,
+      "maxLevelReached": 16,
+      "runsAboveLevel5": 111,
+      "stalled": 0,
+      "loadoutChoices": 939,
+      "veteran": {
+        "stage": 5,
+        "id": "s17",
+        "name": "Stage 5 · Veteran Trial",
+        "reached": 183,
+        "cleared": 118,
+        "lost": 65,
+        "stalled": 0,
+        "medianTurns": 7
+      }
+    },
+    {
+      "strategy": "read-history",
+      "passedAll": 0.555,
+      "maxLevelReached": 17,
+      "runsAboveLevel5": 128,
+      "stalled": 0,
+      "loadoutChoices": 1554,
+      "veteran": {
+        "stage": 5,
+        "id": "s17",
+        "name": "Stage 5 · Veteran Trial",
+        "reached": 166,
+        "cleared": 139,
+        "lost": 27,
+        "stalled": 0,
+        "medianTurns": 10
+      }
+    },
+    {
+      "strategy": "always-defend",
+      "passedAll": 0,
+      "maxLevelReached": 0,
+      "runsAboveLevel5": 0,
+      "stalled": 0,
+      "loadoutChoices": 0,
+      "veteran": {
+        "stage": 5,
+        "id": "s17",
+        "name": "Stage 5 · Veteran Trial",
+        "reached": 0,
+        "cleared": 0,
+        "lost": 0,
+        "stalled": 0,
+        "medianTurns": 0
+      }
+    }
+  ],
+  "sameFirst30Seeds": [
+    {
+      "strategy": "random",
+      "before17Clears": 0,
+      "after18Clears": 0,
+      "beforeStalls": 0,
+      "afterStalls": 0
+    },
+    {
+      "strategy": "charge-attack",
+      "before17Clears": 4,
+      "after18Clears": 1,
+      "beforeStalls": 1,
+      "afterStalls": 0
+    },
+    {
+      "strategy": "read-history",
+      "before17Clears": 22,
+      "after18Clears": 21,
+      "beforeStalls": 0,
+      "afterStalls": 0
+    },
+    {
+      "strategy": "always-defend",
+      "before17Clears": 0,
+      "after18Clears": 0,
+      "beforeStalls": 0,
+      "afterStalls": 0
+    }
+  ],
+  "limitations": [
+    "Read-history is an informed model-based benchmark, not an estimate of a human beginner.",
+    "80-round unfinished stages are counted as stalls, not victories.",
+    "Fixed reward/shop/route policy is one policy, not an exhaustive balance search.",
+    "All strategies keep the newest skills; this does not optimize retained combo ingredients or represent every human loadout choice."
+  ]
+}
