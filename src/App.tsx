@@ -98,6 +98,7 @@ import { assetUrl, avatarUrl } from './assets';
 import { mutateRoom, createUniqueRoom } from './services/rooms';
 import { advanceRoom, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './logic/room';
 import type { User as FirebaseUser } from 'firebase/auth';
+import './components/BattleViewport.css';
 
 
 
@@ -289,7 +290,7 @@ export default function BobozanOnline() {
   };
 
   // --- Drag State ---
-  const [dragPosition, setDragPosition] = useState({ x: 25, y: 98 }); // Below the controls; the lower-left area belongs to the player HUD.
+  const [dragPosition, setDragPosition] = useState({ x: 25, y: 12 }); // Share the header row; keep the table seats clear.
   const [isDragging, setIsDragging] = useState(false);
   const [dragOffset, setDragOffset] = useState({ x: 0, y: 0 }); // Offset of mouse click within the element
   const leaderboardRef = useRef<HTMLDivElement>(null);
@@ -804,7 +805,7 @@ const expYpjUsedRef = useRef(false);
         const parent = leaderboardRef.current?.offsetParent?.getBoundingClientRect();
         setDragPosition({
             x: e.clientX - dragOffset.x - (parent?.left ?? 0),
-            y: e.clientY - dragOffset.y - (parent?.top ?? 0),
+            y: e.clientY - dragOffset.y - (parent?.top ?? 0) - (window.innerWidth < 768 ? 86 : 0),
         });
     };
 
@@ -2244,7 +2245,7 @@ const expYpjUsedRef = useRef(false);
       </div>
 
       {/* CENTER ARENA */}
-      <div className="pixel-battle-layout flex-1 flex flex-col relative h-screen z-10" style={{'--table-hand-overlap':`${tableBounds.height*.15+12}px`} as React.CSSProperties}>
+      <div className="pixel-battle-layout flex-1 flex flex-col relative z-10">
 
         {/* --- EXPEDITION HUD（左上：章节关卡 + 遗物） --- */}
         {isExpedition && expPhase === 'battle' && (
@@ -2636,9 +2637,10 @@ const expYpjUsedRef = useRef(false);
           {!isExpedition && (
            <div
                ref={leaderboardRef}
+               data-mode={leaderboardMode}
                className="battle-leaderboard absolute z-50 animate-in slide-in-from-left-10 duration-500 pointer-events-none"
                style={{ 
-                  top: `${dragPosition.y}px`, 
+                  top: `${dragPosition.y + (isSmallScreen ? 86 : 0)}px`,
                   left: `${dragPosition.x}px`,
                   cursor: isDragging ? 'grabbing' : 'default', // Cursor logic
                }}

@@ -1,11 +1,32 @@
 import { getBattleFigure, getBattleStatusOffset, getTableGeometry, SELF_SEAT, type BattleBounds, type BattleSeat } from './battleLayout';
 
-export interface TableCardPosition { x: number; y: number; width: number }
+export interface TableCardPosition {
+  x: number;
+  y: number;
+  width: number;
+  cardHeight: number;
+  ownerHeight: number;
+  ownerGap: number;
+  compact: boolean;
+}
 interface Rect { left: number; top: number; right: number; bottom: number }
 const overlaps = (a: Rect, b: Rect) => a.left < b.right && a.right > b.left && a.top < b.bottom && a.bottom > b.top;
 
+function innerSquares(step: number) {
+  const squares: { scale: number; offset: number; score: number }[] = [];
+  for (let scale = .74; scale >= .3; scale -= step) for (let offset = -.3; offset <= .1001; offset += step) {
+    squares.push({ scale, offset, score: Math.abs(scale - .62) + Math.abs(offset + .06) * .6 });
+  }
+  // Search the preferred shape first. This preserves the former score ordering
+  // while avoiding a full grid scan after a valid square has already been found.
+  return squares.sort((a, b) => a.score - b.score);
+}
+const REGULAR_SQUARES = innerSquares(.02);
+const COMPACT_SQUARES = innerSquares(.01);
+
 /** One permanent card slot per roster index; include dead and uncommitted seats.
- * x/y are board percentages, width is pixels, owner height is 22px.
+ * x/y are board percentages; card/owner dimensions are pixels. The returned
+ * dimensions must also drive CSS so short boards do not hide cards or overlap.
  */
 export function tableCardPositions(seats: readonly BattleSeat[], bounds: BattleBounds): TableCardPosition[] {
   if (!seats.length || !Number.isFinite(bounds.width) || !Number.isFinite(bounds.height) || bounds.width <= 0 || bounds.height <= 0) return [];
@@ -44,25 +65,37 @@ export function tableCardPositions(seats: readonly BattleSeat[], bounds: BattleB
     return rect.left >= bounds.width / 2 - half + 6 && rect.right <= bounds.width / 2 + half - 6;
   };
   const preferred = compact ? Math.min(42, Math.max(32, bounds.width / 10)) : Math.min(96, Math.max(80, bounds.width / 16));
-  for (let width = preferred; width >= (compact ? 26 : 48); width -= 2) {
-    const height = width * 1.15 + 22;
-    let best: { score: number; positions: TableCardPosition[] } | undefined;
+  const styles = [
+    { preferred, minimum: compact ? 26 : 48, ratio: 1.15, ownerHeight: 18, ownerGap: 4, compact: false, squares: REGULAR_SQUARES },
+    // At the minimum 320px board height, a crowded iPad can require 26–30px
+    // icon cards. Keep that explicit floor instead of shrinking indefinitely.
+    { preferred: Math.floor(Math.min(64, Math.max(32, bounds.width / 16)) / 2) * 2, minimum: 26,
+      ratio: 1, ownerHeight: 10, ownerGap: 2, compact: true, squares: COMPACT_SQUARES },
+    // An exceptionally narrow/short phone can run out of room even for the
+    // compact owner row. Preserve a seat-owned icon tile with its full text in
+    // the component's title/aria label, rather than silently dropping the play.
+    { preferred: 32, minimum: 22, ratio: 1, ownerHeight: 0, ownerGap: 0, compact: true, squares: COMPACT_SQUARES },
+  ];
+  for (const style of styles) for (let width = style.preferred; width >= style.minimum; width -= 2) {
+    const cardHeight = width * style.ratio;
+    const height = cardHeight + style.ownerHeight + style.ownerGap;
     // A common scale and offset preserve the clockwise order and corresponding
     // edge of every seat. Never pack cards independently into free grid cells.
-    for (let scale = .74; scale >= .3; scale -= .02) for (let offset = -.3; offset <= .1001; offset += .02) {
-      const positions = coordinates.map(({ u, v }) => {
+    for (const { scale, offset } of style.squares) {
+      const positions: TableCardPosition[] = [], boxes: Rect[] = [];
+      for (const { u, v } of coordinates) {
         const depth = .5 + v * scale / 2 + offset;
-        return { x: 50 + u * scale * halfWidthAt(depth), y: farY + depth * (nearY - farY), width };
-      });
-      const boxes = positions.map(p => ({
-        left: p.x * bounds.width / 100 - width / 2 - 3, right: p.x * bounds.width / 100 + width / 2 + 3,
-        top: p.y * bounds.height / 100 - height / 2 - 3, bottom: p.y * bounds.height / 100 + height / 2 + 3,
-      }));
-      if (boxes.some((box, index) => !inside(box) || obstacles.some(obstacle => overlaps(box, obstacle)) || boxes.slice(index + 1).some(other => overlaps(box, other)))) continue;
-      const score = Math.abs(scale - .62) + Math.abs(offset + .06) * .6;
-      if (!best || score < best.score) best = { score, positions };
+        const x = 50 + u * scale * halfWidthAt(depth), y = farY + depth * (nearY - farY);
+        const box = {
+          left: x * bounds.width / 100 - width / 2 - 3, right: x * bounds.width / 100 + width / 2 + 3,
+          top: y * bounds.height / 100 - height / 2 - 3, bottom: y * bounds.height / 100 + height / 2 + 3,
+        };
+        if (!inside(box) || obstacles.some(obstacle => overlaps(box, obstacle)) || boxes.some(other => overlaps(box, other))) break;
+        boxes.push(box);
+        positions.push({ x, y, width, cardHeight, ownerHeight: style.ownerHeight, ownerGap: style.ownerGap, compact: style.compact });
+      }
+      if (positions.length === seats.length) return positions;
     }
-    if (best) return best.positions;
   }
   return [];
 }

@@ -1,5 +1,4 @@
 /* Seats touch the tabletop at the waist; bodies and HUD use separate layers. */
-.pixel-screen-battle .pixel-battle-board.center-table-board { height: 760px; min-height: 0; flex: 0 0 auto; }
 .pixel-screen-battle .center-table-board .battle-fighter { height: calc(var(--model-size) * 4 / 3); transform: none; margin-left: calc(var(--model-size) * -.5); margin-top: calc(var(--model-size) * -4 / 3 * var(--seat-anchor)); z-index: auto; }
 .center-table-board .battle-fighter .battle-character-motion { z-index: 10; }
 .center-table-board .battle-fighter[data-depth="front"] .battle-character-motion { z-index: 30; }
@@ -25,32 +24,22 @@
 .pixel-screen-battle .center-table-board .pixel-intent { top: calc(100% + 10px); left: 50%; right: auto; margin: 0; transform: translateX(-50%); }
 .pixel-screen-battle .center-table-board .pixel-intent button { width: 124px; max-width: 124px; font-size: 12px; padding: 5px 7px; }
 .pixel-screen-battle .center-table-board .battle-intent-tail { top: -4px; left: calc(50% - 4px); right: auto; width: 8px; height: 8px; transform: rotate(45deg); }
-.pixel-screen-battle .battle-command-dock { margin-top: calc(-1 * var(--table-hand-overlap)); }
-.center-table-board .table-played-card { height: calc(var(--played-width) * 1.15); min-height: 0; overflow: hidden; padding: 14px 3px 4px; gap: 2px; border-width: 2px; box-shadow: 2px 4px #07121f99; }
+.center-table-board .table-played-card { height: var(--played-height); min-height: 0; overflow: hidden; padding: 14px 3px 4px; gap: 2px; border-width: 2px; box-shadow: 2px 4px #07121f99; }
 .center-table-board .table-played-card strong { font-size: clamp(9px, calc(var(--played-width) * .14), 14px); }
 .center-table-board .table-played-card small { display: none; }
-.center-table-board .table-card-owner { margin-top: 4px; height: 18px; line-height: 14px; }
+.center-table-board .table-card-owner { margin-top: var(--owner-gap); height: var(--owner-height); line-height: 14px; }
+.center-table-board .table-card-flight { pointer-events: auto; }
+.center-table-board .table-card-flight[data-compact="true"] .table-played-card { padding: 12px 2px 2px; border-width: 1px; gap: 0; }
+.center-table-board .table-card-flight[data-compact="true"] .table-played-card strong { display: none; }
+.center-table-board .table-card-flight[data-compact="true"] :is(.pixel-card-art, .pixel-card-symbol) { flex: 1; min-height: 0; height: 100%; width: 80%; border-width: 1px; }
+.center-table-board .table-card-flight[data-compact="true"] .table-card-cost { top: 1px; right: 2px; gap: 1px; font-size: 9px; line-height: 10px; }
+.center-table-board .table-card-flight[data-compact="true"] .table-card-cost .pixel-icon { width: 8px; height: 8px; }
+.center-table-board .table-card-flight[data-compact="true"] .table-card-owner { padding: 0; font-size: 9px; line-height: var(--owner-height); }
 @media (min-width: 768px) {
   .pixel-screen-battle .center-table-board[data-player-count="2"] .pixel-intent { top: 35%; left: 100%; margin-left: 6px; transform: none; }
   .pixel-screen-battle .center-table-board[data-player-count="2"] .battle-intent-tail { top: 12px; left: -4px; }
 }
-@media (max-width: 1199px) {
-  .pixel-screen-battle .battle-command-dock .pixel-hand-area.battle-hand { grid-row: 1; }
-  .pixel-screen-battle .battle-command-dock .battle-player-hud,
-  .pixel-screen-battle .battle-command-dock .battle-hud-inventory { grid-row: 2; }
-}
-@media (min-width: 768px) and (max-width: 1199px) {
-  .pixel-screen-battle .center-table-board[data-player-count="7"] { height: 1000px; }
-}
-@media (min-width: 768px) and (max-width: 900px) {
-  .pixel-screen-battle .center-table-board[data-player-count="8"] { height: 1100px; }
-}
-@media (min-width: 1600px) {
-  .pixel-screen-battle .pixel-battle-board.center-table-board { height: 900px; }
-}
 @media (max-width: 767px) {
-  .pixel-screen-battle .pixel-battle-board.center-table-board { height: 680px; }
-  .pixel-screen-battle .pixel-battle-board.center-table-board.battle-board-crowded { height: 960px; }
   .center-table-board .table-seat-status { width: 86px; }
   .pixel-screen-battle .center-table-board .pixel-intent button { width: 88px; max-width: 88px; font-size: 10px; }
   .center-table-board .table-played-card { padding: 12px 1px 2px; border-width: 1px; }
