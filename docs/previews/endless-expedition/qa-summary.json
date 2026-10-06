@@ -1,0 +1,151 @@
+{
+  "scope": "Local actual App; external requests blocked. Natural entry and one full win use UI clicks without state injection or random override. Advanced rank/death/overflow scenarios use controlled local initial states followed by actual UI actions and combat settlement. No live multiplayer transactions.",
+  "natural": {
+    "won": true,
+    "moveCount": 16,
+    "deathsContinued": 1,
+    "finalLevel": "Lv.1",
+    "pageErrors": 0
+  },
+  "devices": [
+    {
+      "viewport": [
+        1024,
+        768
+      ],
+      "threeChoices": true,
+      "choiceBounds": {
+        "within": true,
+        "startWithin": true,
+        "overflow": false
+      },
+      "entryHP": 1,
+      "entryEnemyLevel": 1,
+      "retry": {
+        "stage": 19,
+        "level": 26,
+        "enemyLevel": 28,
+        "hp": 3,
+        "gold": 57,
+        "retained": "Levels, skill selection, gold, equipment, relics and remaining temporary cards"
+      },
+      "overflow": "Attack and Ultimate each kept at 3, then reward -> shop -> next battle",
+      "nextLevel": 4,
+      "pageErrors": 0
+    },
+    {
+      "viewport": [
+        768,
+        1024
+      ],
+      "threeChoices": true,
+      "choiceBounds": {
+        "within": true,
+        "startWithin": true,
+        "overflow": false
+      },
+      "entryHP": 1,
+      "entryEnemyLevel": 1,
+      "retry": {
+        "stage": 19,
+        "level": 26,
+        "enemyLevel": 28,
+        "hp": 3,
+        "gold": 57,
+        "retained": "Levels, skill selection, gold, equipment, relics and remaining temporary cards"
+      },
+      "overflow": "Attack and Ultimate each kept at 3, then reward -> shop -> next battle",
+      "nextLevel": 4,
+      "pageErrors": 0
+    },
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "threeChoices": true,
+      "choiceBounds": {
+        "within": true,
+        "startWithin": true,
+        "overflow": false
+      },
+      "entryHP": 1,
+      "entryEnemyLevel": 1,
+      "retry": {
+        "stage": 19,
+        "level": 26,
+        "enemyLevel": 28,
+        "hp": 3,
+        "gold": 57,
+        "retained": "Levels, skill selection, gold, equipment, relics and remaining temporary cards"
+      },
+      "overflow": "Attack and Ultimate each kept at 3, then reward -> shop -> next battle",
+      "nextLevel": 4,
+      "pageErrors": 0
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "threeChoices": true,
+      "choiceBounds": {
+        "within": true,
+        "startWithin": true,
+        "overflow": false
+      },
+      "entryHP": 1,
+      "entryEnemyLevel": 1,
+      "retry": {
+        "stage": 19,
+        "level": 26,
+        "enemyLevel": 28,
+        "hp": 3,
+        "gold": 57,
+        "retained": "Levels, skill selection, gold, equipment, relics and remaining temporary cards"
+      },
+      "overflow": "Attack and Ultimate each kept at 3, then reward -> shop -> next battle",
+      "nextLevel": 4,
+      "pageErrors": 0
+    }
+  ],
+  "cardPresentation": {
+    "played": "旅人: 流星坠 · Lv.26 · 3 能量",
+    "cutin": "Lv.26 · 旅人",
+    "recap": [
+      "Lv.26 · 4档",
+      "Lv.0"
+    ],
+    "pageErrors": 0
+  },
+  "english": [
+    {
+      "viewport": [
+        390,
+        844
+      ],
+      "bounds": {
+        "within": true,
+        "startWithin": true,
+        "overflow": false
+      },
+      "pageErrors": 0
+    },
+    {
+      "viewport": [
+        844,
+        390
+      ],
+      "bounds": {
+        "within": true,
+        "startWithin": true,
+        "overflow": false
+      },
+      "pageErrors": 0
+    }
+  ],
+  "previews": [
+    "choice-mobile.webp",
+    "stage19-ipad.webp"
+  ]
+}

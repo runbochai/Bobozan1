@@ -68,6 +68,7 @@ function publicCombatant(player: Player): Player {
   return { id: player.id, name: player.name, isBot: player.isBot, hp: player.hp, energy: player.energy,
     isDead: player.isDead, inventory: [...player.inventory],
     ...(player.skillLoadout ? { skillLoadout: [...player.skillLoadout] } : {}),
+    endlessLevel: player.endlessLevel,
     layer: player.layer, tempLayerMod: player.tempLayerMod,
     selectedCardId: null, lastCardId: player.lastCardId, lastAction: null, kills: player.kills,
     freeSkills: [...(player.freeSkills ?? [])], tempSkills: [...(player.tempSkills ?? [])],
@@ -122,6 +123,7 @@ export function expeditionMoveWeights(
   if (!available.length) return [];
   const opponents = players.filter(player => player.id !== enemy.id && !player.isDead)
     .sort((a, b) => a.id.localeCompare(b.id));
+  const endless = Number.isSafeInteger(enemy.endlessLevel) && enemy.endlessLevel! >= 0;
   const models = opponents.map(player => {
     const cards = legalCards(player, players), rates = historyRates(player, cards, options.history);
     return { player, cards, rates, snapshot: publicCombatant(player), forecasts: forecastCards(player, cards, rates, options.history) };
@@ -132,8 +134,10 @@ export function expeditionMoveWeights(
   const defendRate = average(model => model.rates.defend);
   const attackRate = average(model => model.rates.attack);
   // Zero energy is not safe when an opponent holds an absorbed free attack.
-  const pressure = average(model => model.cards.some(isOffensiveCard) ? 1 : 0);
-  const ultimatePressure = average(model => model.cards.some(card => card.type === 'ULTIMATE') ? 1 : 0);
+  const threatensHere = (model: typeof models[number], card: Card) => !endless
+    || reaches(card, movedLayer(model.player, card), enemy.layer);
+  const pressure = average(model => model.cards.some(card => isOffensiveCard(card) && threatensHere(model, card)) ? 1 : 0);
+  const ultimatePressure = average(model => model.cards.some(card => card.type === 'ULTIMATE' && threatensHere(model, card)) ? 1 : 0);
   const smart = unit(personality.smart);
   const aggression = 0.1 + unit(personality.aggression);
   const defense = 0.1 + unit(personality.defense);
@@ -151,6 +155,28 @@ export function expeditionMoveWeights(
     ABSORB: (0.28 + smart * 1.2) * (0.7 + chargeRate * 1.1) * (1 - ultimatePressure * 0.45),
     SPECIAL: 0.16 + pressure * (0.2 + smart * 0.35),
   };
+  const nearestDistance = (layer: number) => Math.min(...opponents.map(player => Math.abs(layer - player.layer)));
+  const currentDistance = nearestDistance(enemy.layer);
+  const reachesOpponent = (card: Card) => opponents.some(player => reaches(card, movedLayer(enemy, card), player.layer));
+  const canHitNow = available.some(card => isOffensiveCard(card) && reachesOpponent(card));
+  const isPermanentMove = (card: Card) => card.tags?.some(tag => tag === 'layer_up' || tag === 'layer_down');
+  if (endless && opponents.length) {
+    // A miss penalty inside a category cancels when every card in that category
+    // misses. Penalize the category too, while retaining the exploration floor.
+    for (const type of ['ATTACK', 'ULTIMATE'] as const) {
+      if (!available.some(card => card.type === type && reachesOpponent(card))) typeWeights[type] *= .04;
+    }
+    if (pressure === 0) typeWeights.DEFEND *= .25;
+    if (currentDistance > 0) typeWeights.ABSORB *= .04;
+    const canApproach = available.some(card => isPermanentMove(card) && nearestDistance(movedLayer(enemy, card)) < currentDistance);
+    if (currentDistance > 0 && !canApproach) typeWeights.SPECIAL *= .04;
+    if (!canHitNow) {
+      // Save for an owned universal attack, or close the distance using a real
+      // movement card. No free Energy, teleports or knowledge of locked moves.
+      typeWeights.CHARGE *= 2.5;
+      if (canApproach) typeWeights.SPECIAL *= 1.6;
+    }
+  }
 
   // Repeating our own move remains possible, but does not become a permanent loop.
   const ownHistory = recentMoves(enemy, options.history);
@@ -168,7 +194,7 @@ export function expeditionMoveWeights(
       if (cost >= 5 && enemy.energy < cost + 2) weight *= 0.65;
     } else if (card.type === 'DEFEND') {
       const avoided = average(model => {
-        const threats = model.cards.filter(isOffensiveCard);
+        const threats = model.cards.filter(move => isOffensiveCard(move) && threatensHere(model, move));
         if (!threats.length) return 0;
         return threats.filter(move => !reaches(move, model.player.layer, movedLayer(enemy, card))
           || (!model.player.pierce && (card.tags?.includes('dodge_ult')
@@ -177,6 +203,14 @@ export function expeditionMoveWeights(
       weight *= 0.6 + avoided * (0.5 + smart);
     } else if (card.id === 'shatter') {
       weight *= 0.7 + ultimatePressure;
+    }
+    if (endless && opponents.length && currentDistance > 0) {
+      if (card.id === 'shatter') weight *= .04;
+      if (isPermanentMove(card)) {
+        const nextDistance = nearestDistance(movedLayer(enemy, card));
+        if (nextDistance > currentDistance && pressure === 0) weight *= .025;
+        else if (nextDistance < currentDistance && !canHitNow) weight *= 4;
+      }
     }
     // Score a few public hypotheses through the real combat rules. This handles
     // level suppression, paid ties and dodges without a second combat engine.

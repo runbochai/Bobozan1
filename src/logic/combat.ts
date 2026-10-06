@@ -5,6 +5,8 @@ import { TEXT } from '../data/translations';
 import { SKILL_DB } from '../data/skills';
 import { FINAL_LEVEL, MAX_HP } from '../data/constants';
 import { autoSelectSkillLoadout, COMBO_COMPONENTS, getRetainedSkillIds, grantSkillLevel, hasSkillOverflow, isAcquiredSkill } from './skillLoadout';
+import { getEffectiveLevel, getPlayerCard, withPlayerCardLevel } from './cardLevels';
+export { getEffectiveLevel, getPlayerLevel, getPlayerCard, withPlayerCardLevel } from './cardLevels';
 
 // --- ICON HELPER ---
 export const getCardIcon = (id: string) => React.createElement(PixelCardArt, { id });
@@ -13,26 +15,6 @@ export const getCardIcon = (id: string) => React.createElement(PixelCardArt, { i
 // “会打人”的卡：只有 ATTACK / ULTIMATE；防守类 combo（比如双翼齐飞）不算
 export const isOffensiveCard = (card: Card) =>
   card.type === 'ATTACK' || card.type === 'ULTIMATE';
-
-// combo 的“有效等级” = 组成它的技能里最高的那个等级
-export const getEffectiveLevel = (card: Card): number => {
-  if (card.tags?.includes('combo')) {
-    switch (card.id) {
-      case 'skydragon':   // 由 1,2,3 组成 -> 3
-        return 3;
-      case 'doublewing':  // 2,5 -> 5（虽然主要是防御，但算个最高等级）
-        return 5;
-      case 'vajra':       // 8,10,11 -> 11
-        return 11;
-      case 'allbomb':     // 20,21 -> 21
-      case 'heartpoison':
-        return 21;
-      default:
-        return card.levelRequired;
-    }
-  }
-  return card.levelRequired;
-};
 
 export const isBasicTier2Level0 = (c: Card) =>
   c.type === 'ATTACK' &&
@@ -121,13 +103,13 @@ export const doesCard1Overpower = (card1: Card, card2: Card): boolean => {
 };
 
 export const getShowdownWinner = (players: Player[]): string[] => {
-  const candidates: { id: string; score: number }[] = [];
+  const candidates: { id: string; tier: number; score: number }[] = [];
   
   // 1. Pre-calculate simulated layers (Movement logic)
   const simLayers: Record<string, number> = {};
   players.forEach(p => {
       let l = p.layer;
-      const c = SKILL_DB.find(card => card.id === p.selectedCardId);
+      const c = getPlayerCard(p, p.selectedCardId);
       if (c) {
         if (c.tags?.includes('layer_up')) l += 1;
         if (c.tags?.includes('layer_down')) l -= 1;
@@ -141,7 +123,7 @@ export const getShowdownWinner = (players: Player[]): string[] => {
   // 2. Simulate Combat to find valid hits
   players.forEach((p) => {
     if (!p.selectedCardId || p.isDead) return;
-    const card = SKILL_DB.find((c) => c.id === p.selectedCardId);
+    const card = getPlayerCard(p, p.selectedCardId);
     if (!card || !isOffensiveCard(card)) return; 
 
     let landedHit = false;
@@ -163,7 +145,7 @@ export const getShowdownWinner = (players: Player[]): string[] => {
 
       if (!inRange) return; 
 
-      const targetCard = SKILL_DB.find(c => c.id === target.selectedCardId)!;
+      const targetCard = getPlayerCard(target, target.selectedCardId)!;
       let hitSuccess = false;
 
       // Check interactions
@@ -202,14 +184,16 @@ export const getShowdownWinner = (players: Player[]): string[] => {
 
     const lvl = getEffectiveLevel(card);
     const isCombo = card.tags?.includes('combo') ? 1 : 0;
-    const score = card.tier * 100 + lvl + isCombo * 10;
-    candidates.push({ id: p.id, score });
+    const score = lvl + isCombo * 10;
+    candidates.push({ id: p.id, tier: card.tier, score });
   });
 
   // 3. Determine Winners (Multi-Slam Logic)
   if (candidates.length > 0) {
-    const maxScore = Math.max(...candidates.map(c => c.score));
-    const winners = candidates.filter(c => c.score === maxScore);
+    // Rank is unbounded in endless mode; it must never carry into a higher tier.
+    const highestTier = Math.max(...candidates.map(c => c.tier));
+    const maxScore = Math.max(...candidates.filter(c => c.tier === highestTier).map(c => c.score));
+    const winners = candidates.filter(c => c.tier === highestTier && c.score === maxScore);
     
     // Rule: If everyone tied (winners count == total candidates count), NO SLAM.
     if (winners.length > 1 && winners.length === candidates.length) {
@@ -278,7 +262,7 @@ export const calculateTurnOutcome = (
 
   // 1. APPLY COSTS / LAYER TAGS
   survivors.forEach((p) => {
-    const card = SKILL_DB.find((c) => c.id === p.selectedCardId)!;
+    const card = getPlayerCard(p, p.selectedCardId)!;
     if (!card) throw new Error(`Invalid card for player ${p.id}`);
     p.lastAction = card.name.en;
     p.lastCardId = card.id;
@@ -351,8 +335,8 @@ export const calculateTurnOutcome = (
 
       const p1 = survivors[i];
       const p2 = survivors[j];
-      const card1 = SKILL_DB.find((c) => c.id === p1.selectedCardId)!;
-      const card2 = SKILL_DB.find((c) => c.id === p2.selectedCardId)!;
+      const card1 = getPlayerCard(p1, p1.selectedCardId)!;
+      const card2 = getPlayerCard(p2, p2.selectedCardId)!;
 
       // EXCEPTION: Big Fly vs Small Fly
       if (card1.id === 'bigfly' && card2.id === 'smallfly') {
@@ -522,7 +506,7 @@ export const calculateTurnOutcome = (
 
   // 3. APPLY RESULTS
   survivors.forEach((p) => {
-    const card = SKILL_DB.find((c) => c.id === p.selectedCardId)!;
+    const card = getPlayerCard(p, p.selectedCardId)!;
 
     const reduction = options.damageReduction?.[p.id] ?? 0;
     damageBlocked[p.id] = Math.min(damageMap[p.id], Number.isFinite(reduction) ? Math.max(0, reduction) : 0);
@@ -687,5 +671,5 @@ export const getPlayerCards = (p: Player, allPlayers?: Player[]) => {
   }
   // END ADDITION
 
-  return knownCards;
+  return knownCards.map(card => withPlayerCardLevel(p, card));
 };

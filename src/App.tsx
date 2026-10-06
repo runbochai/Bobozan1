@@ -68,7 +68,7 @@ import { EXPEDITION_STAGES } from './data/expedition';
 import { getExpeditionDifficulty, type ExpeditionDifficulty } from './data/expeditionDifficulty';
 import {
   expeditionBotMove,
-  genRewardOptions,
+  getExpeditionStage,
   genShopItems,
   loadExpeditionBest,
   saveExpeditionBest,
@@ -86,6 +86,9 @@ import {
   getCardIcon,
   getPlayerCards,
   getEffectiveLevel,
+  getPlayerCard,
+  getPlayerLevel,
+  withPlayerCardLevel,
 } from './logic/combat';
 import { initAudio, playSound } from './audio/sound';
 import { auth, db, firebaseConfigured, firebaseInitError } from './firebase';
@@ -101,6 +104,7 @@ import ExpeditionSpeech from './components/ExpeditionSpeech';
 import { getExpeditionLine } from './data/expeditionDialogue';
 import { createExpeditionRun, setupExpeditionStage, settleExpeditionRound, recordExpeditionHistory,
   takeExpeditionReward, buyExpeditionItem, takeExpeditionRoute,
+  genExpeditionRewards, reviveEndlessExpedition,
   type ExpeditionBattleMemory, type ExpeditionHistory, type ExpeditionRoute } from './logic/expeditionRuntime';
 
 
@@ -322,6 +326,7 @@ export default function BobozanOnline() {
   const [expDifficulty, setExpDifficulty] = useState<ExpeditionDifficulty>('beginner');
   const [expBest, setExpBest] = useState<number>(() => loadExpeditionBest());
   const expDifficultyConfig = getExpeditionDifficulty(expDifficulty);
+  const isEndless = expDifficulty === 'endless';
   // 移动端手牌缩放
   const [isSmallScreen, setIsSmallScreen] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
   useEffect(() => {
@@ -350,7 +355,7 @@ export default function BobozanOnline() {
 
   // Commit the enemy move before the player chooses. Only past moves/habits are public.
   const computeExpIntents = (players: Player[], stageIdx: number) => {
-    const stage = EXPEDITION_STAGES[stageIdx];
+    const stage = getExpeditionStage(stageIdx, expRunRef.current.difficulty)!;
     const myId = expMyId();
     const intents: Record<string, string> = {};
     for (const pl of players) {
@@ -404,6 +409,16 @@ export default function BobozanOnline() {
     setView('GAME');
   };
 
+  const continueEndlessExpedition = () => {
+    if (!isExpedition || !isEndless || expPhase !== 'runover' || expRunRef.current.hp > 0) return;
+    clearExpeditionTimers();
+    expRunRef.current = reviveEndlessExpedition(expRunRef.current);
+    setExpHelp(null);
+    setGoldFly(null);
+    setSubmittingMove(false);
+    setupExpeditionBattle(expRunRef.current.stageIdx);
+  };
+
   const handleExpeditionMove = (cardId: string) => {
     if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle') return;
     if (hasSkillOverflow(expRunRef.current)) return;
@@ -423,7 +438,7 @@ export default function BobozanOnline() {
     initAudio();
     playSound('draw', muted);
 
-    const stage = EXPEDITION_STAGES[expRunRef.current.stageIdx];
+    const stage = getExpeditionStage(expRunRef.current.stageIdx, expRunRef.current.difficulty)!;
     const playersWithMoves = gameState.players.map(p => {
       if (p.id === myId) return { ...p, selectedCardId: cardId };
       if (p.isDead) return p;
@@ -460,7 +475,8 @@ export default function BobozanOnline() {
         opponentCardIds: playersWithMoves.filter(p => p.id !== myId && !p.isDead).map(p => p.selectedCardId!) });
       setExpRecap({ turn: gameState.turn, hpBefore: me.hp, hpAfter: resolvedHero.hp,
         energyBefore: me.energy, energyAfter: resolvedHero.energy, logs: [...speechLogs, ...logs],
-        cards: playersWithMoves.filter(p => !p.isDead && p.selectedCardId).map(p => ({ name: p.name, id: p.selectedCardId! })),
+        cards: playersWithMoves.filter(p => !p.isDead && p.selectedCardId).map(p => ({ name: p.name, id: p.selectedCardId!,
+          level: getEffectiveLevel(getPlayerCard(p, p.selectedCardId)!), })),
       });
       if (lost) {
         saveExpeditionBest(run.stageIdx, run.difficulty);
@@ -471,9 +487,9 @@ export default function BobozanOnline() {
         setExpBest(loadExpeditionBest(run.difficulty));
         setGoldFly({ amount: result.gold, key: Date.now() });
         expeditionTimersRef.current.push(setTimeout(() => setGoldFly(null), 1500));
-        setExpRewards(genRewardOptions(run.hp, run.maxHp, run.relics, run.relics.includes('cbt') ? 4 : 3, run.inventory, run.stageIdx));
+        setExpRewards(genExpeditionRewards(run));
         expeditionTimersRef.current.push(setTimeout(() => {
-          setExpPhase(run.stageIdx + 1 === EXPEDITION_STAGES.length ? 'clear' : 'reward');
+          setExpPhase(run.difficulty !== 'endless' && run.stageIdx + 1 === EXPEDITION_STAGES.length ? 'clear' : 'reward');
           playSound('win', muted);
           setSubmittingMove(false);
           expeditionBusyRef.current = false;
@@ -1323,7 +1339,7 @@ export default function BobozanOnline() {
   const expNeedsSkillChoice = isExpedition && skillOverflow.length > 0;
   const latestSkillLevel = skillHolder ? normalizeSkillLoadout(skillHolder).inventory.at(-1) : undefined;
   const skillGroups = skillOverflow.map(group => ({ ...group,
-    cards: sortHandCards(skillHolder!, group.cards),
+    cards: sortHandCards(skillHolder!, group.cards).map(card => myPlayer ? withPlayerCardLevel(myPlayer, card) : card),
     newIds: group.cards.filter(card => card.levelRequired === latestSkillLevel).map(card => card.id),
   }));
   const skillSelectionOverlay = (view === 'GAME' || view === 'LOBBY') && skillGroups.length > 0
@@ -1744,7 +1760,7 @@ export default function BobozanOnline() {
     ? expeditionSpeakers[(gameState.turn - 1) % expeditionSpeakers.length].id : undefined;
   const expeditionDialogue = new Map(expeditionSpeakers.filter(player => !compactSpeaker || player.id === compactSpeaker).flatMap(player => {
     if (expPhase !== 'battle' || gameState.status !== 'PLAYING') return [];
-    const stage = EXPEDITION_STAGES[expStageIdx];
+    const stage = getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!;
     const enemy = stage.enemies.find(def => `exp_${stage.id}_${def.id}` === player.id);
     if (!enemy) return [];
     return [[player.id, getExpeditionLine({ enemyId: enemy.id, stageIdx: expStageIdx, turn: gameState.turn,
@@ -2003,28 +2019,28 @@ export default function BobozanOnline() {
         {isExpedition && expPhase === 'battle' && (
           <div className="pixel-exp-hud expedition-learning-hud absolute top-3 left-3 z-50 pointer-events-none">
             <div className="expedition-learning-heading">
-              <div><strong>{EXPEDITION_STAGES[expStageIdx].name[lang]}</strong><small><span className={`exp-difficulty-badge exp-difficulty-badge--${expDifficulty}`}>{expDifficultyConfig.label[lang]}</span> · {lang === 'zh' ? '第 ' + gameState.turn + ' 回合' : 'Turn ' + gameState.turn}{expRunRef.current.route === 'risk' ? (lang === 'zh' ? ' · 挑战' : ' · Challenge') : ''}</small></div>
+              <div><strong>{getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}</strong><small><span className={`exp-difficulty-badge exp-difficulty-badge--${expDifficulty}`}>{expDifficultyConfig.label[lang]}</span> · {lang === 'zh' ? '第 ' + gameState.turn + ' 回合' : 'Turn ' + gameState.turn}{expRunRef.current.route === 'risk' ? (lang === 'zh' ? ' · 挑战' : ' · Challenge') : ''}</small></div>
               <div className="exp-help-actions">
                 <button type="button" disabled={submittingMove} onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则' : 'Rules'}</button>
                 <button type="button" disabled={!expRecap || submittingMove} onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '复盘' : 'Review'}</button>
               </div>
             </div>
-            {myPlayer && <ExpeditionCoach stageIdx={expStageIdx} turn={gameState.turn} lang={lang}
+            {myPlayer && !isEndless && <ExpeditionCoach stageIdx={expStageIdx} turn={gameState.turn} lang={lang}
               hero={{ id: myPlayer.id, hp: myPlayer.hp, energy: myPlayer.energy, isDead: myPlayer.isDead, inventory: [...myPlayer.inventory], skillLoadout: myPlayer.skillLoadout }}
               opponents={gameState.players.filter(p => p.id !== myPlayer.id).map(({ id, hp, energy, isDead, inventory, skillLoadout }) => ({ id, hp, energy, isDead, inventory: [...inventory], skillLoadout }))}
               history={expHistory} legalCardIds={getPlayerCards(myPlayer, gameState.players).map(card => card.id)}
               lastResult={expLastResult} recap={expRecap} />}
           </div>
         )}
-        {isExpedition && expPhase === 'reward' && (
+        {isExpedition && expPhase === 'reward' && !expNeedsSkillChoice && (
           <ExpeditionRewards rewards={expRewards} lang={lang}
-            status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: Math.max(...expRunRef.current.inventory) }}
+            status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: expRunRef.current.endlessLevel ?? Math.max(...expRunRef.current.inventory) }}
             onChoose={claimExpeditionReward} onReview={expRecap ? () => setExpHelp('recap') : undefined} />
         )}
         {isExpedition && expPhase === 'shop' && !expNeedsSkillChoice && (
           <ExpeditionShop items={expShop} gold={expGold} lang={lang} onBuy={buyShopItem} onContinue={() => leaveExpShop()}
             onRoute={leaveExpShop} routeAvailable={expStageIdx >= 2}
-            status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: Math.max(...expRunRef.current.inventory) }}
+            status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: expRunRef.current.endlessLevel ?? Math.max(...expRunRef.current.inventory) }}
             onReview={expRecap ? () => setExpHelp('recap') : undefined} />
         )}
 
@@ -2033,21 +2049,24 @@ export default function BobozanOnline() {
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
             <div className="pixel-dialog bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-8 w-full max-w-md text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
               <div className="text-5xl mb-3">💀</div>
-              <h2 className="text-2xl font-black text-white mb-2">{lang === 'zh' ? '远征结束' : 'Expedition Over'}</h2>
+              <h2 className="text-2xl font-black text-white mb-2">{isEndless ? (lang === 'zh' ? '暂时落败' : 'Defeated, not finished') : (lang === 'zh' ? '远征结束' : 'Expedition Over')}</h2>
               <p className="text-slate-400 text-sm mb-1">
-                {lang === 'zh' ? `倒在${EXPEDITION_STAGES[expStageIdx].name[lang]}` : `Fell at ${EXPEDITION_STAGES[expStageIdx].name[lang]}`}
+                {lang === 'zh' ? `倒在${getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}` : `Fell at ${getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}`}
               </p>
               <p className="text-amber-300/90 text-sm mb-6">
                 {lang === 'zh' ? `${expDifficultyConfig.label[lang]}最佳：第 ${expBest} 关` : `${expDifficultyConfig.label[lang]} best: Stage ${expBest}`}
               </p>
-              <p className="text-slate-200 text-base mb-4">{lang === 'zh' ? `重开：Lv.0 · ♥${expDifficultyConfig.startHp} · 金币0。装备重置，最佳记录保留。` : `Restart: Lv.0 · ♥${expDifficultyConfig.startHp} · 0 gold. Gear resets; your best remains.`}</p>
+              <p className="text-slate-200 text-base mb-4">{isEndless
+                ? (lang === 'zh' ? `成长全部保留 · 复活 ♥${expRunRef.current.maxHp} · 敌方升至 Lv.${Math.max((expRunRef.current.endlessEnemyLevel ?? 1) + 1, (expRunRef.current.endlessLevel ?? 0) + 1)}`
+                  : `Keep your growth · Revive at ${expRunRef.current.maxHp} HP · Enemy rises to Lv.${Math.max((expRunRef.current.endlessEnemyLevel ?? 1) + 1, (expRunRef.current.endlessLevel ?? 0) + 1)}`)
+                : (lang === 'zh' ? `重开：Lv.0 · ♥${expDifficultyConfig.startHp} · 金币0。装备重置，最佳记录保留。` : `Restart: Lv.0 · ♥${expDifficultyConfig.startHp} · 0 gold. Gear resets; your best remains.`)}</p>
               <div className="flex gap-3 justify-center mb-5">
                 <button type="button" onClick={() => setExpHelp('recap')} className="text-amber-200 underline">{lang === 'zh' ? '败因' : 'Review'}</button>
                 <button type="button" onClick={() => setAcademyTab('lessons')} className="text-sky-200 underline">{lang === 'zh' ? '练一手' : 'Practice'}</button>
               </div>
               <div className="flex gap-3 justify-center">
-                <button onClick={() => startExpedition(expRunRef.current.difficulty)} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
-                  {lang === 'zh' ? '再来一轮' : 'Retry'}
+                <button onClick={() => isEndless ? continueEndlessExpedition() : startExpedition(expRunRef.current.difficulty)} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
+                  {isEndless ? (lang === 'zh' ? '复活，继续挑战' : 'Revive & continue') : (lang === 'zh' ? '再来一轮' : 'Retry')}
                 </button>
                 <button onClick={() => leaveRoom()} className="px-6 py-2.5 rounded-xl bg-slate-800 border border-slate-600 font-bold text-slate-300 hover:text-white hover:scale-105 active:scale-95 transition-all">
                   {lang === 'zh' ? '返回主页' : 'Home'}
@@ -2082,7 +2101,7 @@ export default function BobozanOnline() {
         {/* Mobile Header */}
         <div className="pixel-mobile-header md:hidden p-3 flex justify-between items-center bg-slate-900 border-b border-slate-800 z-50">
           <button onClick={() => leaveRoom()} className="flex items-center gap-1 text-slate-400"><LogOut size={18} /></button>
-          <span className="font-mono font-bold text-yellow-500">{isExpedition ? `${lang === 'zh' ? '远征' : 'Expedition'} ${expStageIdx + 1}/${EXPEDITION_STAGES.length}` : roomCode}</span>
+          <span className="font-mono font-bold text-yellow-500">{isExpedition ? `${isEndless ? expDifficultyConfig.label[lang] : lang === 'zh' ? '远征' : 'Expedition'} ${expStageIdx + 1}${isEndless ? '' : '/' + EXPEDITION_STAGES.length}` : roomCode}</span>
           <span className="text-xs bg-indigo-500 px-2 py-1 rounded">M{gameState.matchCount}</span>
         </div>
 
@@ -2096,13 +2115,13 @@ export default function BobozanOnline() {
            {gameState.players.map((p, i) => {
              const pos = getPlayerPosition(i, totalPlayers, myIndex);
              const isMe = p.id === myPlayerId;
-             const pMaxLvl = Math.max(0, ...p.inventory);
+             const pMaxLvl = getPlayerLevel(p);
              const line = expeditionDialogue.get(p.id);
              const intent = line ? <ExpeditionSpeech key={`${expStageIdx}-${gameState.turn}-${p.id}`}
                line={line.text} speaker={p.name} side={pos.x > 50 ? 'left' : 'right'} reduceMotion={reduceMotion} /> : undefined;
              return <BattleFighter key={p.id} player={p} seat={pos} bounds={tableBounds} self={isMe}
                maxHp={isExpedition ? (expBattleRef.current.maxHp[p.id] ?? MAX_HP) : MAX_HP}
-               level={pMaxLvl} viewerLevel={myPlayer ? Math.max(0, ...myPlayer.inventory) : undefined} lang={lang} turn={gameState.turn}
+               level={pMaxLvl} viewerLevel={myPlayer ? getPlayerLevel(myPlayer) : undefined} endless={isExpedition && isEndless} lang={lang} turn={gameState.turn}
                showdown={gameState.status === 'SHOWDOWN'}
                damage={damageNumbers[p.id]} hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
@@ -2402,7 +2421,7 @@ export default function BobozanOnline() {
             {myPlayer.avatar ? <img src={avatarUrl(myPlayer.avatar)} alt={myPlayer.name} draggable={false} /> : <User size={52} />}
           </div>
           <div className="battle-hud-details">
-            <div className="battle-hud-name"><strong title={myPlayer.name}>{myPlayer.name}</strong><BattleLevelBadge level={Math.max(0, ...myPlayer.inventory)} self name={myPlayer.name} lang={lang} /></div>
+            <div className="battle-hud-name"><strong title={myPlayer.name}>{myPlayer.name}</strong><BattleLevelBadge level={getPlayerLevel(myPlayer)} endless={isExpedition && isEndless} self name={myPlayer.name} lang={lang} /></div>
             <BattleStats player={myPlayer} maxHp={isExpedition ? (expBattleRef.current.maxHp[myPlayer.id] ?? MAX_HP) : MAX_HP} />
           </div>
         </div>}

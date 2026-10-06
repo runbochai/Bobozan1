@@ -50,7 +50,7 @@ test('disabled browser storage never prevents a run from ending in either diffic
   const original = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
   try {
     Object.defineProperty(globalThis, 'localStorage', { configurable: true, get() { throw new Error('Storage denied'); } });
-    for (const difficulty of ['beginner', 'normal'] as const) {
+    for (const difficulty of ['beginner', 'normal', 'endless'] as const) {
       assert.equal(loadExpeditionBest(difficulty), 0);
       assert.doesNotThrow(() => saveExpeditionBest(3, difficulty));
     }
@@ -63,3 +63,18 @@ test('disabled browser storage never prevents a run from ending in either diffic
     else Reflect.deleteProperty(globalThis, 'localStorage');
   }
 });
+
+test('endless records grow beyond eighteen independently, while invalid or unsafe counters are rejected', () => withStorage(data => {
+  data.set(EXPEDITION_BEST_KEY, '12');
+  data.set(EXPEDITION_BEST_KEYS.normal, '7');
+  saveExpeditionBest(1000, 'endless');
+  assert.equal(loadExpeditionBest('endless'), 1000);
+  for (const value of [18, -1, .5, NaN, Infinity, Number.MAX_SAFE_INTEGER + 1]) saveExpeditionBest(value, 'endless');
+  assert.equal(loadExpeditionBest('endless'), 1000);
+  assert.equal(loadExpeditionBest(), 12);
+  assert.equal(loadExpeditionBest('normal'), 7);
+  saveExpeditionBest(1001, 'endless');
+  assert.equal(loadExpeditionBest('endless'), 1001);
+  data.set(EXPEDITION_BEST_KEYS.endless, 'Infinity');
+  assert.equal(loadExpeditionBest('endless'), 0);
+}));

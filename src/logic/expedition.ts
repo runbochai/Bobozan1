@@ -13,7 +13,9 @@ type ExpeditionPersonality,
 type ExpeditionStage,
 } from '../data/expedition';
 import type { Lang } from '../types';
-import type { ExpeditionDifficulty } from '../data/expeditionDifficulty';
+import { normalizeExpeditionDifficulty, type ExpeditionDifficulty } from '../data/expeditionDifficulty';
+
+export { getExpeditionStage } from './endlessExpedition';
 
 export {
   EXPEDITION_START_HP, EXPEDITION_MAX_HP, EXPEDITION_VIGOR_HP,
@@ -26,20 +28,21 @@ export const EXPEDITION_BEST_KEY = 'bobozan-expedition-best';
 export const EXPEDITION_BEST_KEYS: Record<ExpeditionDifficulty, string> = {
 beginner: EXPEDITION_BEST_KEY,
 normal: 'bobozan-expedition-best-normal',
+endless: 'bobozan-expedition-best-endless',
 };
-const bestKey = (difficulty: ExpeditionDifficulty) => EXPEDITION_BEST_KEYS[difficulty === 'normal' ? 'normal' : 'beginner'];
+const bestKey = (difficulty: ExpeditionDifficulty) => EXPEDITION_BEST_KEYS[normalizeExpeditionDifficulty(difficulty)];
 
 export function loadExpeditionBest(difficulty: ExpeditionDifficulty = 'beginner'): number {
 try {
 const value = Number(localStorage.getItem(bestKey(difficulty)) || 0);
-return Number.isInteger(value) && value >= 0 && value <= EXPEDITION_STAGES.length ? value : 0;
+return Number.isSafeInteger(value) && value >= 0 && (difficulty === 'endless' || value <= EXPEDITION_STAGES.length) ? value : 0;
 } catch {
 return 0;
 }
 }
 
 export function saveExpeditionBest(cleared: number, difficulty: ExpeditionDifficulty = 'beginner'): void {
-if (!Number.isInteger(cleared) || cleared < 0 || cleared > EXPEDITION_STAGES.length) return;
+if (!Number.isSafeInteger(cleared) || cleared < 0 || (difficulty !== 'endless' && cleared > EXPEDITION_STAGES.length)) return;
 try {
 const prev = loadExpeditionBest(difficulty);
 if (cleared > prev) localStorage.setItem(bestKey(difficulty), String(cleared));
@@ -186,13 +189,14 @@ optionCount = 3,
 inventory: number[] = [0],
 stageIdx = 0,
 rng: () => number = Math.random,
+allowLevelUp = true,
 ): RewardOption[] {
 const rest: RewardOption[] = [];
 const guaranteed: RewardOption[] = [];
 // Growth and recovery remain choices; neither is hidden by a bad reward roll.
 const curMax = expeditionLevel(inventory);
 const nextLevel = nextExpeditionLevel(inventory);
-if (nextLevel !== null) guaranteed.push({ kind: 'levelup', level: nextLevel});
+if (allowLevelUp && nextLevel !== null) guaranteed.push({ kind: 'levelup', level: nextLevel});
 const injured = hp < Math.min(maxHp, EXPEDITION_MAX_HP);
 if (injured) guaranteed.push({ kind: 'heal', amount: 1});
 if (maxHp < EXPEDITION_MAX_HP) rest.push({ kind: 'maxhp'});
@@ -237,6 +241,7 @@ export const POTION_PRICE = 10;
 export const POTION_HEAL = 1;
 
 export interface ExpeditionShopContext {
+  difficulty?: ExpeditionDifficulty;
   hp?: number;
   maxHp?: number;
   dollUsed?: boolean;
@@ -255,10 +260,10 @@ items.push({ kind: 'tempcard', cardId: g.cardId, uses: g.uses, price: shopCardPr
 };
 pushCard();
 pushCard();
-const remainingBattles = Math.max(0, EXPEDITION_STAGES.length - stageIdx - 1);
+const remainingBattles = context.difficulty === 'endless' ? Infinity : Math.max(0, EXPEDITION_STAGES.length - stageIdx - 1);
 const unowned = shuffle(
 EXPEDITION_EQUIPMENTS.filter(
-(e) =>!ownedEquipment.includes(e.id) && (e.id !== 'levelbadge' || nextExpeditionLevel([maxLevel]) !== null)
+(e) =>!ownedEquipment.includes(e.id) && (e.id !== 'levelbadge' || (context.difficulty !== 'endless' && nextExpeditionLevel([maxLevel]) !== null))
   && (!['moneytree', 'treasurepot'].includes(e.id) || remainingBattles * 4 >= e.price)
   && (e.id !== 'doll' || !context.dollUsed)
   && (e.id !== 'lifegem' || !((context.maxHp ?? 0) >= EXPEDITION_MAX_HP && (context.hp ?? 0) >= (context.maxHp ?? 0)))

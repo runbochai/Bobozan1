@@ -32,10 +32,10 @@ function HandArt({ id }: { id: string }) {
 function skillRankHint(card: Card, lang: Lang) {
   const level = getEffectiveLevel(card);
   const tier = isOffensiveCard(card) ? ` · ${lang === 'zh' ? '攻击档位' : 'Attack tier'} T${card.tier}` : '';
-  return `${lang === 'zh' ? '技能等级' : 'Skill level'} Lv.${level}${tier}${card.tags?.includes('combo') ? ` · ${lang === 'zh' ? '联合' : 'Combo'}` : ''}`;
+  return `${lang === 'zh' ? '技能等级' : 'Skill level'} Lv.${level}${tier}${card.tags?.includes('combo') ? ` · ${lang === 'zh' ? '联合' : 'Combo'}` : ''}${card.combatLevel !== undefined ? ` · ${lang === 'zh' ? '无尽成长' : 'Endless growth'}` : ''}`;
 }
 
-function CardDetails({ card, lang, freeCount, onClose }: { card: Card; lang: Lang; freeCount: number; onClose: () => void }) {
+function CardDetails({ card, lang, freeCount, endless, onClose }: { card: Card; lang: Lang; freeCount: number; endless: boolean; onClose: () => void }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const dialog = ref.current;
@@ -53,12 +53,12 @@ function CardDetails({ card, lang, freeCount, onClose }: { card: Card; lang: Lan
     <h2 id="hand-detail-name">{card.name[lang]}</h2>
     <p className="hand-detail-type">{TEXT[lang].skillType[card.type]} · <Zap size={16} /> {freeCount ? <><s>{card.cost}</s> 0 · {lang === 'zh' ? '免费' : 'Free'} ×{freeCount}</> : card.cost}</p>
     <dl className="hand-detail-ranks">
-      <div><dt>{lang === 'zh' ? '技能等级' : 'Skill level'}</dt><dd>Lv.{getEffectiveLevel(card)}{card.tags?.includes('combo') && <small>{lang === 'zh' ? '联合' : 'Combo'}</small>}</dd></div>
+      <div><dt>{lang === 'zh' ? '技能等级' : 'Skill level'}</dt><dd>Lv.{getEffectiveLevel(card)}{card.tags?.includes('combo') && <small>{lang === 'zh' ? '联合' : 'Combo'}</small>}{card.combatLevel !== undefined && <small>{lang === 'zh' ? '无尽成长' : 'Endless growth'}</small>}</dd></div>
       {isOffensiveCard(card) && <div><dt>{lang === 'zh' ? '攻击档位' : 'Attack tier'}</dt><dd>T{card.tier}</dd></div>}
     </dl>
     <p>{card.description[lang]}</p>
     <details className="hand-detail-rank-guide"><summary>{lang === 'zh' ? '等级与档位' : 'Levels and tiers'}</summary>
-      <p>{lang === 'zh' ? '这里是这张牌自己的等级。角色升级解锁新招，不会让旧招变强；能量费用也不是伤害。' : 'This is the card’s own level. Character upgrades unlock new moves; they do not strengthen old moves. Energy cost is not damage.'}</p>
+      <p>{card.combatLevel !== undefined ? (lang === 'zh' ? '无尽模式中，这张已保留的攻击随当前等级提升，用于同档比较。基础牌、联合技和临时吸收牌仍按原规则。等级与能量费用都不额外增加伤害。' : 'In Endless, this retained attack grows with your current level for same-tier comparisons. Basic cards, combos and temporary or absorbed skills keep their original rules. Neither level nor energy cost adds damage.') : endless ? (lang === 'zh' ? '这张牌保留原等级。无尽中只有永久保留的等级攻击随等级成长；基础牌、联合技和临时吸收牌不提升。能量费用不是伤害。' : 'This card keeps its original level. Only retained leveled attacks grow in Endless; basic cards, combos and temporary or absorbed skills do not. Energy cost is not damage.') : (lang === 'zh' ? '这里是这张牌自己的等级。角色升级解锁新招，不会让旧招变强；能量费用也不是伤害。' : 'This is the card’s own level. Character upgrades unlock new moves; they do not strengthen old moves. Energy cost is not damage.')}</p>
       {isOffensiveCard(card) && <p>{lang === 'zh' ? '对攻先比较档位，同档再按技能规则比较等级。轰轰、六克等招式有打平例外。' : 'Attack clashes compare tiers first, then apply level rules within a tier. Moves such as Double Blast and 6g have tie exceptions.'}</p>}
     </details>
   </dialog>, document.body);
@@ -185,6 +185,6 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
         {inspected && <><SkillGlyph effect={SKILL_EFFECTS[inspected.id] ?? SKILL_EFFECTS.charge} /><div><strong>{inspected.name[lang]}</strong><small className="hand-inspector-rank">Lv.{getEffectiveLevel(inspected)}{isOffensiveCard(inspected) ? ` · T${inspected.tier}` : ''}</small><span>{inspected.description[lang]}</span></div></>}
       </div>}
     </>}
-    {detail && canChoose && <CardDetails card={detail} lang={lang} freeCount={player?.freeSkills?.filter(id => id === detail.id).length ?? 0} onClose={() => setDetailId(null)} />}
+    {detail && canChoose && <CardDetails card={detail} lang={lang} freeCount={player?.freeSkills?.filter(id => id === detail.id).length ?? 0} endless={player?.endlessLevel !== undefined} onClose={() => setDetailId(null)} />}
   </section>;
 }

@@ -1,7 +1,7 @@
 import type { Card, Player } from '../types';
 import { FINAL_LEVEL } from '../data/constants';
 import { SKILL_DB } from '../data/skills';
-import { calculateTurnOutcome, getPlayerCards, isOffensiveCard } from './combat';
+import { calculateTurnOutcome, getEffectiveLevel, getPlayerCards, isOffensiveCard } from './combat';
 import { botSeed, getBotStyle, type BotPersonality } from './bots';
 
 interface Options {
@@ -85,8 +85,16 @@ function scoreOutcome(before: Player[], after: Player[], botId: string, personal
 
 /** A bounded one-turn search. Never uses a participant's locked, unrevealed move. */
 export function getBotMove(bot: Player, allPlayers: Player[], options: Options = {}): string {
-  const players = allPlayers.map(p => ({ ...p, selectedCardId: null,
+  // Copy public combat state explicitly; even reading a hidden selection is forbidden.
+  const players: Player[] = allPlayers.map(p => ({
+    id: p.id, name: p.name, isBot: p.isBot, hp: p.hp, energy: p.energy, isDead: p.isDead,
+    inventory: [...p.inventory], pendingLevel: p.pendingLevel, endlessLevel: p.endlessLevel,
     ...(p.skillLoadout ? { skillLoadout: [...p.skillLoadout] } : {}),
+    layer: p.layer, tempLayerMod: p.tempLayerMod, selectedCardId: null,
+    lastCardId: p.lastCardId, lastAction: p.lastAction, kills: p.kills, isShared: p.isShared,
+    freeSkills: [...(p.freeSkills ?? [])], tempSkills: [...(p.tempSkills ?? [])],
+    disabledSkills: [...(p.disabledSkills ?? [])], dmgBonus: p.dmgBonus,
+    energyDrain: p.energyDrain, pierce: p.pierce,
   }))
     .sort((a, b) => a.id.localeCompare(b.id));
   const active = players.filter(p => !p.isDead);
@@ -106,7 +114,7 @@ export function getBotMove(bot: Player, allPlayers: Player[], options: Options =
     // Divide by category size so a large deck does not imply constant aggression.
     const weighted = choices.map(card => ({ value: card.id, weight: predictionWeight(card, player, active) /
       choices.filter(c => c.type === card.type).length }));
-    const strongest = choices.filter(isOffensiveCard).sort((a, b) => b.tier - a.tier || b.levelRequired - a.levelRequired)[0];
+    const strongest = choices.filter(isOffensiveCard).sort((a, b) => b.tier - a.tier || getEffectiveLevel(b) - getEffectiveLevel(a))[0];
     return { player, weighted, charge: choices.find(c => c.id === 'charge')?.id, strongest: strongest?.id };
   });
   // All candidates see the same scenarios; include an aggressive possibility explicitly.
