@@ -1,0 +1,73 @@
+{
+  "scope": "Chrome viewport emulation using the real local App with controlled public player state; no multiplayer room writes. Preview character names and cards are test data.",
+  "viewports": 5,
+  "expected": 5,
+  "goldIds": [
+    "ascend",
+    "descend",
+    "absorb",
+    "shatter",
+    "aoxi",
+    "skydragon",
+    "doublewing",
+    "vajra",
+    "allbomb",
+    "heartpoison"
+  ],
+  "failures": [],
+  "errors": [],
+  "viewportsTested": [
+    [
+      1440,
+      1000
+    ],
+    [
+      1024,
+      768
+    ],
+    [
+      768,
+      1024
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ]
+  ],
+  "checks": [
+    "All 10 combo/SPECIAL/ABSORB skills receive gold-holo finish in hand and on table",
+    "Ordinary skills retain their original category colour",
+    "Locked Sky Dragon retains the same gold material",
+    "Ultimate flame only appears for an affordable, enabled move while choosing; a free ultimate also qualifies",
+    "Insufficient energy, all ultimates disabled, locked, dead, and SHOWDOWN states suppress flames",
+    "Category tabs and 15 card-details interactions remain clickable under decorations",
+    "Horizontal tray/nav scrolling keeps the aura anchored, with no document horizontal overflow",
+    "Aura toggles preserve board/table/hand geometry; category and lock changes preserve board/table geometry",
+    "App and OS reduced-motion stop foil and flame animation"
+  ],
+  "shortLandscape": "844x390 intentionally permits vertical scrolling. Geometry compared in document coordinates; a folder outside the viewport correctly hides its aura.",
+  "previews": {
+    "animation": {
+      "file": "gold-hand-sweep.webp",
+      "frames": 28,
+      "width": 820,
+      "height": 343,
+      "durationMs": 5605,
+      "bytes": 268276,
+      "method": "Normal CSS animations sampled every approximately 200 ms; no fake JS clock."
+    },
+    "statics": [
+      "desktop-gold-hand.webp",
+      "phone-ultimate-flames.webp",
+      "ipad-gold-table.webp"
+    ]
+  },
+  "limitations": [
+    "Browser viewport emulation, not physical Safari/iPad hardware.",
+    "Visual testing uses temporary/free copies to expose all 10 rare finishes without exceeding permanent skill slots."
+  ]
+}
