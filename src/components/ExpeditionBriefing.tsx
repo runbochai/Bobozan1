@@ -56,13 +56,13 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
     </> : <>
       <div className="exp-briefing-rules">
         <article><PixelCardArt id="charge" /><p>{zh ? '攒能量，抓对手攒时出手。' : 'Build energy; attack when the opponent Charges.'}</p></article>
-        <article><PixelCardArt id="defend" /><p>{zh ? '看已出牌猜习惯，防守后找反击。' : 'Read past cards; block and look for a counter.'}</p></article>
+        <article><PixelCardArt id="defend" /><p>{zh ? '听台词，看出招，自己判断。' : 'Listen, watch their moves, and make your own read.'}</p></article>
         <article><PixelCardArt id="pegasus" /><p>{zh ? '过关选强化，再决定休整或挑战。' : 'Choose a reward, then rest or take a risk.'}</p></article>
       </div>
       <p className="exp-briefing-note">{zh ? '重开清空本轮成长，保留历史最佳与练习记录；退出或刷新不保存本轮。' : 'Restart clears run growth, keeping your best and practice records. Leaving or refreshing does not save this run.'}</p>
       <details className="exp-briefing-details"><summary>{zh ? '更多规则' : 'More rules'}</summary>
         <p>{zh ? `打过全部 ${EXPEDITION_STAGES.length} 关即通关。每关击败所有对手才能领奖；对手之间也会互打。` : `Clear all ${EXPEDITION_STAGES.length} stages to win. Defeat every opponent for a reward; they can hit each other too.`}</p>
-        <p>{zh ? '双方同时出牌，习惯与历史不是下一招答案。攒通常获得 2 能量，受到 1 点伤害会被打断。' : 'Moves resolve together. Habits and history are not the next move. Charge normally gains 2 energy; taking 1 damage interrupts it.'}</p>
+        <p>{zh ? '双方同时出牌，台词不是出牌预告。攒通常获得 2 能量，受到 1 点伤害会被打断。' : 'Moves resolve together. Dialogue is not a move preview. Charge normally gains 2 energy; taking 1 damage interrupts it.'}</p>
         <p>{zh ? '本轮升级最高 Lv.5，只解锁新招，不增强旧牌。重开时等级、金币、遗物、装备和秘技清空。' : 'Levels unlock moves up to Lv.5 this run; old moves are unchanged. Restart clears levels, gold, relics, gear and limited skills.'}</p>
         <p>{zh ? `远征从 ${EXPEDITION_START_HP} 血开始，装备只在本轮有效。多人从 ${MAX_HP} 血开始：淘汰后若至少两人存活，幸存者回到 ${MAX_HP} 血，能量和层数归零；远征没有这次重置。基础攻防规则相同。` : `Expedition starts at ${EXPEDITION_START_HP} HP; gear lasts for this run. Multiplayer starts at ${MAX_HP} HP: after an elimination with at least two survivors, their HP resets to ${MAX_HP}, energy and layer to 0. Expedition has no such reset. Basic combat rules are shared.`}</p>
       </details>

@@ -1,4 +1,4 @@
-import type { Lang, LocalizedText, Player } from '../types';
+import type { LocalizedText, Player } from '../types';
 
 /** Public, already visible information only. Never pass a committed enemy move here. */
 export type ExpeditionPublicFighter = Pick<Player, 'id' | 'hp' | 'energy' | 'isDead'>;
@@ -29,7 +29,7 @@ const text = (zh: string, en: string): LocalizedText => ({ zh, en });
 
 /** A suggestion, never a required move or a prediction of a committed card. */
 export function getExpeditionLesson(context: ExpeditionLessonContext): ExpeditionLessonHint {
-  const { stageIdx, hero, opponents, legalCardIds, lastResult, recap, history } = context;
+  const { stageIdx, hero, opponents, legalCardIds, lastResult, recap } = context;
   const alive = opponents.filter(player => !player.isDead);
   switch (stageIdx) {
     case 0: return {
@@ -51,7 +51,7 @@ export function getExpeditionLesson(context: ExpeditionLessonContext): Expeditio
     case 2: return {
       id: 'break-defense',
       text: text('咔需 3 能量，能破普通防。', 'Ka costs 3 energy and breaks basic Defend.'),
-      detail: text('攒够能量后，咔能突破普通防守，射程是自身及上下各 1 层。对手偏爱防守，也仍可能换招；你可以自由选择本回合的牌。', 'Ka breaks basic Defend and reaches your layer and one above or below. A defensive opponent may still change moves. You remain free to choose any legal card.'),
+      detail: text('攒够能量后，咔能突破普通防守，射程是自身及上下各 1 层。对手仍可能换招；什么时候出手，由你判断。', 'Ka breaks basic Defend and reaches your layer and one above or below. The opponent can change moves; you decide when to act.'),
       cardIds: ['ka', 'defend'], relation: '>',
     };
     case 3: return legalCardIds.includes('pegasus') ? {
@@ -73,9 +73,9 @@ export function getExpeditionLesson(context: ExpeditionLessonContext): Expeditio
     };
     case 5: return {
       id: 'read-history',
-      text: text('看近 3 张猜习惯，也要准备对手变招。', 'Read the last 3 cards; be ready for a change.'),
-      detail: text('人物旁的小牌都是已经出过的牌，从左到右是较早到最近。连着防或攒是线索，不是答案；结合剩余能量判断，也可以主动换招。', 'The small cards beside each fighter are past moves, from oldest to newest. Repeated Defends or Charges are clues, not promises. Consider remaining energy and vary your own moves too.'),
-      cardIds: (history[alive[0]?.id] ?? []).slice(-3),
+      text: text('听他说什么，再看他实际怎么出。', 'Hear what they say; watch what they actually play.'),
+      detail: text('有人嘴硬，有人虚张声势。对白不是出牌预告；把话音、剩余能量和刚才的出招放在一起，自己判断。需要回顾时可打开回合复盘。', 'Some boast; some bluff. Dialogue is not a move preview. Consider their words, energy and what they just played, then make your own read. Turn review is available when you need it.'),
+      cardIds: [],
     };
     case 6: return {
       id: 'same-tier-level',
@@ -104,15 +104,8 @@ export function getExpeditionLesson(context: ExpeditionLessonContext): Expeditio
   };
   return {
     id: 'watch-and-adapt',
-    text: text('看能量和近期出牌，准备应对变招。', 'Watch energy and recent cards; expect a change.'),
-    detail: text('习惯与历史只是公开线索，不会显示对手这回合已选的牌。没有掉血也不一定是打平；需要时打开回合复盘查看实际原因。', 'Habits and history are public clues, never this turn’s committed card. No damage does not necessarily mean a tie; Turn review explains what actually happened.'),
-    cardIds: (history[alive[0]?.id] ?? []).slice(-3),
+    text: text('他说的，和刚才做的一样吗？', 'Do their words match what they just did?'),
+    detail: text('对白可能是试探，也可能只是逞强。回想刚才的出招，再结合能量做判断。没有掉血也不一定是打平；回合复盘会保留实际结算。', 'A remark may be a probe or bravado. Recall the last moves and consider energy. No damage does not necessarily mean a tie; Turn review keeps the actual resolution.'),
+    cardIds: [],
   };
-}
-
-export function expeditionHabitLabel(personality: { aggression: number; defense: number; charge: number } | undefined, lang: Lang): string {
-  if (!personality) return lang === 'zh' ? '观察习惯' : 'Watch habits';
-  if (personality.defense >= personality.aggression && personality.defense >= personality.charge) return lang === 'zh' ? '偏爱防守' : 'Defensive';
-  if (personality.charge >= personality.aggression) return lang === 'zh' ? '偏爱攒气' : 'Likes Charge';
-  return lang === 'zh' ? '偏爱进攻' : 'Aggressive';
 }

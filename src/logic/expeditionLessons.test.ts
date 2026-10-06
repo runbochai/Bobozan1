@@ -130,7 +130,7 @@ test('the three-player lesson really ties one opponent while taking a hit from a
   assert.equal(after(brawl, 'hero').energy, 9, 'The tied pair still paid for their attacks');
 });
 
-test('history coaching only reads revealed moves, in oldest-to-newest order', () => {
+test('read coaching leaves interpretation to the player while recorded history stays public and ordered', () => {
   const history = { enemy: ['charge', 'hong', 'defend'] };
   const revealed = [fighter('hero', 'defend'), fighter('enemy', 'hong2')];
   const next = recordExpeditionHistory(history, revealed);
@@ -140,9 +140,9 @@ test('history coaching only reads revealed moves, in oldest-to-newest order', ()
     get() { throw new Error('The coach inspected a hidden committed move'); },
   });
   const hint = getExpeditionLesson(context(5, { history: next, opponents: [publicEnemy] }));
-  assert.deepEqual(hint.cardIds, ['hong', 'defend', 'hong2']);
+  assert.deepEqual(next.enemy, ['hong', 'defend', 'hong2']);
+  assert.deepEqual(hint.cardIds, [], 'Do not turn the history into an on-screen intent chart');
   assert.deepEqual(history.enemy, ['charge', 'hong', 'defend'], 'Recording this turn must not rewrite the previous history');
-  assert.equal(hint.cardIds.includes('ka'), false);
 });
 
 test('adaptive coaching distinguishes actual defense from a harmless miss or armor preventing damage', () => {

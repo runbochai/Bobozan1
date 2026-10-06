@@ -201,7 +201,7 @@ export default function BattleAcademy({ lang, avatar, onClose, onStartExpedition
         {!result && <>
           <p className="academy-intent">{lesson.concealed
             ? (round.opponentHint ?? lesson.opponentHint)[lang]
-            : <>{zh ? '机器人这次出：' : 'The bot will play: '}<strong>{enemyCard?.name[lang]}</strong>{enemyCard && <> · <Zap size={16} /> {enemyCard.cost}</>}</>}</p>
+            : <>{zh ? '规则演示 · 对手的已知牌：' : 'Rule demonstration · known move: '}<strong>{enemyCard?.name[lang]}</strong>{enemyCard && <> · <Zap size={16} /> {enemyCard.cost}</>}</>}</p>
           <div className="academy-choices" aria-label={zh ? '选择你的招式' : 'Choose your move'}>{round.choices.map(move => {
             const card = SKILL_DB.find(item => item.id === move);
             if (!card) return null;

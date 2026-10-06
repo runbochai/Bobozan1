@@ -5,23 +5,13 @@
 .exp-coach-text { min-width:0; overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
 .exp-coach-collapse { height:36px; width:34px; flex-shrink:0; margin-left:4px; }
 .exp-coach-restore { height:32px; padding:4px 9px; }
-.exp-coach button:focus-visible,.exp-tell-trigger:focus-visible { outline:2px solid #ffe2a1; outline-offset:2px; }
+.exp-coach button:focus-visible { outline:2px solid #ffe2a1; outline-offset:2px; }
 .exp-hint-mini-cards { display:flex; align-items:center; gap:3px; flex-shrink:0; }
 .exp-hint-mini-pair { display:flex; align-items:center; gap:3px; }
 .exp-hint-mini-card { display:grid; place-items:center; width:23px; height:27px; background:#263c49; border:1px solid #9a946f; color:#edc987; }
 .exp-hint-mini-card .pixel-card-art,.exp-hint-mini-card .pixel-card-symbol { display:grid; place-items:center; width:20px; height:23px; margin:0; object-fit:contain; }
 .exp-hint-mini-card .pixel-card-symbol svg { width:16px; height:16px; }
 .exp-hint-relation { color:#c5bd9a; font:700 11px/1 monospace; }
-.exp-tell { pointer-events:auto; width:max-content; max-width:160px; }
-.exp-tell .exp-tell-trigger,.pixel-screen-battle .center-table-board .pixel-intent .exp-tell-trigger {
-  display:flex; flex-wrap:wrap; justify-content:center; align-items:center; gap:3px 6px; width:auto; max-width:160px; min-height:32px; margin:0; padding:3px 6px;
-  color:#ead8a6; background:#172b35ef; border:1px solid #758588; border-radius:0; box-shadow:2px 2px 0 #0a1422; font:600 12px/1.3 system-ui,sans-serif; text-align:center; cursor:pointer; transform:none;
-}
-.exp-tell-label { white-space:nowrap; }
-.exp-tell-empty { font-size:10px; color:#b4c4c9; white-space:nowrap; }
-.exp-tell .exp-hint-mini-card { width:19px; height:22px; }
-.exp-tell .exp-hint-mini-card .pixel-card-art,.exp-tell .exp-hint-mini-card .pixel-card-symbol { width:17px; height:19px; }
-.exp-tell .exp-hint-mini-card .pixel-card-symbol svg { width:14px; height:14px; }
 .exp-hint-dialog { position:fixed; inset:0; margin:auto; width:min(450px,calc(100vw - 24px)); max-height:calc(100dvh - 24px); overflow:auto; padding:18px; border:3px solid #b69d70; color:#e7e3d1; background:#142734; box-shadow:6px 6px 0 #060d18; font:16px/1.55 system-ui,sans-serif; }
 .exp-hint-dialog::backdrop { background:#070f1bc9; }
 .exp-hint-dialog header { display:flex; align-items:center; justify-content:space-between; gap:10px; }
@@ -44,5 +34,4 @@
   .exp-coach { max-width:100%; height:36px; }
   .exp-coach-message { gap:5px; }
   .exp-coach-message > .exp-hint-mini-cards { display:none; }
-  .exp-tell,.exp-tell .exp-tell-trigger,.pixel-screen-battle .center-table-board .pixel-intent .exp-tell-trigger { max-width:110px; }
 }
