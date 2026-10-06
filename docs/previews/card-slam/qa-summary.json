@@ -1,0 +1,184 @@
+{
+  "scope": "Chrome: real App with local controlled multiplayer players; separate real expedition button flow. No remote multiplayer room was created.",
+  "matrix": {
+    "scenarios": 20,
+    "viewports": [
+      "1440x1000",
+      "1024x768",
+      "768x1024",
+      "390x844",
+      "844x390"
+    ],
+    "playerCounts": [
+      2,
+      4,
+      6,
+      8
+    ],
+    "directions": [
+      "n",
+      "s",
+      "nw",
+      "ne",
+      "sw",
+      "se",
+      "w",
+      "e"
+    ],
+    "failures": [],
+    "guardFailures": [],
+    "errors": [],
+    "checks": [
+      "No opponent card reveal before SHOWDOWN",
+      "Prepare / raise / release / recover precede card comparison",
+      "HP/energy and impact feedback wait for production settlement",
+      "Emoji/language re-render does not remount action or card flight",
+      "Ultimate cutins use the same round key and original deadline"
+    ]
+  },
+  "localHandPerspective": {
+    "scenarios": 6,
+    "selfPerspectiveDirections": [
+      "n"
+    ],
+    "ordinaryOpponentDirections": [
+      "s",
+      "nw",
+      "ne",
+      "sw",
+      "se",
+      "w",
+      "e"
+    ],
+    "phases": [
+      160,
+      250,
+      350,
+      390,
+      470
+    ],
+    "issues": [],
+    "errors": [],
+    "selfOnly": true,
+    "peakScale": 1.6,
+    "checks": [
+      "Only the local player receives a perspective canvas after a confirmed move reaches SHOWDOWN",
+      "Opponents keep their ordinary four poses without any perspective canvas",
+      "Single warped image replaces original, never two visible hands",
+      "Increasing palm/forearm silhouette at 160 / 250 / 350 ms",
+      "Head/feet and pixels outside raised ellipse remain unchanged",
+      "Release uses smaller region; pixels outside it remain unchanged",
+      "Sprite foot anchor and full-body dimensions remain fixed",
+      "Original image returns after 440 ms"
+    ],
+    "pixelTolerance": "GPU canvas readback may differ by <=1 RGB with identical alpha; all larger changes must remain within hand ellipse."
+  },
+  "reducedMotion": {
+    "cases": 4,
+    "failures": [],
+    "errors": [],
+    "checks": [
+      "App and OS: reduced at start, then disabled",
+      "App and OS: normal start, enabled at 200 ms, disabled at 300 ms",
+      "No late cutin, re-flown card, or reappearing pose in the same round",
+      "Next round resumes normal animation"
+    ]
+  },
+  "realExpedition": {
+    "mode": "Real beginner expedition buttons, real committed AI and production settlement; no synthetic combat state, no fake clock.",
+    "results": [
+      {
+        "move": "charge",
+        "elapsedMs": 2320.6999999284744,
+        "issues": []
+      },
+      {
+        "move": "hong",
+        "elapsedMs": 2346.5,
+        "issues": []
+      }
+    ],
+    "beforeConfirmation": [
+      {
+        "label": "charge:categories",
+        "status": "PLAYING",
+        "selected": null,
+        "actions": 0,
+        "canvases": 0
+      },
+      {
+        "label": "charge:attack-category",
+        "status": "PLAYING",
+        "selected": null,
+        "actions": 0,
+        "canvases": 0
+      },
+      {
+        "label": "charge:open-details",
+        "status": "PLAYING",
+        "selected": null,
+        "actions": 0,
+        "canvases": 0
+      },
+      {
+        "label": "charge:close-details",
+        "status": "PLAYING",
+        "selected": null,
+        "actions": 0,
+        "canvases": 0
+      },
+      {
+        "label": "hong:categories",
+        "status": "PLAYING",
+        "selected": null,
+        "actions": 0,
+        "canvases": 0
+      },
+      {
+        "label": "hong:attack-category",
+        "status": "PLAYING",
+        "selected": null,
+        "actions": 0,
+        "canvases": 0
+      },
+      {
+        "label": "hong:open-details",
+        "status": "PLAYING",
+        "selected": null,
+        "actions": 0,
+        "canvases": 0
+      },
+      {
+        "label": "hong:close-details",
+        "status": "PLAYING",
+        "selected": null,
+        "actions": 0,
+        "canvases": 0
+      }
+    ],
+    "errors": []
+  },
+  "previews": [
+    {
+      "file": "desktop-two-player.webp",
+      "width": 1440,
+      "height": 1000,
+      "frames": 35,
+      "durationMs": 3650,
+      "bytes": 483396
+    },
+    {
+      "file": "ipad-eight-player.webp",
+      "width": 1024,
+      "height": 768,
+      "frames": 35,
+      "durationMs": 3650,
+      "bytes": 529846
+    }
+  ],
+  "limitations": [
+    "Desktop Chrome viewport emulation, not physical iPad/Safari hardware.",
+    "Controlled multiplayer rendering does not substitute for live network latency testing.",
+    "Previews sample the real UI using synchronized JS/CSS timelines; they are not live multiplayer recordings."
+  ]
+}

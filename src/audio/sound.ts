@@ -12,7 +12,7 @@ export const initAudio = () => {
   }
 };
 
-export const playSound = (type: 'click' | 'confirm' | 'combat' | 'death' | 'win' | 'card_flip' | 'draw', muted: boolean) => {
+export const playSound = (type: 'click' | 'confirm' | 'combat' | 'death' | 'win' | 'card_flip' | 'draw' | 'card_slam' | 'card_clash', muted: boolean) => {
   if (muted || !audioCtx) return;
   
   const nowTs = Date.now();
@@ -50,6 +50,29 @@ export const playSound = (type: 'click' | 'confirm' | 'combat' | 'death' | 'win'
     gain.gain.setValueAtTime(0.05, now);
     gain.gain.linearRampToValueAtTime(0.001, now + 0.1);
     noise.start(now);
+  } else if (type === 'card_slam' || type === 'card_clash') {
+    // Short wooden thump followed by a dry paper snap, once for the whole table.
+    const clash = type === 'card_clash';
+    const duration = clash ? .16 : .12;
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(clash ? 150 : 110, now);
+    osc.frequency.exponentialRampToValueAtTime(38, now + duration);
+    gain.gain.setValueAtTime(clash ? .09 : .075, now);
+    gain.gain.exponentialRampToValueAtTime(.001, now + duration);
+    osc.start(now);
+    osc.stop(now + duration);
+    const buffer = audioCtx.createBuffer(1, Math.ceil(audioCtx.sampleRate * .055), audioCtx.sampleRate);
+    const samples = buffer.getChannelData(0);
+    for (let i = 0; i < samples.length; i++) samples[i] = (Math.random() * 2 - 1) * (1 - i / samples.length);
+    const snap = audioCtx.createBufferSource();
+    const filter = audioCtx.createBiquadFilter();
+    snap.buffer = buffer;
+    filter.type = 'lowpass';
+    filter.frequency.value = clash ? 2600 : 1700;
+    snap.connect(filter);
+    filter.connect(gain);
+    snap.start(now);
+    snap.stop(now + .055);
   } else if (type === 'confirm') {
     osc.type = 'triangle';
     osc.frequency.setValueAtTime(440, now);

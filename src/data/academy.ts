@@ -289,7 +289,7 @@ export const RULE_TOPICS: RuleTopic[] = [
   {
     id: 'endless', title: text('无尽远征', 'Endless expedition'),
     items: [
-      text('无尽从 1 生命开局，没有额外伤害或金币倍率。每赢一战，你升 1 级并进入下一关；关卡循环延续，没有通关终点。', 'Endless starts at 1 HP with no extra damage or gold multiplier. Each win raises your level by 1 and advances through a repeating stage sequence with no final stage.'),
+      text('无尽从 1 生命开局，没有额外伤害或金币倍率。击败本关最高 Lv.N 的敌人，直接升至 Lv.N+1，并获得这一阶的新技能。保留旧技能，不补发跳过的等级；关卡循环延续，没有终点。', 'Endless starts at 1 HP with no extra damage or gold multiplier. Beat the strongest Lv.N opponent to reach Lv.N+1 and learn that tier’s skills. Keep old skills without gaining skipped tiers. Stages repeat with no final stage.'),
       text('倒下后恢复生命，保留等级、技能、金币、遗物与装备重试当前关。敌人至少比你高 1 级；每输一次，敌方再升 1 级。', 'After defeat, restore HP and retry the current stage with levels, skills, gold, relics and gear intact. Enemies stay at least one level above you; each loss adds another enemy level.'),
       text('无尽中永久保留的普通攻击与终极随当前等级成长，用于同档比较；基础牌、联合技和临时吸收牌仍按原规则。等级不额外增加伤害，每类仍最多保留 3 个新技能。', 'In Endless, retained ordinary attacks and Ultimates grow with your current level for same-tier comparisons. Basic cards, combos and temporary or absorbed skills keep their rules. Levels add no damage; each category still holds up to 3 acquired skills.'),
       text('退出或刷新仍不保存本轮，只保留最高进度和练习记录。', 'Leaving or refreshing still does not save this run; only best progress and practice records remain.'),

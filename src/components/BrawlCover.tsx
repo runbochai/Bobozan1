@@ -1,5 +1,6 @@
 import { Zap, Shield, Sword, Star } from './PixelIcons';
 import { assetUrl } from '../assets';
+import './BrawlCover.css';
 
 // Reuse the game's fighters as independently layered, responsive cover art.
 const fighters = ['hangman', 'meteor', 'gungod', 'superwave', 'triplekill', 'iceult', 'fireclaw', 'boiler', 'threestar', 'triplekick', 'pointdiff', 'fiveslap'];

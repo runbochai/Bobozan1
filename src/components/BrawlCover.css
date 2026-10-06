@@ -1,0 +1,124 @@
+/* Cover art is a fixed stage; form height never moves or resizes it. */
+.pixel-app.brawl-menu-screen {
+  min-height: 100svh;
+  padding: 88px 24px 28px;
+  justify-content: flex-end;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+.pixel-app.brawl-menu-screen .brawl-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100svh;
+  min-height: 480px;
+  z-index: 0;
+  pointer-events: none;
+  isolation: isolate;
+}
+.pixel-app.brawl-menu-screen .brawl-cover {
+  inset: auto;
+  top: 50%;
+  left: 50%;
+  width: min(1440px, max(100vw, 860px));
+  height: max(100svh, 700px);
+  transform: translate(-50%, -50%);
+}
+.pixel-app.brawl-menu-screen .brawl-fighter img { animation: none; }
+.pixel-app.brawl-menu-screen .brawl-menu-backdrop::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 6;
+  pointer-events: none;
+  background: linear-gradient(180deg, #10182714 25%, #10182738 55%, #101827c9 100%);
+}
+.pixel-app.brawl-menu-screen .btn-secondary {
+  background: #14243bf2;
+  border: 2px solid #78919f;
+  color: #fff0d3;
+}
+.pixel-app.pixel-screen-home.brawl-menu-screen .brawl-menu-backdrop::after {
+  background: linear-gradient(180deg, #10182770, #1018279e 65%, #101827d9);
+}
+.pixel-app.brawl-menu-screen .brawl-logo {
+  position: absolute;
+  top: 13%;
+  left: max(7%, calc((100vw - 1200px) / 2));
+  z-index: 8;
+}
+.pixel-app.brawl-menu-screen .pixel-title-content {
+  width: 100%;
+  max-width: 1120px;
+  padding: 0;
+  isolation: auto;
+}
+.pixel-app.brawl-menu-screen .brawl-start-panel {
+  width: 100%;
+  max-width: 620px;
+  margin: 0;
+  padding: 0;
+  gap: 16px;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+.pixel-app.brawl-menu-screen .brawl-start-panel::before,
+.pixel-app.brawl-menu-screen .brawl-start-panel::after { content: none; }
+.pixel-app.brawl-menu-screen .pixel-home-content {
+  max-width: 480px;
+  margin: 0;
+}
+.pixel-app.brawl-menu-screen .pixel-home-content > .pixel-panel {
+  overflow: visible;
+  padding: 0;
+  gap: 16px;
+  border: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  animation: none;
+}
+.pixel-app.brawl-menu-screen .pixel-home-content .pixel-section-heading p,
+.pixel-app.brawl-menu-screen .pixel-home-content .pixel-kicker { text-shadow: 2px 2px 0 #080f1c; }
+.pixel-app.brawl-menu-screen .pixel-player-setup { max-width: 444px; }
+.pixel-app.brawl-menu-screen .pixel-player-setup > :first-child > button > .absolute {
+  bottom: 2px;
+  right: 2px;
+  padding: 3px;
+}
+.pixel-app.brawl-menu-screen .pixel-player-setup > :first-child > button > .absolute .pixel-icon {
+  width: 12px;
+  height: 12px;
+}
+.pixel-app.brawl-menu-screen .pixel-player-setup > :first-child > span {
+  color: #e8dcc3;
+  text-shadow: 2px 2px #08101f;
+  animation: none;
+}
+.pixel-app.brawl-menu-screen .pixel-player-setup [class*="grid-cols-4"] {
+  left: 0;
+  transform: none;
+  max-height: min(50svh, 360px);
+}
+@media (max-width: 767px) {
+  .pixel-app.brawl-menu-screen { padding: 72px 18px 24px; }
+  .pixel-app.brawl-menu-screen .brawl-cover {
+    width: max(100vw, 660px);
+    height: max(100svh, 690px);
+  }
+  .pixel-app.brawl-menu-screen .brawl-logo { left: 7%; top: 17%; }
+  .pixel-app.brawl-menu-screen .brawl-logo .pixel-wordmark { font-size: clamp(31px, 8.4vw, 52px); }
+  .pixel-app.brawl-menu-screen .brawl-start-panel { max-width: 480px; gap: 14px; }
+  .pixel-app.brawl-menu-screen .pixel-home-content { max-width: 420px; }
+  .pixel-app.brawl-menu-screen .pixel-home-content > .pixel-panel { gap: 14px; }
+  .pixel-app.brawl-menu-screen .pixel-home-content .pixel-section-heading h1 { font-size: 25px; }
+}
+@media (max-height: 540px) and (min-width: 600px) {
+  .pixel-app.brawl-menu-screen { padding: 66px 28px 20px; }
+  .pixel-app.brawl-menu-screen .brawl-start-panel { max-width: 550px; gap: 10px; }
+  .pixel-app.brawl-menu-screen .pixel-player-setup button { width: 56px; height: 56px; }
+  .pixel-app.brawl-menu-screen .pixel-player-setup input { padding: 8px 12px; }
+  .pixel-app.brawl-menu-screen .brawl-start-panel .btn-primary,
+  .pixel-app.brawl-menu-screen .brawl-start-panel .btn-expedition { min-height: 48px; padding: 8px 10px; }
+  .pixel-app.brawl-menu-screen .brawl-logo { top: 10%; left: 6%; }
+}

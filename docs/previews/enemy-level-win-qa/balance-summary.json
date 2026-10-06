@@ -1,0 +1,33 @@
+{
+  "rule": "Win grants highest actual defeated enemy level + 1; only the target authored skill tier is awarded. Defeats preserve growth and raise enemy level once.",
+  "regression": {
+    "testsPassed": 57,
+    "typecheck": "pass",
+    "lint": "pass",
+    "cases": [
+      "First Lv.1 enemy win grants Lv.2 and only tier 2 skills",
+      "Three defeats then Lv.5 win grants Lv.6, preserves old selection, does not grant skipped tiers",
+      "Group payout includes earlier defeated highest enemy, ignores cached next enemy level",
+      "Lv.27 enemy grants real Lv.28 without fictional skill IDs",
+      "Duplicate victory grants progression/reward only once",
+      "Three retained skills per category still require selection when overflowed"
+    ]
+  },
+  "simulation": {
+    "seeds": 5,
+    "battlesPerSeed": 40,
+    "maxTurnsPerBattle": 80,
+    "method": "Production runtime and public-history AI on both sides. Enemy moves are committed first and never revealed to the hero policy. Defeats revive the settled run; victories grant rewards and use the ordinary shop.",
+    "limitations": [
+      "AI benchmark, not human win rates.",
+      "Fixed newest-skill and healing-focused shop policy.",
+      "An unfinished battle at 80 turns is reported as stalled, never a victory."
+    ],
+    "attempts": 200,
+    "wins": 108,
+    "defeats": 92,
+    "stalled": 0,
+    "maxHeroLevel": 71,
+    "maxEnemyLevel": 72
+  }
+}

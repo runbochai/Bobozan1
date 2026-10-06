@@ -63,46 +63,78 @@ test('endless starts at one HP and zero Energy, and every NPC retains a genuine 
   assert.equal(createExpeditionRun('normal').endlessLevel, undefined);
 });
 
-test('a real victory grants one rank and real skill unlocks, synchronized into the returned player', () => {
+test('a real victory grants the defeated enemy level plus one and only that skill tier, synchronized into the returned player', () => {
   const battle = start();
   const won = play(battle, 'ka', 'defend', { energy: 3 }, { hp: .5 });
   assert.equal(won.won, true);
-  assert.equal(won.run.endlessLevel, 1);
-  assert.equal(won.run.endlessEnemyLevel, 2);
-  assert.ok(won.run.inventory.includes(1));
-  assert.ok(won.run.skillLoadout?.includes('pegasus'));
+  assert.equal(won.run.endlessLevel, 2);
+  assert.equal(won.run.endlessEnemyLevel, 3);
+  assert.deepEqual(won.run.inventory, [0, 2]);
+  assert.ok(won.run.skillLoadout?.includes('icesword'));
+  assert.ok(won.run.skillLoadout?.includes('iceult'));
+  assert.ok(!won.run.skillLoadout?.includes('pegasus'), 'Skipped tiers are not silently awarded');
   assert.deepEqual(hero(won).skillLoadout, won.run.skillLoadout);
   assert.deepEqual(hero(won).inventory, won.run.inventory);
-  assert.equal(hero(won).endlessLevel, 1);
+  assert.equal(hero(won).endlessLevel, 2);
   const duplicate = play(won, 'defend', 'defend');
   assert.equal(duplicate.won, true);
   assert.equal(duplicate.gold, 0);
   assert.equal(duplicate.run.gold, won.run.gold);
-  assert.equal(duplicate.run.endlessLevel, 1);
+  assert.equal(duplicate.run.endlessLevel, 2);
+  assert.deepEqual(duplicate.run.skillLoadout, won.run.skillLoadout);
   const next = setupExpeditionStage(won.run, 1, identity, rng);
-  assert.equal(next.players[1].endlessLevel, 2);
+  assert.equal(next.players[1].endlessLevel, 3);
 });
 
 test('newly unlocked skills still require the human three-slot choice, including before the reward screen', () => {
   const retained = getEndlessEnemyLoadout(3);
   const battle = start({ ...retained, endlessLevel: 3, endlessEnemyLevel: 4 });
   const won = play(battle, 'ka', 'defend', { energy: 3 }, { hp: .5 });
-  assert.equal(won.run.endlessLevel, 4);
+  assert.equal(won.run.endlessLevel, 5);
   assert.deepEqual(getSkillOverflow(won.run).map(group => group.category), ['ATTACK', 'ULTIMATE']);
   assert.deepEqual(getSkillOverflow(hero(won)), getSkillOverflow(won.run));
-  assert.ok(hero(won).skillLoadout?.includes('hotmilk'));
+  assert.ok(hero(won).skillLoadout?.includes('madian'));
+  assert.ok(!hero(won).skillLoadout?.includes('hotmilk'));
 });
 
 test('winning above the last authored unlock keeps increasing real rank without creating fictitious skills', () => {
   const loadout = getEndlessEnemyLoadout(23);
   const battle = start({ ...loadout, endlessLevel: 23, endlessEnemyLevel: 27 }, 45);
   const won = play(battle, 'ka', 'defend', { energy: 3 }, { hp: .5 });
-  assert.equal(won.run.endlessLevel, 24);
-  assert.equal(hero(won).endlessLevel, 24);
-  assert.equal(won.run.endlessEnemyLevel, 27, 'Earlier defeats retain their level pressure');
+  assert.equal(won.run.endlessLevel, 28);
+  assert.equal(hero(won).endlessLevel, 28);
+  assert.equal(won.run.endlessEnemyLevel, 29, 'Next encounter remains one level above the newly earned level');
   assert.deepEqual(won.run.inventory, loadout.inventory);
   assert.deepEqual(won.run.skillLoadout, loadout.skillLoadout);
   assert.ok(won.run.skillLoadout?.every(id => SKILL_DB.some(card => card.id === id)));
+});
+
+test('after consecutive defeats a victory catches up to the actual enemy, preserving old choices without filling skipped levels', () => {
+  const retained = { inventory: [0, 1], skillLoadout: ['pegasus'] };
+  let run: ExpeditionRun = { ...createExpeditionRun('endless'), ...retained, endlessLevel: 1, endlessEnemyLevel: 2 };
+  for (let defeat = 0; defeat < 3; defeat++) run = reviveEndlessExpedition({ ...run, hp: 0 });
+  const battle = setupExpeditionStage(run, 0, identity, rng);
+  assert.equal(battle.players[1].endlessLevel, 5);
+  const won = play(battle, 'ka', 'defend', { energy: 3 }, { hp: .5 });
+  assert.equal(won.run.endlessLevel, 6);
+  assert.equal(won.run.endlessEnemyLevel, 7);
+  assert.equal(won.run.endlessDefeats, 3);
+  assert.deepEqual(won.run.inventory, [0, 1, 6]);
+  assert.deepEqual(won.run.skillLoadout, ['pegasus', 'absorb']);
+});
+
+test('a group clear uses the highest actual opponent including one killed earlier, not the cached next enemy level', () => {
+  const battle = start({ endlessLevel: 2, endlessEnemyLevel: 3 }, 2);
+  assert.equal(battle.players.length, 3);
+  battle.run.endlessEnemyLevel = 99;
+  battle.players[1] = { ...battle.players[1], endlessLevel: 8, isDead: true, hp: 0 };
+  battle.players[2] = { ...battle.players[2], endlessLevel: 4 };
+  const won = play(battle, 'ka', 'defend', { energy: 3 }, { hp: .5 });
+  assert.equal(won.won, true);
+  assert.equal(won.run.endlessLevel, 9, 'Earlier Lv.8 opponent controls the reward, not the last Lv.4 or cached Lv.99');
+  assert.deepEqual(won.run.inventory, [0, 9]);
+  assert.ok(won.run.skillLoadout?.includes('machete'));
+  assert.ok(!won.run.skillLoadout?.includes('helmetatk'));
 });
 
 test('death and revival preserve settled growth, money, items and spent safeguards; one defeat raises enemies once', () => {

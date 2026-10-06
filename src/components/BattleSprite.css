@@ -1,0 +1,19 @@
+.battle-sprite .battle-idle-frame,
+.battle-sprite .battle-action-frame { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+.battle-sprite .battle-idle-frame > img,
+.battle-sprite .battle-action-frame > img { position:absolute; max-width:none; image-rendering:pixelated; pointer-events:none; }
+.battle-sprite .battle-idle-frame > img { width:400%; height:200%; }
+.battle-sprite .battle-action-frame > img { width:800%; height:400%; }
+.battle-sprite .battle-action-perspective { position:absolute; inset:0; width:100%; height:100%; image-rendering:pixelated; pointer-events:none; visibility:hidden; }
+.battle-sprite .battle-action-perspective[data-perspective-ready="true"] { visibility:visible; }
+.battle-sprite .battle-action-frame:has(.battle-action-perspective[data-perspective-ready="true"]) > img { visibility:hidden; }
+.battle-sprite > img.battle-action-preload { display:none; }
+.battle-sprite:has(.battle-action-frame) .battle-idle-frame { visibility:hidden; }
+.battle-sprite-reduced .battle-action-frame,
+.reduce-motion .battle-action-frame { display:none; }
+.battle-sprite-reduced:has(.battle-action-frame) .battle-idle-frame,
+.reduce-motion .battle-sprite:has(.battle-action-frame) .battle-idle-frame { visibility:visible; }
+@media (prefers-reduced-motion:reduce) {
+  .battle-sprite .battle-action-frame { display:none; }
+  .battle-sprite:has(.battle-action-frame) .battle-idle-frame { visibility:visible; }
+}
