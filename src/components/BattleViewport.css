@@ -1,0 +1,132 @@
+/* The visible viewport owns the battle height, including Safari's moving bars.
+   Keep a readable minimum battlefield; unusually short windows can still scroll. */
+.pixel-app.pixel-screen-battle {
+  min-height: 100vh;
+  min-height: 100dvh;
+  overflow-x: clip;
+  overflow-y: visible;
+}
+
+.pixel-screen-battle .pixel-battle-layout {
+  --hand-card-height: clamp(132px, 22dvh, 200px);
+  --table-hand-overlap: clamp(40px, 8dvh, 90px);
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+}
+.pixel-screen-battle .pixel-battle-board.center-table-board {
+  height: auto;
+  min-height: 320px;
+  flex: 1 0 320px;
+  margin-top: 104px;
+}
+.pixel-screen-battle .battle-command-dock {
+  flex-shrink: 0;
+  grid-template-columns: minmax(120px, 1fr) minmax(0, 820px) minmax(96px, 1fr);
+  gap: 8px;
+  margin-top: calc(-1 * var(--table-hand-overlap));
+  padding: 8px 16px max(12px, env(safe-area-inset-bottom));
+}
+.pixel-screen-battle .battle-command-dock .pixel-hand-area.battle-hand {
+  grid-column: 2;
+  grid-row: 1;
+  min-height: 0;
+}
+.pixel-screen-battle .battle-command-dock .battle-player-hud {
+  grid-column: 1;
+  grid-row: 1;
+  align-self: end;
+  flex-wrap: wrap;
+  padding: 8px 0;
+}
+.pixel-screen-battle .battle-command-dock .battle-hud-inventory {
+  grid-column: 3;
+  grid-row: 1;
+  align-self: end;
+  max-width: 100%;
+}
+.pixel-screen-battle .battle-command-dock .battle-hud-portrait {
+  width: clamp(64px, 9dvh, 100px);
+  height: clamp(64px, 9dvh, 100px);
+}
+.pixel-screen-battle .battle-command-dock .battle-hud-details { width: 190px; max-width: 100%; }
+.pixel-screen-battle .battle-command-dock .battle-hud-name { flex-wrap: wrap; gap: 2px 8px; }
+.pixel-screen-battle .battle-command-dock .battle-stats { flex-wrap: wrap; }
+.pixel-screen-battle .battle-hand .pixel-hand-tray.hand-fan {
+  height: calc(var(--hand-card-height) + 24px);
+  padding: 8px 6px 12px;
+  gap: 8px;
+}
+.pixel-screen-battle .battle-hand .hand-category-slot {
+  flex: 1 1 136px;
+  min-width: 52px;
+  max-width: 156px;
+}
+.pixel-screen-battle .battle-hand button.hand-card { height: var(--hand-card-height); }
+.pixel-screen-battle .battle-hand .hand-rest,
+.pixel-screen-battle .battle-hand .hand-committed { min-height: calc(var(--hand-card-height) + 24px); }
+.pixel-screen-battle .battle-hand .hand-committed { padding: 12px; }
+.pixel-screen-battle .battle-hand .hand-locked-card { height: var(--hand-card-height); }
+.pixel-screen-battle .battle-hand .hand-card .pixel-card-art { width: min(82px, 100%); height: min(82px, 10dvh); }
+.pixel-screen-battle .battle-hand .hand-art > :is(.pixel-card-art, .pixel-card-symbol) { max-height: 100%; object-fit: contain; }
+.pixel-screen-battle .battle-hand .hand-art .pixel-icon { max-height: 75%; }
+.pixel-screen-battle .battle-hand :is(.hand-card-name, .hand-card-action) { flex-shrink: 0; }
+.pixel-screen-battle .battle-hand .hand-inspector { min-height: 40px; }
+.pixel-screen-battle .pixel-dialog { max-height: calc(100dvh - 32px); overflow-y: auto; }
+.pixel-screen-battle .expedition-learning-hud { width: min(560px, calc(100% - 374px)); padding: 7px 8px; background: #142333ed; border: 1px solid #53636d; }
+.expedition-learning-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 5px; }
+.expedition-learning-heading > div:first-child { min-width: 0; }
+.expedition-learning-heading strong { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; color: #f3ce80; }
+.expedition-learning-heading small { display: block; font-size: 10px; color: #b6c8cc; }
+.expedition-learning-heading .exp-help-actions { padding: 0; gap: 5px; flex-shrink: 0; }
+.expedition-learning-heading .exp-help-actions button { min-height: 32px; padding: 3px 7px; font-size: 12px; }
+
+@media (max-height: 900px), (hover: none) {
+  /* Touch users open the same description with the card's information button. */
+  .pixel-screen-battle .battle-hand .hand-inspector { display: none; }
+}
+@media (min-width: 768px) and (max-width: 1199px) {
+  .pixel-screen-battle .battle-command-dock { grid-template-columns: 124px minmax(0, 1fr) 96px; padding-inline: 12px; }
+  .pixel-screen-battle .battle-command-dock .battle-player-hud { flex-direction: column; align-items: flex-start; }
+  .pixel-screen-battle .battle-hand button.hand-category-card { padding: 10px 3px; }
+  .pixel-screen-battle .battle-hand .hand-category-caption { display: none; }
+  .pixel-screen-battle .battle-hand .hand-card-name { font-size: 14px; }
+  .pixel-screen-battle .battle-hand .hand-card-eyebrow { font-size: 9px; letter-spacing: 0; }
+  .pixel-screen-battle .battle-hand .hand-category-icon .pixel-icon { width: 36px; height: 36px; }
+}
+@media (max-width: 767px) {
+  .pixel-screen-battle .expedition-learning-hud { width: auto; }
+  .pixel-screen-battle .pixel-battle-layout { --hand-card-height: 144px; --table-hand-overlap: 48px; }
+  .pixel-screen-battle .pixel-mobile-header { flex-shrink: 0; }
+  .pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] > .pointer-events-auto { min-width: 150px; padding: 6px 8px; }
+  .pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] .cursor-grab { gap: 8px; }
+  .pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] .shrink-0 { width: 32px; height: 32px; }
+  .pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] .text-xl { font-size: 14px; line-height: 18px; }
+  .pixel-screen-battle .pixel-battle-board.center-table-board { min-height: 320px; flex-basis: 320px; margin-top: 0; }
+  .pixel-screen-multiplayer .pixel-battle-board.center-table-board { margin-top: 96px; }
+  .pixel-screen-battle .battle-command-dock { grid-template-columns: minmax(0, 1fr) minmax(72px, auto); padding-inline: 8px; gap: 0 8px; }
+  .pixel-screen-battle .battle-command-dock .pixel-hand-area.battle-hand { grid-column: 1 / -1; grid-row: 1; }
+  .pixel-screen-battle .battle-command-dock .battle-player-hud { grid-column: 1; grid-row: 2; flex-wrap: nowrap; }
+  .pixel-screen-battle .battle-command-dock .battle-hud-details { width: auto; }
+  .pixel-screen-battle .battle-command-dock .battle-hud-inventory { grid-column: 2; grid-row: 2; max-width: 100px; }
+  .pixel-screen-battle .battle-hand .hand-card-name { font-size: 13px; }
+  .pixel-screen-battle .battle-hand .hand-card-action { margin-top: 3px; }
+  .pixel-screen-battle .battle-hand .hand-card .pixel-card-art { width: 58px; height: 58px; }
+  .pixel-screen-battle .battle-hand .hand-art .pixel-card-symbol { width: 42px; height: 42px; }
+  .pixel-screen-battle .battle-command-dock .tutorial-reminder { grid-row: 3; }
+}
+
+/* Long expedition inventories scroll within the hand's height, without moving the HUD. */
+.pixel-screen-battle .battle-command-dock .battle-hud-inventory .pixel-inventory {
+  max-height: calc(var(--hand-card-height) + 24px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #b99a65 transparent;
+}
+.pixel-screen-battle .battle-hud-inventory .pixel-inventory > button { flex-shrink: 0; }
+@media (max-width: 767px) {
+  .pixel-screen-battle .battle-command-dock .battle-hud-inventory .pixel-inventory { max-height: 80px; }
+}

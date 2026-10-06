@@ -1,0 +1,1417 @@
+{
+  "scope": "1600 seeded automated runs of the shared production engine, not measured human win rates.",
+  "reproduce": [
+    "npm run simulate:expedition -- --seeds=200 --out=balanced.json",
+    "npm run simulate:expedition -- --seeds=200 --route=rest --strategies=charge-attack,read-history --out=rest.json",
+    "npm run simulate:expedition -- --seeds=200 --route=risk --strategies=charge-attack,read-history --out=risk.json"
+  ],
+  "reports": [
+    {
+      "mode": "balanced",
+      "generatedAt": "2026-10-06T04:57:50.263Z",
+      "seeds": 200,
+      "maxTurnsPerStage": 80,
+      "method": "Shared production runtime; enemy intents committed first; separate seeded streams; reader sees public distributions and last three revealed cards, never sampled intents; exact one-opponent / 16 sampled multi-opponent forecasts.",
+      "economyPolicy": "Identical deterministic reward and one-purchase-per-shop-slot rules for all strategies. Prefer emergency healing, learned levels, useful relics; potions when missing at least 1 HP, then equipment. After stage 3: risk at full HP, otherwise rest.",
+      "limitations": [
+        "Read-history is an informed model-based benchmark, not an estimate of a human beginner.",
+        "80-round unfinished stages are counted as stalls, not victories.",
+        "Fixed reward/shop/route policy is one policy, not an exhaustive balance search."
+      ],
+      "summaries": [
+        {
+          "strategy": "random",
+          "seeds": 200,
+          "passed3": 0.56,
+          "passed6": 0.035,
+          "passed17": 0,
+          "medianCleared": 3,
+          "medianTurns": 26,
+          "p95Turns": 56,
+          "stalled": 0,
+          "routes": {
+            "rest": 30,
+            "risk": 161
+          },
+          "stages": [
+            {
+              "stage": 1,
+              "name": "Stage 1 · Dummy",
+              "reached": 200,
+              "cleared": 182,
+              "lost": 18,
+              "stalled": 0,
+              "medianTurns": 4
+            },
+            {
+              "stage": 2,
+              "name": "Stage 2 · Coward",
+              "reached": 182,
+              "cleared": 148,
+              "lost": 34,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 3,
+              "name": "Stage 3 · Turtle",
+              "reached": 148,
+              "cleared": 112,
+              "lost": 36,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 4,
+              "name": "Stage 4 · Slime",
+              "reached": 112,
+              "cleared": 45,
+              "lost": 67,
+              "stalled": 0,
+              "medianTurns": 11
+            },
+            {
+              "stage": 5,
+              "name": "Stage 5 · Twin Slimes",
+              "reached": 45,
+              "cleared": 24,
+              "lost": 21,
+              "stalled": 0,
+              "medianTurns": 10
+            },
+            {
+              "stage": 6,
+              "name": "Stage 6 · Elite: Iron Wall",
+              "reached": 24,
+              "cleared": 7,
+              "lost": 17,
+              "stalled": 0,
+              "medianTurns": 12
+            },
+            {
+              "stage": 7,
+              "name": "Stage 7 · Gale Wolf",
+              "reached": 7,
+              "cleared": 3,
+              "lost": 4,
+              "stalled": 0,
+              "medianTurns": 11
+            },
+            {
+              "stage": 8,
+              "name": "Stage 8 · Two Heads",
+              "reached": 3,
+              "cleared": 0,
+              "lost": 3,
+              "stalled": 0,
+              "medianTurns": 21
+            },
+            {
+              "stage": 9,
+              "name": "Stage 9 · Elite: Dragon Elder",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 10,
+              "name": "Stage 10 · Frost Mage",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 11,
+              "name": "Stage 11 · Shadow Trio",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 12,
+              "name": "Stage 12 · Elite: Hangman",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 13,
+              "name": "Stage 13 · Madian Knight",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 14,
+              "name": "Stage 14 · Triple Guards",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 15,
+              "name": "Stage 15 · Elite: Bluff Master",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 16,
+              "name": "Stage 16 · Boss: Lord Bozan",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 17,
+              "name": "Stage 17 · Boss: Ancient Tower Soul",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            }
+          ]
+        },
+        {
+          "strategy": "charge-attack",
+          "seeds": 200,
+          "passed3": 0.94,
+          "passed6": 0.74,
+          "passed17": 0.09,
+          "medianCleared": 11,
+          "medianTurns": 122,
+          "p95Turns": 274,
+          "stalled": 3,
+          "routes": {
+            "rest": 372,
+            "risk": 1296
+          },
+          "stages": [
+            {
+              "stage": 1,
+              "name": "Stage 1 · Dummy",
+              "reached": 200,
+              "cleared": 199,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 2
+            },
+            {
+              "stage": 2,
+              "name": "Stage 2 · Coward",
+              "reached": 199,
+              "cleared": 198,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 3,
+              "name": "Stage 3 · Turtle",
+              "reached": 198,
+              "cleared": 188,
+              "lost": 10,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 4,
+              "name": "Stage 4 · Slime",
+              "reached": 188,
+              "cleared": 183,
+              "lost": 5,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 5,
+              "name": "Stage 5 · Twin Slimes",
+              "reached": 183,
+              "cleared": 180,
+              "lost": 3,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 6,
+              "name": "Stage 6 · Elite: Iron Wall",
+              "reached": 180,
+              "cleared": 148,
+              "lost": 32,
+              "stalled": 0,
+              "medianTurns": 10
+            },
+            {
+              "stage": 7,
+              "name": "Stage 7 · Gale Wolf",
+              "reached": 148,
+              "cleared": 142,
+              "lost": 6,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 8,
+              "name": "Stage 8 · Two Heads",
+              "reached": 142,
+              "cleared": 139,
+              "lost": 3,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 9,
+              "name": "Stage 9 · Elite: Dragon Elder",
+              "reached": 139,
+              "cleared": 118,
+              "lost": 21,
+              "stalled": 0,
+              "medianTurns": 18
+            },
+            {
+              "stage": 10,
+              "name": "Stage 10 · Frost Mage",
+              "reached": 118,
+              "cleared": 108,
+              "lost": 10,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 11,
+              "name": "Stage 11 · Shadow Trio",
+              "reached": 108,
+              "cleared": 107,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 12,
+              "name": "Stage 12 · Elite: Hangman",
+              "reached": 107,
+              "cleared": 83,
+              "lost": 24,
+              "stalled": 0,
+              "medianTurns": 30
+            },
+            {
+              "stage": 13,
+              "name": "Stage 13 · Madian Knight",
+              "reached": 83,
+              "cleared": 79,
+              "lost": 4,
+              "stalled": 0,
+              "medianTurns": 16
+            },
+            {
+              "stage": 14,
+              "name": "Stage 14 · Triple Guards",
+              "reached": 79,
+              "cleared": 75,
+              "lost": 4,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 15,
+              "name": "Stage 15 · Elite: Bluff Master",
+              "reached": 75,
+              "cleared": 73,
+              "lost": 2,
+              "stalled": 0,
+              "medianTurns": 16
+            },
+            {
+              "stage": 16,
+              "name": "Stage 16 · Boss: Lord Bozan",
+              "reached": 73,
+              "cleared": 45,
+              "lost": 25,
+              "stalled": 3,
+              "medianTurns": 53
+            },
+            {
+              "stage": 17,
+              "name": "Stage 17 · Boss: Ancient Tower Soul",
+              "reached": 45,
+              "cleared": 18,
+              "lost": 27,
+              "stalled": 0,
+              "medianTurns": 47
+            }
+          ]
+        },
+        {
+          "strategy": "read-history",
+          "seeds": 200,
+          "passed3": 0.91,
+          "passed6": 0.685,
+          "passed17": 0.675,
+          "medianCleared": 17,
+          "medianTurns": 130,
+          "p95Turns": 181,
+          "stalled": 0,
+          "routes": {
+            "rest": 126,
+            "risk": 1869
+          },
+          "stages": [
+            {
+              "stage": 1,
+              "name": "Stage 1 · Dummy",
+              "reached": 200,
+              "cleared": 200,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 2
+            },
+            {
+              "stage": 2,
+              "name": "Stage 2 · Coward",
+              "reached": 200,
+              "cleared": 199,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 3,
+              "name": "Stage 3 · Turtle",
+              "reached": 199,
+              "cleared": 182,
+              "lost": 17,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 4,
+              "name": "Stage 4 · Slime",
+              "reached": 182,
+              "cleared": 166,
+              "lost": 16,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 5,
+              "name": "Stage 5 · Twin Slimes",
+              "reached": 166,
+              "cleared": 155,
+              "lost": 11,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 6,
+              "name": "Stage 6 · Elite: Iron Wall",
+              "reached": 155,
+              "cleared": 137,
+              "lost": 18,
+              "stalled": 0,
+              "medianTurns": 12
+            },
+            {
+              "stage": 7,
+              "name": "Stage 7 · Gale Wolf",
+              "reached": 137,
+              "cleared": 137,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 8,
+              "name": "Stage 8 · Two Heads",
+              "reached": 137,
+              "cleared": 137,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 9,
+              "name": "Stage 9 · Elite: Dragon Elder",
+              "reached": 137,
+              "cleared": 136,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 12
+            },
+            {
+              "stage": 10,
+              "name": "Stage 10 · Frost Mage",
+              "reached": 136,
+              "cleared": 135,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 11,
+              "name": "Stage 11 · Shadow Trio",
+              "reached": 135,
+              "cleared": 135,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 12,
+              "name": "Stage 12 · Elite: Hangman",
+              "reached": 135,
+              "cleared": 135,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 13,
+              "name": "Stage 13 · Madian Knight",
+              "reached": 135,
+              "cleared": 135,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 14,
+              "name": "Stage 14 · Triple Guards",
+              "reached": 135,
+              "cleared": 135,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 4
+            },
+            {
+              "stage": 15,
+              "name": "Stage 15 · Elite: Bluff Master",
+              "reached": 135,
+              "cleared": 135,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 16,
+              "name": "Stage 16 · Boss: Lord Bozan",
+              "reached": 135,
+              "cleared": 135,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 17,
+              "name": "Stage 17 · Boss: Ancient Tower Soul",
+              "reached": 135,
+              "cleared": 135,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 12
+            }
+          ]
+        },
+        {
+          "strategy": "always-defend",
+          "seeds": 200,
+          "passed3": 0,
+          "passed6": 0,
+          "passed17": 0,
+          "medianCleared": 0,
+          "medianTurns": 26,
+          "p95Turns": 43,
+          "stalled": 0,
+          "routes": {
+            "rest": 0,
+            "risk": 0
+          },
+          "stages": [
+            {
+              "stage": 1,
+              "name": "Stage 1 · Dummy",
+              "reached": 200,
+              "cleared": 0,
+              "lost": 200,
+              "stalled": 0,
+              "medianTurns": 26
+            },
+            {
+              "stage": 2,
+              "name": "Stage 2 · Coward",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 3,
+              "name": "Stage 3 · Turtle",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 4,
+              "name": "Stage 4 · Slime",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 5,
+              "name": "Stage 5 · Twin Slimes",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 6,
+              "name": "Stage 6 · Elite: Iron Wall",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 7,
+              "name": "Stage 7 · Gale Wolf",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 8,
+              "name": "Stage 8 · Two Heads",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 9,
+              "name": "Stage 9 · Elite: Dragon Elder",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 10,
+              "name": "Stage 10 · Frost Mage",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 11,
+              "name": "Stage 11 · Shadow Trio",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 12,
+              "name": "Stage 12 · Elite: Hangman",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 13,
+              "name": "Stage 13 · Madian Knight",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 14,
+              "name": "Stage 14 · Triple Guards",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 15,
+              "name": "Stage 15 · Elite: Bluff Master",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 16,
+              "name": "Stage 16 · Boss: Lord Bozan",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            },
+            {
+              "stage": 17,
+              "name": "Stage 17 · Boss: Ancient Tower Soul",
+              "reached": 0,
+              "cleared": 0,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "rest",
+      "generatedAt": "2026-10-06T04:59:14.860Z",
+      "seeds": 200,
+      "routePolicy": "rest",
+      "maxTurnsPerStage": 80,
+      "method": "Shared production runtime; enemy intents committed first; separate seeded streams; reader sees public distributions and last three revealed cards, never sampled intents; exact one-opponent / 16 sampled multi-opponent forecasts.",
+      "economyPolicy": "Identical deterministic reward and one-purchase-per-shop-slot rules for all strategies. Prefer emergency healing, learned levels, useful relics; potions when missing at least 1 HP, then equipment. Route: rest; adaptive means risk at full HP, otherwise rest, after stage 3.",
+      "limitations": [
+        "Read-history is an informed model-based benchmark, not an estimate of a human beginner.",
+        "80-round unfinished stages are counted as stalls, not victories.",
+        "Fixed reward/shop/route policy is one policy, not an exhaustive balance search."
+      ],
+      "summaries": [
+        {
+          "strategy": "charge-attack",
+          "seeds": 200,
+          "passed3": 0.94,
+          "passed6": 0.81,
+          "passed17": 0.145,
+          "medianCleared": 15,
+          "medianTurns": 166,
+          "p95Turns": 264,
+          "stalled": 6,
+          "routes": {
+            "rest": 1963,
+            "risk": 0
+          },
+          "stages": [
+            {
+              "stage": 1,
+              "name": "Stage 1 · Dummy",
+              "reached": 200,
+              "cleared": 199,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 2
+            },
+            {
+              "stage": 2,
+              "name": "Stage 2 · Coward",
+              "reached": 199,
+              "cleared": 198,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 3,
+              "name": "Stage 3 · Turtle",
+              "reached": 198,
+              "cleared": 188,
+              "lost": 10,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 4,
+              "name": "Stage 4 · Slime",
+              "reached": 188,
+              "cleared": 180,
+              "lost": 8,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 5,
+              "name": "Stage 5 · Twin Slimes",
+              "reached": 180,
+              "cleared": 180,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 6,
+              "name": "Stage 6 · Elite: Iron Wall",
+              "reached": 180,
+              "cleared": 162,
+              "lost": 18,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 7,
+              "name": "Stage 7 · Gale Wolf",
+              "reached": 162,
+              "cleared": 162,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 8,
+              "name": "Stage 8 · Two Heads",
+              "reached": 162,
+              "cleared": 159,
+              "lost": 3,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 9,
+              "name": "Stage 9 · Elite: Dragon Elder",
+              "reached": 159,
+              "cleared": 145,
+              "lost": 14,
+              "stalled": 0,
+              "medianTurns": 15
+            },
+            {
+              "stage": 10,
+              "name": "Stage 10 · Frost Mage",
+              "reached": 145,
+              "cleared": 136,
+              "lost": 9,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 11,
+              "name": "Stage 11 · Shadow Trio",
+              "reached": 136,
+              "cleared": 136,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 12,
+              "name": "Stage 12 · Elite: Hangman",
+              "reached": 136,
+              "cleared": 116,
+              "lost": 20,
+              "stalled": 0,
+              "medianTurns": 22
+            },
+            {
+              "stage": 13,
+              "name": "Stage 13 · Madian Knight",
+              "reached": 116,
+              "cleared": 110,
+              "lost": 6,
+              "stalled": 0,
+              "medianTurns": 13
+            },
+            {
+              "stage": 14,
+              "name": "Stage 14 · Triple Guards",
+              "reached": 110,
+              "cleared": 108,
+              "lost": 2,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 15,
+              "name": "Stage 15 · Elite: Bluff Master",
+              "reached": 108,
+              "cleared": 106,
+              "lost": 2,
+              "stalled": 0,
+              "medianTurns": 15
+            },
+            {
+              "stage": 16,
+              "name": "Stage 16 · Boss: Lord Bozan",
+              "reached": 106,
+              "cleared": 75,
+              "lost": 26,
+              "stalled": 5,
+              "medianTurns": 42
+            },
+            {
+              "stage": 17,
+              "name": "Stage 17 · Boss: Ancient Tower Soul",
+              "reached": 75,
+              "cleared": 29,
+              "lost": 45,
+              "stalled": 1,
+              "medianTurns": 45
+            }
+          ]
+        },
+        {
+          "strategy": "read-history",
+          "seeds": 200,
+          "passed3": 0.91,
+          "passed6": 0.78,
+          "passed17": 0.78,
+          "medianCleared": 17,
+          "medianTurns": 113,
+          "p95Turns": 158,
+          "stalled": 0,
+          "routes": {
+            "rest": 2230,
+            "risk": 0
+          },
+          "stages": [
+            {
+              "stage": 1,
+              "name": "Stage 1 · Dummy",
+              "reached": 200,
+              "cleared": 200,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 2
+            },
+            {
+              "stage": 2,
+              "name": "Stage 2 · Coward",
+              "reached": 200,
+              "cleared": 199,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 3,
+              "name": "Stage 3 · Turtle",
+              "reached": 199,
+              "cleared": 182,
+              "lost": 17,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 4,
+              "name": "Stage 4 · Slime",
+              "reached": 182,
+              "cleared": 167,
+              "lost": 15,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 5,
+              "name": "Stage 5 · Twin Slimes",
+              "reached": 167,
+              "cleared": 165,
+              "lost": 2,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 6,
+              "name": "Stage 6 · Elite: Iron Wall",
+              "reached": 165,
+              "cleared": 156,
+              "lost": 9,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 7,
+              "name": "Stage 7 · Gale Wolf",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 8,
+              "name": "Stage 8 · Two Heads",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 9,
+              "name": "Stage 9 · Elite: Dragon Elder",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 10
+            },
+            {
+              "stage": 10,
+              "name": "Stage 10 · Frost Mage",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 5
+            },
+            {
+              "stage": 11,
+              "name": "Stage 11 · Shadow Trio",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 5
+            },
+            {
+              "stage": 12,
+              "name": "Stage 12 · Elite: Hangman",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 13,
+              "name": "Stage 13 · Madian Knight",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 14,
+              "name": "Stage 14 · Triple Guards",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 4
+            },
+            {
+              "stage": 15,
+              "name": "Stage 15 · Elite: Bluff Master",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 16,
+              "name": "Stage 16 · Boss: Lord Bozan",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 17,
+              "name": "Stage 17 · Boss: Ancient Tower Soul",
+              "reached": 156,
+              "cleared": 156,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 9
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "risk",
+      "generatedAt": "2026-10-06T04:59:26.408Z",
+      "seeds": 200,
+      "routePolicy": "risk",
+      "maxTurnsPerStage": 80,
+      "method": "Shared production runtime; enemy intents committed first; separate seeded streams; reader sees public distributions and last three revealed cards, never sampled intents; exact one-opponent / 16 sampled multi-opponent forecasts.",
+      "economyPolicy": "Identical deterministic reward and one-purchase-per-shop-slot rules for all strategies. Prefer emergency healing, learned levels, useful relics; potions when missing at least 1 HP, then equipment. Route: risk; adaptive means risk at full HP, otherwise rest, after stage 3.",
+      "limitations": [
+        "Read-history is an informed model-based benchmark, not an estimate of a human beginner.",
+        "80-round unfinished stages are counted as stalls, not victories.",
+        "Fixed reward/shop/route policy is one policy, not an exhaustive balance search."
+      ],
+      "summaries": [
+        {
+          "strategy": "charge-attack",
+          "seeds": 200,
+          "passed3": 0.94,
+          "passed6": 0.725,
+          "passed17": 0.045,
+          "medianCleared": 9,
+          "medianTurns": 105,
+          "p95Turns": 274,
+          "stalled": 3,
+          "routes": {
+            "rest": 0,
+            "risk": 1566
+          },
+          "stages": [
+            {
+              "stage": 1,
+              "name": "Stage 1 · Dummy",
+              "reached": 200,
+              "cleared": 199,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 2
+            },
+            {
+              "stage": 2,
+              "name": "Stage 2 · Coward",
+              "reached": 199,
+              "cleared": 198,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 3,
+              "name": "Stage 3 · Turtle",
+              "reached": 198,
+              "cleared": 188,
+              "lost": 10,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 4,
+              "name": "Stage 4 · Slime",
+              "reached": 188,
+              "cleared": 183,
+              "lost": 5,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 5,
+              "name": "Stage 5 · Twin Slimes",
+              "reached": 183,
+              "cleared": 179,
+              "lost": 4,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 6,
+              "name": "Stage 6 · Elite: Iron Wall",
+              "reached": 179,
+              "cleared": 145,
+              "lost": 34,
+              "stalled": 0,
+              "medianTurns": 11
+            },
+            {
+              "stage": 7,
+              "name": "Stage 7 · Gale Wolf",
+              "reached": 145,
+              "cleared": 138,
+              "lost": 7,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 8,
+              "name": "Stage 8 · Two Heads",
+              "reached": 138,
+              "cleared": 135,
+              "lost": 3,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 9,
+              "name": "Stage 9 · Elite: Dragon Elder",
+              "reached": 135,
+              "cleared": 110,
+              "lost": 25,
+              "stalled": 0,
+              "medianTurns": 18
+            },
+            {
+              "stage": 10,
+              "name": "Stage 10 · Frost Mage",
+              "reached": 110,
+              "cleared": 100,
+              "lost": 10,
+              "stalled": 0,
+              "medianTurns": 11
+            },
+            {
+              "stage": 11,
+              "name": "Stage 11 · Shadow Trio",
+              "reached": 100,
+              "cleared": 96,
+              "lost": 4,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 12,
+              "name": "Stage 12 · Elite: Hangman",
+              "reached": 96,
+              "cleared": 70,
+              "lost": 26,
+              "stalled": 0,
+              "medianTurns": 35
+            },
+            {
+              "stage": 13,
+              "name": "Stage 13 · Madian Knight",
+              "reached": 70,
+              "cleared": 66,
+              "lost": 4,
+              "stalled": 0,
+              "medianTurns": 18
+            },
+            {
+              "stage": 14,
+              "name": "Stage 14 · Triple Guards",
+              "reached": 66,
+              "cleared": 62,
+              "lost": 4,
+              "stalled": 0,
+              "medianTurns": 10
+            },
+            {
+              "stage": 15,
+              "name": "Stage 15 · Elite: Bluff Master",
+              "reached": 62,
+              "cleared": 61,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 16
+            },
+            {
+              "stage": 16,
+              "name": "Stage 16 · Boss: Lord Bozan",
+              "reached": 61,
+              "cleared": 33,
+              "lost": 25,
+              "stalled": 3,
+              "medianTurns": 50
+            },
+            {
+              "stage": 17,
+              "name": "Stage 17 · Boss: Ancient Tower Soul",
+              "reached": 33,
+              "cleared": 9,
+              "lost": 24,
+              "stalled": 0,
+              "medianTurns": 42
+            }
+          ]
+        },
+        {
+          "strategy": "read-history",
+          "seeds": 200,
+          "passed3": 0.91,
+          "passed6": 0.67,
+          "passed17": 0.66,
+          "medianCleared": 17,
+          "medianTurns": 132,
+          "p95Turns": 184,
+          "stalled": 0,
+          "routes": {
+            "rest": 0,
+            "risk": 1959
+          },
+          "stages": [
+            {
+              "stage": 1,
+              "name": "Stage 1 · Dummy",
+              "reached": 200,
+              "cleared": 200,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 2
+            },
+            {
+              "stage": 2,
+              "name": "Stage 2 · Coward",
+              "reached": 200,
+              "cleared": 199,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 3,
+              "name": "Stage 3 · Turtle",
+              "reached": 199,
+              "cleared": 182,
+              "lost": 17,
+              "stalled": 0,
+              "medianTurns": 3
+            },
+            {
+              "stage": 4,
+              "name": "Stage 4 · Slime",
+              "reached": 182,
+              "cleared": 166,
+              "lost": 16,
+              "stalled": 0,
+              "medianTurns": 6
+            },
+            {
+              "stage": 5,
+              "name": "Stage 5 · Twin Slimes",
+              "reached": 166,
+              "cleared": 155,
+              "lost": 11,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 6,
+              "name": "Stage 6 · Elite: Iron Wall",
+              "reached": 155,
+              "cleared": 134,
+              "lost": 21,
+              "stalled": 0,
+              "medianTurns": 13
+            },
+            {
+              "stage": 7,
+              "name": "Stage 7 · Gale Wolf",
+              "reached": 134,
+              "cleared": 133,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 8,
+              "name": "Stage 8 · Two Heads",
+              "reached": 133,
+              "cleared": 133,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 9,
+              "name": "Stage 9 · Elite: Dragon Elder",
+              "reached": 133,
+              "cleared": 132,
+              "lost": 1,
+              "stalled": 0,
+              "medianTurns": 12
+            },
+            {
+              "stage": 10,
+              "name": "Stage 10 · Frost Mage",
+              "reached": 132,
+              "cleared": 132,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 11,
+              "name": "Stage 11 · Shadow Trio",
+              "reached": 132,
+              "cleared": 132,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 12,
+              "name": "Stage 12 · Elite: Hangman",
+              "reached": 132,
+              "cleared": 132,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 9
+            },
+            {
+              "stage": 13,
+              "name": "Stage 13 · Madian Knight",
+              "reached": 132,
+              "cleared": 132,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 10
+            },
+            {
+              "stage": 14,
+              "name": "Stage 14 · Triple Guards",
+              "reached": 132,
+              "cleared": 132,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 4
+            },
+            {
+              "stage": 15,
+              "name": "Stage 15 · Elite: Bluff Master",
+              "reached": 132,
+              "cleared": 132,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 7
+            },
+            {
+              "stage": 16,
+              "name": "Stage 16 · Boss: Lord Bozan",
+              "reached": 132,
+              "cleared": 132,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 8
+            },
+            {
+              "stage": 17,
+              "name": "Stage 17 · Boss: Ancient Tower Soul",
+              "reached": 132,
+              "cleared": 132,
+              "lost": 0,
+              "stalled": 0,
+              "medianTurns": 12
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

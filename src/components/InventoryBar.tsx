@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useId, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
 import { Coins, Chest, Shield, Scroll } from './PixelIcons';
 import { EXPEDITION_RELICS, EXPEDITION_EQUIPMENTS } from '../data/expedition';
 import { SKILL_DB } from '../data/skills';
@@ -17,6 +18,58 @@ interface InventoryBarProps {
   playClick: () => void;
 }
 
+function InventoryTip({ anchor, id, title, description, icon, onClose }: {
+  anchor: RefObject<HTMLButtonElement | null>;
+  id: string;
+  title: string;
+  description: string;
+  icon?: ReactNode;
+  onClose: (key: string | null) => void;
+}) {
+  const tip = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (!anchor.current || !tip.current) return;
+    const viewport = window.visualViewport;
+    const leftEdge = (viewport?.offsetLeft ?? 0) + 12;
+    const topEdge = (viewport?.offsetTop ?? 0) + 12;
+    const rightEdge = leftEdge + (viewport?.width ?? window.innerWidth) - 24;
+    const bottomEdge = topEdge + (viewport?.height ?? window.innerHeight) - 24;
+    const panel = tip.current;
+    panel.style.maxWidth = `${rightEdge - leftEdge}px`;
+    panel.style.maxHeight = `${bottomEdge - topEdge}px`;
+    const bounds = panel.getBoundingClientRect();
+    const target = anchor.current.getBoundingClientRect();
+    const left = Math.max(leftEdge, Math.min(target.left + target.width / 2 - bounds.width / 2, rightEdge - bounds.width));
+    const above = target.top - bounds.height - 8;
+    const top = Math.max(topEdge, Math.min(above >= topEdge ? above : target.bottom + 8, bottomEdge - bounds.height));
+    panel.style.left = `${left}px`;
+    panel.style.top = `${top}px`;
+    panel.style.visibility = 'visible';
+    // The panel is outside the scrolling inventory; dismiss it before its anchor moves.
+    const close = () => onClose(null);
+    window.addEventListener('scroll', close, true);
+    window.addEventListener('resize', close);
+    viewport?.addEventListener('scroll', close);
+    viewport?.addEventListener('resize', close);
+    return () => {
+      window.removeEventListener('scroll', close, true);
+      window.removeEventListener('resize', close);
+      viewport?.removeEventListener('scroll', close);
+      viewport?.removeEventListener('resize', close);
+    };
+  }, [anchor, title, description, onClose]);
+
+  return createPortal(
+    <div ref={tip} id={id} role="tooltip"
+      className="inventory-tip fixed w-56 border border-white/20 bg-slate-900 p-2.5 text-left shadow-2xl pointer-events-none whitespace-normal"
+      style={{ left: 0, top: 0, zIndex: 1000, visibility: 'hidden', overflowWrap: 'anywhere' }}>
+      <div className="flex items-center gap-1 text-xs font-black text-white mb-0.5">{icon}<span>{title}</span></div>
+      <div className="text-[11px] text-slate-300 leading-snug">{description}</div>
+    </div>,
+    document.body,
+  );
+}
+
 /** 单个物品格：悬停/点击弹出简介窗（桌面 hover，移动端点击切换） */
 function Slot({
   tipKey,
@@ -33,17 +86,24 @@ function Slot({
   activeTip: string | null;
   setActiveTip: (k: string | null) => void;
   playClick: () => void;
-  icon?: React.ReactNode;
+  icon?: ReactNode;
   tipTitle: string;
   tipDesc: string;
   className: string;
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   const open = activeTip === tipKey;
+  const anchor = useRef<HTMLButtonElement>(null);
+  const tooltipId = useId();
   return (
-    <span
-      onMouseEnter={() => setActiveTip(tipKey)}
-      onMouseLeave={() => setActiveTip(null)}
+    <>
+    <button ref={anchor} type="button" aria-label={tipTitle} aria-expanded={open}
+      aria-describedby={open ? tooltipId : undefined}
+      onMouseEnter={() => { if (window.matchMedia('(hover: hover)').matches) setActiveTip(tipKey); }}
+      onMouseLeave={() => { if (window.matchMedia('(hover: hover)').matches) setActiveTip(null); }}
+      onFocus={(event) => { if (event.currentTarget.matches(':focus-visible')) setActiveTip(tipKey); }}
+      onBlur={() => setActiveTip(null)}
+      onKeyDown={(event) => { if (event.key === 'Escape') setActiveTip(null); }}
       onClick={(e) => {
         e.stopPropagation();
         playClick();
@@ -52,16 +112,9 @@ function Slot({
       className={`relative cursor-help ${className}`}
     >
       {children}
-      {open && (
-        <div className="inventory-tip absolute bottom-full mb-2 left-1/2 -translate-x-1/2 z-50 w-44 max-w-[70vw] rounded-xl border border-white/20 bg-slate-900/95 p-2.5 text-left shadow-2xl pointer-events-none whitespace-normal">
-          <div className="text-xs font-black text-white mb-0.5">
-            {icon} {tipTitle}
-          </div>
-          <div className="text-[11px] text-slate-300 leading-snug">{tipDesc}</div>
-          <span className="absolute top-full left-1/2 -translate-x-1/2 border-[6px] border-transparent border-t-slate-900/95" />
-        </div>
-      )}
-    </span>
+    </button>
+    {open && <InventoryTip anchor={anchor} id={tooltipId} title={tipTitle} description={tipDesc} icon={icon} onClose={setActiveTip} />}
+    </>
   );
 }
 

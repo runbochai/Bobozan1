@@ -14,6 +14,7 @@ import {
 } from './expedition';
 import { EXPEDITION_GACHA_POOL, EXPEDITION_EQUIPMENTS, drawGachaCard } from '../data/expedition';
 import { SKILL_DB } from '../data/skills';
+import { expeditionMoveWeights } from './expeditionAI';
 
 const enemy = (patch: Partial<Player> = {}): Player => ({
   id: 'e1', name: 'enemy', isBot: true, hp: 2, energy: 0, isDead: false,
@@ -42,15 +43,18 @@ test('高能量激进 AI 倾向于进攻而非攒气', () => {
   assert.ok(aggro > 150, `aggression too low: ${aggro}/200`);
 });
 
-test('保守 AI 在威胁者攒满能量时更爱防守（smart 生效）', () => {
+test('保守 AI 会应对公开攻击威胁，但面对终极仍保留变招', () => {
   const e = enemy({ energy: 2 });
   const players = [me({ energy: 5 }), e];
   const p = { aggression: 0.2, defense: 0.5, charge: 0.3, smart: 1 };
-  let defends = 0;
-  for (let i = 0; i < 200; i++) {
-    if (expeditionBotMove(e, players, p, 'me') === 'defend') defends++;
-  }
-  assert.ok(defends > 60, `smart defend too low: ${defends}/200`);
+  const defend = (list: Player[]) => expeditionMoveWeights(e, list, p, 'me')
+    .filter(entry => entry.type === 'DEFEND').reduce((sum, entry) => sum + entry.probability, 0);
+  const safe = defend([me({ energy: 0 }), e]);
+  const ordinary = defend([me({ energy: 1 }), e]);
+  const ultimate = defend(players);
+  assert.ok(ordinary > safe, 'public attack threat should increase defense');
+  assert.ok(ultimate > safe && ultimate < ordinary, 'ordinary defense is less useful against an ultimate');
+  assert.ok(ultimate < 0.9, 'defense must not become a permanent loop');
 });
 
 test('AI 出牌一定是自己买得起的牌', () => {
@@ -172,7 +176,7 @@ test('关卡配置合法：17 关，含一打三，双 Boss，敌人等级有高
   const boss = EXPEDITION_STAGES[15].enemies[0];
   assert.ok(boss.boss, 'stage 16 must be a boss');
   assert.ok(boss.hp >= 4, 'boss should have extra HP');
-  assert.ok((boss.passive?.startEnergy ?? 0) > 0, 'boss should have an energy aura');
+  assert.equal(boss.passive?.startEnergy ?? 0, 0, 'boss must earn its first attack');
   const finalBoss = EXPEDITION_STAGES[16].enemies[0];
   assert.ok(finalBoss.boss, 'stage 17 must be a boss');
   // 新精英：诈唬大师（第 15 关，虚假意图）
@@ -198,17 +202,17 @@ test('遗物配置合法：9 个，id 唯一，无聚气丹（太赖已砍）', 
   }
 });
 
-test('抽卡池：45 张 1-99 级非攒气牌，攻/防/特殊/终极都有', () => {
-  assert.equal(EXPEDITION_GACHA_POOL.length, 45);
+test('抽卡池：附近等级的实用秘技，保留后期吸收选项', () => {
+  assert.ok(EXPEDITION_GACHA_POOL.length > 10 && EXPEDITION_GACHA_POOL.length < 45);
   const types = new Set<string>();
   for (const id of EXPEDITION_GACHA_POOL) {
     const c = SKILL_DB.find((x) => x.id === id)!;
     assert.ok(c, `card exists: ${id}`);
-    assert.ok(c.levelRequired >= 1 && c.levelRequired < 100, `tier ok: ${id}`);
+    assert.ok(c.levelRequired >= 1 && c.levelRequired <= 7, `tier ok: ${id}`);
     assert.notEqual(c.type, 'CHARGE');
     types.add(c.type);
   }
-  for (const t of ['ATTACK', 'DEFEND', 'SPECIAL', 'ULTIMATE']) assert.ok(types.has(t), `has ${t}`);
+  for (const t of ['ATTACK', 'DEFEND', 'ABSORB', 'ULTIMATE']) assert.ok(types.has(t), `has ${t}`);
   for (let i = 0; i < 20; i++) {
     const g = drawGachaCard();
     assert.ok(EXPEDITION_GACHA_POOL.includes(g.cardId));
@@ -257,44 +261,40 @@ test('商城：4 件商品（2 卡 + 1 装备 + 疗伤药），装备不重复�
   assert.ok(noBadge.every((x) => x.kind !== 'equipment' || x.equipment.id !== 'levelbadge'), 'no level badge at max level');
 });
 
-test('Boss1 塔主波赞：4 血 + 锐吸/奥吸 + 狂暴/护甲', () => {
+test('Boss1 塔主波赞：4 血，遵循同样的能量与防守规则', () => {
   const s14 = EXPEDITION_STAGES.find((s) => s.id === 's15')!; // Boss1 塔主波赞（诈唬大师关卡插入后顺延）
   const boss = s14.enemies[0];
   assert.equal(boss.hp, 4);
-  assert.ok(boss.inventory.includes(6), 'has 锐吸');
-  assert.ok(boss.inventory.includes(12), 'has 奥吸');
-  assert.equal(boss.passive?.enrageEnergy, 2);
-  assert.equal(boss.passive?.armorPerTurn, 0.5);
+  assert.deepEqual(boss.inventory, [0, 2, 3, 5]);
+  assert.equal(boss.passive?.enrageEnergy ?? 0, 0);
+  assert.equal(boss.passive?.armorPerTurn ?? 0, 0);
 });
 
-test('Boss2 远古塔魂：5 血 + 头盔/手盔/脚盔 + 护甲', () => {
+test('Boss2 远古塔魂：5 血与联合技能，不靠穿透或免费能量', () => {
   const s16 = EXPEDITION_STAGES.find((s) => s.id === 's16')!; // Boss2 远古塔魂（顺延）
   const boss = s16.enemies[0];
   assert.equal(boss.boss, true);
   assert.equal(boss.hp, 5);
-  assert.ok(boss.inventory.includes(8), 'has 头盔');
-  assert.ok(boss.inventory.includes(10), 'has 手盔');
-  assert.ok(boss.inventory.includes(11), 'has 脚盔');
-  assert.equal(boss.passive?.armorPerTurn, 0.5);
-  assert.equal(boss.passive?.energyPerTurn, 1);
+  assert.deepEqual(boss.inventory, [0, 1, 2, 3, 5]);
+  assert.equal(boss.passive?.armorPerTurn ?? 0, 0);
+  assert.equal(boss.passive?.energyPerTurn ?? 0, 0);
+  assert.equal(boss.passive?.pierce ?? false, false);
 });
 
-test('聪明的敌人更爱用吸收技能', () => {
+test('刀吸针对六克习惯，避免会击破刀吸的轰', () => {
   const smartP = { aggression: 0.7, defense: 0.35, charge: 0.25, smart: 1.0 };
-  const dumbP = { aggression: 0.7, defense: 0.35, charge: 0.25, smart: 0.0 };
   const mk = (): Player => ({
     id: 'e', name: 'E', isBot: true, hp: 5, energy: 3, isDead: false,
     inventory: [0, 1, 6], layer: 0, tempLayerMod: 0,
     selectedCardId: null, lastCardId: null, lastAction: null,
     disabledSkills: [], freeSkills: [], kills: 0, tempSkills: [],
   });
-  const me: Player = { ...mk(), id: 'p', isBot: false, energy: 0 };
-  let smartAbsorb = 0, dumbAbsorb = 0;
-  for (let i = 0; i < 120; i++) {
-    if (expeditionBotMove(mk(), [mk(), me], smartP, 'p') === 'absorb') smartAbsorb++;
-    if (expeditionBotMove(mk(), [mk(), me], dumbP, 'p') === 'absorb') dumbAbsorb++;
-  }
-  assert.ok(smartAbsorb > dumbAbsorb * 2, `smart ${smartAbsorb} vs dumb ${dumbAbsorb}`);
+  const me: Player = { ...mk(), id: 'p', isBot: false, energy: 2, inventory: [0] };
+  const options = { history: { p: ['liuke', 'liuke', 'liuke'] } };
+  const smartAbsorb = expeditionMoveWeights(mk(), [mk(), me], smartP, 'p', options).find(entry => entry.cardId === 'absorb')!.probability;
+  const dangerous = expeditionMoveWeights(mk(), [mk(), me], smartP, 'p', { history: { p: ['hong', 'hong', 'hong'] } })
+    .find(entry => entry.cardId === 'absorb')!.probability;
+  assert.ok(smartAbsorb > dangerous * 2, `absorb vs six cuts ${smartAbsorb}, versus blast ${dangerous}`);
 });
 test('意图显示规则：前三关全显示，之后按哈希 45% 显示且稳定', () => {
   for (let t = 1; t <= 5; t++) {

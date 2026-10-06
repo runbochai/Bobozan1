@@ -3,13 +3,21 @@ import {
 EXPEDITION_EQUIPMENTS,
 EXPEDITION_RELICS,
 EXPEDITION_STAGES,
+EXPEDITION_MAX_HP,
 drawGachaCard,
+expeditionSecretPool,
 type ExpeditionEquipment,
 type ExpeditionEnemyDef,
 type ExpeditionPersonality,
 type ExpeditionStage,
 } from '../data/expedition';
-import type { Lang, Player } from '../types';
+import type { Lang } from '../types';
+
+export {
+  EXPEDITION_START_HP, EXPEDITION_MAX_HP, EXPEDITION_VIGOR_HP,
+  EXPEDITION_WARMUP_ENERGY, EXPEDITION_MONEYTREE_CAP, EXPEDITION_SKILLCHARM_USES,
+  EXPEDITION_REST_HEAL, EXPEDITION_CHALLENGE_HP, EXPEDITION_CHALLENGE_GOLD,
+} from '../data/expedition';
 
 export const EXPEDITION_BEST_KEY = 'bobozan-expedition-best';
 
@@ -45,68 +53,8 @@ if (charge >= aggression) return lang === 'zh' ? '习惯：偏爱攒气' : 'Habi
 return lang === 'zh' ? '习惯：偏爱进攻' : 'Habit: aggressive';
 }
 
-// ============ 敌人 AI：按性格加权出牌 ============
-
-const cardTypeOf = (cardId: string) => SKILL_DB.find((c) => c.id === cardId)?.type;
-
-/** 多方混战：挑威胁最大的活着的对手（能量最高，能量相同看血量），不再只盯玩家 */
-export function pickThreat(enemyId: string, players: Player[], playerId: string): Player | undefined {
-const opponents = players.filter((p) => p.id !== enemyId &&!p.isDead);
-if (opponents.length === 0) return players.find((p) => p.id === playerId);
-return [...opponents].sort((a, b) => b.energy - a.energy || (b.hp ?? 0) - (a.hp ?? 0))[0];
-}
-
-export function expeditionBotMove(
-enemy: Player,
-players: Player[],
-personality: ExpeditionPersonality,
-playerId: string,
-): string {
-const allKnown = SKILL_DB.filter(
-(c) =>
-(enemy.inventory.includes(c.levelRequired) || c.levelRequired === 0) &&
-!enemy.disabledSkills?.includes(c.id) &&
-c.type !== 'SPECIAL',
-);
-const affordable = allKnown.filter((c) => enemy.energy >= c.cost);
-if (affordable.length === 0) return 'charge';
-
-const player = pickThreat(enemy.id, players, playerId);
-const playerCharged = (player?.energy?? 0) >= 3;
-const playerLastType = player?.lastCardId? cardTypeOf(player.lastCardId): null;
-
-const scored = affordable.map((c) => {
-let w = 1;
-if (c.type === 'CHARGE') {
-w = personality.charge * (enemy.energy < 2? 1.7: 0.6);
-} else if (c.type === 'ATTACK') {
-w = personality.aggression * (1 + enemy.energy * 0.08);
-// 聪明的敌人：你残血时更爱进攻
-if (personality.smart > 0.5 && (player?.hp?? 99) <= 1) w *= 1.6;
-} else if (c.type === 'DEFEND') {
-w = personality.defense;
-// 聪明的敌人：你能量充足时更爱防守
-if (personality.smart > 0.5 && playerCharged) w *= 1.9;
-} else if (c.type === 'ULTIMATE') {
-w = personality.aggression * 1.5;
-// 聪明的敌人：你龟缩时用终极破防
-if (personality.smart > 0.5 && playerLastType === 'DEFEND') w *= 1.7;
-} else if (c.type === 'ABSORB') {
-// 聪明的敌人（Boss）更爱吸收：锐吸/奥吸
-w = 0.5 + personality.smart * 0.9;
-} else {
-w = 0.5;
-}
-// 同类型里略偏向高 tier
-w *= 1 + (c.tier || 0) * 0.04;
-// 抖动，避免完全可预测
-w *= 0.6 + Math.random() * 0.8;
-return { id: c.id, w};
-});
-
-scored.sort((a, b) => b.w - a.w);
-return scored[0].id;
-}
+// Keep the existing import path while AI policy remains independently testable.
+export { expeditionBotMove, pickThreat } from './expeditionAI';
 
 // ============ 敌人意图：对话气泡台词 ============
 const hashStr = (str: string): number => {
@@ -195,7 +143,7 @@ return h % 100 < chance;
 }
 
 // ============ 战后奖励：治疗 / 升级 / 血量上限 / 限次秘技 / 遗物 ============
-// 注意：没有任何开局能量加成。
+// Energy bonuses come from explicit relics, never hidden level-up stats.
 
 export type RewardOption =
 | { kind: 'heal'; amount: number}
@@ -204,13 +152,13 @@ export type RewardOption =
 | { kind: 'temp'; cardId: string; uses: number}
 | { kind: 'relic'; relicId: string};
 
-/** 远征玩家等级上限：Boss 们更强（8/10/11/12 级），玩家靠装备与限次卡追赶 */
+/** Players and enemies share the same level ceiling; secrets add limited tools. */
 export const EXPEDITION_MAX_LEVEL = 5;
 
-function shuffle<T>(arr: T[]): T[] {
+function shuffle<T>(arr: T[], rng: () => number = Math.random): T[] {
 const a = [...arr];
 for (let i = a.length - 1; i > 0; i--) {
-const j = Math.floor(Math.random() * (i + 1));
+const j = Math.floor(rng() * (i + 1));
 [a[i], a[j]] = [a[j], a[i]];
 }
 return a;
@@ -222,31 +170,41 @@ maxHp: number,
 relicIds: string[],
 optionCount = 3,
 inventory: number[] = [0],
+stageIdx = 0,
+rng: () => number = Math.random,
 ): RewardOption[] {
 const rest: RewardOption[] = [];
-// 升级：稳定 +1 级，解锁下一级技能卡（满级后不再出现）
+const guaranteed: RewardOption[] = [];
+// Growth and recovery remain choices; neither is hidden by a bad reward roll.
 const curMax = Math.max(0, ...inventory);
-if (curMax < EXPEDITION_MAX_LEVEL) rest.push({ kind: 'levelup', level: curMax + 1});
-// 体魄：血量上限 +1（当前血量也 +1）
-rest.push({ kind: 'maxhp'});
-// 秘技：从全部技能池随机抽一张限次卡（类似复仇抽卡）
-const gacha = drawGachaCard();
+if (curMax < EXPEDITION_MAX_LEVEL) guaranteed.push({ kind: 'levelup', level: curMax + 1});
+const injured = hp < Math.min(maxHp, EXPEDITION_MAX_HP);
+if (injured) guaranteed.push({ kind: 'heal', amount: 1});
+if (maxHp < EXPEDITION_MAX_HP) rest.push({ kind: 'maxhp'});
+const gacha = drawGachaCard(curMax, stageIdx, rng);
 rest.push({ kind: 'temp', cardId: gacha.cardId, uses: gacha.uses});
-// 遗物：还有没拿到的才出现
-const relicPool = shuffle(EXPEDITION_RELICS.filter((r) =>!relicIds.includes(r.id)));
-if (relicPool.length > 0) rest.push({ kind: 'relic', relicId: relicPool[0].id});
-// 受伤时治疗必出，其余随机
-const injured = hp < maxHp;
-const options = shuffle(rest).slice(0, Math.max(0, optionCount - (injured ? 1 : 0)));
-if (injured) options.push({ kind: 'heal', amount: 1});
-return shuffle(options);
+const relicPool = EXPEDITION_RELICS.filter(r => !relicIds.includes(r.id));
+if (relicPool.length > 0) {
+  const weighted = relicPool.flatMap(relic => Array.from({ length: relic.rarity === 'common' ? 3 : 1 }, () => relic));
+  rest.push({ kind: 'relic', relicId: weighted[Math.floor(rng() * weighted.length)].id });
+}
+const count = Math.max(guaranteed.length, Math.min(4, Math.floor(optionCount)));
+const options = [...guaranteed, ...shuffle(rest, rng).slice(0, Math.max(0, count - guaranteed.length))];
+// Saturated builds still get distinct useful choices; do not sell max-HP or
+// level upgrades that can no longer work just to fill a fourth reward slot.
+const offered = new Set(options.flatMap(option => option.kind === 'temp' ? [option.cardId] : []));
+for (const cardId of shuffle(expeditionSecretPool(curMax, stageIdx).filter(id => !offered.has(id)), rng)) {
+  if (options.length >= count) break;
+  options.push({ kind: 'temp', cardId, uses: 1 + Math.floor(rng() * 3) });
+}
+return shuffle(options, rng);
 }
 
 // ============ 金币与商城 ============
 
 /** 胜利金币（随机掉落）：基础 4~8 + 关卡数，精英关多掉 4~8，Boss 关多掉 15~25 */
-export function goldForWin(stageIdx: number, stage: ExpeditionStage): number {
-const rnd = (min: number, max: number) => min + Math.floor(Math.random() * (max - min + 1));
+export function goldForWin(stageIdx: number, stage: ExpeditionStage, rng: () => number = Math.random): number {
+const rnd = (min: number, max: number) => min + Math.floor(rng() * (max - min + 1));
 let g = rnd(4, 8) + stageIdx;
 if (stage.enemies.some((e) => e.elite)) g += rnd(4, 8);
 if (stage.enemies.some((e) => e.boss)) g += rnd(15, 25);
@@ -263,27 +221,38 @@ export const POTION_PRICE = 10;
 /** 疗伤药回复量 */
 export const POTION_HEAL = 1;
 
+export interface ExpeditionShopContext {
+  hp?: number;
+  maxHp?: number;
+  dollUsed?: boolean;
+}
+
 /**
  * 生成商城商品：2 张限次卡 + 1 件未拥有的装备 + 1 瓶疗伤药。
  * 升级徽章满级后不再出现；装备卖完则补限次卡。
  */
-export function genShopItems(ownedEquipment: string[], maxLevel: number): ShopItem[] {
+export function genShopItems(ownedEquipment: string[], maxLevel: number, stageIdx = 0,
+  rng: () => number = Math.random, context: ExpeditionShopContext = {}): ShopItem[] {
 const items: ShopItem[] = [];
 const pushCard = () => {
-const g = drawGachaCard();
+const g = drawGachaCard(maxLevel, stageIdx, rng);
 items.push({ kind: 'tempcard', cardId: g.cardId, uses: g.uses, price: shopCardPrice(g.cardId)});
 };
 pushCard();
 pushCard();
+const remainingBattles = Math.max(0, EXPEDITION_STAGES.length - stageIdx - 1);
 const unowned = shuffle(
 EXPEDITION_EQUIPMENTS.filter(
 (e) =>!ownedEquipment.includes(e.id) && (e.id !== 'levelbadge' || maxLevel < EXPEDITION_MAX_LEVEL)
-)
+  && (!['moneytree', 'treasurepot'].includes(e.id) || remainingBattles * 4 >= e.price)
+  && (e.id !== 'doll' || !context.dollUsed)
+  && (e.id !== 'lifegem' || !((context.maxHp ?? 0) >= EXPEDITION_MAX_HP && (context.hp ?? 0) >= (context.maxHp ?? 0)))
+), rng
 );
 if (unowned.length > 0) items.push({ kind: 'equipment', equipment: unowned[0]});
 else pushCard();
 items.push({ kind: 'potion', price: POTION_PRICE});
-return shuffle(items);
+return shuffle(items, rng);
 }
 
 /** 限次卡售价：5 + 等级×2 */
@@ -293,7 +262,7 @@ const tier = c ? c.levelRequired : 1;
 return 5 + tier * 2;
 }
 
-// ============ 遗物：硬皮甲（每场战斗首次受伤 -1） ============
+// ============ Legacy helper: first-hit Ironhide refund of 0.5 ============
 
 export function applyIronhide(
 hpBefore: number,

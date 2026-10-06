@@ -4,7 +4,7 @@ import type { RewardOption, ShopItem } from '../logic/expedition';
 import { POTION_HEAL } from '../logic/expedition';
 import { EXPEDITION_RELICS } from '../data/expedition';
 import { SKILL_DB } from '../data/skills';
-import { Coins, Crown, Swords, CheckCircle } from './PixelIcons';
+import { Coins, Crown, Swords, CheckCircle, Heart } from './PixelIcons';
 import ExpeditionArt from './ExpeditionArt';
 import './ExpeditionChoices.css';
 
@@ -31,7 +31,7 @@ function rewardChoice(reward: RewardOption, lang: Lang): Choice {
   switch (reward.kind) {
     case 'temp': return skillChoice(reward.cardId, reward.uses, lang);
     case 'levelup': return { id: 'levelup', name: zh ? '升级' : 'Level up', badge: `Lv.${reward.level}`, tone: 'gold',
-      detail: zh ? `本轮远征升至 Lv.${reward.level}，解锁以下技能。` : `Reach Lv.${reward.level} for this run and unlock these skills.`,
+      detail: zh ? `本轮远征升至 Lv.${reward.level}，解锁以下技能。旧招式不会因此增加伤害。` : `Reach Lv.${reward.level} for this run and unlock these skills. Older moves do not gain damage.`,
       unlocks: SKILL_DB.filter(c => c.levelRequired === reward.level).map(c => c.id) };
     case 'heal': return { id: 'heal', name: zh ? '治疗' : 'Heal', badge: `+${reward.amount} HP`, tone: 'rose',
       detail: zh ? `立即恢复 ${reward.amount} 点血量，不超过血量上限。` : `Restore ${reward.amount} HP, up to your maximum.` };
@@ -54,8 +54,8 @@ function shopChoice(item: ShopItem, lang: Lang): Choice {
     detail: `${item.equipment.desc[lang]}${lang === 'zh' ? '。本轮远征有效。' : '. Lasts for this run.'}` };
 }
 
-function ChoiceCard({ choice, lang, price, gold = 0, onChoose }: {
-  choice: Choice; lang: Lang; price?: number; gold?: number; onChoose: () => void;
+function ChoiceCard({ choice, lang, price, gold = 0, onChoose, disabledReason }: {
+  choice: Choice; lang: Lang; price?: number; gold?: number; onChoose: () => void; disabledReason?: string;
 }) {
   const [show, setShow] = useState(false);
   const [pinned, setPinned] = useState(false);
@@ -66,6 +66,7 @@ function ChoiceCard({ choice, lang, price, gold = 0, onChoose }: {
   const tipId = useId();
   const isShop = price !== undefined;
   const affordable = !isShop || gold >= price;
+  const canChoose = affordable && !disabledReason;
   const close = () => { setShow(false); setPinned(false); };
   const cancelLeave = () => { if (leaveTimer.current) clearTimeout(leaveTimer.current); };
   useEffect(() => () => { if (leaveTimer.current) clearTimeout(leaveTimer.current); }, []);
@@ -93,26 +94,27 @@ function ChoiceCard({ choice, lang, price, gold = 0, onChoose }: {
     return () => { window.removeEventListener('resize', place); window.removeEventListener('scroll', place, true); };
   }, [show]);
 
-  return <article ref={root} className={`expedition-choice tone-${choice.tone}${affordable ? '' : ' is-unaffordable'}`} data-choice={choice.id}
+  return <article ref={root} className={`expedition-choice tone-${choice.tone}${canChoose ? '' : ' is-unaffordable'}`} data-choice={choice.id}
     onPointerEnter={e => { if (e.pointerType === 'mouse' && window.matchMedia('(min-width: 641px)').matches) { cancelLeave(); setShow(true); } }}
     onPointerLeave={() => { if (!pinned) leaveTimer.current = setTimeout(() => setShow(false), 140); }}
     onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) close(); }}>
-    <button type="button" className="expedition-choose" aria-describedby={tipId} aria-disabled={!affordable}
-      aria-label={`${choice.name} · ${choice.badge}${isShop ? ` · ${price} ${lang === 'zh' ? '金币' : 'gold'}${affordable ? '' : lang === 'zh' ? '，金币不足' : ', not enough gold'}` : ''}`}
+    <button type="button" className="expedition-choose" aria-describedby={tipId} aria-disabled={!canChoose}
+      aria-label={`${choice.name} · ${choice.badge}${isShop ? ` · ${price} ${lang === 'zh' ? '金币' : 'gold'}${affordable ? '' : lang === 'zh' ? '，金币不足' : ', not enough gold'}` : ''}${disabledReason ? ` · ${disabledReason}` : ''}`}
       onFocus={e => { if (e.currentTarget.matches(':focus-visible')) setShow(true); }}
-      onClick={() => { if (affordable) { close(); onChoose(); } else setShow(true); }}>
+      onClick={() => { if (canChoose) { close(); onChoose(); } else setShow(true); }}>
       <span className="expedition-art-stage" aria-hidden="true"><span className="expedition-art-halo" /><span className="expedition-art-sparks" />
         <span className="expedition-art-float"><ExpeditionArt id={choice.id} card={choice.card} /></span>
       </span>
       <span className="expedition-choice-name">{choice.name}</span>
       <span className="expedition-choice-badge">{choice.badge}</span>
-      <span className="expedition-choice-action">{isShop ? <><Coins size={18} /> {price}</> : <><CheckCircle size={16} /> {lang === 'zh' ? '选择' : 'Choose'}</>}</span>
+      <span className="expedition-choice-action">{disabledReason ?? (isShop ? <><Coins size={18} /> {price}</> : <><CheckCircle size={16} /> {lang === 'zh' ? '选择' : 'Choose'}</>)}</span>
     </button>
     <button type="button" className="expedition-info" aria-label={`${lang === 'zh' ? '查看详情：' : 'Details: '}${choice.name}`} aria-expanded={show} aria-controls={tipId}
       onClick={() => { cancelLeave(); if (pinned) close(); else { setPinned(true); setShow(true); } }}>i</button>
     <div ref={tip} id={tipId} role="tooltip" hidden={!show} className="expedition-detail" style={position}
       onPointerEnter={cancelLeave}>
       <strong>{choice.name}</strong><p>{choice.detail}</p>
+      {disabledReason && <p>{disabledReason}</p>}
       {!affordable && <p className="expedition-shortfall">{lang === 'zh' ? `还差 ${price! - gold} 金币` : `Need ${price! - gold} more gold`}</p>}
       {!!choice.unlocks?.length && <div className="expedition-unlocks">{choice.unlocks.map(id => <span key={id}>
         <ExpeditionArt id={id} card /><span>{SKILL_DB.find(c => c.id === id)?.name[lang]}</span>
@@ -148,35 +150,47 @@ function ChoicePanel({ title, subtitle, shop, gold, children, footer }: {
 
 export interface ExpeditionRunStatus { hp: number; maxHp: number; level: number; }
 function RunStatus({ status, lang }: { status?: ExpeditionRunStatus; lang: Lang }) {
-  return status && <p className="expedition-run-status"><span>♥ {status.hp} / {status.maxHp}</span><span>Lv.{status.level}</span><span>{lang === 'zh' ? '升级解锁新招，旧招不变强' : 'Levels unlock moves; old moves stay the same'}</span></p>;
+  return status && <p className="expedition-run-status" aria-label={lang === 'zh' ? '本轮状态' : 'Run status'}><span>♥ {status.hp} / {status.maxHp}</span><span>Lv.{status.level}</span></p>;
 }
 
 export function ExpeditionRewards({ rewards, lang, onChoose, onReview, status }: {
   rewards: RewardOption[]; lang: Lang; onChoose: (reward: RewardOption) => void; onReview?: () => void; status?: ExpeditionRunStatus;
 }) {
-  return <ChoicePanel title={lang === 'zh' ? '选择奖励' : 'Choose a reward'}
-    subtitle={lang === 'zh' ? `${rewards.length} 选 1 · 仅本轮有效 · 升级解锁新招` : `Pick 1 of ${rewards.length} · This run only · Levels unlock moves`}
+  return <ChoicePanel title={lang === 'zh' ? '过关奖励' : 'Stage reward'}
+    subtitle={lang === 'zh' ? `${rewards.length} 选 1 · 本轮有效` : `Pick 1 of ${rewards.length} · This run only`}
     footer={onReview && <footer className="expedition-panel-footer"><button type="button" className="expedition-continue" onClick={onReview}>{lang === 'zh' ? '回顾获胜这一回合' : 'Review the winning turn'}</button></footer>}>
     <RunStatus status={status} lang={lang} />
     <div className="expedition-choice-grid" data-count={rewards.length}>{rewards.map((reward, i) => <ChoiceCard key={i} choice={rewardChoice(reward, lang)} lang={lang} onChoose={() => onChoose(reward)} />)}</div>
   </ChoicePanel>;
 }
 
-export function ExpeditionShop({ items, gold, lang, onBuy, onContinue, onReview, status }: {
-  items: ShopItem[]; gold: number; lang: Lang; onBuy: (item: ShopItem, index: number) => void; onContinue: () => void; onReview?: () => void; status?: ExpeditionRunStatus;
+export function ExpeditionShop({ items, gold, lang, onBuy, onContinue, onReview, status, onRoute, routeAvailable = false }: {
+  items: ShopItem[]; gold: number; lang: Lang; onBuy: (item: ShopItem, index: number) => boolean | void; onContinue: () => void; onReview?: () => void; status?: ExpeditionRunStatus;
+  onRoute?: (route: 'rest' | 'risk') => void; routeAvailable?: boolean;
 }) {
   const [acquired, setAcquired] = useState<Choice | null>(null);
+  const zh = lang === 'zh';
   useEffect(() => { if (!acquired) return; const timer = setTimeout(() => setAcquired(null), 1800); return () => clearTimeout(timer); }, [acquired]);
-  return <ChoicePanel shop title={lang === 'zh' ? '远征商城' : 'Expedition shop'} subtitle={lang === 'zh' ? '战前补给' : 'Prepare for battle'} gold={gold}
+  return <ChoicePanel shop title={zh ? '补给' : 'Supplies'} subtitle={zh ? '需要才买，金币也可以留着' : 'Buy what you need, or save your gold'} gold={gold}
     footer={<footer className="expedition-panel-footer"><div className="expedition-acquired" role="status" aria-live="polite">{acquired && <span key={acquired.id}><CheckCircle size={20} />{lang === 'zh' ? '获得 ' : 'Got '}{acquired.name}</span>}</div>
-      {onReview && <button type="button" className="expedition-continue" onClick={onReview}>{lang === 'zh' ? '上回合复盘' : 'Last turn review'}</button>}
-      <button type="button" className="expedition-continue" onClick={onContinue}><Swords size={22} />{lang === 'zh' ? '继续出战' : 'Next battle'}</button></footer>}>
+      {onReview && <button type="button" className="expedition-review" onClick={onReview}>{zh ? '回合复盘' : 'Turn review'}</button>}
+      {routeAvailable && onRoute ? <div className="expedition-routes">
+        <div className="expedition-route-options">
+          <button type="button" className="expedition-route expedition-route-rest" onClick={() => onRoute('rest')}><Heart size={25} /><span><strong>{zh ? '休整出发' : 'Rest & go'}</strong><small>{zh ? '自身生命 +0.5' : 'Restore 0.5 HP'}</small></span></button>
+          <button type="button" className="expedition-route expedition-route-risk" onClick={() => onRoute('risk')}><Swords size={25} /><span><strong>{zh ? '挑战出发' : 'Take a risk'}</strong><small>{zh ? '敌人血量 +0.5 · 胜利金币 +4' : 'Enemy HP +0.5 · Win: +4 gold'}</small></span></button>
+        </div>
+        <details className="expedition-route-details"><summary>{zh ? '路线差别' : 'Route details'}</summary><p>{zh ? '休整：立即恢复 0.5 血，不超过上限。挑战：仅下一关每名敌人血量 +0.5，获胜才额外得到 4 金币；不会同时回血。' : 'Rest restores 0.5 HP immediately, up to your maximum. Risk adds 0.5 HP to every enemy in the next stage only; winning earns 4 extra gold. Risk does not also heal you.'}</p></details>
+      </div> : <button type="button" className="expedition-continue" onClick={onContinue}><Heart size={22} />{zh ? '休整出发' : 'Rest & go'} <small>+0.5 HP</small></button>}
+    </footer>}>
     <RunStatus status={status} lang={lang} />
     <div className="expedition-choice-grid" data-count={items.length}>{items.map((item, i) => {
       const choice = shopChoice(item, lang);
       const price = item.kind === 'equipment' ? item.equipment.price : item.price;
-      return <ChoiceCard key={`${choice.id}-${i}`} choice={choice} lang={lang} price={price} gold={gold} onChoose={() => {
-        setAcquired(choice); onBuy(item, i);
+      const fullHealth = item.kind === 'potion' && status && status.hp >= status.maxHp;
+      return <ChoiceCard key={`${choice.id}-${i}`} choice={choice} lang={lang} price={price} gold={gold}
+        disabledReason={fullHealth ? (zh ? '已满血' : 'Full health') : undefined} onChoose={() => {
+        if (onBuy(item, i) === false) return;
+        setAcquired(choice);
         requestAnimationFrame(() => { if (document.activeElement === document.body) document.querySelector<HTMLButtonElement>('.expedition-continue')?.focus(); });
       }} />;
     })}</div>
