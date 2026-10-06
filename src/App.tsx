@@ -14,7 +14,7 @@ import { getBattleSeat } from './logic/battleLayout';
 import BrawlCover from './components/BrawlCover';
 import PixelBackdrop from './components/PixelBackdrop';
 import { AVATAR_OPTIONS } from './data/avatars';
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
   Music,
   Swords,
@@ -90,7 +90,9 @@ import { mutateRoom, createUniqueRoom } from './services/rooms';
 import { advanceRoom, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './logic/room';
 import type { User as FirebaseUser } from 'firebase/auth';
 import './components/BattleViewport.css';
-import ExpeditionCoach, { ExpeditionTell } from './components/ExpeditionCoach';
+import ExpeditionCoach from './components/ExpeditionCoach';
+import ExpeditionSpeech from './components/ExpeditionSpeech';
+import { getExpeditionLine } from './data/expeditionDialogue';
 import { createExpeditionRun, setupExpeditionStage, settleExpeditionRound, recordExpeditionHistory,
   takeExpeditionReward, buyExpeditionItem, takeExpeditionRoute,
   type ExpeditionBattleMemory, type ExpeditionHistory, type ExpeditionRoute } from './logic/expeditionRuntime';
@@ -246,6 +248,10 @@ const TopControls = ({
 export default function BobozanOnline() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [view, setView] = useState<'NAME_INPUT' | 'HOME' | 'LOBBY' | 'GAME'>('NAME_INPUT');
+  useLayoutEffect(() => {
+    // Short screens can scroll on the home page; enter battle at its visible top edge.
+    if (view === 'GAME') window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
+  }, [view]);
   const [playerName, setPlayerName] = useState('');
   const [lang, setLang] = useState<Lang>('zh'); 
   const [muted, setMuted] = useState(false);
@@ -317,6 +323,8 @@ export default function BobozanOnline() {
   const expBattleRef = useRef<ExpeditionBattleMemory>({ maxHp: {}, passives: {}, ironhideUsed: false, whetstoneUsed: false, adrenalineUsed: false });
   const expHistoryRef = useRef<ExpeditionHistory>({});
   const [expHistory, setExpHistory] = useState<ExpeditionHistory>({});
+  const [expDialogueRound, setExpDialogueRound] = useState<{ damageTaken: Record<string, number>; defendedHits: Record<string, number> }>();
+  const expDialogueSeedRef = useRef(0);
   const [expLastResult, setExpLastResult] = useState<{ damageTaken: number; defendedHits: number; heroCardId: string; opponentCardIds: string[] }>();
   const expeditionBusyRef = useRef(false);
   const expeditionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
@@ -348,6 +356,7 @@ export default function BobozanOnline() {
     expBattleRef.current = battle.memory;
     expHistoryRef.current = {};
     setExpHistory({});
+    setExpDialogueRound(undefined);
     setExpLastResult(undefined);
     setExpRecap(undefined);
     setExpGold(battle.run.gold);
@@ -365,6 +374,7 @@ export default function BobozanOnline() {
     playSound('confirm', muted);
     clearExpeditionTimers();
     expRunRef.current = createExpeditionRun();
+    expDialogueSeedRef.current = Math.floor(Math.random() * 0x7fffffff);
     setExpRelics([]);
     setExpGold(0);
     setExpEquipment([]);
@@ -405,6 +415,8 @@ export default function BobozanOnline() {
       })();
       return { ...p, selectedCardId: move };
     });
+    const speechLogs = [...expeditionDialogue].map(([id, line]) => ({ turn: gameState.turn, type: 'info' as const,
+      text: `${gameState.players.find(player => player.id === id)?.name ?? ''}：“${line.text}”` }));
     setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN' }));
 
     // 等级必杀或联合技：为亮牌、过场和场上特效留足时间。
@@ -422,13 +434,14 @@ export default function BobozanOnline() {
       expBattleRef.current = memory;
       expHistoryRef.current = recordExpeditionHistory(expHistoryRef.current, playersWithMoves);
       setExpHistory(expHistoryRef.current);
+      setExpDialogueRound({ damageTaken: result.damageTaken, defendedHits: result.defendedHits });
       setExpEquipment([...run.equipment]);
       setExpGold(run.gold);
       const resolvedHero = players.find(p => p.id === myId)!;
       setExpLastResult({ damageTaken: result.damageTaken[myId], defendedHits: result.defendedHits[myId], heroCardId: cardId,
         opponentCardIds: playersWithMoves.filter(p => p.id !== myId && !p.isDead).map(p => p.selectedCardId!) });
       setExpRecap({ turn: gameState.turn, hpBefore: me.hp, hpAfter: resolvedHero.hp,
-        energyBefore: me.energy, energyAfter: resolvedHero.energy, logs,
+        energyBefore: me.energy, energyAfter: resolvedHero.energy, logs: [...speechLogs, ...logs],
         cards: playersWithMoves.filter(p => !p.isDead && p.selectedCardId).map(p => ({ name: p.name, id: p.selectedCardId! })),
       });
       if (lost) {
@@ -448,7 +461,7 @@ export default function BobozanOnline() {
           expeditionBusyRef.current = false;
         }, 900));
       }
-      setGameState(prev => ({ ...prev, players, logs: [...logs, ...prev.logs].slice(0, 300), status: 'PLAYING', turn: prev.turn + 1 }));
+      setGameState(prev => ({ ...prev, players, logs: [...speechLogs, ...logs, ...prev.logs].slice(0, 300), status: 'PLAYING', turn: prev.turn + 1 }));
       setExpIntents(won || lost ? {} : computeExpIntents(players, run.stageIdx));
       if (!won) {
         setSubmittingMove(false);
@@ -1719,6 +1732,23 @@ export default function BobozanOnline() {
   // GAME VIEW - MAIN RENDER
   const myIndex = gameState.players.findIndex(p => p.id === myPlayerId);
   const totalPlayers = gameState.players.length;
+  const expeditionSpeakers = isExpedition ? gameState.players.filter(player => !player.isDead && player.id !== myPlayerId) : [];
+  // A small screen gives one character the floor each round instead of stacking speech over the table.
+  const compactSpeaker = isSmallScreen && expeditionSpeakers.length > 1
+    ? expeditionSpeakers[(gameState.turn - 1) % expeditionSpeakers.length].id : undefined;
+  const expeditionDialogue = new Map(expeditionSpeakers.filter(player => !compactSpeaker || player.id === compactSpeaker).flatMap(player => {
+    if (expPhase !== 'battle' || gameState.status !== 'PLAYING') return [];
+    const stage = EXPEDITION_STAGES[expStageIdx];
+    const enemy = stage.enemies.find(def => `exp_${stage.id}_${def.id}` === player.id);
+    if (!enemy) return [];
+    return [[player.id, getExpeditionLine({ enemyId: enemy.id, stageIdx: expStageIdx, turn: gameState.turn,
+      speechTurn: compactSpeaker ? Math.ceil(gameState.turn / expeditionSpeakers.length) : gameState.turn,
+      enemy: { id: player.id, hp: player.hp, energy: player.energy, isDead: player.isDead },
+      hero: myPlayer ? { id: myPlayer.id, hp: myPlayer.hp, energy: myPlayer.energy, isDead: myPlayer.isDead } : undefined,
+      history: expHistory, lastRound: expDialogueRound,
+      aliveCount: gameState.players.filter(fighter => !fighter.isDead).length, seed: expDialogueSeedRef.current,
+    }, lang)] as const];
+  }));
   
   // 计算当前局获胜者 & 获得的技能
   const livingPlayers = gameState.players.filter((p) => !p.isDead);
@@ -2061,10 +2091,9 @@ export default function BobozanOnline() {
              const isMe = p.id === myPlayerId;
              const pMaxLvl = Math.max(0, ...p.inventory);
              const highestLevel = Math.max(0, ...gameState.players.flatMap(player => player.inventory));
-             const enemyDef = isExpedition ? EXPEDITION_STAGES[expStageIdx].enemies.find(enemy => 'exp_' + EXPEDITION_STAGES[expStageIdx].id + '_' + enemy.id === p.id) : undefined;
-             const intent = isExpedition && !isMe && !p.isDead && expPhase === 'battle' && gameState.status === 'PLAYING'
-               ? <div className="pixel-intent"><ExpeditionTell lang={lang} name={p.name} history={expHistory[p.id] ?? []}
-                   personality={enemyDef?.personality} bluff={enemyDef?.passive?.deceiver} /></div> : undefined;
+             const line = expeditionDialogue.get(p.id);
+             const intent = line ? <ExpeditionSpeech key={`${expStageIdx}-${gameState.turn}-${p.id}`}
+               line={line.text} speaker={p.name} side={pos.x > 50 ? 'left' : 'right'} reduceMotion={reduceMotion} /> : undefined;
              return <BattleFighter key={p.id} player={p} seat={pos} bounds={tableBounds} self={isMe}
                maxHp={isExpedition ? (expBattleRef.current.maxHp[p.id] ?? MAX_HP) : MAX_HP}
                level={pMaxLvl} levelName={SKILL_DB.find(card => card.levelRequired === pMaxLvl)?.name[lang] ?? ''}

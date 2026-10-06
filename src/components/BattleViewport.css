@@ -1,5 +1,5 @@
-/* The visible viewport owns the battle height, including Safari's moving bars.
-   Keep a readable minimum battlefield; unusually short windows can still scroll. */
+/* The scene owns its size. Hand content overlays it instead of sharing flex space.
+   svh also keeps Safari's moving bars from stretching the table while scrolling. */
 .pixel-app.pixel-screen-battle {
   min-height: 100vh;
   min-height: 100dvh;
@@ -8,24 +8,37 @@
 }
 
 .pixel-screen-battle .pixel-battle-layout {
-  --hand-card-height: clamp(132px, 22dvh, 200px);
-  --table-hand-overlap: clamp(40px, 8dvh, 90px);
+  --hand-card-height: clamp(132px, 22svh, 200px);
+  --table-hand-overlap: clamp(40px, 8svh, 90px);
+  --battle-headroom: 104px;
+  /* Reserve the closed hand once, never the changing nav/toolbar/inspector height. */
+  --battle-hand-space: calc(var(--hand-card-height) + 44px - var(--table-hand-overlap));
+  display: block;
   height: 100vh;
-  height: 100dvh;
-  min-height: 0;
-  padding: env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+  height: 100svh;
+  min-height: calc(var(--battle-headroom) + 320px + var(--battle-hand-space) + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+  padding: 0;
 }
 .pixel-screen-battle .pixel-battle-board.center-table-board {
+  position: absolute;
+  top: calc(var(--battle-headroom) + env(safe-area-inset-top));
+  bottom: calc(var(--battle-hand-space) + env(safe-area-inset-bottom));
+  left: env(safe-area-inset-left);
+  right: env(safe-area-inset-right);
+  width: auto;
   height: auto;
   min-height: 320px;
-  flex: 1 0 320px;
-  margin-top: 104px;
+  flex: none;
+  margin: 0;
 }
 .pixel-screen-battle .battle-command-dock {
-  flex-shrink: 0;
+  position: absolute;
+  bottom: 0;
+  left: env(safe-area-inset-left);
+  right: env(safe-area-inset-right);
   grid-template-columns: minmax(120px, 1fr) minmax(0, 820px) minmax(96px, 1fr);
   gap: 8px;
-  margin-top: calc(-1 * var(--table-hand-overlap));
+  margin: 0;
   padding: 8px 16px max(12px, env(safe-area-inset-bottom));
 }
 .pixel-screen-battle .battle-command-dock .pixel-hand-area.battle-hand {
@@ -96,15 +109,25 @@
   .pixel-screen-battle .battle-hand .hand-category-icon .pixel-icon { width: 36px; height: 36px; }
 }
 @media (max-width: 767px) {
-  .pixel-screen-battle .expedition-learning-hud { width: auto; }
-  .pixel-screen-battle .pixel-battle-layout { --hand-card-height: 144px; --table-hand-overlap: 48px; }
-  .pixel-screen-battle .pixel-mobile-header { flex-shrink: 0; }
+  .pixel-screen-battle .expedition-learning-hud {
+    position: absolute; top: calc(96px + env(safe-area-inset-top));
+    left: calc(12px + env(safe-area-inset-left)); right: calc(12px + env(safe-area-inset-right));
+    width: auto; margin: 0;
+  }
+  .pixel-screen-battle .pixel-battle-layout {
+    --hand-card-height: 144px; --table-hand-overlap: 48px;
+    --battle-headroom: 192px;
+    --battle-hand-space: calc(var(--hand-card-height) + 140px - var(--table-hand-overlap));
+  }
+  .pixel-screen-multiplayer .pixel-battle-layout { --battle-headroom: 144px; }
+  .pixel-screen-battle .pixel-mobile-header {
+    position: absolute; top: env(safe-area-inset-top);
+    left: env(safe-area-inset-left); right: env(safe-area-inset-right);
+  }
   .pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] > .pointer-events-auto { min-width: 150px; padding: 6px 8px; }
   .pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] .cursor-grab { gap: 8px; }
   .pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] .shrink-0 { width: 32px; height: 32px; }
   .pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] .text-xl { font-size: 14px; line-height: 18px; }
-  .pixel-screen-battle .pixel-battle-board.center-table-board { min-height: 320px; flex-basis: 320px; margin-top: 0; }
-  .pixel-screen-multiplayer .pixel-battle-board.center-table-board { margin-top: 96px; }
   .pixel-screen-battle .battle-command-dock { grid-template-columns: minmax(0, 1fr) minmax(72px, auto); padding-inline: 8px; gap: 0 8px; }
   .pixel-screen-battle .battle-command-dock .pixel-hand-area.battle-hand { grid-column: 1 / -1; grid-row: 1; }
   .pixel-screen-battle .battle-command-dock .battle-player-hud { grid-column: 1; grid-row: 2; flex-wrap: nowrap; }

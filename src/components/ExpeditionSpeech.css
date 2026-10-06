@@ -1,0 +1,25 @@
+/* Speech is independent of the retired .pixel-intent/button layout. */
+.battle-fighter .expedition-speech {
+  position:absolute; z-index:46; top:8%; left:calc(100% - 4px); right:auto;
+  width:max-content; max-width:190px; min-width:74px; padding:9px 12px;
+  color:#493d32; background:#fff2cc; border:2px solid #6c553d;
+  box-shadow:3px 3px 0 #0b15258c,inset 0 0 0 2px #fff9e4;
+  font:600 16px/1.45 'Microsoft YaHei','PingFang SC',system-ui,sans-serif;
+  text-align:left; white-space:normal; overflow-wrap:break-word;
+  pointer-events:none; isolation:isolate; animation:expedition-speech-in .16s steps(3,end) both;
+}
+.battle-fighter .expedition-speech[data-side='left'] { left:auto; right:calc(100% - 4px); }
+.expedition-speech::before,.expedition-speech::after {
+  content:''; position:absolute; top:14px; width:12px; height:14px; left:-12px;
+  clip-path:polygon(100% 0,100% 100%,75% 100%,75% 75%,50% 75%,50% 60%,0 60%,0 40%,50% 40%,50% 25%,75% 25%,75% 0);
+  background:#6c553d;
+}
+.expedition-speech::after { left:-9px; width:10px; background:#fff2cc; }
+.expedition-speech[data-side='left']::before { left:auto; right:-12px; transform:scaleX(-1); }
+.expedition-speech[data-side='left']::after { left:auto; right:-9px; transform:scaleX(-1); }
+@keyframes expedition-speech-in { from { opacity:0; translate:0 3px; } to { opacity:1; translate:0 0; } }
+@media(max-width:767px) {
+  .battle-fighter .expedition-speech { max-width:min(136px,calc(50vw - 42px)); min-width:66px; padding:7px 9px; font-size:14px; line-height:1.45; }
+}
+@media(prefers-reduced-motion:reduce) { .battle-fighter .expedition-speech { animation:none; } }
+.reduce-motion .battle-fighter .expedition-speech,.battle-fighter .expedition-speech[data-still='true'] { animation:none; }

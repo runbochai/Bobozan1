@@ -171,18 +171,18 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
     id: 'read-habits',
     title: text('看习惯，不偷看', 'Read habits, not hidden cards'),
     intro: text('这次不会预告出牌。结合能量与历史做判断；习惯只是倾向，真实对手可能变招。', 'Cards are hidden this time. Use energy and history to judge; habits are tendencies, and a real opponent may change plans.'),
-    opponentHint: text('最近出牌：攒 → 轰 → 攒 → 轰。现在有 1 能量，常在这时补能量。', 'Recent moves: Charge → Blast → Charge → Blast. With 1 energy left, this opponent often refills.'),
+    opponentHint: text('“喘口气而已，谁说我怕了？”刚才：攒 → 轰 → 攒 → 轰。现在有 1 能量。', '“Just catching my breath. Who said I was scared?” Earlier: Charge → Blast → Charge → Blast. Now at 1 energy.'),
     concealed: true,
     rounds: [
       {
         hero: fighter(1), enemy: fighter(1), enemyMove: 'charge', choices: ['hong', 'defend', 'charge'], goal: 'hit',
-        prompt: text('参考历史，尝试抓住补能量的时机。', 'Use the history to try to catch an energy refill.'),
+        prompt: text('他这句话可信吗？试着读中一次。', 'Do you believe him? Try making a read.'),
         explanation: text('揭晓：本次对手选择攒，攻击可以命中。但 1 能量也足够出轰，真实对局中这只是判断，不是保证。', 'Reveal: the opponent chose Charge, so an attack can hit. They also had enough energy for Blast; in a real match this is a read, not a guarantee.'),
       },
       {
         hero: fighter(1), enemy: fighter(2), enemyMove: 'hong', choices: ['hong', 'defend', 'charge'], goal: 'block',
-        opponentHint: text('新的练习局面。最近：攒 → 轰 → 攒；对手通常攒完就出手，但也可能继续攒。', 'A new practice setup. Recent moves: Charge → Blast → Charge. This opponent often attacks after charging, but could Charge again.'),
-        prompt: text('参考习惯，尝试防住进攻并保留能量。', 'Read the habit: try to block an attack and save energy.'),
+        opponentHint: text('“刚才那下，你是不是没看清？”新的局面，刚才：攒 → 轰 → 攒。现在有 2 能量。', '“Did you even see that last one?” New setup. Earlier: Charge → Blast → Charge. Now at 2 energy.'),
+        prompt: text('他会照旧出招吗？这次怎样应对？', 'Will he repeat himself? How will you respond?'),
         explanation: text('揭晓：本次对手选择轰，免费防能挡下。看见攒过不代表下一招必定攻击，仍要同时看能量和其他人的动作。', 'Reveal: the opponent chose Blast, which free Defend blocks. A previous Charge does not guarantee an attack next; watch energy and other players too.'),
       },
     ],
