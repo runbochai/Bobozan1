@@ -6,14 +6,14 @@ import BattleTableCards from './components/BattleTableCards';
 import { CARD_REVEAL_MS, ULT_CUTIN_MS } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
 import BattleStats from './components/BattleStats';
-import TutorialGuide from './components/TutorialGuide';
+import BattleAcademy from './components/BattleAcademy';
+import ExpeditionBriefing, { type ExpeditionRecap } from './components/ExpeditionBriefing';
 import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
 import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
 import { getBattleSeat } from './logic/battleLayout';
 import BrawlCover from './components/BrawlCover';
 import PixelBackdrop from './components/PixelBackdrop';
 import { AVATAR_OPTIONS } from './data/avatars';
-import { tutorialEnemyMove } from './logic/expeditionTutorial';
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   Music,
@@ -61,10 +61,11 @@ import { pickUltCutins, hasBattleCutin, ULT_CUTINS, type UltCutinPick } from './
 import UltCutin from './components/UltCutin';
 import InventoryBar from './components/InventoryBar';
 import type { ExpeditionEnemyDef } from './data/expedition';
-import { EXPEDITION_STAGES, EXPEDITION_TUTORIALS, EXPEDITION_LESSONS } from './data/expedition';
+import { EXPEDITION_STAGES } from './data/expedition';
 import { drawGachaCard } from './data/expedition';
 import {
-  applyIronhide,
+  consumeExpeditionCard,
+  enemyHabit,
   expeditionBotMove,
   genRewardOptions,
   EXPEDITION_MAX_LEVEL,
@@ -75,8 +76,6 @@ import {
   saveExpeditionBest,
   type RewardOption,
   type ShopItem,
-  intentRevealed,
-  intentTaunt,
   passiveBadges,
 } from './logic/expedition';
 import {
@@ -90,7 +89,6 @@ import {
   calculateTurnOutcome,
   getCardIcon,
   getPlayerCards,
-  isOffensiveCard,
 } from './logic/combat';
 import { initAudio, playSound } from './audio/sound';
 import { auth, db, firebaseConfigured, firebaseInitError } from './firebase';
@@ -304,9 +302,9 @@ export default function BobozanOnline() {
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
   const [expGold, setExpGold] = useState(0);
-  const [expTutIdx, setExpTutIdx] = useState(0);
-  const expTutIdxRef = useRef(0);
-  const expTutorialSkippedRef = useRef(false);
+  const [academyTab, setAcademyTab] = useState<'lessons' | 'rules' | null>(null);
+  const [expHelp, setExpHelp] = useState<'intro' | 'recap' | null>(null);
+  const [expRecap, setExpRecap] = useState<ExpeditionRecap>();
   const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
   const [intentDismissed, setIntentDismissed] = useState<Set<string>>(new Set()); // 本回合手动点掉的意图
@@ -369,7 +367,7 @@ const expYpjUsedRef = useRef(false);
     });
   };
 
-  // 敌人意图：回合开始时预计算敌方出牌，展示用；提交时直接沿用，保证所见即所得
+  // Commit the enemy move before the player chooses. Only past moves/habits are public.
   const computeExpIntents = (players: Player[], stageIdx: number) => {
     const stage = EXPEDITION_STAGES[stageIdx];
     const myId = expMyId();
@@ -377,21 +375,9 @@ const expYpjUsedRef = useRef(false);
     for (const pl of players) {
       if (pl.id === myId || pl.isDead) continue;
       const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === pl.id);
-      const practiceMove = expTutorialSkippedRef.current ? undefined : tutorialEnemyMove(stage.id, expTutIdxRef.current, pl.energy);
-      if (practiceMove) {
-        intents[pl.id] = practiceMove;
-        continue;
-      }
       intents[pl.id] = def ? expeditionBotMove(pl, players, def.personality, myId) : 'charge';
     }
     return intents;
-  };
-  // 意图是否显示：前三关全显示；Boss 完全隐藏，精英 20%，普通怪 45%
-  const shouldRevealIntent = (enemyId: string) => {
-    const stage = EXPEDITION_STAGES[expRunRef.current.stageIdx];
-    const def = stage.enemies.find(en => `exp_${stage.id}_${en.id}` === enemyId);
-    const conceal = def?.boss ? 'boss' : def?.elite ? 'elite' : 'normal';
-    return intentRevealed(enemyId, gameState.turn, expRunRef.current.stageIdx, conceal);
   };
 
   const setupExpeditionBattle = (stageIdx: number) => {
@@ -470,8 +456,7 @@ const expYpjUsedRef = useRef(false);
     players = applyExpTurnStartEnergy(players, true);
     expMaxHpRef.current = Object.fromEntries(players.map(pl => [pl.id, pl.id === myId ? run.maxHp : pl.hp]));
     expBossEnragedRef.current = false;
-    expTutIdxRef.current = expTutorialSkippedRef.current ? 999 : 0;
-    setExpTutIdx(expTutIdxRef.current);
+    setExpRecap(undefined);
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
     setHandViewMode('CATEGORIES');
@@ -488,7 +473,7 @@ const expYpjUsedRef = useRef(false);
         ...(moneyTreeBonus > 0 ? [{ turn: 1, text: lang === 'zh' ? `🌱 摇钱树摇下 ${moneyTreeBonus} 金币！` : `🌱 Money Tree shook down ${moneyTreeBonus} gold!`, type: 'info' as const }] : []),
       ],
     });
-    if (stage.tip && !EXPEDITION_TUTORIALS[stage.id]?.[expTutIdxRef.current]) setToastMsg(stage.tip[lang]);
+    if (stage.tip) setToastMsg(stage.tip[lang]);
     setExpIntents(computeExpIntents(players, stageIdx));
     setIntentDismissed(new Set());
   };
@@ -502,7 +487,10 @@ const expYpjUsedRef = useRef(false);
     setExpGold(0);
     setExpEquipment([]);
     setExpShop([]);
-    expTutorialSkippedRef.current = false;
+    setExpHelp(null);
+    setAcademyTab(null);
+    setGoldFly(null);
+    setPassiveTip(null);
     setIsExpedition(true);
     setupExpeditionBattle(0);
     setView('GAME');
@@ -519,12 +507,7 @@ const expYpjUsedRef = useRef(false);
     if (me.energy < card.cost && !me.freeSkills?.includes(cardId)) return;
     if (me.disabledSkills?.includes(cardId)) return;
 
-    const tutSteps = EXPEDITION_TUTORIALS[EXPEDITION_STAGES[expRunRef.current.stageIdx]?.id ?? ''];
-    const tutorialStep = tutSteps?.[expTutIdxRef.current];
-    if (tutorialStep && tutorialStep.highlight !== cardId) {
-      setToastMsg(tutorialStep.text[lang]);
-      return;
-    }
+    if (!getPlayerCards(me, gameState.players).some(known => known.id === cardId)) return;
 
     expeditionBusyRef.current = true;
     setSubmittingMove(true);
@@ -532,7 +515,6 @@ const expYpjUsedRef = useRef(false);
     playSound('draw', muted);
 
     const stage = EXPEDITION_STAGES[expRunRef.current.stageIdx];
-    const myPreInventory = [...me.inventory];
     const playersWithMoves = gameState.players.map(p => {
       if (p.id === myId) return { ...p, selectedCardId: cardId };
       if (p.isDead) return p;
@@ -558,39 +540,28 @@ const expYpjUsedRef = useRef(false);
       const run = expRunRef.current;
       const relics = run.relics;
       const has = (id: string) => relics.includes(id);
-      const result = calculateTurnOutcome(playersWithMoves, gameState.turn, run.stageIdx + 1, lang);
-      // 联机胜利会自动发技能（pendingLevel/加 inventory）：远征走自己的奖励系统，这里清掉
-      let players: Player[] = result.players.map(p =>
-        p.id === myId
-          ? { ...p, inventory: p.inventory.filter(l => myPreInventory.includes(l)), pendingLevel: null }
-          : p
-      );
-      let logs = result.logs.filter(l => !(l.type === 'win' && (l.text.includes('获胜') || l.text.includes('WINS'))));
-      const meAfter = players.find(p => p.id === myId)!;
-      const myPreHp = preHp.get(myId) ?? meAfter.hp;
-
-      // 遗物：铁布衫（每轮远征一次致命免死）
-      if (meAfter.isDead && has('tbs') && !expIronShirtUsedRef.current) {
-        const enemiesAlive = players.some(p => p.id !== myId && !p.isDead);
-        if (enemiesAlive) {
-          expIronShirtUsedRef.current = true;
-          players = players.map(p => (p.id === myId ? { ...p, isDead: false, hp: 0.5 } : p));
-          logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 铁布衫救了你一命！' : '🛡️ Iron Shirt saved you!', type: 'info' as const }];
-        }
+      const damageReduction = Object.fromEntries(playersWithMoves.map(p => [p.id,
+        p.id === myId ? (has('ypj') && !expYpjUsedRef.current ? 0.5 : 0) : (expPassivesRef.current[p.id]?.armorPerTurn ?? 0)]));
+      const protection = has('tbs') && !expIronShirtUsedRef.current ? 'tbs' : run.equipment.includes('doll') ? 'doll' : null;
+      const result = calculateTurnOutcome(playersWithMoves, gameState.turn, run.stageIdx + 1, lang, {
+        mode: 'expedition', damageReduction, lethalProtection: protection ? { [myId]: 0.5 } : undefined,
+      });
+      let players: Player[] = result.players;
+      let logs = [...result.logs];
+      for (const player of playersWithMoves) {
+        const blocked = result.damageBlocked[player.id];
+        if (blocked > 0) logs.push({ turn: gameState.turn, type: 'info', text: lang === 'zh'
+          ? `🛡️ ${player.name}的${player.id === myId ? '硬皮甲' : '护甲'}减免 ${blocked} 点伤害。`
+          : `🛡️ ${player.name}'s ${player.id === myId ? 'Ironhide' : 'armor'} prevented ${blocked} damage.` });
       }
-      // 装备：替身人偶 —— 致命伤害保留 1 点血（每轮限一次，用后消失）
-      let meAfterDoll = players.find(p => p.id === myId)!;
-      if (meAfterDoll.isDead && run.equipment.includes('doll')) {
-        const enemiesAlive = players.some(pp => pp.id !== myId && !pp.isDead);
-        if (enemiesAlive) {
-          run.equipment = run.equipment.filter(id => id !== 'doll');
-          setExpEquipment([...run.equipment]);
-          players = players.map(pl => (pl.id === myId ? { ...pl, isDead: false, hp: 0.5 } : pl));
-          logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 替身人偶替你挡下了致命一击！' : '🛡️ Stand-in Doll took the lethal hit!', type: 'info' as const }];
-          meAfterDoll = players.find(pp => pp.id === myId)!;
-        }
+      if (result.protectionUsed[myId] && protection) {
+        if (protection === 'tbs') expIronShirtUsedRef.current = true;
+        else { run.equipment = run.equipment.filter(id => id !== 'doll'); setExpEquipment([...run.equipment]); }
+        logs.push({ turn: gameState.turn, type: 'info', text: lang === 'zh' ? `🛡️ ${protection === 'tbs' ? '铁布衫' : '替身人偶'}抵挡致命伤，保留 0.5 血。` : `🛡️ ${protection === 'tbs' ? 'Iron Shirt' : 'Stand-in Doll'} prevented death: 0.5 HP remains.` });
       }
-      const meFinal = meAfterDoll;
+      if (result.damageBlocked[myId] > 0) expYpjUsedRef.current = true;
+      const meFinal = players.find(p => p.id === myId)!;
+      const myPreHp = preHp.get(myId) ?? meFinal.hp;
       // 装备：嗜血剑 —— 每次击杀回复 1 点血量
       if (run.equipment.includes('bloodsword') && !meFinal.isDead) {
         const preKills = playersWithMoves.find(pp => pp.id === myId)?.kills ?? 0;
@@ -606,57 +577,35 @@ const expYpjUsedRef = useRef(false);
       const myCard = SKILL_DB.find(c => c.id === meFinal.lastCardId);
 
       // 遗物：反击拳套 —— 只有真正挡下敌人的攻击才 +1 能量（没人打你时空防不给）
-      const enemyAttacked = playersWithMoves.some(pp => pp.id !== myId && !pp.isDead && pp.selectedCardId && isOffensiveCard(SKILL_DB.find(c => c.id === pp.selectedCardId)!));
-      if (has('fjqt') && !meFinal.isDead && myCard?.type === 'DEFEND' && enemyAttacked && meFinal.hp >= myPreHp) {
+      if (has('fjqt') && !meFinal.isDead && result.defendedHits[myId] > 0) {
         players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 1 } : p));
+        logs.push({ turn: gameState.turn, type: 'info', text: lang === 'zh' ? '🥊 反击拳套：挡住攻击，能量 +1。' : '🥊 Counter Gloves: blocked an attack, +1 Energy.' });
       }
       // 遗物：处决令（有敌人被淘汰的回合 +2 能量）
       if (has('zjling') && !meFinal.isDead) {
         const freshKills = players.filter(p => p.id !== myId && p.isDead && !preDead.has(p.id)).length;
-        if (freshKills > 0) players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 2 } : p));
+        if (freshKills > 0) {
+          players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 2 } : p));
+          logs.push({ turn: gameState.turn, type: 'info', text: lang === 'zh' ? '🗡️ 处决令：有人淘汰，能量 +2。' : '🗡️ Execution Order: an opponent was eliminated, +2 Energy.' });
+        }
       }
       // 遗物：磨刀石（每场战斗第一次终极技能 +2 能量）
       if (has('mds') && !expWhetstoneUsedRef.current && !meFinal.isDead && myCard?.type === 'ULTIMATE') {
         expWhetstoneUsedRef.current = true;
         players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 2 } : p));
+        logs.push({ turn: gameState.turn, type: 'info', text: lang === 'zh' ? '🗿 磨刀石：首次终极，返还 2 能量。' : '🗿 Whetstone: first Ultimate refunded 2 Energy.' });
       }
       // 遗物：肾上腺素（受伤 +2 能量，每场战斗一次）
-      if (has('jsn') && !expAdrenalineUsedRef.current && !meFinal.isDead && meFinal.hp < myPreHp) {
+      if (has('jsn') && !expAdrenalineUsedRef.current && !meFinal.isDead && result.damageTaken[myId] > 0) {
         expAdrenalineUsedRef.current = true;
         players = players.map(p => (p.id === myId ? { ...p, energy: p.energy + 2 } : p));
+        logs.push({ turn: gameState.turn, type: 'info', text: lang === 'zh' ? '💉 肾上腺素：受伤后能量 +2（本场一次）。' : '💉 Adrenaline: +2 Energy after taking damage (once per battle).' });
       }
-      // 遗物：硬皮甲（每场战斗第一次受伤 -1）
-      if (has('ypj') && !meFinal.isDead) {
-        const res = applyIronhide(myPreHp, meFinal.hp, run.maxHp, expYpjUsedRef.current);
-        if (res.triggered && !expYpjUsedRef.current) {
-          expYpjUsedRef.current = true;
-          players = players.map(pl => (pl.id === myId ? { ...pl, hp: res.hp } : pl));
-          logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? '🛡️ 硬皮甲挡下了一点伤害！' : '🛡️ Ironhide blocked some damage!', type: 'info' as const }];
-        }
-      }
-      // Boss 护甲：每回合第一次受到的伤害 -armorPerTurn
-      players = players.map(pl => {
-        const passive = expPassivesRef.current[pl.id];
-        const before = preHp.get(pl.id) ?? pl.hp;
-        if (passive?.armorPerTurn && !pl.isDead && pl.hp < before) {
-          const blocked = Math.min(passive.armorPerTurn, before - pl.hp);
-          const newHp = Math.min(expMaxHpRef.current[pl.id] ?? pl.hp, pl.hp + blocked);
-          logs = [...logs, { turn: gameState.turn, text: lang === 'zh' ? `🛡️ ${pl.name}的护甲抵挡了 ${blocked} 点伤害！` : `🛡️ ${pl.name}'s armor blocked ${blocked} damage!`, type: 'info' as const }];
-          return { ...pl, hp: newHp };
-        }
-        return pl;
-      });
       // 限次秘技：用一次少一次，用完从手牌移除
       const mePost = players.find(pl => pl.id === myId)!;
       const playedId = mePost.lastCardId ?? cardId;
-      const tIdx = run.tempCards.findIndex(t => t.cardId === playedId);
-      if (tIdx >= 0) {
-        run.tempCards[tIdx].usesLeft -= 1;
-        if (run.tempCards[tIdx].usesLeft <= 0) {
-          run.tempCards.splice(tIdx, 1);
-          players = players.map(pl => (pl.id === myId ? { ...pl, tempSkills: (pl.tempSkills ?? []).filter(id => id !== playedId) } : pl));
-        }
-      }
+      run.tempCards = consumeExpeditionCard(run.tempCards, me.freeSkills?.includes(playedId) ? null : playedId);
+      players = players.map(pl => pl.id === myId ? { ...pl, tempSkills: run.tempCards.map(card => card.cardId) } : pl);
 
       // 下回合开始能量（Boss 光环）
       players = applyExpTurnStartEnergy(players, false);
@@ -672,6 +621,10 @@ const expYpjUsedRef = useRef(false);
         setExpPhase('runover');
       } else if (!enemiesAlive) {
         run.hp = Math.min(run.maxHp, meHp + (has('zstai') ? 0.5 : 0));
+        if (run.hp > meHp) logs.push({ turn: gameState.turn, type: 'info', text: lang === 'zh' ? `🌿 再生苔恢复 ${run.hp - meHp} 血。` : `🌿 Moss restored ${run.hp - meHp} HP.` });
+        players = players.map(p => p.id === myId ? { ...p, hp: run.hp } : p);
+        saveExpeditionBest(run.stageIdx + 1);
+        setExpBest(loadExpeditionBest());
         let gold = goldForWin(run.stageIdx, EXPEDITION_STAGES[run.stageIdx]);
         if (run.equipment.includes('treasurepot')) gold += 4;
         run.gold += gold;
@@ -694,11 +647,19 @@ const expYpjUsedRef = useRef(false);
         run.hp = meHp;
       }
 
-      // Advance only after a legal move has resolved; the next intent uses the new step.
-      if (tutorialStep?.highlight === cardId) {
-        expTutIdxRef.current += 1;
-        setExpTutIdx(expTutIdxRef.current);
-      }
+      const resolvedHero = players.find(p => p.id === myId)!;
+      const summary = lang === 'zh'
+        ? `本回合：生命 ${myPreHp} → ${resolvedHero.hp}，能量 ${me.energy} → ${resolvedHero.energy}。`
+        : `This turn: HP ${myPreHp} → ${resolvedHero.hp}, Energy ${me.energy} → ${resolvedHero.energy}.`;
+      logs.push({ turn: gameState.turn, type: 'info', text: summary });
+      if (result.damageTaken[myId] > 0) logs.push({ turn: gameState.turn, type: 'combat', text: lang === 'zh'
+        ? `本回合实际受到 ${result.damageTaken[myId]} 点伤害（已计算减伤和保命）。`
+        : `Actual damage taken: ${result.damageTaken[myId]} (after armor and lethal protection).` });
+      setExpRecap({ turn: gameState.turn, hpBefore: myPreHp, hpAfter: resolvedHero.hp,
+        energyBefore: me.energy, energyAfter: resolvedHero.energy, logs,
+        cards: playersWithMoves.filter(p => !p.isDead && p.selectedCardId).map(p => ({ name: p.name, id: p.selectedCardId! })),
+      });
+      if (result.damageTaken[myId] > 0 && meAlive && enemiesAlive) setToastMsg(lang === 'zh' ? `受到 ${result.damageTaken[myId]} 点伤害 · 点「回合复盘」查看原因` : `Took ${result.damageTaken[myId]} damage · Open Turn review for the cause`);
 
       setGameState(prev => ({
         ...prev,
@@ -723,6 +684,7 @@ const expYpjUsedRef = useRef(false);
   };
 
   const claimExpeditionReward = (opt: RewardOption) => {
+    if (expPhase !== 'reward' || !expRewards.includes(opt)) return;
     playSound('confirm', muted);
     const run = expRunRef.current;
     if (opt.kind === 'heal') {
@@ -742,6 +704,7 @@ const expYpjUsedRef = useRef(false);
       setExpRelics([...run.relics]);
     } else if (opt.kind === 'levelup') {
       if (!run.inventory.includes(opt.level)) run.inventory = [...run.inventory, opt.level];
+      setToastMsg(lang === 'zh' ? `已解锁 Lv.${opt.level} 技能。旧招式的强度不变，可在手牌中查看新招。` : `Lv.${opt.level} moves unlocked. Older moves keep their strength.`);
     }
     enterExpShop();
   };
@@ -762,6 +725,7 @@ const expYpjUsedRef = useRef(false);
 
   /** 商城购买 */
   const buyShopItem = (item: ShopItem, idx: number) => {
+    if (expPhase !== 'shop' || expShop[idx] !== item) return;
     const run = expRunRef.current;
     const price = item.kind === 'tempcard' ? item.price : item.kind === 'equipment' ? item.equipment.price : item.price;
     if (run.gold < price) return;
@@ -929,13 +893,6 @@ const expYpjUsedRef = useRef(false);
   const myPlayerId = isExpedition ? expMyId() : user?.uid || 'me';
   const myPlayer = gameState.players.find((p: Player) => p.id === myPlayerId);
   const knownCards = myPlayer ? getPlayerCards(myPlayer, gameState.players) : [];
-  const tutorialStageId = isExpedition ? EXPEDITION_STAGES[expStageIdx]?.id ?? '' : '';
-  const tutorialSteps = EXPEDITION_TUTORIALS[tutorialStageId];
-  const activeTutorialStep = expPhase === 'battle' ? tutorialSteps?.[expTutIdx] : undefined;
-  const tutorialCard = SKILL_DB.find(c => c.id === activeTutorialStep?.highlight);
-  const tutorialCategory = tutorialCard?.type === 'ABSORB' ? 'SPECIAL' : tutorialCard?.type;
-  const completedTutorialLesson = tutorialSteps && expTutIdx === tutorialSteps.length
-    ? EXPEDITION_LESSONS[tutorialStageId] : undefined;
 
   const preloadedCutinsRef = useRef(new Set<string>());
   useEffect(() => {
@@ -1141,6 +1098,10 @@ const expYpjUsedRef = useRef(false);
     setExpPhase('battle');
     setRoomCode('');
     setSubmittingMove(false);
+    setGoldFly(null);
+    setExpRecap(undefined);
+    setExpHelp(null);
+    setAcademyTab(null);
     setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, players: [], logs: [], hostId: '' });
     setView('HOME');
   }, []);
@@ -1585,17 +1546,6 @@ const expYpjUsedRef = useRef(false);
     setHandViewMode('CATEGORIES');
   };
 
-  // Navigation only: players still choose the actual card to commit their move.
-  const locateTutorialCard = () => {
-    if (!tutorialCategory || submittingMove) return;
-    if (tutorialCategory === 'CHARGE') goBackToCategories();
-    else selectCategory(tutorialCategory);
-    requestAnimationFrame(() => {
-      const target = document.querySelector<HTMLElement>('[data-tutorial-target="true"]');
-      target?.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'instant' });
-      target?.focus({ preventScroll: true });
-    });
-  };
 
   // --- LAYOUT HELPERS ---
   const { bounds: tableBounds, ref: tableRef } = useBattleBounds();
@@ -1650,8 +1600,18 @@ const expYpjUsedRef = useRef(false);
 
   // --- RENDER LOGIC ---
 
+  const learningOverlay = academyTab ? <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
+    startLabel={isExpedition && expPhase === 'battle' ? (lang === 'zh' ? '返回战斗' : 'Return to battle') : undefined}
+    onClose={() => setAcademyTab(null)} onStartExpedition={() => {
+      setAcademyTab(null);
+      if (!(isExpedition && expPhase === 'battle')) setExpHelp('intro');
+    }} /> : expHelp ? <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
+      onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
+      onStart={expHelp === 'intro' ? startExpedition : undefined} /> : null;
+
   if (view === 'NAME_INPUT') return (
     <div className="pixel-app pixel-screen-title brawl-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+      {learningOverlay}
       
       <PixelBackdrop scene="title" />
 
@@ -1756,7 +1716,7 @@ const expYpjUsedRef = useRef(false);
             </div>
             <div className="flex gap-4 w-full max-w-md justify-center">
               <button
-                onClick={startExpedition}
+                onClick={() => setExpHelp('intro')}
                 className="btn-expedition group relative flex-1 overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
@@ -1777,6 +1737,7 @@ const expYpjUsedRef = useRef(false);
                 <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
               </button>
             </div>
+            <button type="button" className="btn-secondary px-6 py-3 text-lg" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '新手练习 · 学猜招' : 'Learn to read your opponent'}</button>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
                 {lang === 'zh' ? `🏆 历史最佳：第 ${expBest} 关` : `🏆 Best: Stage ${expBest}`}
@@ -1791,6 +1752,7 @@ const expYpjUsedRef = useRef(false);
 
   if (view === 'HOME') return (
     <div className="pixel-app pixel-screen-home min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+      {learningOverlay}
       
       <PixelBackdrop scene="home" />
 
@@ -1835,6 +1797,7 @@ const expYpjUsedRef = useRef(false);
 
             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
+            <button type="button" className="btn-secondary px-4 py-3" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '新手练习 / 游戏规则' : 'Practice / game rules'}</button>
             {/* Actions */}
             <div className="space-y-6">
               {/* 🎨 CHANGED: Create Button (Orange/Red Theme) */}
@@ -2083,6 +2046,7 @@ const expYpjUsedRef = useRef(false);
 
   return (
     <div className={`pixel-app pixel-screen-battle ${!isExpedition ? 'pixel-screen-multiplayer' : ''} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
+      {learningOverlay}
 
       {/* 1. BACKGROUND LAYERS & STYLES */}
       <style>{`
@@ -2292,6 +2256,10 @@ const expYpjUsedRef = useRef(false);
               <div className="text-xs font-bold text-slate-400 tracking-widest">
                 {lang === 'zh' ? `第 ${gameState.turn} 回合` : `TURN ${gameState.turn}`}
               </div>
+              <div className="exp-help-actions">
+                <button type="button" disabled={submittingMove} onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则手册' : 'Rules'}</button>
+                <button type="button" disabled={!expRecap || submittingMove} onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '回合复盘' : 'Turn review'}</button>
+              </div>
             </div>
           </div>
         )}
@@ -2299,10 +2267,13 @@ const expYpjUsedRef = useRef(false);
         {/* Visual rewards and supplies; native dialogs keep focus in the active step. */}
         {isExpedition && expPhase === 'reward' && (
           <ExpeditionRewards rewards={expRewards} lang={lang}
-            lesson={completedTutorialLesson ? expStageIdx + 1 : undefined} onChoose={claimExpeditionReward} />
+            status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: Math.max(...expRunRef.current.inventory) }}
+            onChoose={claimExpeditionReward} onReview={expRecap ? () => setExpHelp('recap') : undefined} />
         )}
         {isExpedition && expPhase === 'shop' && !expGachaCardId && (
-          <ExpeditionShop items={expShop} gold={expGold} lang={lang} onBuy={buyShopItem} onContinue={leaveExpShop} />
+          <ExpeditionShop items={expShop} gold={expGold} lang={lang} onBuy={buyShopItem} onContinue={leaveExpShop}
+            status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: Math.max(...expRunRef.current.inventory) }}
+            onReview={expRecap ? () => setExpHelp('recap') : undefined} />
         )}
 
         {/* --- EXPEDITION GACHA REVEAL（抽卡展示，仿复仇模式） --- */}
@@ -2372,6 +2343,11 @@ const expYpjUsedRef = useRef(false);
               <p className="text-amber-300/90 text-sm mb-6">
                 {lang === 'zh' ? `历史最佳：第 ${expBest} 关` : `Best: Stage ${expBest}`}
               </p>
+              <p className="text-slate-200 text-base mb-4">{lang === 'zh' ? '重开从 Lv.0、1 血、0 金币出发，本轮装备和秘技清空。已学课程与历史最佳保留。' : 'Restart at Lv.0, 1 HP and 0 gold. This run’s items reset; lessons and your best record remain.'}</p>
+              <div className="flex gap-3 justify-center mb-5">
+                <button type="button" onClick={() => setExpHelp('recap')} className="text-amber-200 underline">{lang === 'zh' ? '看看这一回合怎么输的' : 'Review the last turn'}</button>
+                <button type="button" onClick={() => setAcademyTab('lessons')} className="text-sky-200 underline">{lang === 'zh' ? '练习反制' : 'Practice counters'}</button>
+              </div>
               <div className="flex gap-3 justify-center">
                 <button onClick={startExpedition} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
                   {lang === 'zh' ? '再来一轮' : 'Retry'}
@@ -2391,8 +2367,9 @@ const expYpjUsedRef = useRef(false);
               <div className="text-5xl mb-3">🏆</div>
               <h2 className="text-2xl font-black text-amber-300 mb-2">{lang === 'zh' ? '登顶成功！' : 'Tower Conquered!'}</h2>
               <p className="text-slate-400 text-sm mb-6">
-                {lang === 'zh' ? '你击败了塔主波赞，成为了新的传说。' : 'You defeated Lord Bozan and became a legend.'}
+                {lang === 'zh' ? `已通过全部 ${EXPEDITION_STAGES.length} 关。新一轮会重置成长；历史最佳和已学课程保留。` : `All ${EXPEDITION_STAGES.length} stages cleared. A new run resets growth; your best record and lessons remain.`}
               </p>
+              {expRecap && <button type="button" className="text-amber-200 underline mb-4" onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '回顾最后一战' : 'Review the final battle'}</button>}
               <div className="flex gap-3 justify-center">
                 <button onClick={startExpedition} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
                   {lang === 'zh' ? '再来一轮' : 'Retry'}
@@ -2426,9 +2403,9 @@ const expYpjUsedRef = useRef(false);
              const highestLevel = Math.max(0, ...gameState.players.flatMap(player => player.inventory));
              const intent = <>
                     {isExpedition && !isMe && !p.isDead && expPhase === 'battle' && gameState.status === 'PLAYING' && expIntents[p.id] && (() => {
-                      const revealed = shouldRevealIntent(p.id);
-                      const card = SKILL_DB.find(c => c.id === expIntents[p.id]);
-                      const taunt = intentTaunt(card?.type, revealed, p.id, gameState.turn, expRunRef.current.stageIdx, lang, !!expPassivesRef.current[p.id]?.deceiver);
+                      const def = EXPEDITION_STAGES[expStageIdx].enemies.find(en => `exp_${EXPEDITION_STAGES[expStageIdx].id}_${en.id}` === p.id);
+                      const previousCard = SKILL_DB.find(c => c.id === p.lastCardId);
+                      const taunt = def?.passive?.deceiver ? (lang === 'zh' ? '「我要进攻！」（可能诈唬）' : '“I will attack!” (could be a bluff)') : def ? enemyHabit(def.personality, lang) : (lang === 'zh' ? '观察对手' : 'Watch your opponent');
                       const badges = passiveBadges(expPassivesRef.current[p.id], lang);
                       const dismissed = intentDismissed.has(p.id);
                       const toRight = pos.x < 50; // 气泡朝场地中央，避开角色
@@ -2440,7 +2417,7 @@ const expYpjUsedRef = useRef(false);
                               className="relative bg-amber-50 text-slate-900 text-2xl font-bold rounded-2xl px-4 py-2.5 w-max max-w-[16rem] text-left shadow-lg hover:scale-105 active:scale-95 transition-transform leading-snug"
                             >
                               {taunt}
-                              {expStageIdx < 3 && revealed && card && <span className="block text-xs mt-1 text-amber-800">{lang === 'zh' ? '本回合：' : 'This turn: '}{card.name[lang]}</span>}
+                              <span className="block text-sm mt-1 text-amber-800">{previousCard ? `${lang === 'zh' ? '上一张：' : 'Last: '}${previousCard.name[lang]}` : (lang === 'zh' ? '倾向 ≠ 本回合出牌' : 'Habit ≠ next move')}</span>
                               <span className={`battle-intent-tail absolute top-1/2 -translate-y-1/2 w-4 h-4 bg-amber-50 rotate-45 ${toRight ? '-left-2' : '-right-2'}`} />
                             </button>
                             {badges.length > 0 && (
@@ -2783,27 +2760,9 @@ const expYpjUsedRef = useRef(false);
             {goldFly && <span key={goldFly.key} className="battle-gold-gain">+{goldFly.amount} 🪙</span>}
           </div>}
 
-        {activeTutorialStep && myPlayer && <TutorialGuide
-          key={`${tutorialStageId}-${expTutIdx}`}
-          stageId={tutorialStageId}
-          stepIndex={expTutIdx}
-          lang={lang}
-          settling={submittingMove || gameState.status !== 'PLAYING'}
-          onLocate={locateTutorialCard}
-          onSkip={() => {
-            if (submittingMove) return;
-            expTutorialSkippedRef.current = true;
-            expTutIdxRef.current = 999;
-            setExpTutIdx(999);
-            setExpIntents(computeExpIntents(gameState.players, expStageIdx));
-            setIntentDismissed(new Set());
-            setToastMsg(lang === 'zh' ? '已跳过本轮教学，可以自由选择招式。' : 'Training skipped for this run. Choose any available move.');
-          }}
-        />}
-
         <BattleHand player={myPlayer} knownCards={knownCards} cards={orderedHand} lang={lang}
           category={handCategory} viewMode={handViewMode} status={gameState.status} submitting={submittingMove}
-          tutorialHighlight={activeTutorialStep?.highlight} tutorialCategory={tutorialCategory} poppingFree={poppingFree}
+          poppingFree={poppingFree}
           onCategory={selectCategory} onBack={goBackToCategories} onPlay={id => {
             if (isExpedition) handleExpeditionMove(id);
             else submitMove(id);

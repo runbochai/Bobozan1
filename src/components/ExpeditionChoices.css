@@ -62,6 +62,8 @@
 .expedition-acquired > span { display: flex; align-items: center; gap: 7px; animation: loot-arrive .2s ease-out; }
 .pixel-app .expedition-continue { display: flex; align-items: center; justify-content: center; gap: 10px; margin-left: auto; min-height: 52px; padding: 10px 20px; border: 2px solid #ffe3a2; background: #d3a359; color: #211e2a; font-size: 19px; font-weight: 800; }
 @keyframes loot-arrive { from { opacity: 0; translate: 0 8px; } to { opacity: 1; translate: 0 0; } }
+.expedition-run-status { display:flex; flex-wrap:wrap; gap:8px 20px; margin:0 0 18px; color:#e5d6a9; font:600 17px/1.5 system-ui,sans-serif; }
+.expedition-run-status span:last-child { color:#a6bcc4; font-size:15px; }
 @keyframes loot-panel-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes loot-float { 50% { transform: translateY(-5px); } }
 @keyframes loot-spark { 50% { opacity: .25; transform: translateY(-6px); } }

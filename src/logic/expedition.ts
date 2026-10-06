@@ -2,31 +2,47 @@ import { SKILL_DB } from '../data/skills';
 import {
 EXPEDITION_EQUIPMENTS,
 EXPEDITION_RELICS,
+EXPEDITION_STAGES,
 drawGachaCard,
 type ExpeditionEquipment,
 type ExpeditionEnemyDef,
 type ExpeditionPersonality,
 type ExpeditionStage,
 } from '../data/expedition';
-import type { Player} from '../types';
+import type { Lang, Player } from '../types';
 
 export const EXPEDITION_BEST_KEY = 'bobozan-expedition-best';
 
 export function loadExpeditionBest(): number {
 try {
-return Number(localStorage.getItem(EXPEDITION_BEST_KEY) || 0);
+const value = Number(localStorage.getItem(EXPEDITION_BEST_KEY) || 0);
+return Number.isInteger(value) && value >= 0 && value <= EXPEDITION_STAGES.length ? value : 0;
 } catch {
 return 0;
 }
 }
 
 export function saveExpeditionBest(cleared: number): void {
+if (!Number.isInteger(cleared) || cleared < 0 || cleared > EXPEDITION_STAGES.length) return;
 try {
 const prev = loadExpeditionBest();
 if (cleared > prev) localStorage.setItem(EXPEDITION_BEST_KEY, String(cleared));
 } catch {
 /* ignore */
 }
+}
+
+/** Keep remaining copies in the current battle's hand, not just the next stage. */
+export function consumeExpeditionCard(cards: { cardId: string; usesLeft: number }[], playedId: string | null) {
+return cards.map(card => ({ ...card, usesLeft: card.usesLeft - (card.cardId === playedId ? 1 : 0) })).filter(card => card.usesLeft > 0);
+}
+
+/** Public personality only: this must never inspect the committed move. */
+export function enemyHabit(personality: ExpeditionPersonality, lang: Lang): string {
+const { aggression, defense, charge } = personality;
+if (defense >= aggression && defense >= charge) return lang === 'zh' ? '习惯：偏爱防守' : 'Habit: defensive';
+if (charge >= aggression) return lang === 'zh' ? '习惯：偏爱攒气' : 'Habit: charges often';
+return lang === 'zh' ? '习惯：偏爱进攻' : 'Habit: aggressive';
 }
 
 // ============ 敌人 AI：按性格加权出牌 ============

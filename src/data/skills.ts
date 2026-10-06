@@ -4,13 +4,13 @@ import type { Card } from '../types';
 // --- SKILL DATABASE ---
 export const SKILL_DB: Card[] = [
   // Lvl 0
-  { id: 'charge', name: { zh: '攒', en: 'Charge' }, cost: 0, type: 'CHARGE', levelRequired: 0, tier: 0, description: { zh: '获得 2 费', en: 'Gain 2 Energy' } },
+  { id: 'charge', name: { zh: '攒', en: 'Charge' }, cost: 0, type: 'CHARGE', levelRequired: 0, tier: 0, description: { zh: '获得2能量；本回合受伤达到1点会中断', en: 'Gain 2 Energy unless damage reaches 1 this turn' } },
   { id: 'defend', name: { zh: '防', en: 'Defend' }, cost: 0, type: 'DEFEND', levelRequired: 0, tier: 0, description: { zh: '抵挡大部分攻击', en: 'Block basic attacks' } },
   { id: 'hong', name: { zh: '轰', en: 'Blast' }, cost: 1, type: 'ATTACK', levelRequired: 0, tier: 1, description: { zh: '基础攻击', en: 'Basic Attack' } },
-  { id: 'hong2', name: { zh: '轰轰', en: 'Double Blast' }, cost: 2, type: 'ATTACK', levelRequired: 0, tier: 2, description: { zh: '强力攻击', en: 'Strong Attack' } },
-  { id: 'liuke', name: { zh: '六克', en: '6g Strike' }, cost: 2, type: 'ATTACK', levelRequired: 0, tier: 2, description: { zh: '强力攻击', en: 'Strong Attack' } },
-  { id: 'ka', name: { zh: '咔', en: 'Ka' }, cost: 3, type: 'ULTIMATE', levelRequired: 0, tier: 3, description: { zh: '终极技能 (范围3)', en: 'Ult: Range 3' } },
-  { id: 'ji', name: { zh: '叽', en: 'Ji' }, cost: 4, type: 'ULTIMATE', levelRequired: 0, tier: 4, description: { zh: '终极技能 (范围3)', en: 'Ult: Range 3' } },
+  { id: 'hong2', name: { zh: '轰轰', en: 'Double Blast' }, cost: 2, type: 'ATTACK', levelRequired: 0, tier: 2, description: { zh: '压过轰；与高级二档攻击打平', en: 'Beats Blast; ties higher-level tier-2 attacks' } },
+  { id: 'liuke', name: { zh: '六克', en: '6g Strike' }, cost: 2, type: 'ATTACK', levelRequired: 0, tier: 2, description: { zh: '压过轰；与高级二档攻击打平', en: 'Beats Blast; ties higher-level tier-2 attacks' } },
+  { id: 'ka', name: { zh: '咔', en: 'Ka' }, cost: 3, type: 'ULTIMATE', levelRequired: 0, tier: 3, description: { zh: '破普通防，射程自身及上下各1层', en: 'Breaks basic Defend; reaches your layer and ±1' } },
+  { id: 'ji', name: { zh: '叽', en: 'Ji' }, cost: 4, type: 'ULTIMATE', levelRequired: 0, tier: 4, description: { zh: '破普通防，射程自身及上下各1层', en: 'Breaks basic Defend; reaches your layer and ±1' } },
   { id: 'kajifen', name: { zh: '咔叽粉', en: 'KaJi' }, cost: 5, type: 'ULTIMATE', levelRequired: 0, tier: 5, description: { zh: '必杀技', en: 'SUPER' } },
   { id: 'kajisuper', name: { zh: '咔叽超粉', en: 'Super KaJi' }, cost: 10, type: 'ULTIMATE', levelRequired: 0, tier: 6, description: { zh: '必杀技', en: 'SUPER' } },
   
@@ -110,9 +110,9 @@ export const SKILL_DB: Card[] = [
   { id: 'poison', name: { zh: '散发毒气', en: 'Poison' }, cost: 1, type: 'ATTACK', levelRequired: 23, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
 
   // Combos
-  { id: 'skydragon', name: { zh: '天龙剑', en: 'Sky Dragon' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 与更高等级3费终极技能以及咔叽粉相抵', en: 'Combo: Can Tie with Higher Tier Ult and Super Kaji' }, tags: ['combo'] },
+  { id: 'skydragon', name: { zh: '天龙剑', en: 'Sky Dragon' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 压制普通终极，与咔叽粉相抵；射程上下各3层', en: 'Combo: beats ordinary Ults; ties KaJi; reaches ±3 layers' }, tags: ['combo'] },
   { id: 'doublewing', name: { zh: '双翼齐飞', en: '2 Wings' }, cost: 1, type: 'SPECIAL', levelRequired: 100, tier: 3, description: { zh: '联合: 躲避3费终极，本回合升3层', en: 'Combo: Dodge Ult, Up 3 Layers' }, tags: ['combo', 'dodge_ult', 'layer_up_3_temp'] },
-  { id: 'vajra', name: { zh: '三大金刚', en: '3 Vajras' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 与更高等级3费终极技能以及咔叽粉相抵', en: 'Can Tie with Higher Tier Ult and Super Kaji' }, tags: ['combo'] },
+  { id: 'vajra', name: { zh: '三大金刚', en: '3 Vajras' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 压制普通终极，与咔叽粉相抵；射程上下各3层', en: 'Combo: beats ordinary Ults; ties KaJi; reaches ±3 layers' }, tags: ['combo'] },
   { id: 'allbomb', name: { zh: '轰天轰地轰', en: 'Omni-Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 100, tier: 3, description: { zh: '联合: 攻击任意层玩家', en: 'Combo: Hit All Layers' }, tags: ['combo', 'hit_all'] },
-  { id: 'heartpoison', name: { zh: '诛心毒气', en: 'Heart Poison' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 与更高等级3费终极技能以及咔叽粉相抵', en: 'Can Tie with Higher Tier Ult and Super Kaji' }, tags: ['combo'] },
+  { id: 'heartpoison', name: { zh: '诛心毒气', en: 'Heart Poison' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 压制普通终极，与咔叽粉相抵；射程上下各3层', en: 'Combo: beats ordinary Ults; ties KaJi; reaches ±3 layers' }, tags: ['combo'] },
 ];

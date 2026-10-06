@@ -168,7 +168,7 @@ export const getShowdownWinner = (players: Player[]): string[] => {
       // Check interactions
       if (targetCard.type === 'CHARGE') hitSuccess = true;
       else if (targetCard.type === 'DEFEND') {
-          if (card.id === 'machete') hitSuccess = true;
+          if (p.pierce || card.id === 'machete') hitSuccess = true;
           else if (card.id === 'gun') hitSuccess = true;
           else if (card.id === 'wave') {
              const strongDefs = ['ninedef', 'bigfly', 'smallfly', 'fivedef', 'eightdef', 'handdef', 'footdef'];
@@ -222,13 +222,42 @@ export const getShowdownWinner = (players: Player[]): string[] => {
   return [];
 };
 
+export interface TurnOutcomeOptions {
+  mode?: 'multiplayer' | 'expedition' | 'practice';
+  /** Applied once to each player's total incoming damage, before death is decided. */
+  damageReduction?: Record<string, number>;
+  /** On lethal damage, preserve up to this much of the player's starting HP. */
+  lethalProtection?: Record<string, number>;
+}
+
+export interface TurnOutcome {
+  players: Player[];
+  logs: LogEntry[];
+  isGameOver: boolean;
+  winner?: Player;
+  survivorReset: boolean;
+  /** HP actually lost to combat, excluding survivor resets and capped at starting HP. */
+  damageTaken: Record<string, number>;
+  /** Damage prevented this turn, including hits completely stopped by armor. */
+  damageBlocked: Record<string, number>;
+  protectionUsed: Record<string, boolean>;
+  /** In-range enemy attacks actually stopped by a DEFEND card, excluding misses and armor. */
+  defendedHits: Record<string, number>;
+}
+
 export const calculateTurnOutcome = (
   currentPlayers: Player[],
   turn: number,
   matchCount: number,
-  lang: Lang
-): { players: Player[]; logs: LogEntry[]; isGameOver: boolean; winner?: Player; survivorReset: boolean } => {
+  lang: Lang,
+  options: TurnOutcomeOptions = {},
+): TurnOutcome => {
   const logs: LogEntry[] = [];
+  const multiplayer = (options.mode ?? 'multiplayer') === 'multiplayer';
+  const damageTaken: Record<string, number> = Object.fromEntries(currentPlayers.map(p => [p.id, 0]));
+  const damageBlocked: Record<string, number> = Object.fromEntries(currentPlayers.map(p => [p.id, 0]));
+  const protectionUsed: Record<string, boolean> = Object.fromEntries(currentPlayers.map(p => [p.id, false]));
+  const defendedHits: Record<string, number> = Object.fromEntries(currentPlayers.map(p => [p.id, 0]));
 
   const survivors = currentPlayers
     .map((p) => ({
@@ -328,7 +357,7 @@ export const calculateTurnOutcome = (
          if (getLayer(p1) > getLayer(p2)) {
             dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
-            logs.push({ turn, text: lang === 'zh' ? `${p1.name} 大飞高空截杀 ${p2.name} (小飞)!` : `${p1.name} Big Fly intercepts ${p2.name} from above!`, type: 'combat' });
+            logs.push({ turn, text: lang === 'zh' ? `${p1.name} 大飞高空截击 ${p2.name} (小飞)!` : `${p1.name} Big Fly intercepts ${p2.name} from above!`, type: 'combat' });
          }
          continue; 
       }
@@ -358,14 +387,14 @@ export const calculateTurnOutcome = (
           if (card1.type === 'ATTACK' && dangerousMoves.includes(card1.id)) {
             dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
-            logs.push({ turn, text: lang === 'zh' ? `${p1.name} 击杀 ${p2.name} (吸取失败)!` : `${p1.name} kills ${p2.name} (Absorb failed)!`, type: 'combat' });
+            logs.push({ turn, text: lang === 'zh' ? `${p1.name} 命中 ${p2.name} (吸取失败)!` : `${p1.name} hits ${p2.name} (Absorb failed)!`, type: 'combat' });
             continue;
           }
         }
         if (card2.id === 'aoxi' && card1.id === 'liuke') {
            dealDamage(p1, p2.id, MAX_HP);
            recordKill(p1.id, p2.id); // 🟢 Kill Credit
-           logs.push({ turn, text: lang === 'zh' ? `${p1.name} 六克击杀 ${p2.name} (奥吸失败)!` : `${p1.name} 6g Strike kills ${p2.name} (Ultra Absorb failed)!`, type: 'combat' });
+           logs.push({ turn, text: lang === 'zh' ? `${p1.name} 六克命中 ${p2.name} (奥吸失败)!` : `${p1.name} 6g Strike hits ${p2.name} (Ultra Absorb failed)!`, type: 'combat' });
            continue;
         }
         if (card1.type === 'CHARGE') {
@@ -377,7 +406,7 @@ export const calculateTurnOutcome = (
         if (card1.type === 'ULTIMATE') {
           dealDamage(p1, p2.id, MAX_HP);
           recordKill(p1.id, p2.id); // 🟢 Kill Credit
-          logs.push({ turn, text: lang === 'zh' ? `${p2.name} 被终极击杀 (吸收失败)!` : `${p2.name} is killed by an Ultimate (Absorb failed)!`, type: 'combat' });
+          logs.push({ turn, text: lang === 'zh' ? `${p2.name} 被终极命中 (吸收失败)!` : `${p2.name} is hit by an Ultimate (Absorb failed)!`, type: 'combat' });
           continue;
         }
         if (card1.type === 'DEFEND') {
@@ -394,9 +423,7 @@ export const calculateTurnOutcome = (
 
       if (card1.id === 'shatter' && sameLayer) {
         if (card2.type === 'ULTIMATE' && card2.tier >= 5) {
-          dealDamage(p2, p1.id, MAX_HP);
-          recordKill(p2.id, p1.id); // 🟢 Kill Credit (Reversed: p2 killed p1)
-          logs.push({ turn, text: lang === 'zh' ? `${p2.name} 的 ${card2.name.zh} (T${card2.tier}) 击碎了破碎!` : `${p2.name}'s ${card2.name.en} (T${card2.tier}) broke through Shatter!`, type: 'combat' });
+          // The ultimate's own attacking pass applies this hit once.
           continue; 
         }
         if (['CHARGE','ATTACK', 'DEFEND', 'SPECIAL', 'ULTIMATE'].includes(card2.type)) {
@@ -411,7 +438,7 @@ export const calculateTurnOutcome = (
           if (card1.type === 'ATTACK' || card1.type === 'ULTIMATE') {
             dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
-            logs.push({ turn, text: lang === 'zh' ? `${p1.name} 击杀 ${p2.name} (攒)!` : `${p1.name} kills ${p2.name} (Charging)!`, type: 'combat' });
+            logs.push({ turn, text: lang === 'zh' ? `${p1.name} 命中 ${p2.name} (攒)!` : `${p1.name} hits ${p2.name} (Charging)!`, type: 'combat' });
           }
         } 
         else if (card2.type === 'DEFEND') {
@@ -430,10 +457,7 @@ export const calculateTurnOutcome = (
           } 
           else if (card1.id === 'gun' && card2.id === 'defend') {
             dealDamage(p1, p2.id, 0.5);
-            // Gun deals 1 dmg. Check if fatal. MaxHP is 2. If already dmg=1, this is fatal.
-            // Simplified: We assume gun might kill if HP is low. We'll handle kill credit in "Apply Results" by checking damageMap? 
-            // Actually, best to credit here provisionally. Gun usually isn't 1-hit kill unless injured.
-            // Let's just mark it. If they die, they get credit.
+            // Credit the attacker only if total damage is lethal after reduction.
             recordKill(p1.id, p2.id); 
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 定枪穿透 ${p2.name}!` : `${p1.name} Sniper pierces ${p2.name}!`, type: 'combat' });
           } 
@@ -443,12 +467,16 @@ export const calculateTurnOutcome = (
               dealDamage(p1, p2.id, MAX_HP);
               recordKill(p1.id, p2.id); // 🟢 Kill Credit
               logs.push({ turn, text: lang === 'zh' ? `${p1.name} 击溃 ${p2.name} 防御!` : `${p1.name} washes away ${p2.name}!`, type: 'combat' });
+            } else {
+              defendedHits[p2.id] += 1;
             }
           } 
           else if (card1.type === 'ULTIMATE') {
             dealDamage(p1, p2.id, MAX_HP);
             recordKill(p1.id, p2.id); // 🟢 Kill Credit
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 终极破防 ${p2.name}!` : `${p1.name} Ult breaks ${p2.name}!`, type: 'combat' });
+          } else if (card1.type === 'ATTACK') {
+            defendedHits[p2.id] += 1;
           }
         } 
         else if (card2.type === 'SPECIAL') {
@@ -470,7 +498,7 @@ export const calculateTurnOutcome = (
             if (card1.type === 'ATTACK' || card1.type === 'ULTIMATE') {
               dealDamage(p1, p2.id, MAX_HP);
               recordKill(p1.id, p2.id); // 🟢 Kill Credit
-              logs.push({ turn, text: lang === 'zh' ? `${p1.name} 预判了移动，击杀 ${p2.name}!` : `${p1.name} predicted the move and killed ${p2.name}!`, type: 'combat' });
+              logs.push({ turn, text: lang === 'zh' ? `${p1.name} 预判了移动，命中 ${p2.name}!` : `${p1.name} predicted the move and hit ${p2.name}!`, type: 'combat' });
             }
           }
         }
@@ -479,9 +507,8 @@ export const calculateTurnOutcome = (
           if (isRemoteOnly && sameLayer) {
              dealDamage(p1, p2.id, MAX_HP);
              recordKill(p1.id, p2.id); // 🟢 Kill Credit
-             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 趁虚而入，在同层击杀了无法回防的 ${p2.name}!` : `${p1.name} catches ${p2.name} off guard!`, type: 'combat' });
-          }
-          if (doesCard1Overpower(card1, card2)) {
+             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 趁虚而入，在同层命中了无法回防的 ${p2.name}!` : `${p1.name} catches ${p2.name} off guard!`, type: 'combat' });
+          } else if (doesCard1Overpower(card1, card2)) {
              dealDamage(p1, p2.id, MAX_HP);
              recordKill(p1.id, p2.id); // 🟢 Kill Credit
              logs.push({ turn, text: lang === 'zh' ? `${p1.name} [${card1.name.zh}] 压制了 ${p2.name}!` : `${p1.name} [${card1.name.en}] overpowers ${p2.name}!`, type: 'combat' });
@@ -494,6 +521,16 @@ export const calculateTurnOutcome = (
   // 3. APPLY RESULTS
   survivors.forEach((p) => {
     const card = SKILL_DB.find((c) => c.id === p.selectedCardId)!;
+
+    const reduction = options.damageReduction?.[p.id] ?? 0;
+    damageBlocked[p.id] = Math.min(damageMap[p.id], Number.isFinite(reduction) ? Math.max(0, reduction) : 0);
+    damageMap[p.id] -= damageBlocked[p.id];
+    damageTaken[p.id] = Math.min(p.hp, damageMap[p.id]);
+    const protection = options.lethalProtection?.[p.id] ?? 0;
+    if (p.hp > 0 && damageMap[p.id] >= p.hp && Number.isFinite(protection) && protection > 0) {
+      damageTaken[p.id] = p.hp - Math.min(p.hp, protection);
+      protectionUsed[p.id] = true;
+    }
 
     if (card.type === 'ABSORB' && damageMap[p.id] < MAX_HP) {
       if (absorbGainEnergy[p.id] > 0) {
@@ -513,8 +550,8 @@ export const calculateTurnOutcome = (
       p.energy -= d;
       logs.push({ turn, text: lang === 'zh' ? `🌀 ${energyDrainFrom[p.id]} 吸取了 ${p.name} ${d} 点能量!` : `🌀 ${energyDrainFrom[p.id]} drains ${d} energy from ${p.name}!`, type: 'info' });
     }
-    if (damageMap[p.id] > 0) {
-      p.hp -= damageMap[p.id];
+    if (damageTaken[p.id] > 0) {
+      p.hp -= damageTaken[p.id];
       if (p.hp <= 0) {
         p.isDead = true;
         p.hp = 0;
@@ -539,7 +576,7 @@ export const calculateTurnOutcome = (
   const newlyDeadCount = survivors.filter((p) => p.isDead).length;
   const activeSurvivors = survivors.filter((p) => !p.isDead);
   let survivorReset = false;
-  if (newlyDeadCount > 0 && activeSurvivors.length > 1) {
+  if (multiplayer && newlyDeadCount > 0 && activeSurvivors.length > 1) {
     survivorReset = true;
     activeSurvivors.forEach((p) => {
       p.hp = MAX_HP;
@@ -564,7 +601,9 @@ export const calculateTurnOutcome = (
       winner = living[0];
       
       // 🟢 NEW: If Final Level reached, log the Kill Leader
-      if (matchCount >= FINAL_LEVEL) {
+      if (!multiplayer) {
+          logs.push({ turn, text: lang === 'zh' ? `🏆 ${winner.name} 获胜!` : `🏆 ${winner.name} WINS!`, type: 'win' });
+      } else if (matchCount >= FINAL_LEVEL) {
           const killLeader = finalPlayers.reduce((prev, curr) => 
             ((curr.kills || 0) > (prev.kills || 0) ? curr : prev), 
           finalPlayers[0]);
@@ -607,7 +646,7 @@ export const calculateTurnOutcome = (
     }
   }
 
-  return { players: finalPlayers, logs, isGameOver, winner, survivorReset };
+  return { players: finalPlayers, logs, isGameOver, winner, survivorReset, damageTaken, damageBlocked, protectionUsed, defendedHits };
 };
 
 export const getPlayerCards = (p: Player, allPlayers?: Player[]) => {
