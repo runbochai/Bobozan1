@@ -15,6 +15,10 @@
 .woodcut-face .woodcut-title[data-long='true'] { font-size: 9cqw; }
 .woodcut-face[data-language='en'] .woodcut-title { font-size: 10cqw; }
 .woodcut-face[data-language='en'] .woodcut-title[data-long='true'] { font-size: 7cqw; }
+.woodcut-face[data-folder='true'][data-language='zh'] .woodcut-title { display: none; }
+.woodcut-face[data-folder='true'][data-language='en'] .woodcut-title { top: 73%; bottom: 8%; left: 14%; right: 14%; font-size: 15cqw; background: #af4d3d; }
+.woodcut-face[data-folder='true'][data-family='DEFEND'] .woodcut-title { background: #416b71; }
+.woodcut-face[data-folder='true'][data-family='ULTIMATE'] .woodcut-title { background: #795a6f; }
 
 :root .pixel-app .battle-hand button.hand-card[data-card-type],
 :root .pixel-app .battle-hand .hand-locked-card[data-card-type],

@@ -1,0 +1,60 @@
+/* Theme colors and illustration never participate in table/hand layout. */
+:root[data-world-theme] .pixel-app {
+  --pixel-panel: var(--world-panel);
+  --pixel-line: var(--world-rim);
+  --pixel-gold: var(--world-accent);
+  background: var(--world-ground) !important;
+}
+:root[data-world-theme] .pixel-backdrop { position: fixed; inset: 0; opacity: 1; background: var(--world-ground); }
+.world-scene-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: center center; }
+:root[data-world-theme] .pixel-scene-shade { background: linear-gradient(180deg, #0c141508 25%, #0c14151c 60%, #0c141560); }
+:root[data-world-theme] .pixel-scene-lobby .pixel-scene-shade { background: #10191970; }
+:root[data-world-theme] .pixel-app::before { background: none; }
+:root[data-world-theme] .battle-scenery > svg { opacity: 1; }
+:root[data-world-theme] .arena-round { color: var(--world-line); opacity: .65; transform: translate(-50%, -50%); text-shadow: 1px 2px var(--world-edge); }
+:root[data-world-theme] .arena-round strong { color: var(--world-line); font-size: clamp(22px, 3vw, 40px); margin: 10px 0; }
+:root[data-world-theme] .arena-round small { display: none; }
+:root[data-world-theme] .battle-scenery-clash .arena-round { opacity: .15; }
+:root[data-world-theme] .pixel-app .pixel-controls button { background: var(--world-panel); border-color: var(--world-rim); color: #f6e8d1; }
+:root[data-world-theme] .battle-stats { background: color-mix(in srgb, var(--world-panel) 94%, transparent); border-color: var(--world-rim); }
+:root[data-world-theme] .battle-fighter-name { color: #f9ecd4; text-shadow: 1px 2px #15201c; }
+:root[data-world-theme] .pixel-app .pixel-panel { background-color: color-mix(in srgb, var(--world-panel) 95%, transparent) !important; border-color: var(--world-rim) !important; }
+:root[data-world-theme] .pixel-app [class*="bg-slate-900/"],
+:root[data-world-theme] .pixel-app [class*="bg-slate-800/"] { background-color: color-mix(in srgb, var(--world-panel) 94%, transparent) !important; }
+:root[data-world-theme] .pixel-app .battle-leaderboard > .pointer-events-auto { border-color: var(--world-rim); }
+:root[data-world-theme] .pixel-app.brawl-menu-screen .pixel-home-content > .pixel-panel { background: transparent !important; border: 0 !important; }
+:root[data-world-theme] .brawl-impact,
+:root[data-world-theme] .brawl-flying-cards,
+:root[data-world-theme] .brawl-sticker,
+:root[data-world-theme] .brawl-callout,
+:root[data-world-theme] .brawl-speed { display: none; }
+:root[data-world-theme] .brawl-menu-screen .brawl-menu-backdrop::after { background: linear-gradient(180deg, transparent 25%, #111a1726 62%, #111a178c); }
+:root[data-world-theme] .brawl-fighter { filter: drop-shadow(0 8px 3px #0e161a80); }
+:root[data-world-theme] .brawl-menu-screen .brawl-logo { text-shadow: 3px 4px var(--world-edge); }
+
+.world-theme-dialog { width: min(850px, calc(100vw - 32px)); max-height: calc(100dvh - 40px); margin: auto; padding: 22px; border: 2px solid var(--world-rim); border-radius: 9px; background: var(--world-panel); color: #fff1d8; box-shadow: 0 20px 80px #050e1bad; overflow-y: auto; overscroll-behavior: contain; font-family: 'Microsoft YaHei', system-ui, sans-serif; }
+.world-theme-dialog::backdrop { background: #071018b5; }
+.world-theme-dialog header { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
+.world-theme-dialog h2 { margin: 0 0 5px; font-size: 23px; font-weight: 800; }
+.world-theme-dialog header p { margin: 0; font-size: 13px; color: #e7d6bb; }
+.world-theme-close { min-width: 44px; min-height: 44px; border: 1px solid var(--world-rim); background: transparent; color: #fff0d7; font: 28px/1 system-ui; cursor: pointer; border-radius: 4px; }
+.world-theme-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; }
+.world-theme-option { display: block; position: relative; padding: 0; border: 2px solid #8b89756e; background: #141f22; color: #f7ead4; cursor: pointer; text-align: left; border-radius: 5px; overflow: hidden; }
+.world-theme-option img { width: 100%; aspect-ratio: 1.6; height: auto; object-fit: cover; display: block; }
+.world-theme-option[aria-pressed='true'] { border-color: var(--world-accent); box-shadow: 0 0 0 2px var(--world-accent); }
+.world-theme-option:hover { border-color: #f3dec0; }
+.world-theme-caption { display: flex; justify-content: space-between; align-items: center; gap: 4px; padding: 10px 8px; font-size: 15px; line-height: 1.4; min-height: 44px; }
+.world-theme-caption small { color: #d2b995; font-size: 10px; }
+.world-theme-caption b { color: var(--world-accent); min-width: 12px; }
+.world-theme-default { position: absolute; top: 7px; left: 7px; background: #222a24db; border: 1px solid #cfb68f; color: #fff1d4; font-size: 11px; padding: 2px 6px; }
+.world-theme-status { margin: 18px 0 0; min-height: 22px; font-size: 13px; line-height: 1.6; color: #f3ddbe; }
+.world-theme-dialog button:focus-visible { outline: 3px solid #f9dcaa; outline-offset: 3px; }
+@media (max-width: 600px) {
+  .world-theme-dialog { padding: 15px; width: calc(100vw - 24px); max-height: calc(100dvh - 24px); }
+  .world-theme-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 11px; }
+  .world-theme-caption { padding: 8px 6px; font-size: 13px; }
+}
+@media (max-width: 360px) {
+  :root[data-world-theme] .pixel-controls { gap: 3px; }
+  :root[data-world-theme] .pixel-controls button { width: 30px; height: 34px; min-width: 30px; padding: 4px; }
+}

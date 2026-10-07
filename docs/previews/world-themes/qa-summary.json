@@ -1,0 +1,166 @@
+{
+  "scope": "Local browser: actual React game, controlled local multiplayer states, plus natural beginner expedition. No public rooms or messages.",
+  "themes": {
+    "themes": [
+      "woodcut-tavern",
+      "moon-jade",
+      "ink-stage",
+      "paper-board",
+      "star-observatory",
+      "copper-workshop",
+      "forest-library",
+      "ice-hall",
+      "sunset-sandstone",
+      "coral-palace"
+    ],
+    "viewports": [
+      {
+        "width": 1440,
+        "height": 1000,
+        "counts": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "geometryStable": true,
+        "folderBadges": 0
+      },
+      {
+        "width": 1024,
+        "height": 768,
+        "counts": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "geometryStable": true,
+        "folderBadges": 0
+      },
+      {
+        "width": 768,
+        "height": 1024,
+        "counts": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "geometryStable": true,
+        "folderBadges": 0
+      },
+      {
+        "width": 390,
+        "height": 844,
+        "counts": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "geometryStable": true,
+        "folderBadges": 0
+      },
+      {
+        "width": 844,
+        "height": 390,
+        "counts": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "geometryStable": true,
+        "folderBadges": 0
+      },
+      {
+        "width": 320,
+        "height": 568,
+        "counts": [
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8
+        ],
+        "geometryStable": true,
+        "folderBadges": 0
+      }
+    ],
+    "guards": [
+      "selection persists across reload; default tavern; Escape restores trigger focus",
+      "failed image preserves current theme; retry succeeds",
+      "rapid changes keep latest choice",
+      "unknown stored id falls back to tavern",
+      "storage unavailable: theme still switches"
+    ],
+    "errors": []
+  },
+  "cardRegression": {
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        1024,
+        768
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ]
+    ],
+    "errors": [],
+    "issues": []
+  },
+  "directPlay": {
+    "scope": "Natural beginner expedition, real AI and combat, no synthetic player state or fake clock.",
+    "viewports": [
+      [
+        1024,
+        768
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "failures": [],
+    "errors": []
+  },
+  "unitTests": {
+    "passed": 292,
+    "failed": 0
+  },
+  "notes": [
+    "Document-space table geometry is fixed across theme and hand switches. Short phone landscape retains the existing vertically scrollable layout.",
+    "Checked in Chromium viewport emulation; physical iPad Safari was not available."
+  ]
+}

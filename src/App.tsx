@@ -1,4 +1,5 @@
 import BattleArena from './components/BattleArena';
+import ThemePicker from './components/ThemePicker';
 import { useBattleBounds } from './components/useBattleBounds';
 import { useSystemReducedMotion } from './components/useSystemReducedMotion';
 import './components/CenteredTable.css';
@@ -153,6 +154,7 @@ const TopControls = ({
 
   return (
     <div className="pixel-controls absolute top-4 right-4 z-50 flex items-center gap-3">
+      <ThemePicker lang={lang} />
 
       {/* Back Button */}
       {onBack && (

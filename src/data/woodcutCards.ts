@@ -1,16 +1,16 @@
 // Approved woodcut collection. Card values are rendered from live game data.
 export const WOODCUT_CARDS: Record<string, string> = {
-  "charge": "cards/woodcut-v1/charge.webp",
-  "defend": "cards/woodcut-v1/defend.webp",
-  "hong": "cards/woodcut-v1/hong.webp",
-  "hong2": "cards/woodcut-v1/hong2.webp",
-  "liuke": "cards/woodcut-v1/liuke.webp",
-  "ka": "cards/woodcut-v1/ka.webp",
-  "ji": "cards/woodcut-v1/ji.webp",
-  "kajifen": "cards/woodcut-v1/kajifen.webp",
-  "kajisuper": "cards/woodcut-v1/kajisuper.webp",
-  "ascend": "cards/woodcut-v1/ascend.webp",
-  "descend": "cards/woodcut-v1/descend.webp",
+  "charge": "cards/woodcut-v2/charge.webp",
+  "defend": "cards/woodcut-v2/defend.webp",
+  "hong": "cards/woodcut-v2/hong.webp",
+  "hong2": "cards/woodcut-v2/hong2.webp",
+  "liuke": "cards/woodcut-v2/liuke.webp",
+  "ka": "cards/woodcut-v2/ka.webp",
+  "ji": "cards/woodcut-v2/ji.webp",
+  "kajifen": "cards/woodcut-v2/kajifen.webp",
+  "kajisuper": "cards/woodcut-v2/kajisuper.webp",
+  "ascend": "cards/woodcut-v2/ascend.webp",
+  "descend": "cards/woodcut-v2/descend.webp",
   "pegasus": "cards/woodcut-v1/pegasus.webp",
   "meteor": "cards/woodcut-v1/meteor.webp",
   "icesword": "cards/woodcut-v1/icesword.webp",
@@ -61,7 +61,7 @@ export const WOODCUT_CARDS: Record<string, string> = {
   "vajra": "cards/woodcut-v1/vajra.webp",
   "allbomb": "cards/woodcut-v1/allbomb.webp",
   "heartpoison": "cards/woodcut-v1/heartpoison.webp",
-  "folder-attack": "cards/woodcut-v1/folder-attack.webp",
-  "folder-defend": "cards/woodcut-v1/folder-defend.webp",
-  "folder-ultimate": "cards/woodcut-v1/folder-ultimate.webp"
+  "folder-attack": "cards/woodcut-v2/folder-attack.webp",
+  "folder-defend": "cards/woodcut-v2/folder-defend.webp",
+  "folder-ultimate": "cards/woodcut-v2/folder-ultimate.webp"
 };
