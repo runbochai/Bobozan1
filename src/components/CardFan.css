@@ -19,7 +19,7 @@
   width: 100%;
   transform-origin: 50% 95%;
   transform: translateY(var(--fan-offset, 0px)) rotate(var(--fan-angle, 0deg));
-  transition: transform 180ms steps(6, end);
+  transition: transform 220ms cubic-bezier(.2, .85, .25, 1.15);
 }
 .pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot):focus-within { z-index: 30; }
 .pixel-app .battle-hand .hand-fan > :is(.hand-category-slot, .hand-skill-slot):has(:focus-visible) .hand-card-lift { transform: translateY(-20px) rotate(0deg); }

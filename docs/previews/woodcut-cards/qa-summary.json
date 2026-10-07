@@ -1,0 +1,79 @@
+{
+  "scope": "Chrome desktop and touch viewport emulation of the real app; synthetic players only for visual coverage. Natural beginner expedition verifies one-click Charge and Attack. No remote multiplayer writes; not physical Safari/iPad hardware.",
+  "cards": {
+    "files": 64,
+    "skills": 61,
+    "rendered": 62,
+    "errors": [],
+    "aura": {
+      "dimensions": [
+        1448,
+        1086
+      ],
+      "centerAlpha": [
+        249,
+        250,
+        250,
+        250,
+        251,
+        249,
+        251,
+        250
+      ],
+      "filled": true
+    }
+  },
+  "viewports": [
+    [
+      1440,
+      1000
+    ],
+    [
+      1024,
+      768
+    ],
+    [
+      768,
+      1024
+    ],
+    [
+      390,
+      844
+    ],
+    [
+      844,
+      390
+    ]
+  ],
+  "visualIssues": [],
+  "pageErrors": [],
+  "directPlay": {
+    "scope": "Natural beginner expedition, real AI and combat, no synthetic player state or fake clock.",
+    "viewports": [
+      [
+        1024,
+        768
+      ],
+      [
+        390,
+        844
+      ]
+    ],
+    "failures": [],
+    "errors": []
+  },
+  "checks": [
+    "61 skill faces and 3 folders decode; cost and effective level remain live, including free cards, combos and large endless levels.",
+    "Filled apricot atlas has no center hole; 8 frames at 6fps; transparent overlap over adjacent cards with lighter opacity for multiple ultimates.",
+    "Own face remains legible above its aura; decoration never intercepts pointer input and tracks fan/hover/scroll transforms.",
+    "Cards scrolled out of the tray are not recreated outside its clip; effect itself may extend over neighbouring cards.",
+    "All 5 sizes keep the tabletop fixed and avoid horizontal page overflow. Details remain accessible; reduced-motion stops animation and unaffordable ultimates stop showing aura."
+  ],
+  "tests": {
+    "unitTests": 292,
+    "passed": 292,
+    "typescript": true,
+    "lint": true,
+    "build": true
+  }
+}
