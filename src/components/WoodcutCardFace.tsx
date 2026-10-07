@@ -19,10 +19,10 @@ export default function WoodcutCardFace(props: Props) {
   const cost = 'free' in props && props.free ? 0 : card?.cost ?? 0;
   const rank = level >= 10000 ? new Intl.NumberFormat(lang === 'zh' ? 'zh-CN' : 'en-US', { notation: 'compact', maximumFractionDigits: 1 }).format(level) : String(level);
   const label = card ? `${name} · ${lang === 'zh' ? '费用' : 'Cost'} ${cost} · ${lang === 'zh' ? '等级' : 'Level'} ${level}` : `${name} · ${level} ${lang === 'zh' ? '招' : 'skills'}`;
-  return <span className="woodcut-face" data-woodcut-id={id} data-family={card?.type ?? folder} data-language={lang} role="img" aria-label={label}>
+  return <span className="woodcut-face" data-woodcut-id={id} data-folder={!!folder} data-family={card?.type ?? folder} data-language={lang} role="img" aria-label={label}>
     <img className="woodcut-print" src={assetUrl(WOODCUT_CARDS[id])} alt="" draggable={false} decoding="async" />
-    <span className="woodcut-badge woodcut-cost" aria-hidden="true"><small>{card ? (lang === 'zh' ? '费用' : 'COST') : (lang === 'zh' ? '分类' : 'TYPE')}</small><b>{card ? cost : folder === 'ATTACK' ? '✦' : folder === 'DEFEND' ? '◆' : '✧'}</b></span>
-    <span className="woodcut-badge woodcut-rank" aria-hidden="true"><small>{card ? (lang === 'zh' ? '等级' : 'LEVEL') : (lang === 'zh' ? '招式' : 'SKILLS')}</small><b data-wide={rank.length >= 4}>{level >= 10000 ? '≈' : ''}{rank}</b></span>
+    {card && <><span className="woodcut-badge woodcut-cost" aria-hidden="true"><small>{lang === 'zh' ? '费用' : 'COST'}</small><b>{cost}</b></span>
+    <span className="woodcut-badge woodcut-rank" aria-hidden="true"><small>{lang === 'zh' ? '等级' : 'LEVEL'}</small><b data-wide={rank.length >= 4}>{level >= 10000 ? '≈' : ''}{rank}</b></span></>}
     <span className="woodcut-title" data-long={name.length > (lang === 'zh' ? 4 : 8)} aria-hidden="true">{name}</span>
   </span>;
 }
