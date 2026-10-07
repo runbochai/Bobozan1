@@ -1,15 +1,17 @@
-import { useLayoutEffect, useRef, type RefObject } from 'react';
-import { FLAME_FRAME_MS, FLAME_STILL_TIME, paintUltimateFlames, type FlameBounds, type FlameQuad } from './ultimateFlames';
+import { useLayoutEffect, useRef, type ReactNode, type RefObject } from 'react';
+import { FLAME_FRAME_MS, FLAME_STILL_TIME, loadUltimateAtlas, paintUltimateFlames, type FlameBounds, type FlameQuad } from './apricotAura';
 import './UltimateAura.css';
+import CardHolo from './CardHolo';
 
 interface Props {
-  anchor: RefObject<HTMLButtonElement | null>;
+  selector: string;
+  face: ReactNode;
+  holo?: boolean;
   host: RefObject<HTMLElement | null>;
   active: boolean;
   layoutKey: string;
 }
 
-const PADDING = { top: 82, right: 38, bottom: 6, left: 38 };
 const clips = (value: string) => /^(auto|scroll|hidden|clip)$/.test(value);
 
 /** Recover the transformed border corners, rather than treating a rotated bounding box as the card. */
@@ -34,14 +36,15 @@ function cardGeometry(button: HTMLButtonElement, rect: DOMRect) {
 const transitionTime = (value: string) => Math.max(0, ...value.split(',').map(part => Number.parseFloat(part) * (part.trim().endsWith('ms') ? 1 : 1000)));
 
 /** Decoration lives outside the scrolling tray; only its own coordinates are updated. */
-export default function UltimateAura({ anchor, host, active, layoutKey }: Props) {
+export default function UltimateAura({ selector, host, active, layoutKey, face, holo = false }: Props) {
   const layer = useRef<HTMLSpanElement>(null);
   const canvas = useRef<HTMLCanvasElement>(null);
   useLayoutEffect(() => {
     const element = layer.current;
-    const button = anchor.current;
+
     // A child layout effect can run before its parent section's ref is attached on first mount.
     const container = host.current ?? element?.parentElement;
+    const button = container?.querySelector<HTMLButtonElement>(selector);
     if (!element) return;
     element.dataset.visible = 'false';
     if (!active || !button || !container) return;
@@ -57,7 +60,8 @@ export default function UltimateAura({ anchor, host, active, layoutKey }: Props)
     const moving = new Map<Element, number>();
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const reduced = () => motion.matches || document.documentElement.classList.contains('reduce-motion');
-    const paint = (time: number) => paintUltimateFlames(context, bounds, time);
+    const phase = [...selector].reduce((sum, c) => sum + c.charCodeAt(0), 0) % 8;
+    const paint = (time: number) => paintUltimateFlames(context, bounds, time + phase / 6);
     const tick = (now: number) => {
       animation = 0;
       if (disposed || !visible || document.hidden || reduced()) return;
@@ -95,6 +99,7 @@ export default function UltimateAura({ anchor, host, active, layoutKey }: Props)
       }
       const rect = button.getBoundingClientRect();
       const geometry = cardGeometry(button, rect);
+      const PADDING = { top: geometry.height * .76 + 24, right: geometry.width * .52 + 24, bottom: geometry.height * .12 + 24, left: geometry.width * .52 + 24 };
       const origin = container.getBoundingClientRect();
       const viewport = window.visualViewport;
       const viewportLeft = viewport?.offsetLeft ?? 0;
@@ -130,6 +135,7 @@ export default function UltimateAura({ anchor, host, active, layoutKey }: Props)
       element.style.top = px(y - origin.top - container.clientTop + container.scrollTop);
       element.style.width = px(width);
       element.style.height = px(height);
+      element.style.setProperty('--aura-clip', `${px(top - y)} ${px(x + width - right)} ${px(y + height - bottom)} ${px(left - x)}`);
       element.style.setProperty('--aura-x', px(geometry.corners[0].x - x));
       element.style.setProperty('--aura-y', px(geometry.corners[0].y - y));
       element.style.setProperty('--aura-w', px(geometry.width));
@@ -185,6 +191,7 @@ export default function UltimateAura({ anchor, host, active, layoutKey }: Props)
     motion.addEventListener('change', refreshPreference);
     document.addEventListener('visibilitychange', refreshPreference);
     update();
+    void loadUltimateAtlas().then(() => { if (!disposed) refreshPlayback(); });
     // Font loading can change a tab's neighbours without changing its own width.
     void document.fonts?.ready.then(schedule);
     return () => {
@@ -204,10 +211,10 @@ export default function UltimateAura({ anchor, host, active, layoutKey }: Props)
       window.visualViewport?.removeEventListener('scroll', schedule);
       element.dataset.visible = 'false';
     };
-  }, [anchor, host, active, layoutKey]);
+  }, [selector, host, active, layoutKey]);
 
   return <span ref={layer} className="ultimate-aura" data-visible="false" aria-hidden="true">
-    <span className="ultimate-aura-anchor" />
+    <span className="ultimate-aura-card-clip"><span className="ultimate-aura-anchor" data-card-finish={holo ? 'gold-holo' : undefined}>{face}{holo && <CardHolo />}{selector.includes('hand-skill-card') && <span className="woodcut-info-glyph">i</span>}</span></span>
     <canvas ref={canvas} className="ultimate-aura-fire" />
   </span>;
 }

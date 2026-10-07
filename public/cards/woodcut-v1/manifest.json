@@ -1,0 +1,326 @@
+{
+  "style": "approved woodcut / micro-pixel print",
+  "cards": [
+    {
+      "id": "charge",
+      "type": "CHARGE",
+      "combo": false
+    },
+    {
+      "id": "defend",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "hong",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "hong2",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "liuke",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "ka",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "ji",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "kajifen",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "kajisuper",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "ascend",
+      "type": "SPECIAL",
+      "combo": false
+    },
+    {
+      "id": "descend",
+      "type": "SPECIAL",
+      "combo": false
+    },
+    {
+      "id": "pegasus",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "meteor",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "icesword",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "iceult",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "smallfly",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "dragonclaw",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "fireclaw",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "dragondef",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "hotmilk",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "boiler",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "madian",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "hangman",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "bigfly",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "absorb",
+      "type": "ABSORB",
+      "combo": false
+    },
+    {
+      "id": "gun",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "gungod",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "helmetatk",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "helmetdef",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "machete",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "triplekill",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "handatk",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "shatter",
+      "type": "SPECIAL",
+      "combo": false
+    },
+    {
+      "id": "handdef",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "footatk",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "triplekick",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "footdef",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "aoxi",
+      "type": "ABSORB",
+      "combo": false
+    },
+    {
+      "id": "oneg",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "pointdiff",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "threeg",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "threestar",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "fiveg",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "fiveslap",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "fivedef",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "seveng",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "bang",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "eightdef",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "stab",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "ninedef",
+      "type": "DEFEND",
+      "combo": false
+    },
+    {
+      "id": "wave",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "superwave",
+      "type": "ULTIMATE",
+      "combo": false
+    },
+    {
+      "id": "hongtian",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "hongdi",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "hearteye",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "poison",
+      "type": "ATTACK",
+      "combo": false
+    },
+    {
+      "id": "skydragon",
+      "type": "ULTIMATE",
+      "combo": true
+    },
+    {
+      "id": "doublewing",
+      "type": "SPECIAL",
+      "combo": true
+    },
+    {
+      "id": "vajra",
+      "type": "ULTIMATE",
+      "combo": true
+    },
+    {
+      "id": "allbomb",
+      "type": "ATTACK",
+      "combo": true
+    },
+    {
+      "id": "heartpoison",
+      "type": "ULTIMATE",
+      "combo": true
+    }
+  ],
+  "folders": [
+    "folder-attack",
+    "folder-defend",
+    "folder-ultimate"
+  ],
+  "aura": {
+    "asset": "effects/apricot-aura-v1.webp",
+    "columns": 4,
+    "rows": 2,
+    "frames": 8,
+    "fps": 6,
+    "opacity": 0.55,
+    "filled": true,
+    "colour": "apricot",
+    "approval": "User approved upload and merge; translucent overlap over adjacent cards."
+  }
+}

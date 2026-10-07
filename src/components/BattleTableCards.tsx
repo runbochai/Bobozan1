@@ -1,6 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
 import type { Lang, Player } from '../types';
-import { TEXT } from '../data/translations';
 import { isHoloCard } from '../data/cardFinish';
 import { getEffectiveLevel, getPlayerCard } from '../logic/cardLevels';
 import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS, CARD_FLIGHT_MS,
@@ -10,9 +9,8 @@ import { getBattleFigure, SELF_SEAT, type BattleBounds, type BattleSeat } from '
 import { playerAvatar } from '../logic/bots';
 import { tableCardPositions } from '../logic/tableCardLayout';
 import { tableCardClash } from '../logic/tableCardMotion';
-import PixelCardArt from './PixelCardArt';
+import WoodcutCardFace from './WoodcutCardFace';
 import CardHolo from './CardHolo';
-import { Zap } from './PixelIcons';
 
 /** Present every revealed play, then compare them together without predicting a winner. */
 export default function BattleTableCards({ players, lang, seatFor, reduced, bounds }: {
@@ -81,11 +79,7 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
             <div className="pixel-showdown-card table-played-card" data-card-type={card.type} data-card-id={card.id}
               data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}>
               {isHoloCard(card) && <CardHolo />}
-              <span className="table-card-level">Lv.{getEffectiveLevel(card)}</span>
-              <span className="table-card-cost"><Zap size={12} />{cost}</span>
-              <PixelCardArt id={card.id} />
-              <strong>{card.name[lang]}</strong>
-              <small>{TEXT[lang].skillType[card.type]}</small>
+              <WoodcutCardFace card={card} lang={lang} free={cost === 0} />
             </div>
           </div>
           {ownerHeight > 0 && <span className="table-card-owner">{player.name}</span>}

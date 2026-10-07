@@ -2479,7 +2479,6 @@ export default function BobozanOnline() {
           </div>}
 
         <BattleHand player={myPlayer} knownCards={knownCards} cards={orderedHand} lang={lang}
-          roundKey={`${battleRoundKey}:${gameState.resetSeq ?? 0}`}
           category={handCategory} viewMode={handViewMode} status={gameState.status} submitting={submittingMove || skillOverflow.length > 0}
           poppingFree={poppingFree}
           onCategory={selectCategory} onBack={goBackToCategories} onPlay={id => {
