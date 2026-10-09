@@ -1,10 +1,11 @@
 import { EXPEDITION_SKILL_LEVELS, EXPEDITION_STAGES, type ExpeditionStage } from '../data/expedition';
 import type { ExpeditionDifficulty } from '../data/expeditionDifficulty';
+import { EXPEDITION_PRACTICE_STAGE_COUNT } from '../data/expeditionDifficulty';
 import { SKILL_DB } from '../data/skills';
 import { autoSelectSkillLoadout, getHandCategory } from './skillLoadout';
 
 // The introductory three practice opponents only belong to finite expeditions.
-const encounters = EXPEDITION_STAGES.slice(3);
+const encounters = EXPEDITION_STAGES.slice(EXPEDITION_PRACTICE_STAGE_COUNT);
 
 /** One resolver for the board, AI, rewards and dialogue; retries keep the same encounter. */
 export function getExpeditionStage(stageIdx: number, difficulty: ExpeditionDifficulty = 'beginner'): ExpeditionStage | undefined {

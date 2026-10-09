@@ -1,4 +1,5 @@
 import type { Lang, LocalizedText } from '../types';
+import { EXPEDITION_PRACTICE_STAGE_COUNT } from './expeditionDifficulty';
 
 export const CROWN_STORY_VERSION = 'crown-war-v1';
 export const CROWN_STAGE_COUNT = 18;
@@ -14,12 +15,12 @@ export interface CrownChapter {
 }
 
 export const CROWN_CHAPTERS: readonly CrownChapter[] = [
-  { id: 'qualification', title: { zh: '一张入场牌', en: 'A Seat at the Table' }, subtitle: { zh: '灯尾镇 · 资格试炼', en: 'Emberwick · Qualifiers' }, from: 0, to: 2, theme: 'woodcut-tavern', color: '#edb979' },
-  { id: 'ember', title: { zh: '余烬之印', en: 'The Ember Seal' }, subtitle: { zh: '赤铜赛区 · 学会反击', en: 'Copper District · Read the opening' }, from: 3, to: 6, theme: 'copper-workshop', color: '#eea277' },
-  { id: 'tide', title: { zh: '潮汐之印', en: 'The Tide Seal' }, subtitle: { zh: '潮汐赛区 · 等待破绽', en: 'Tide District · Find the opening' }, from: 7, to: 9, theme: 'coral-palace', color: '#9fcfcc' },
-  { id: 'mist', title: { zh: '迷雾之印', en: 'The Mist Seal' }, subtitle: { zh: '迷雾赛区 · 看穿虚张声势', en: 'Mist District · Call the bluff' }, from: 10, to: 12, theme: 'ink-stage', color: '#c3b4eb' },
-  { id: 'towers', title: { zh: '王冠的代价', en: 'The Price of a Crown' }, subtitle: { zh: '供能塔 · 被夺走的灯火', en: 'Supply Towers · The stolen light' }, from: 13, to: 15, theme: 'star-observatory', color: '#d7addf' },
-  { id: 'crown', title: { zh: '最后一桌', en: 'The Last Table' }, subtitle: { zh: '王冠城 · 把灯火带回家', en: 'Crown City · Bring the light home' }, from: 16, to: 17, theme: 'sunset-sandstone', color: '#f3ca88' },
+  { id: 'qualification', title: { zh: '一张入场牌', en: 'A Seat at the Table' }, subtitle: { zh: '灯尾镇 · 资格试炼', en: 'Emberwick · Qualifiers' }, from: 0, to: 2, theme: 'crown-qualification', color: '#edb979' },
+  { id: 'ember', title: { zh: '余烬之印', en: 'The Ember Seal' }, subtitle: { zh: '赤铜赛区 · 学会反击', en: 'Copper District · Read the opening' }, from: 3, to: 6, theme: 'crown-ember', color: '#eea277' },
+  { id: 'tide', title: { zh: '潮汐之印', en: 'The Tide Seal' }, subtitle: { zh: '潮汐赛区 · 等待破绽', en: 'Tide District · Find the opening' }, from: 7, to: 9, theme: 'crown-tide', color: '#9fcfcc' },
+  { id: 'mist', title: { zh: '迷雾之印', en: 'The Mist Seal' }, subtitle: { zh: '迷雾赛区 · 看穿虚张声势', en: 'Mist District · Call the bluff' }, from: 10, to: 12, theme: 'crown-mist', color: '#c3b4eb' },
+  { id: 'towers', title: { zh: '王冠的代价', en: 'The Price of a Crown' }, subtitle: { zh: '供能塔 · 被夺走的灯火', en: 'Supply Towers · The stolen light' }, from: 13, to: 15, theme: 'crown-towers', color: '#d7addf' },
+  { id: 'crown', title: { zh: '最后一桌', en: 'The Last Table' }, subtitle: { zh: '王冠城 · 把灯火带回家', en: 'Crown City · Bring the light home' }, from: 16, to: 17, theme: 'crown-citadel', color: '#f3ca88' },
 ];
 
 export const CROWN_SEALS = [
@@ -165,8 +166,10 @@ export function chapterForStage(stageIdx: number): CrownChapter {
   return CROWN_CHAPTERS.find(chapter => index >= chapter.from && index <= chapter.to)!;
 }
 
-export function themeForStage(stageIdx: number): string {
-  return chapterForStage(stageIdx).theme;
+export function themeForStage(stageIdx: number, endless = false): string {
+  const index = Number.isFinite(stageIdx) ? Math.max(0, Math.floor(stageIdx)) : 0;
+  const template = endless ? EXPEDITION_PRACTICE_STAGE_COUNT + index % (CROWN_STAGE_COUNT - EXPEDITION_PRACTICE_STAGE_COUNT) : index;
+  return chapterForStage(template).theme;
 }
 
 export function crownStageBeat(stageIdx: number): CrownStageBeat {

@@ -1,0 +1,55 @@
+{
+  "date": "2026-10-09",
+  "checks": {
+    "unitTests": 301,
+    "changedSceneAndEndlessTests": 14,
+    "typecheck": "passed",
+    "eslint": "passed",
+    "productionBuild": "passed",
+    "battleViewportSamples": 35,
+    "browserErrors": [],
+    "openingViewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        1024,
+        768
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        320,
+        568
+      ]
+    ],
+    "languageToggleChecks": 12,
+    "behaviors": [
+      "Fresh page and refresh open fullscreen comic, even when old seen marker exists",
+      "Four panels automatically fade in sequentially, keep final panel until dismissal",
+      "Skip, close, Escape and final continuation show the title menu",
+      "New expedition and return to menu do not replay comic",
+      "Slow images wait before fading; missing images have text fallback",
+      "System and app reduced-motion settings disable fades",
+      "All six chapter scenes load; table document geometry stays fixed when opening hand folders",
+      "Endless scenes follow real fifteen-encounter cycle after tutorial opponents",
+      "Existing saved multiplayer scene remains unchanged",
+      "All sixteen scene thumbnails load; new and old scene selections persist on refresh; fresh preference defaults to Crown Citadel"
+    ]
+  },
+  "limitations": [
+    "Responsive QA uses Chromium viewport and touch emulation, not physical iPad Safari.",
+    "Existing short-landscape battle layout can scroll vertically."
+  ]
+}

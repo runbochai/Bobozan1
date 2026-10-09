@@ -1,6 +1,9 @@
 import type { LocalizedText } from '../types';
 import { EXPEDITION_START_HP } from './expedition';
 
+// The first three encounters teach the finite campaign; endless starts with real rivals.
+export const EXPEDITION_PRACTICE_STAGE_COUNT = 3;
+
 export type ExpeditionDifficulty = 'beginner' | 'normal' | 'endless';
 export interface ExpeditionDifficultyConfig {
   id: ExpeditionDifficulty;

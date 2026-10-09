@@ -2,11 +2,13 @@ import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode 
 import { createPortal } from 'react-dom';
 import type { Lang } from '../types';
 import { getCrownSupplyBonus } from '../logic/expeditionRuntime';
+import { themeImagePath } from '../data/gameThemes';
 import {
   chapterForStage, crownProgress, crownStageBeat, CROWN_CHAPTERS,
   CROWN_PROLOGUE, CROWN_SEALS, CROWN_STAGE_BEATS, CROWN_TOWERS,
 } from '../data/crownCampaign';
 import './CrownCampaign.css';
+import './CrownPrologue.css';
 
 const asset = (path: string) => `${import.meta.env.BASE_URL}${path}`;
 
@@ -42,47 +44,66 @@ function CrownDialog({ className, titleId, onClose, children, onKeyDown }: {
     onKeyDown={onKeyDown} onCancel={event => { event.preventDefault(); onClose(); }}>{children}</dialog>, document.body);
 }
 
-export function CrownPrologue({ lang, onComplete, onClose }: {
-  lang: Lang; onComplete: () => void; onClose: () => void;
+export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false, onToggleLang }: {
+  lang: Lang; onComplete: () => void; onClose: () => void; reduceMotion?: boolean; onToggleLang?: () => void;
 }) {
   const zh = lang === 'zh';
   const titleId = useId();
-  const [panel, setPanel] = useState(0);
-  const touchStart = useRef<number | null>(null);
-  const current = CROWN_PROLOGUE[panel];
-  const last = panel === CROWN_PROLOGUE.length - 1;
-  const changePanel = (next: number) => setPanel(Math.min(CROWN_PROLOGUE.length - 1, Math.max(0, next)));
-  return <CrownDialog className="crown-prologue" titleId={titleId} onClose={onClose} onKeyDown={event => {
-    if (event.key === 'ArrowRight') { event.preventDefault(); changePanel(panel + 1); }
-    if (event.key === 'ArrowLeft') { event.preventDefault(); changePanel(panel - 1); }
+  const [requested, setRequested] = useState(1);
+  const [images, setImages] = useState<('loading' | 'ready' | 'error')[]>(() => CROWN_PROLOGUE.map(() => 'loading'));
+  const [systemReducedMotion, setSystemReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const still = reduceMotion || systemReducedMotion;
+  let revealed = 0;
+  while (revealed < requested && images[revealed] !== 'loading') revealed += 1;
+  const current = CROWN_PROLOGUE[Math.max(0, revealed - 1)];
+  const finished = revealed === CROWN_PROLOGUE.length;
+
+  useEffect(() => {
+    const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setSystemReducedMotion(preference.matches);
+    preference.addEventListener('change', update);
+    return () => preference.removeEventListener('change', update);
+  }, []);
+
+  useEffect(() => {
+    // Give each loaded panel reading time; a slow image never spends its fade-in offscreen.
+    if (revealed === 0 || finished || requested !== revealed) return;
+    const timer = window.setTimeout(() => setRequested(value => Math.min(value + 1, CROWN_PROLOGUE.length)), zh ? 3600 : 4600);
+    return () => window.clearTimeout(timer);
+  }, [revealed, requested, finished, zh]);
+
+  const settleImage = (index: number, status: 'ready' | 'error') => {
+    setImages(values => values[index] === status ? values : values.map((value, i) => i === index ? status : value));
+  };
+  const advance = () => {
+    if (finished) onComplete();
+    else setRequested(value => Math.min(value + 1, CROWN_PROLOGUE.length));
+  };
+
+  return <CrownDialog className={`crown-prologue crown-opening${still ? ' crown-opening--still' : ''}`} titleId={titleId} onClose={onClose} onKeyDown={event => {
+    if (event.key === 'ArrowRight') { event.preventDefault(); advance(); }
   }}>
-    <header className="crown-dialog-header">
+    <header className="crown-opening-header">
       <div className="crown-wordmark"><CrownMark /><div><span>BOBOZAN</span><h1 id={titleId}>{zh ? '王冠战争' : 'Crown War'}</h1></div></div>
-      <div className="crown-prologue-header-actions"><button type="button" className="crown-text-button" onClick={onComplete}>{zh ? '跳过引子' : 'Skip prologue'} <span aria-hidden="true">↗</span></button><button type="button" className="crown-text-button crown-prologue-exit" onClick={onClose} aria-label={zh ? '返回主页面' : 'Return to the menu'}>×</button></div>
+      <div className="crown-opening-header-actions">{onToggleLang && <button type="button" className="crown-text-button crown-opening-lang" onClick={onToggleLang} aria-label={zh ? 'Switch language to English' : '切换为中文'} lang={zh ? 'en' : 'zh'}>{zh ? 'EN' : '中文'}</button>}<button type="button" className="crown-text-button" onClick={onComplete}>{zh ? '跳过' : 'Skip'} <span aria-hidden="true">↗</span></button><button type="button" className="crown-text-button crown-prologue-exit" onClick={onClose} aria-label={zh ? '关闭漫画，进入主页面' : 'Close the comic and open the menu'}>×</button></div>
     </header>
-    <div className="crown-comic-page" onTouchStart={event => { touchStart.current = event.touches[0]?.clientX ?? null; }}
-      onTouchEnd={event => {
-        const start = touchStart.current;
-        const end = event.changedTouches[0]?.clientX;
-        touchStart.current = null;
-        if (start !== null && end !== undefined && Math.abs(start - end) > 70) changePanel(panel + (start > end ? 1 : -1));
-      }}>
+    <div className="crown-opening-page" aria-label={zh ? '开场漫画' : 'Opening comic'}>
       {CROWN_PROLOGUE.map((item, index) => <button type="button" key={index}
-        className={`crown-comic-panel crown-comic-panel-${index + 1}`} data-active={index === panel} data-seen={index <= panel}
-        onClick={() => changePanel(index)} aria-current={index === panel ? 'step' : undefined}
-        aria-label={zh ? `第 ${index + 1} 格：${item.title.zh}` : `Panel ${index + 1}: ${item.title.en}`}>
-        <img src={asset(`story/crown-v1/prologue-${index + 1}.webp`)} alt={item.alt[lang]} fetchPriority={index < 2 ? 'high' : 'auto'} onError={event => { event.currentTarget.dataset.failed = 'true'; }} />
-        <span className="crown-comic-number" aria-hidden="true">0{index + 1}</span>
-        <span className="crown-comic-title">{item.title[lang]}</span>
-        <span className="crown-comic-speech">{item.speech[lang]}</span>
+        className={`crown-opening-panel crown-opening-panel-${index + 1}`} data-revealed={index < revealed} data-failed={images[index] === 'error'}
+        tabIndex={index < revealed ? 0 : -1} aria-hidden={index >= revealed} onClick={advance}
+        aria-label={`${item.title[lang]}。${item.caption[lang]} ${item.speech[lang]}`}>
+        <img src={asset(`story/crown-v1/prologue-${index + 1}.webp`)} alt="" fetchPriority={index === 0 ? 'high' : 'auto'}
+          onLoad={() => settleImage(index, 'ready')} onError={() => settleImage(index, 'error')} />
+        {images[index] === 'error' && <span className="crown-opening-fallback">{item.alt[lang]}</span>}
+        <span className="crown-opening-panel-heading"><b aria-hidden="true">0{index + 1}</b><span>{item.title[lang]}</span></span>
+        <span className="crown-opening-speech">{item.speech[lang]}</span>
       </button>)}
     </div>
-    <footer className="crown-comic-footer">
-      <div className="crown-comic-caption" aria-live="polite" aria-atomic="true"><span>{zh ? '序章' : 'Prologue'} <b>0{panel + 1} / 04</b></span><p>{current.caption[lang]}</p></div>
-      <div className="crown-comic-controls">
-        <button type="button" className="crown-square-button" onClick={() => changePanel(panel - 1)} disabled={panel === 0} aria-label={zh ? '上一格' : 'Previous panel'}>←</button>
-        <div className="crown-comic-dots" aria-label={zh ? '漫画进度' : 'Comic progress'}>{CROWN_PROLOGUE.map((item, index) => <button type="button" key={index} onClick={() => changePanel(index)} aria-label={item.title[lang]} aria-current={panel === index ? 'step' : undefined} />)}</div>
-        <button type="button" data-crown-initial-focus className="crown-primary-button" onClick={last ? onComplete : () => changePanel(panel + 1)}>{last ? (zh ? '接过参赛牌' : 'Take the entrant’s card') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
+    <footer className="crown-opening-footer">
+      <div className="crown-opening-caption" aria-live="polite" aria-atomic="true"><span>{zh ? '灯火将尽，牌局未定。' : 'The light fades. The game is not over.'} <b>{String(revealed).padStart(2, '0')} / 04</b></span><p>{revealed ? current.caption[lang] : (zh ? '故事正在展开……' : 'The story is unfolding…')}</p></div>
+      <div className="crown-opening-controls">
+        <span className="crown-opening-progress" aria-hidden="true">{CROWN_PROLOGUE.map((_, index) => <i key={index} data-revealed={index < revealed} />)}</span>
+        <button type="button" data-crown-initial-focus className="crown-primary-button" onClick={advance}>{finished ? (zh ? '接过参赛牌' : 'Take the card') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
       </div>
     </footer>
   </CrownDialog>;
@@ -112,7 +133,7 @@ export function CrownJourney({ lang, stageIdx, cleared, onEnter, onSkipTowers, o
   const supply = getCrownSupplyBonus({ difficulty: 'beginner', crownCleared: cleared });
   const finalRoute = stageIdx >= 13;
   return <CrownDialog className="crown-journey" titleId={titleId} onClose={() => { /* Ending a run requires its labelled button. */ }}>
-    <div className="crown-journey-background" aria-hidden="true" style={{ backgroundImage: `url("${asset(`themes/woodcut-v1/${chapter.theme}.webp`)}")` }} />
+    <div className="crown-journey-background" aria-hidden="true" style={{ backgroundImage: `url("${asset(themeImagePath(chapter.theme))}")` }} />
     <div className="crown-journey-content" style={{ '--chapter-color': chapter.color } as CSSProperties}>
       <header className="crown-dialog-header">
         <div className="crown-wordmark"><CrownMark /><div><span>{zh ? '王冠战争 · 主线' : 'CROWN WAR · CAMPAIGN'}</span><h1 id={titleId}>{chapter.title[lang]}</h1></div></div>
