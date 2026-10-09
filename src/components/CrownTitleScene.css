@@ -1,0 +1,92 @@
+.pixel-app.crown-title-screen, .pixel-app.crown-arena-menu {
+  --world-ground: #0e1b26; --world-panel: #172a33; --world-rim: #a99269;
+  --world-edge: #0b1821; --world-accent: #efd2a0;
+}
+.crown-title-scene { position: absolute; inset: 0; overflow: hidden; background: #0e1b26; isolation: isolate; }
+.pixel-app.crown-title-screen .brawl-menu-backdrop, .pixel-app.crown-arena-menu .brawl-menu-backdrop { min-height: 0; }
+.crown-title-castle { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 55% 42%; }
+.crown-title-distance { position: absolute; inset: 0; background: linear-gradient(90deg, #0b172c70, transparent 60%), linear-gradient(180deg, #0b172c12 32%, #0b172c10 58%, #0b172c6b); }
+.crown-title-cast { position: absolute; width: auto; max-width: none; object-fit: contain; object-position: bottom; filter: drop-shadow(0 14px 7px #030d17a6); user-select: none; }
+.crown-title-rook { height: 52svh; right: 43%; bottom: 21svh; filter: brightness(.83) saturate(.8) drop-shadow(0 12px 6px #0414219c); }
+.crown-title-axle { height: 34svh; right: 5%; bottom: 26svh; filter: brightness(.92) drop-shadow(0 12px 8px #041421b0); }
+.crown-title-dragon { height: 80svh; right: 3%; bottom: -3svh; transform: scaleX(-1); }
+.crown-title-foreground { position: absolute; inset: 0; background: linear-gradient(0deg, #091522b5, transparent 23%), linear-gradient(90deg, #0d192bea 0%, #0d192b7a 30%, transparent 53%); }
+:root[data-world-theme] .crown-title-screen .brawl-menu-backdrop::after { background: none; }
+.pixel-app.crown-title-screen { padding: 76px max(28px, 8vw) max(28px, 5svh); align-items: flex-start; }
+.pixel-app.crown-title-screen .pixel-title-content { width: min(470px, 47vw); max-width: none; }
+.pixel-app.crown-title-screen .brawl-logo { top: 13svh; left: max(28px, 8vw); transform: none; }
+.pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { margin: 0; font-size: clamp(32px, 4vw, 60px); color: #efdfbb; text-shadow: 3px 4px #0b1523; }
+.pixel-app.crown-title-screen .crown-title-subtitle { margin-top: 12px; color: #f1d29b; font: 900 clamp(32px, 4vw, 58px)/1.3 Georgia, 'Songti SC', 'SimSun', serif; letter-spacing: .12em; text-shadow: 2px 4px #06101c; }
+.pixel-app.crown-title-screen .brawl-start-panel { gap: 18px; }
+:root[data-world-theme] .pixel-app.crown-title-screen .brawl-start-panel { background: transparent !important; }
+.pixel-app.crown-title-screen .pixel-player-setup [class*="grid-cols-4"] { top: auto; bottom: calc(100% + 10px); margin-top: 0; max-height: min(50svh, calc(100svh - 205px)); }
+.pixel-app.crown-title-screen .pixel-player-setup { justify-content: flex-start; gap: 17px; max-width: 100%; }
+.pixel-app.crown-title-screen .pixel-player-setup > :first-child > button { width: 70px; height: 70px; }
+.pixel-app.crown-title-screen .pixel-player-setup > :first-child > button > img { width: 70px !important; height: 70px !important; min-width: 70px !important; }
+.pixel-app.crown-title-screen .pixel-player-setup > .group { max-width: none; }
+.pixel-app.crown-title-screen .pixel-player-setup input { color: #f0e0c2; background: #0e1d2ab8; border-color: #b59463; font: 600 17px/1.4 system-ui, sans-serif; padding: 13px 14px; text-align: left; letter-spacing: .02em; }
+.pixel-app.crown-title-screen .pixel-player-setup input::placeholder { color: #c5c5bb; font-weight: 400; }
+.pixel-app.crown-title-screen .pixel-start-panel > .flex.gap-4 { max-width: none; gap: 12px; }
+.pixel-app.crown-title-screen .btn-expedition { background: #b58a4e; border-color: #e8c890; color: #0c1c29; box-shadow: 3px 4px #050e19; }
+.pixel-app.crown-title-screen .btn-expedition span { color: #101e2c; text-shadow: none; }
+.pixel-app.crown-title-screen .btn-primary { background: #183841e8; border-color: #9aa994; box-shadow: 3px 4px #050e19; }
+.pixel-app.crown-title-screen .btn-primary:disabled { opacity: .6; }
+.pixel-app.crown-title-screen .pixel-start-panel .btn-primary, .pixel-app.crown-title-screen .pixel-start-panel .btn-expedition { min-height: 58px; padding: 12px 8px; }
+.pixel-app.crown-title-screen .pixel-start-panel button span { font-size: 16px; letter-spacing: .02em; }
+.pixel-app.crown-title-screen .crown-title-links { align-self: flex-start; gap: 9px 24px; }
+.pixel-app.crown-title-screen .crown-title-links button { font-size: 13px; }
+.pixel-app.crown-arena-menu .crown-title-dragon { right: -5%; height: 76svh; opacity: .63; }
+.pixel-app.crown-arena-menu .crown-title-rook { left: 2%; right: auto; height: 62svh; bottom: 15svh; opacity: .65; }
+.pixel-app.crown-arena-menu .crown-title-axle { right: 25%; bottom: 45svh; height: 27svh; opacity: .45; }
+:root[data-world-theme] .crown-arena-menu.brawl-menu-screen .brawl-menu-backdrop::after { background: linear-gradient(90deg, #0c1a254d, #0c1a25ed 33%, #0c1a25ed 67%, #0c1a254d); }
+
+@media (max-width: 700px), (max-aspect-ratio: 4/5) {
+  .pixel-app.crown-title-screen { padding: 76px 20px max(22px, env(safe-area-inset-bottom)); align-items: center; }
+  .pixel-app.crown-title-screen .pixel-title-content { width: 100%; max-width: 520px; }
+  .pixel-app.crown-title-screen .brawl-logo { top: 12svh; left: 7%; }
+  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: clamp(29px, 6.5vw, 48px); }
+  .pixel-app.crown-title-screen .crown-title-subtitle { margin-top: 7px; font-size: clamp(30px, 6.8vw, 46px); }
+  .crown-title-castle { object-position: 53% 38%; }
+  .crown-title-rook { height: 35svh; left: -5%; right: auto; bottom: 17svh; }
+  .crown-title-axle { height: 22svh; left: auto; right: -2%; bottom: 49svh; }
+  .crown-title-dragon { height: 59svh; right: -16%; bottom: 17svh; }
+  .crown-title-foreground { background: linear-gradient(180deg, #09172412 38%, #09172445 56%, #091724eb 81%, #091724f5); }
+  .pixel-app.crown-title-screen .brawl-start-panel { gap: 13px; }
+  .pixel-app.crown-title-screen .pixel-player-setup > :first-child > button { width: 60px; height: 60px; }
+  .pixel-app.crown-title-screen .pixel-player-setup > :first-child > button > img { width: 60px !important; height: 60px !important; min-width: 60px !important; }
+  .pixel-app.crown-title-screen .pixel-player-setup input { font-size: 16px; padding: 10px 12px; }
+  .pixel-app.crown-title-screen .pixel-start-panel button span { font-size: 13px; }
+  .pixel-app.crown-title-screen .pixel-start-panel > .flex.gap-4 { gap: 8px; }
+  .pixel-app.crown-title-screen .pixel-start-panel .btn-primary, .pixel-app.crown-title-screen .pixel-start-panel .btn-expedition { min-height: 52px; padding-inline: 5px; }
+  .pixel-app.crown-title-screen .crown-title-links { align-self: center; gap: 8px 20px; }
+  .pixel-app.crown-arena-menu .crown-title-dragon { right: -32%; height: 68svh; opacity: .32; }
+  .pixel-app.crown-arena-menu .crown-title-rook { left: -12%; height: 46svh; bottom: 30svh; opacity: .4; }
+  .pixel-app.crown-arena-menu .crown-title-axle { display: none; }
+}
+@media (max-width: 500px) {
+  .pixel-app.crown-title-screen .crown-title-rook { display: none; }
+  .pixel-app.crown-title-screen .pixel-player-setup > :first-child { width: 60px; flex-shrink: 0; }
+  .pixel-app.crown-title-screen .pixel-player-setup > :first-child > span { font-size: 8px; letter-spacing: 0; white-space: nowrap; }
+}
+@media (max-width: 380px) {
+  .pixel-app.crown-title-screen .crown-title-subtitle { font-size: 24px; letter-spacing: .06em; }
+  .pixel-app.crown-title-screen .pixel-start-panel button span { font-size: 11px; }
+}
+@media (max-height: 540px) and (min-width: 701px) {
+  .pixel-app.crown-title-screen { padding: 64px 6vw 16px; }
+  .pixel-app.crown-title-screen .pixel-title-content { width: 48vw; }
+  .pixel-app.crown-title-screen .brawl-logo { top: 65px; left: 6vw; }
+  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: 25px; line-height: 1.3; }
+  .pixel-app.crown-title-screen .crown-title-subtitle { font-size: 29px; margin-top: 3px; }
+  .pixel-app.crown-title-screen .brawl-start-panel { gap: 8px; }
+  .pixel-app.crown-title-screen .pixel-player-setup > :first-child > button { width: 48px; height: 48px; }
+  .pixel-app.crown-title-screen .pixel-player-setup > :first-child > button > img { width: 48px !important; height: 48px !important; min-width: 48px !important; }
+  .pixel-app.crown-title-screen .pixel-player-setup input { font-size: 15px; padding: 8px 10px; }
+  .pixel-app.crown-title-screen .pixel-start-panel .btn-primary, .pixel-app.crown-title-screen .pixel-start-panel .btn-expedition { min-height: 44px; padding: 5px; }
+  .pixel-app.crown-title-screen .pixel-start-panel button span { font-size: 13px; }
+  .pixel-app.crown-title-screen .crown-title-links { gap: 6px 16px; }
+  .pixel-app.crown-title-screen .crown-title-links button { min-height: 32px; font-size: 12px; }
+  .crown-title-rook { height: 62svh; right: 25%; bottom: 6svh; }
+  .crown-title-axle { height: 36svh; right: 1%; bottom: 30svh; }
+  .crown-title-dragon { height: 87svh; right: -2%; bottom: -8svh; }
+}

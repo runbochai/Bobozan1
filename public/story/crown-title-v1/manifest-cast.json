@@ -1,0 +1,39 @@
+{
+  "version": 1,
+  "tool": "image_gen.imagegen",
+  "mode": "built-in",
+  "createdAt": "2026-10-09",
+  "style": "Crown War engraved woodcut illustration with subtle pixel edges",
+  "assets": [
+    {
+      "id": "dragon",
+      "file": "dragon.webp",
+      "source": "exec-8fbb31f8-12e9-420d-a0d5-3a6c1da4aaad.png",
+      "references": [
+        "avatars/bdrag.png",
+        "story/crown-v1/prologue-3.webp"
+      ],
+      "prompt": "Use case: identity-preserve / illustration-story. Asset: original Bobozan Crown War title-screen character on true transparent background. Re-illustrate the orange dragon in reference image 1 in the ink/woodcut storybook rendering language of reference image 2. Only the dragon is output, not any tavern, surrounding figures, cards UI, circular avatar backdrop or scenery. Identity invariants: recognizable small orange-red bipedal dragon, rounded youthful face, two pale golden horns plus smaller crownlike forehead spikes, golden segmented belly, orange bat wings with golden membranes, thick curved tail. BOTH wings anatomically present and visible, including the far wing peeking past shoulder. New expression: determined, quietly serious, closed mouth, furrowed eyebrows, focused gaze toward upper-left beyond camera; courageous rather than villainous, no smile or open mouth. Pose: sturdy full-body 3/4 view, weight planted, body facing slightly left, one claw firmly holds a small plain ivory entrant card with a simple engraved lantern emblem at waist height. Other claw relaxed but ready. Optional simple short weathered navy scarf hanging behind without covering belly or identity; no hat, no armor covering face. Composition: entire standalone full body and tail within frame with small margin, character large centered, no extra objects. Lighting: warm amber rim light from upper left, cool navy shadows. Art: richly carved woodcut/engraved ink illustration, limited orange / parchment gold / dark navy / muted teal palette, confident heavy contours, fine crosshatching and slightly stepped micro-pixel outer edges, matching reference 2 story seriousness. No photorealism, no 3D glossy plastic, no paper rectangle/background, no text, no frame, no floor, no cast background shadow. True RGBA transparency everywhere around character. This is an individual game character cutout, not a card."
+    },
+    {
+      "id": "axle",
+      "file": "axle.webp",
+      "source": "exec-6ab57827-441e-4d2c-8ed1-fa99bed6a8bc.png",
+      "references": [
+        "avatars/robot.webp",
+        "story/crown-v1/prologue-3.webp"
+      ],
+      "prompt": "Use case: identity-preserve / illustration-story. Asset: individual transparent character cutout for Bobozan Crown War title screen. Re-illustrate Axle, the compact blue-teal robot in reference 1, faithfully maintaining his established face and machinery. Reference 2 gives his serious engraved ink comic rendering. Create only Axle, no tavern or other characters or furniture. Full body standing with feet apart in alert supportive stance, head tilted slightly forward toward viewer left, offering one small ivory entrant card engraved with a single simple lantern symbol in right hand, other hand holding a tightly rolled small map at his side. Expression conveyed by two amber vertical rectangular eyes under slightly tilted upper screen shade; calm, watchful, serious, no cartoon grin, no happy wave. Identity: rounded rectangular blue iron head, black face screen, TWO amber vertical eyes, one glowing amber antenna, round ear mechanisms, stocky teal torso with circular glowing amber chest light, articulated metal arms and legs, chunky iron boots. Palette muted steel blue and navy with warm amber light, small brass fittings. Same rich woodcut/linocut crosshatching and scratch textures as reference 2, confident ink silhouette, subtle micro-pixel stepped edges at detail level; not glossy 3D. Warm rim light from upper left and cool deep navy shadows. Entire antenna, arms and feet fit inside transparent frame with small padding. No scenery, no ground plane, no cast background shadow, no border, no typography, no UI, no paper backdrop. Actual clean RGBA transparency outside subject."
+    },
+    {
+      "id": "rook",
+      "file": "rook.webp",
+      "source": "exec-987be650-d941-4c61-9ea6-220efb482a26.png",
+      "references": [
+        "avatars/enemies/wolf.webp",
+        "story/crown-v1/prologue-3.webp"
+      ],
+      "prompt": "Use case: identity-preserve / illustration-story. Asset: ONE original transparent character cutout, Bobozan Crown War title's recurring rival Rook. Reference image 1 is the exact existing identity: gray-blue anthropomorphic wolf, white cheeks/muzzle/breast, pointed ears, dark navy eyes, bright blue neckerchief. Reference 2 provides engraved woodcut comic rendering language only. Re-illustrate this same recognizable wolf, serious and wary, closed mouth with subtly downturned muzzle and focused brows, upright full-body 3/4 stance facing slightly right, arms confidently crossed at chest, gaze straight past viewer as if assessing a challenger. Young determined rival, not elderly, not monstrous or snarling; no grin. Keep dark silver-gray fur, pale ivory muzzle and cheek tufts, pointed ears, blue scarf fully visible, wolf tail. A simple weathered dark navy travel coat/short open mantle may frame torso without hiding recognizable white chest or scarf, leather belt with a small plain deck pouch. Entire body, ears and tail inside frame with modest margin. Use a cohesive sophisticated carved woodcut / linocut ink illustration, expressive black-navy outlines, dense restrained etched hatching, parchment highlights, subtle micro-pixel stepped edges, matching reference 2; no glossy plastic 3D. Warm amber rim light from upper left, muted cool blue shadows. True transparent RGBA background, isolated character only. No scenery, tavern, furniture, ground, background shadow, glow clouds, paper rectangle, text, portrait circle or decorative frame."
+    }
+  ]
+}
