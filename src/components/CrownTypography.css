@@ -1,0 +1,16 @@
+/* Self-hosted, open-licensed display faces; small body copy keeps its readable system font. */
+@font-face {
+  font-family: 'Crown Display';
+  src: url('../assets/fonts/cinzel-decorative-bold.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Crown CJK';
+  src: url('../assets/fonts/ma-shan-zheng-title.woff2') format('woff2');
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  unicode-range: U+738B, U+51A0, U+6218, U+4E89;
+}

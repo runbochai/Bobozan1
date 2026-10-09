@@ -1,0 +1,20 @@
+[
+  {
+    "file": "cinzel-decorative-bold.woff2",
+    "family": "Cinzel Decorative:wght@700",
+    "source": "https://fonts.gstatic.com/s/cinzeldecorative/v19/daaHSScvJGqLYhG8nNt8KPPswUAPniZoadlESTE.woff2",
+    "stylesheet": "https://fonts.googleapis.com/css2?family=Cinzel%20Decorative%3Awght%40700&display=swap",
+    "license": "LICENSE-CinzelDecorative.txt",
+    "scope": "Latin subset supplied by Google Fonts",
+    "bytes": 15488
+  },
+  {
+    "file": "ma-shan-zheng-title.woff2",
+    "family": "Ma Shan Zheng",
+    "source": "https://fonts.gstatic.com/l/font?kit=NaPecZTRCLxvwo41b4gvzkXaRMH0BGjp71kfEYS2XR8ANA&skey=13c999d73b164fc8&v=v18",
+    "stylesheet": "https://fonts.googleapis.com/css2?family=Ma%20Shan%20Zheng&display=swap&text=%E7%8E%8B%E5%86%A0%E6%88%98%E4%BA%89",
+    "license": "LICENSE-MaShanZheng.txt",
+    "scope": "王冠战争",
+    "bytes": 2492
+  }
+]

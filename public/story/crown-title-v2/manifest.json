@@ -1,0 +1,35 @@
+{
+  "version": 2,
+  "created": "2026-10-09",
+  "tool": "image_gen.imagegen (built-in)",
+  "asset": "public/story/crown-title-v2/rook.webp",
+  "sourceImages": [
+    "public/story/crown-title-v1/rook.webp",
+    "public/story/crown-title-v1/castle-gate.webp",
+    "public/story/crown-title-v1/dragon.webp"
+  ],
+  "generatedSources": [
+    {
+      "id": "exec-ef4becf6-bd84-418f-bd86-131e9b8dbc2b",
+      "prompt": "Use case: style-transfer / identity-preserve.\nAsset type: a single isolated full-body transparent character cutout for the Bobozan Crown War title screen.\nInput image 1 is the existing gray wolf Rook whose identity and proportions must be retained; input image 2 is the approved castle scene whose dusk lighting, ink line density and engraved woodcut medium must be matched; input image 3 is the approved orange dragon used only as the compatible illustration style reference. Do not include the castle or dragon in the output.\nPrimary request: redraw Rook so he belongs inside the shadowy castle courtyard instead of looking like a bright sticker. Keep the same familiar youthful anthropomorphic gray wolf, distinct tall pointed ears, swept cheek fur, large fluffy tail, navy-blue scarf, simple dark leather shoulder armor and belt/card pouch, serious thoughtful eyes, sturdy cartoon proportions and short legs. Same character, not a realistic wolf and not a taller human.\nPose: natural quiet three-quarter standing pose, body gently turning toward image RIGHT while head turns to glance slightly left toward an approaching protagonist; shoulders relaxed and uneven, knees soft. One relaxed hand rests by the small card pouch, the other loosely holds one simple dark cream entrant card low at his waist. Arms not crossed. Convey a patient skeptical rival waiting on a castle step. Whole feet and whole ears visible; no literal step, baseplate, ground, pedestal or scenery in the output.\nStyle: finely engraved storybook woodcut with cross-hatched navy ink shading and a restrained micro-pixel edge cadence. Match dragon's illustrated shape language but use subdued night colors. No white sticker outline. Dense fine linear engraving texture rather than diffuse raster noise.\nLighting: coherent cool blue night fill; majority of fur is desaturated slate-blue and dark gray, muzzle smoky warm gray rather than white. A narrow muted amber light catches the left ear, shoulder and small parts of the cheek; avoid an all-around gold outline. Scarf muted indigo, not bright cyan. Paws/body underside recede into navy shadows. Character remains readable but is significantly lower contrast and darker than the orange foreground dragon. No broad halo, smoke or glow.\nComposition: portrait full-body single figure centered, about 85% canvas height with clean safety margin. Transparent outside the figure, real alpha. No text, labels, logos, background elements, checkerboard, extra characters, weapons, sword, fire or particle effects. Preserve a clean continuous cutout with no stray floating flecks."
+    },
+    {
+      "id": "exec-840153dc-22df-45e6-8990-2c16ee195989",
+      "prompt": "Use case: background-extraction. Edit this character cutout with one targeted change only: remove every part of the diffuse blue/amber background glow or haze outside the wolf silhouette. Make the exterior entirely clear, truly transparent alpha 0, including between his legs and around all fur edges. Keep exactly the existing wolf body, pose, face, card, colors, ink hatching, lighting painted ON the figure, size and composition. Do not create new background, shadow, halo, vignette, checkerboard or base. This needs to composite cleanly over a separately drawn castle background without a rectangular or glowing ghost. Preserve full character and delicate fur edges. A clean hard-edged illustrated cutout on genuine transparency.",
+      "selected": true
+    }
+  ],
+  "encoding": {
+    "format": "webp",
+    "quality": 90,
+    "effort": 6,
+    "alphaQuality": 100,
+    "dimensions": [
+      1024,
+      1536
+    ],
+    "alpha": "Exact generated alpha preserved; byte-for-byte comparison with original PNG passed",
+    "resampling": false
+  },
+  "notes": "Rook keeps gray wolf identity and blue scarf, shifts to relaxed pose holding an entrant card and muted night palette with amber edge lighting."
+}

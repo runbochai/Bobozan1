@@ -50,6 +50,7 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   const zh = lang === 'zh';
   const titleId = useId();
   const [requested, setRequested] = useState(1);
+  const [narrated, setNarrated] = useState(0);
   const [images, setImages] = useState<('loading' | 'ready' | 'error')[]>(() => CROWN_PROLOGUE.map(() => 'loading'));
   const [systemReducedMotion, setSystemReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   const still = reduceMotion || systemReducedMotion;
@@ -66,11 +67,22 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   }, []);
 
   useEffect(() => {
-    // Give each loaded panel reading time; a slow image never spends its fade-in offscreen.
-    if (revealed === 0 || finished || requested !== revealed) return;
-    const timer = window.setTimeout(() => setRequested(value => Math.min(value + 1, CROWN_PROLOGUE.length)), zh ? 3600 : 4600);
+    // Let the image establish the scene before its voice arrives. Failed images still tell the story.
+    if (!revealed) return;
+    const timer = window.setTimeout(() => setNarrated(revealed), still ? 0 : 850);
     return () => window.clearTimeout(timer);
-  }, [revealed, requested, finished, zh]);
+  }, [revealed, still]);
+
+  useEffect(() => {
+    // Reading time begins with the words, never while an illustration is still downloading.
+    if (revealed === 0 || narrated !== revealed || finished || requested !== revealed) return;
+    const words = current.caption[lang].length + current.speech[lang].length;
+    // Hold on the extinguished lamp a little longer; let the invitation answer that silence.
+    const scenePause = [350, 750, 0, 0][revealed - 1];
+    const readingTime = Math.min(6500, Math.max(3200, words * (zh ? 90 : 38))) + scenePause;
+    const timer = window.setTimeout(() => setRequested(value => Math.min(value + 1, CROWN_PROLOGUE.length)), readingTime);
+    return () => window.clearTimeout(timer);
+  }, [revealed, narrated, requested, finished, current, lang, zh]);
 
   const settleImage = (index: number, status: 'ready' | 'error') => {
     setImages(values => values[index] === status ? values : values.map((value, i) => i === index ? status : value));
@@ -90,20 +102,21 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
     <div className="crown-opening-page" aria-label={zh ? '开场漫画' : 'Opening comic'}>
       {CROWN_PROLOGUE.map((item, index) => <button type="button" key={index}
         className={`crown-opening-panel crown-opening-panel-${index + 1}`} data-revealed={index < revealed} data-failed={images[index] === 'error'}
+        data-current={index === revealed - 1} data-narrated={index < narrated || index < revealed - 1}
         tabIndex={index < revealed ? 0 : -1} aria-hidden={index >= revealed} onClick={advance}
         aria-label={`${item.title[lang]}。${item.caption[lang]} ${item.speech[lang]}`}>
-        <img src={asset(`story/crown-v1/prologue-${index + 1}.webp`)} alt="" fetchPriority={index === 0 ? 'high' : 'auto'}
+        <span className="crown-opening-panel-art"><img src={asset(`story/crown-v1/prologue-${index + 1}.webp`)} alt="" fetchPriority={index === 0 ? 'high' : 'auto'}
           onLoad={() => settleImage(index, 'ready')} onError={() => settleImage(index, 'error')} />
-        {images[index] === 'error' && <span className="crown-opening-fallback">{item.alt[lang]}</span>}
+        {images[index] === 'error' && <span className="crown-opening-fallback">{item.alt[lang]}</span>}</span>
         <span className="crown-opening-panel-heading"><b aria-hidden="true">0{index + 1}</b><span>{item.title[lang]}</span></span>
-        <span className="crown-opening-speech">{item.speech[lang]}</span>
+        <span className="crown-opening-speech"><span className="crown-opening-speaker">{item.speaker[lang]}</span>{item.speech[lang]}</span>
       </button>)}
     </div>
     <footer className="crown-opening-footer">
-      <div className="crown-opening-caption" aria-live="polite" aria-atomic="true"><span>{zh ? '灯火将尽，牌局未定。' : 'The light fades. The game is not over.'} <b>{String(revealed).padStart(2, '0')} / 04</b></span><p>{revealed ? current.caption[lang] : (zh ? '故事正在展开……' : 'The story is unfolding…')}</p></div>
+      <div className="crown-opening-caption" aria-live="polite" aria-atomic="true"><span>{revealed ? current.title[lang] : (zh ? '灯尾镇' : 'Emberwick')} <b>{String(revealed).padStart(2, '0')} / 04</b></span><p key={revealed} data-ready={narrated >= revealed && revealed > 0}>{revealed && narrated >= revealed ? current.caption[lang] : '\u00a0'}</p></div>
       <div className="crown-opening-controls">
         <span className="crown-opening-progress" aria-hidden="true">{CROWN_PROLOGUE.map((_, index) => <i key={index} data-revealed={index < revealed} />)}</span>
-        <button type="button" data-crown-initial-focus className="crown-primary-button" onClick={advance}>{finished ? (zh ? '接过参赛牌' : 'Take the card') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
+        <button type="button" data-crown-initial-focus className="crown-primary-button" onClick={advance}>{finished ? (zh ? '走吧' : 'Let’s go') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
       </div>
     </footer>
   </CrownDialog>;
