@@ -2,6 +2,7 @@
   --world-ground: #0e1b26; --world-panel: #172a33; --world-rim: #a99269;
   --world-edge: #0b1821; --world-accent: #efd2a0;
 }
+.pixel-app.crown-opening-screen { position: fixed; inset: 0; overflow: hidden; min-height: 100dvh; }
 .crown-title-scene { position: absolute; inset: 0; overflow: hidden; background: #0e1b26; isolation: isolate; }
 .pixel-app.crown-title-screen .brawl-menu-backdrop, .pixel-app.crown-arena-menu .brawl-menu-backdrop { min-height: 0; }
 .crown-title-castle { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 55% 42%; }

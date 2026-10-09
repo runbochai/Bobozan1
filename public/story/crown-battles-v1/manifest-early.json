@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "created": "2026-10-09",
+  "tool": "Built-in image_gen.imagegen; one independent call per scene",
+  "reference": "public/story/crown-title-v1/castle-gate.webp",
+  "role": "Style reference only; all environments newly generated",
+  "processing": "WebP quality 88 effort 6, no crop, no editing of artwork",
+  "assets": [
+    {
+      "id": "qualification",
+      "path": "public/story/crown-battles-v1/qualification.webp",
+      "source": "01a121ea-6790-7471-928b-6b3e7651ba5a/exec-16f68821-0e98-49c7-9ae2-bab26a2a98e9.png",
+      "prompt": "Use case: stylized-concept. Create one finished 16:9 landscape background illustration for the Bobozan Crown War 2D game, chapter 'Emberwick qualification'. The supplied castle illustration is STYLE REFERENCE ONLY: keep its serious hand-cut woodcut ink lines, fine micro-pixel stepping, restrained print grain, dark navy shadows and sparse amber light; replace the entire place with the described outdoor town. Scene: a nearly unlit small medieval town square at blue dusk. Modest timber-and-stone homes and a shut lantern-maker shop line the LEFT and RIGHT edges in the upper half. A road in the upper-center distance leads toward a very distant small silhouette of the royal castle. A single surviving amber lantern glows by the closed lantern shop; all other windows dark, suggesting the town's protection is fading but hope remains. CAMERA/COMPOSITION: wide view from a mildly elevated standing eye level, level horizon at roughly 40 percent down. Architecture and distant castle occupy upper 45 percent and upper corners; the lower 55 percent and middle of the image are a wide, EMPTY, quiet, dark blue slate-paved plaza with subtle perspective stones and low contrast. It is a gameplay backdrop: a large table and characters will be added separately over this open space. Keep no major objects in center/foreground. Cohesive blue-black and desaturated slate palette with one small amber pool of light. Fine hand-drawn 2D illustrated game art, subtly pixel-printed rather than blurry or glossy rendered 3D. No tavern interior, no people, no creatures, no characters, no table, no furniture in the open plaza, no cards, no weapons, no UI, no border, no labels, no written signs, no letters, no watermark. The entire illustration fills the canvas.",
+      "width": 1672,
+      "height": 941,
+      "review": "Visually inspected. Original 2D woodcut environment, no figures or battle table or UI. Clear low-contrast plaza preserved in lower half."
+    },
+    {
+      "id": "ember",
+      "path": "public/story/crown-battles-v1/ember.webp",
+      "source": "01a121ea-6790-7471-928b-6b3e7651ba5a/exec-cf657c23-e2e6-4ada-9bbc-0be6651149ef.png",
+      "prompt": "Use case: stylized-concept. Create one finished wide 16:9 game battle environment illustration, chapter 'Ember district'. The supplied castle artwork is STYLE REFERENCE ONLY, not the depicted location: use its serious fantasy hand-cut woodcut linework, subtle fine pixel stepping, dense crisp printed ink hatching, blue-black architectural shadows and limited amber highlights. Depict an EMPTY outdoor competition courtyard of the royal bronze foundry district. In the upper half and on the extreme side edges: monumental brick archways, weathered copper pipes embedded against stone walls, kiln mouths set deeply into the far and side walls; a few controlled ember-orange furnace windows cast soft copper light. They are elements of dignified medieval industrial architecture, not clutter. Deep charcoal blue paving, aged red copper and dark terracotta. Suggest the fiery region by furnace glow and tiny warm flecks high around the chimneys, NOT large foreground flames. Camera: wide balanced mildly elevated view, architecture recedes toward a central far arch; horizon approx 42 percent down. Keep the LOWER HALF and CENTER completely open and visually calm, a broad dry slate-paved courtyard with low-contrast floor lines. The game will overlay its own table and characters here. Warm amber/copper focal glow restricted to upper third and sides; dark blue foreground. Art must remain 2D dark fantasy illustrated woodcut with restrained micro-pixel print texture, not photorealistic, no 3D shiny render. No characters, people, creatures, table, cards, weapons, furniture in the central plaza, interface, labels, words, frame, watermark. Full bleed background.",
+      "width": 1672,
+      "height": 941,
+      "review": "Visually inspected. Original 2D woodcut environment, no figures or battle table or UI. Clear low-contrast plaza preserved in lower half."
+    },
+    {
+      "id": "tide",
+      "path": "public/story/crown-battles-v1/tide.webp",
+      "source": "01a121ea-6790-7471-928b-6b3e7651ba5a/exec-eb78c33c-171b-46da-8d6b-5fe6bd7818c8.png",
+      "prompt": "Use case: stylized-concept. Create a finished 16:9 wide battle background illustration for Crown War, the Tidal District of the same fantasy kingdom. Use the supplied castle only as a STYLE REFERENCE: serious 2D woodcut engraved ink lines, subtle fine micro-pixel steps, restrained print texture, layered navy shadows, and architectural craftsmanship. Entirely different location: an EMPTY seaside fortress competition courtyard. In the upper half, broad weathered stone sea walls with arched sluice gates, an aqueduct receding at the left, salt-worn round towers and verdigris bronze gate mechanisms. Far beyond the upper-center arch, a pale blue-gray sea and misty breakwater are visible. Small dark teal banners show a SIMPLE abstract wave symbol, no lettering. WATER must be confined to narrow channels far along the extreme left and right edges, behind parapets; no water across the central fighting floor. Lower HALF and CENTER are an uninterrupted wide dry dark slate courtyard, visually quiet and low contrast, with only subtle paving lines. Game table/figures are composited later, so absolutely empty open playing space, no foreground props. Camera is a balanced mildly elevated standing-height wide view, horizon at around 42 percent from the top. Cold blue-green atmosphere, desaturated turquoise distant water, aged bronze highlights, a few tiny dim amber sconces; this chapter should feel clearly watery and cool while sharing the castle's serious fantasy print style. Not photorealistic, not glossy 3D, no smooth painterly blur. No people, creatures, characters, table, cards, furniture, interface, frame, captions, text, watermark. Full-bleed environment.",
+      "width": 1672,
+      "height": 941,
+      "review": "Visually inspected. Original 2D woodcut environment, no figures or battle table or UI. Clear low-contrast plaza preserved in lower half."
+    }
+  ]
+}

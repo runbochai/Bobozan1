@@ -329,7 +329,7 @@ export default function BobozanOnline() {
   const [expRelics, setExpRelics] = useState<string[]>([]);
   const [expPhase, setExpPhase] = useState<'battle' | 'journey' | 'reward' | 'shop' | 'runover' | 'clear'>('battle');
   const [expNextStage, setExpNextStage] = useState(0);
-  const [crownPrologue, setCrownPrologue] = useState<'start' | 'replay' | null>(null);
+  const [crownPrologue, setCrownPrologue] = useState(true);
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
   const [expGold, setExpGold] = useState(0);
@@ -434,21 +434,6 @@ export default function BobozanOnline() {
       setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, hostId: expMyId(), players: [], logs: [] });
     }
     setView('GAME');
-  };
-
-  const enterCrownCampaign = () => {
-    setExpHelp(null);
-    let seen = false;
-    try { seen = localStorage.getItem('bobozan-crown-prologue-v1') === 'seen'; } catch { /* Optional reading record. */ }
-    if (expDifficulty === 'endless' || seen) startExpedition();
-    else setCrownPrologue('start');
-  };
-
-  const finishCrownPrologue = () => {
-    try { localStorage.setItem('bobozan-crown-prologue-v1', 'seen'); } catch { /* Play without storage. */ }
-    const begin = crownPrologue === 'start';
-    setCrownPrologue(null);
-    if (begin) startExpedition();
   };
 
   const continueEndlessExpedition = () => {
@@ -950,7 +935,7 @@ export default function BobozanOnline() {
     setExpRecap(undefined);
     setExpHelp(null);
     setAcademyTab(null);
-    setCrownPrologue(null);
+    setCrownPrologue(false);
     setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, players: [], logs: [], hostId: '' });
     setView('HOME');
   }, []);
@@ -1438,7 +1423,7 @@ export default function BobozanOnline() {
 
   // --- RENDER LOGIC ---
 
-  const learningOverlay = crownPrologue ? <CrownPrologue lang={lang} onComplete={finishCrownPrologue} onClose={() => setCrownPrologue(null)} /> : academyTab ? <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
+  const learningOverlay = academyTab ? <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
     startLabel={isExpedition && view === 'GAME' ? (lang === 'zh' ? '返回远征' : 'Return to expedition') : undefined}
     onClose={() => setAcademyTab(null)} onStartExpedition={() => {
       setAcademyTab(null);
@@ -1446,7 +1431,14 @@ export default function BobozanOnline() {
     }} /> : expHelp ? <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
       difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty} best={expBest}
       onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
-      onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? enterCrownCampaign : undefined} /> : null;
+      onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} /> : null;
+
+  // An opening belongs to this page visit, not to starting or restarting a run.
+  // Keep the menu unmounted until dismissal so it cannot flash or receive focus behind the comic.
+  if (crownPrologue) return <div className="pixel-app crown-opening-screen">
+    <CrownTitleScene />
+    <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang} onComplete={() => setCrownPrologue(false)} onClose={() => setCrownPrologue(false)} />
+  </div>;
 
   if (view === 'NAME_INPUT') return (
     <div className="pixel-app pixel-screen-title brawl-title-screen brawl-menu-screen crown-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
@@ -1552,7 +1544,6 @@ export default function BobozanOnline() {
                     onChange={(e) => setPlayerName(e.target.value)} 
                     onKeyDown={(e) => e.key === 'Enter' && handleEnterName()} 
                     maxLength={10}
-                    autoFocus
                   />
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.8)] scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500 origin-center" />
                </div>
@@ -1580,7 +1571,7 @@ export default function BobozanOnline() {
                 <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
               </button>
             </div>
-            <div className="crown-title-links"><button type="button" onClick={() => setCrownPrologue('replay')}>{lang === 'zh' ? '序章 · 熄灯之夜' : 'Prologue · The Last Light'}</button><button type="button" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '规则 / 练习' : 'Rules / Practice'}</button></div>
+            <div className="crown-title-links"><button type="button" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '规则 / 练习' : 'Rules / Practice'}</button></div>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
                 {lang === 'zh' ? `🏆 ${expDifficultyConfig.label[lang]}最佳：第 ${expBest} 关` : `🏆 ${expDifficultyConfig.label[lang]} best: Stage ${expBest}`}
@@ -1905,7 +1896,7 @@ export default function BobozanOnline() {
     }
   `;
 
-  const campaignTheme = isExpedition && !isEndless ? findTheme(themeForStage(expPhase === 'journey' ? expNextStage : expStageIdx)) : undefined;
+  const campaignTheme = isExpedition ? findTheme(themeForStage(expPhase === 'journey' ? expNextStage : expStageIdx, isEndless)) : undefined;
   const campaignStyle = campaignTheme ? Object.fromEntries(Object.entries(campaignTheme.palette).map(([key, value]) => [`--world-${key}`, value])) as React.CSSProperties : undefined;
 
   return (

@@ -1,0 +1,49 @@
+{
+  "version": "crown-battles-v1",
+  "tool": "built-in image_gen.imagegen",
+  "created": "2026-10-09",
+  "useCase": "stylized-concept",
+  "styleReference": "public/story/crown-title-v1/castle-gate.webp (visually inspected; style reference only, not edited)",
+  "notes": "Original chapter battle scenery. Characters, tabletop, cards and UI are composed separately by the game. Each asset generated using a separate built-in imagegen call. PNG originals retained; final WebP copies optimized without repainting or compositing.",
+  "assets": [
+    {
+      "path": "public/story/crown-battles-v1/mist.webp",
+      "source": "01a121ea-cd4d-7381-9bc0-fe00047f440f/exec-901e9e45-bb9a-4616-b926-c8b49292c30a.png",
+      "prompt": "Use case: stylized-concept. Create ONE original finished 16:9 landscape game background, 1672x941 or similar widescreen. Scene: the Mist Trial district of a stern medieval Crown War kingdom, a vast ancient castle cloister courtyard enclosed by high walls and graceful pointed arch galleries. Back-wall architecture occupies only the upper 55% of the image, with tall spires fading into thin blue-violet fog, a few very restrained violet hanging lanterns and a partially closed stone portal. Lower 45% must be spacious unobstructed flat dark slate paving, very calm low contrast stone slabs, meant to receive an overlaid 2D card-battle table and characters later. Upper sides carry delicate stone carving and faded heraldic banners. Center upper portal readable after portrait crop. Eye-level immersive view, single consistent one-point perspective, not overhead/isometric. Hand engraved woodcut / subtle micro-pixel storybook illustration: rich flat ink masses, detailed but controlled carved hatch lines, restrained rough printed texture, slight stair-step edges, matte illustrated surfaces. Deep navy black shadows, cold slate blue, lavender grey mist, ivory engraving flecks, a tiny amount of amber torch warmth. Serious mysterious strategic intrigue, quiet rather than horror. Match a hand-engraved navy and amber fantasy castle title page, NOT photographic, NOT glossy 3D, NOT smooth concept-art airbrush. No characters, no creatures, no table, no cards, no furniture in the foreground, no text, no typography, no logos, no UI, no watermark, no bright floor rune circle. Do not put foreground pillars over the center or lower battle area. Architecture sharp enough to establish the theme while background atmosphere stays dim and calm.",
+      "width": 1672,
+      "height": 941,
+      "encoding": {
+        "format": "webp",
+        "quality": 86,
+        "effort": 6
+      },
+      "qa": "Visually inspected: clear lower battle plane, distinct chapter architecture, no text, characters or card table. Style matches navy/amber engraved castle setting."
+    },
+    {
+      "path": "public/story/crown-battles-v1/towers.webp",
+      "source": "01a121ea-cd4d-7381-9bc0-fe00047f440f/exec-1e44e5e3-49ab-4d4d-a607-5e5de1f36383.png",
+      "prompt": "Use case: stylized-concept. Create ONE original finished 16:9 landscape game background, 1672x941 or similar widescreen. Scene: the three power towers outside the royal castle in a medieval Crown War fantasy kingdom. Three enormous slender gothic energy towers form a triangular distant arrangement: one central further behind, two offset toward left and right. Their silhouette belongs to the same stone castle kingdom, not sci-fi. Muted violet and pale gold conduits link upper tower crowns, subdued energy channels carved into distant paving lead toward the castle. Crumbling battlements, crown heraldic banners, sparse brass lamps. All high-interest architecture and glowing conduits primarily in upper 55%; lower 45% is broad clear, flat, dim dark blue stone platform with very sparse shallow channels only, low visual contrast, intended for a 2D game table/characters to be overlaid later. Absolutely NO literal table, no character, no monsters, no combatants, no cards, no words, no lettering, no interface. Eye level from the platform, strong single consistent vanishing point, cinematic wide calm stage, no foreground props or steps. Render as masterful hand-carved woodcut / subtle micro-pixel dark fantasy illustration, matte navy ink masses, ivory carved crosshatching, slightly stepped edges, rough print texture. Blue-black and slate shadows with restrained antique-gold and muted violet glow. Serious tense late-campaign atmosphere, architecture imposing yet game background remains low contrast. NOT realistic 3D, no smooth digital airbrush, no huge magical circle in the ground, no exaggerated glare, no watermark. Keep central distance meaningful under portrait crop.",
+      "width": 1672,
+      "height": 941,
+      "encoding": {
+        "format": "webp",
+        "quality": 86,
+        "effort": 6
+      },
+      "qa": "Visually inspected: clear lower battle plane, distinct chapter architecture, no text, characters or card table. Style matches navy/amber engraved castle setting."
+    },
+    {
+      "path": "public/story/crown-battles-v1/crown.webp",
+      "source": "01a121ea-cd4d-7381-9bc0-fe00047f440f/exec-2a68efa2-9d58-40e1-afd0-5e63e7be0f81.png",
+      "prompt": "Use case: stylized-concept. Create ONE original finished 16:9 landscape game background, 1672x941 or similar widescreen. Scene: final Crown War trial inside an immense solemn gothic royal hall, the ultimate crown arena. A distant EMPTY crown-shaped dark stone throne on the rear wall axis, three distinct round carved city-seal medallions embedded high behind it. Immense vaulted ceiling and high narrow windows, controlled warm dawn beams cross from upper windows, deep navy pillars at the extreme sides, worn red-copper hanging banners with simple crown pictograms, antique gold highlights. High-interest architecture and the very distant empty throne stay in the upper 55%. The lower 45% is broad spacious EMPTY flat polished-but-matte dark blue stone paving, low contrast and calm, no steps or railings or foreground props blocking a battle table that will be layered later. Eye-level immersive stage composition with single-point perspective, no top-down isometric view. Center upper throne remains readable in portrait crop. The hall feels like the serious endpoint of a journey begun below an imposing castle gate. Sophisticated hand-engraved woodcut and subtle micro-pixel fantasy storybook art: fine controlled carved hatching, flat deep navy ink, ivory engraved highlights, slight stepped pixel contours, matte print grain. Palette black navy, slate blue, muted antique gold, sparing copper red; rich and royal but not dazzling. NOT realistic 3D, NOT smooth airbrushed rendering. No living figures, no silhouettes, no statue people, no monsters, no table, no cards, no text, no UI, no watermark. No giant bright floor glyph, no floor obstacles; leave room for an independently rendered 2D card battlefield.",
+      "width": 1672,
+      "height": 941,
+      "encoding": {
+        "format": "webp",
+        "quality": 86,
+        "effort": 6
+      },
+      "qa": "Visually inspected: clear lower battle plane, distinct chapter architecture, no text, characters or card table. Style matches navy/amber engraved castle setting."
+    }
+  ]
+}
