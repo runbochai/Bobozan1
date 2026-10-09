@@ -37,7 +37,7 @@ const pair = (zh: string, en: string, otherZh: string, otherEn: string): LinePai
 /** Every opponent has their own wording, including both members of a pair. */
 export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
   veteran: { voice: 'patient-veteran', lines: {
-    opening: pair('牌比你老，脑子可未必。', 'Older cards. Not always wiser.', '坐稳。经验也会犯错。', 'Sit tight. Experience can be wrong.'),
+    opening: pair("岩盾。记住名字就够了。", "Flint. The name is enough.", "牌比你高，未必就能赢你。", "Stronger cards need not win this."),
     hurt: pair('好，没白让你坐下。', 'Good. You earned that seat.', '这招，倒不像个新来的。', 'That was no rookie move.'),
     blocked: pair('只看牌面，可过不了这桌。', 'The card face is not the whole game.', '力气收一收，脑子动一动。', 'Less force. A little more thought.'),
     pattern: pair('第三遍了，要我替你念吗？', 'Third time. Shall I recite it?', '熟练归熟练，别只会这套。', 'Practiced. But try another routine.'),
@@ -47,7 +47,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('先出手的，未必先占便宜。', 'The first move need not be the best.', '看明白了？还是猜明白了？', 'Did you see it, or just guess?'),
   } },
   dummy: { voice: 'clockwork', lines: {
-    opening: pair('练习开始。请别拆零件。', 'Practice starts. Mind the parts.', '检测到新人。你好，别紧张。', 'Newcomer detected. Easy now.'),
+    opening: pair('阿栓设的练习。开始吧。', 'Axle’s practice. Let us begin.', '木头身板。也会还手。', 'Wooden frame. I still hit back.'),
     hurt: pair('外壳凹了。记录为进步。', 'Dent detected. Yours is progress.', '疼痛模块……谁装的？', 'Who installed the pain module?'),
     blocked: pair('咚。这个声音挺清脆。', 'Clang. A rather nice sound.', '碰撞测试，通过。', 'Impact test: passed.'),
     pattern: pair('这段程序，刚运行过。', 'We just ran this routine.', '重复输入。你确定吗？', 'Repeated input. Are you sure?'),
@@ -57,7 +57,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('正在思考。不是死机。', 'Thinking. Not frozen.', '你盯着我，我也会盯你。', 'I can stare right back.'),
   } },
   coward: { voice: 'timid-post', lines: {
-    opening: pair('先说好，不许笑我发抖。', 'No laughing at the shaking.', '我只是木头。下手轻点？', 'Only wood here. Go easy?'),
+    opening: pair("灯灭了，酒馆可没关。", "Lights out. Tavern still open.", "我陪你练。轻点行吗？", "I can spar. Gently, please?"),
     hurt: pair('没、没哭！是树脂！', 'Not crying! That is sap!', '裂了一点。还、还能撑。', 'Just a crack. Still standing.'),
     blocked: pair('欸？挡住了？我是故意的！', 'Blocked it? I meant to do that!', '你看，我也没那么好欺负。', 'See? I am no pushover.'),
     pattern: pair('这招我见过……应该吧。', 'I know this one... I think.', '你老这样，我都快敢猜了。', 'Keep that up and I might guess.'),
@@ -67,7 +67,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('别看我，看我我更慌。', 'Staring makes it worse.', '我才没偷偷看出口。', 'I was not eyeing the exit.'),
   } },
   turtle: { voice: 'dry-turtle', lines: {
-    opening: pair('坐稳。老夫不赶时间。', 'Settle in. I have all day.', '年轻人，先把气喘匀。', 'Catch your breath, youngster.'),
+    opening: pair("这枚报名章，要靠脑子拿。", "Earn the entry stamp with your head.", "灯尾的选手，坐稳了。", "Emberwick’s entrant. Settle in."),
     hurt: pair('壳没坏。是我哼了一声。', 'Shell is fine. That was a grunt.', '这一下，够我念叨半天。', 'I shall complain about that.'),
     blocked: pair('敲门呢？里面没人在家。', 'Knocking? Nobody is home.', '这壳，比你脾气硬。', 'This shell outlasts your temper.'),
     pattern: pair('又来？老夫都背下来了。', 'Again? I know it by heart.', '你这路数，比我爬得直。', 'Your routine takes no detours.'),
@@ -76,15 +76,15 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     crowd: pair('都让让，别踩着我的尾巴。', 'Make room. Mind the tail.', '人多吵。老夫耳朵还好着。', 'A noisy crowd. I can still hear.'),
     idle: pair('嗯。你先急。', 'Mm. You get impatient first.', '盯着壳，可看不出心思。', 'The shell gives nothing away.'),
   } },
-  slime: { voice: 'bouncy-slime', lines: {
-    opening: pair('啵！这张桌子弹不弹？', 'Pop! Does this table bounce?', '别戳。戳了要负责。', 'No poking. It has consequences.'),
-    hurt: pair('扁了！等我鼓回来！', 'Flattened! Let me puff back up!', '啵……刚那一下不算痒。', 'Pop... that was no tickle.'),
-    blocked: pair('滑开啦，嘻。', 'Slipped right off. Hee.', '弹回去了，别怪我。', 'Bounced off. Not my fault.'),
-    pattern: pair('啵、啵、啵。你也会循环？', 'Pop, pop, pop. You loop too?', '这节拍，我都跟上了。', 'Even I caught that rhythm.'),
-    empty: pair('小了一圈。你没看见。', 'A bit smaller. You saw nothing.', '别数我的泡泡啦。', 'Stop counting my bubbles.'),
-    ready: pair('啵啵啵……有点憋不住。', 'Pop-pop-pop... getting full.', '我鼓起来了，你呢？', 'I puffed up. Your turn?'),
-    crowd: pair('挤挤挤！别把我挤成饼！', 'Squeeze! Do not make me a pancake!', '这么多脚，真难躲。', 'So many feet to slip past.'),
-    idle: pair('啵？你猜那个泡里有什么。', 'Pop? Guess what is in that bubble.', '我没笑。我脸就长这样。', 'Not grinning. That is my face.'),
+  slime: { voice: 'rook-first-meeting', lines: {
+    opening: pair("洛牙。我也替家乡来。", "Rook. Here for my hometown too.", "灯尾？我听过那里的铃。", "Emberwick? I know its bells."),
+    hurt: pair("好快。再来一手。", "Quick. Let us go again.", "挨这一下，总得学点什么。", "A hit ought to teach me something."),
+    blocked: pair("猜到了。你可别生气。", "Called it. No hard feelings.", "别只顾看牙齿。", "Watch more than the teeth."),
+    pattern: pair("这个节拍，我跟上了。", "I caught that rhythm.", "又来？换个故事讲讲？", "Again? Tell me another story."),
+    empty: pair("有点喘。你也会累吧？", "A little winded. You tire too, right?", "别急着笑，我还在桌边。", "Save the grin. Still at the table."),
+    ready: pair("轮到你猜我了。", "Your turn to read me.", "我可不想第一站就回家。", "Not going home at the first stop."),
+    crowd: pair("各自替各自的小城赢。", "Win for your own little town.", "大家都有要守的灯吧。", "We all have lights to keep, right?"),
+    idle: pair("如果进了下一轮，再见。", "See you in the next round.", "赢了别忘记我这个名字。", "Win, but remember my name."),
   } },
   slime_a: { voice: 'slime-older', lines: {
     opening: pair('弟，跟紧。看哥的。', 'Stay close. Watch your big bro.', '别怕，哥在。你也别躲太远。', 'Bro is here. Do not hide too far.'),
@@ -107,17 +107,17 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('我可没答应按哥说的来。', 'I never agreed to his plan.', '你看他干嘛？我也会变脸。', 'Why watch him? I make faces too.'),
   } },
   ironwall: { voice: 'stubborn-wall', lines: {
-    opening: pair('阿强在这儿，门就没开。', 'Qiang is here. Door stays shut.', '来，试试我这肩膀。', 'Come on. Test this shoulder.'),
+    opening: pair("印记在这儿。灯尾来拿。", "The seal is here. Come, Emberwick.", "铁壁也不是从没输过。", "Even Ironwall has lost a table."),
     hurt: pair('嘶……是桌角硌的。', 'Hiss... must be the table edge.', '这点淤青，明天就散。', 'That bruise will fade tomorrow.'),
     blocked: pair('响不响？结不结实？', 'Hear that? Solid enough?', '你敲的是墙，不是门。', 'That is a wall, not a door.'),
     pattern: pair('只会敲同一块砖啊？', 'Always knocking the same brick?', '你的路数，我肩膀都记住了。', 'My shoulder knows that routine.'),
     empty: pair('我不动，你就以为我累了？', 'Stillness means tired to you?', '喘口气。墙也得通通风。', 'A breath. Walls need air too.'),
     ready: pair('这回，谁给谁让路？', 'Who steps aside this time?', '墙要是动了，你站稳点。', 'Brace yourself if the wall moves.'),
-    crowd: pair('挤什么？阿强一个人也够宽。', 'No crowding. I am wide enough.', '别躲他们后头，咱俩聊。', 'Out from behind them. We can talk.'),
-    idle: pair('我这表情，你能看懂？', 'Think you can read this face?', '阿强说话，有时也不算数。', 'Qiang does not always mean it.'),
+    crowd: pair('挤什么？铁壁一个人也够宽。', 'No crowding. I am wide enough.', '别躲他们后头，咱俩聊。', 'Out from behind them. We can talk.'),
+    idle: pair('我这表情，你能看懂？', 'Think you can read this face?', '铁壁说话，有时也不算数。', 'Ironwall does not always mean it.'),
   } },
   wolf: { voice: 'restless-wolf', lines: {
-    opening: pair('别磨蹭，我闻见风停了。', 'Move along. Even the wind stopped.', '你手一抖，我就看见了。', 'I see every twitch.'),
+    opening: pair('灯尾来的，又见面了。', 'Emberwick. We meet again.', '这次，别用旧眼光看我。', 'Do not read the old me this time.'),
     hurt: pair('牙还在。你别笑早了。', 'Still got teeth. Do not grin yet.', '这道口子，我认下了。', 'I will remember that cut.'),
     blocked: pair('扑空的滋味，尝到了？', 'Got a taste of empty air?', '慢半拍，就只有风。', 'Half a beat late. Only wind.'),
     pattern: pair('这股味道，又是老套路。', 'Same scent. Same old routine.', '脚步这么齐，怕我听不见？', 'Such steady steps. I can hear you.'),
@@ -127,7 +127,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('我停一下，你反倒怕了？', 'I pause, and that scares you?', '别猜牙，猜眼睛。', 'Read the eyes, not the teeth.'),
   } },
   head_a: { voice: 'loud-left-head', lines: {
-    opening: pair('左边说了算！右边闭嘴！', 'Left calls it! Right, hush!', '先看我。他说的不算。', 'Watch me. His words do not count.'),
+    opening: pair("潮来了，看谁站得稳！", "Tide is in. Keep your footing!", "左潮说了算！右边闭嘴！", "Left Tide calls it! Right, hush!"),
     hurt: pair('谁叫右边刚才吵我的！', 'Right was distracting me!', '我没喊疼！我在骂右边！', 'Not yelling in pain! At Right!'),
     blocked: pair('右边，看见什么叫本事没？', 'Right, that is how it is done!', '这一下，我的功劳！', 'That one was all me!'),
     pattern: pair('又来？右边都猜得出！', 'Again? Even Right can guess!', '你比右边还不会变通！', 'Less flexible than Right!'),
@@ -137,7 +137,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('你信右边？那你可完了。', 'Trust Right? Bad idea.', '我声音大，不等于没想过。', 'Loud does not mean thoughtless.'),
   } },
   head_b: { voice: 'muttering-right-head', lines: {
-    opening: pair('左边又在喊。我听着呢。', 'Left is shouting. I am listening.', '他说他的，咱们看手上。', 'Let him talk. Watch the hands.'),
+    opening: pair("看水面。别光听他喊。", "Watch the water, not his mouth.", "右汐。慢半拍也有好处。", "Right Tide. A late beat can help."),
     hurt: pair('左边出的主意。你找他。', 'Left had the idea. Ask him.', '嘶。别告诉左边我疼。', 'Ow. Do not tell Left.'),
     blocked: pair('左边喊完了？我挡完了。', 'Done shouting? Done blocking.', '不用吵，也能办事。', 'Quiet gets things done.'),
     pattern: pair('你和左边，都爱重复。', 'You and Left repeat yourselves.', '我听过了。换句台词？', 'Heard it. Got another line?'),
@@ -147,7 +147,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('左边很确定。我可没答应。', 'Left is certain. I never agreed.', '你继续听他，我继续看你。', 'You hear him. I watch you.'),
   } },
   dragon_elder: { voice: 'critical-elder', lines: {
-    opening: pair('手别抖。老夫看得见。', 'Steady hands. I can see them.', '礼数免了，让老夫看看本事。', 'Skip the bow. Show your skill.'),
+    opening: pair("急着出手，就错过退潮。", "Rush in and miss the ebb.", "潮汐印记，等一个会看的人。", "The Tide Seal needs a careful eye."),
     hurt: pair('嗯，这下有点长进。', 'Hm. Some improvement there.', '老夫记这一笔，不记仇。', 'Noted. Not a grudge, a note.'),
     blocked: pair('力气有了，眼力还差点。', 'Strength, yes. Judgment, not yet.', '门道在这儿，不在嗓门里。', 'Skill speaks without shouting.'),
     pattern: pair('背招式，不等于会交手。', 'Knowing moves is not reading foes.', '同一道题，你写了三遍。', 'Same answer, three times.'),
@@ -157,7 +157,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('看人，比看招难。', 'People are harder to read than moves.', '老夫笑了，你就放心？', 'My smile puts you at ease?'),
   } },
   frost: { voice: 'cool-mage', lines: {
-    opening: pair('屋里不冷。是你心急。', 'Not cold here. You are restless.', '把声音放轻，冰会听见。', 'Quiet. The ice can hear you.'),
+    opening: pair("雾港的灯，也一年比一年暗。", "Veilmarket grows dimmer each year.", "凝霜。名字冷，脾气还好。", "Rime. Cold name. Fair temper."),
     hurt: pair('裂纹而已，别急着庆祝。', 'Just a crack. Save the celebration.', '有点疼。还不至于失态。', 'A sting. Hardly worth a scene.'),
     blocked: pair('你碰到的，只有冷气。', 'All you touched was cold air.', '热情够了，准头不够。', 'Warm effort. Poor aim.'),
     pattern: pair('同一滴水，结同一块冰。', 'Same drop. Same patch of ice.', '你的节奏，已经冻住了。', 'Your rhythm has frozen solid.'),
@@ -167,7 +167,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('我不皱眉，你就猜不出了？', 'No frown. No clue?', '这点安静，让你不舒服？', 'Does the quiet bother you?'),
   } },
   shadow_a: { voice: 'shadow-leader', lines: {
-    opening: pair('路到这里，得问过我们。', 'This road passes through us.', '别找亮处。我们也看得见。', 'We can see the bright spots too.'),
+    opening: pair("我们都欠王冠一盏灯。", "We all owe the Crown a light.", "雾市的路，得问过我们。", "Veilmarket’s roads pass through us."),
     hurt: pair('影子散了一点，人还在。', 'Shadow scattered. I am still here.', '这一刀，我记得方向。', 'I remember where that came from.'),
     blocked: pair('打到影子，手感如何？', 'How did hitting a shadow feel?', '你看见的，未必站得住。', 'What you see need not stay put.'),
     pattern: pair('走过的路，别踩得太响。', 'Do not stomp the same path.', '你那套脚步，我记熟了。', 'I know those footsteps now.'),
@@ -177,7 +177,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('你猜对了，我也不会点头。', 'Guess right. I still will not nod.', '我站得稳，心思不一定。', 'Still feet. Restless thoughts.'),
   } },
   shadow_b: { voice: 'shadow-counter', lines: {
-    opening: pair('三个影子。你数清楚没？', 'Three shadows. Counted them?', '别慌，我先算算你能撑多久。', 'Easy. Let me count your chances.'),
+    opening: pair("赢得越多，运走的灯越多。", "More wins. More lights taken.", "账对得上。道理对不上。", "The sums fit. The reasons do not."),
     hurt: pair('不对，这一下没算进去。', 'Wait. That was not in the count.', '先别动，我重算一遍。', 'Hold on. Recalculating.'),
     blocked: pair('正好，和我算的一样。', 'Exactly as counted.', '这一笔，你亏了吧？', 'That cost you, did it not?'),
     pattern: pair('一、二……又回原点了。', 'One, two... back to the start.', '这么整齐，我都懒得算了。', 'So regular. No need to count.'),
@@ -187,7 +187,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('我在算你。你在算谁？', 'I am counting you. Counting whom?', '手指没动，账已经在心里了。', 'Still fingers. Busy arithmetic.'),
   } },
   shadow_c: { voice: 'shadow-youngest', lines: {
-    opening: pair('我最小，但不是来凑数的。', 'Youngest, not a spare seat.', '哥，别挡着我逞威风。', 'Bro, let me look fierce.'),
+    opening: pair("灯运去哪？哥不让我说。", "Where are they sent? Bro says hush.", "我要是赢了，能留一盏吗？", "If I win, may we keep one light?"),
     hurt: pair('不疼！哥你别过来扶！', 'Fine! Bro, do not help me up!', '这下我自己记，别替我记。', 'I can hold my own grudge.'),
     blocked: pair('哥！你看见我刚那下没？', 'Bro! Did you see that?', '不是碰巧，真不是！', 'Not luck. Really!'),
     pattern: pair('这套连我都会背了。', 'Even I know that routine.', '哥说你会变。怎么还没变？', 'Bro said you would change it up.'),
@@ -197,7 +197,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('哥没教我的，我也会一点。', 'I know things bro never taught me.', '我笑得够吓人了吗？', 'Is this grin scary enough?'),
   } },
   hangman: { voice: 'drowsy-ghost', lines: {
-    opening: pair('唔……又有人把我吵醒。', 'Mm... another noisy visitor.', '你打你的，我醒醒神。', 'Go on. I will wake myself up.'),
+    opening: pair("三印齐了，再看王冠背面。", "Three seals. Then behind the Crown.", "无面。你记住我的话就好。", "Faceless. Remember what I say."),
     hurt: pair('嘶，醒了。这回真醒了。', 'Ow. Awake now. Truly.', '打鬼也这么认真啊。', 'You take ghost-poking seriously.'),
     blocked: pair('穿过去了？别怪我太轻。', 'Passed through? I am rather light.', '扑个空，也值得你瞪眼？', 'Missed. Must you stare?'),
     pattern: pair('这段梦，我好像做过。', 'I have dreamed this bit before.', '你再重复，我又要睡了。', 'Repeat that and I will doze off.'),
@@ -207,7 +207,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('你猜我醒着，还是梦游？', 'Awake, or sleepwalking?', '我叹口气，你别自己吓自己。', 'Just a sigh. Do not spook yourself.'),
   } },
   knight: { voice: 'formal-knight', lines: {
-    opening: pair('请。礼数尽了，再谈胜负。', 'After you. Courtesy before contest.', '此地由我守。报不报名随你。', 'I guard this place. Names optional.'),
+    opening: pair("这座塔，收的是众城灯火。", "This tower feeds on city lights.", "铁骑守塔，不代表我赞成。", "Iron Rider guards. Not approves."),
     hurt: pair('好手段。这一下，我认。', 'Well done. That one was yours.', '铠甲有痕，礼数不能丢。', 'Dented armor. Manners intact.'),
     blocked: pair('承让。再来时请认真些。', 'My thanks. Try with more care.', '你的力道，我领教了。', 'I have felt your strength.'),
     pattern: pair('旧招重来，也该换个心思。', 'Old moves deserve a new thought.', '同一套礼数，用得太勤了。', 'You repeat that courtesy often.'),
@@ -217,7 +217,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('微笑只是礼貌，不是让步。', 'A smile is courtesy, not surrender.', '我等你的选择，未必赞同。', 'I await your choice, not approve it.'),
   } },
   guard_a: { voice: 'clipped-left-guard', lines: {
-    opening: pair('停。往前一步，也算。', 'Halt. One step counts.', '左边归我。别试着绕。', 'Left is mine. No detours.'),
+    opening: pair("左闸不倒，供能不停。", "Left Gate stands. Supply flows.", "王城不许我们关闸。", "The court forbids us to shut it."),
     hurt: pair('小伤。岗还在。', 'Small wound. Post still held.', '擦破点皮。站回去。', 'A scrape. Back in line.'),
     blocked: pair('不通过。再想。', 'Denied. Think again.', '到此为止。听清了吗？', 'This far. No farther.'),
     pattern: pair('同一路线。已记住。', 'Same route. Noted.', '绕第二遍，还是这儿。', 'Around again. Still here.'),
@@ -227,7 +227,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('少说。多看。', 'Less talk. More watching.', '我没动，不代表没想。', 'Still. Not thoughtless.'),
   } },
   guard_b: { voice: 'stern-middle-guard', lines: {
-    opening: pair('名单上没你。解释一下？', 'Not on the list. Explain?', '规矩摆着，别装看不见。', 'Rules are posted. Do not pretend.'),
+    opening: pair("中枢还亮，王冠就还稳。", "Core alight. Crown secure.", "你来救灯，还是来抢灯？", "Here to save the lights, or take them?"),
     hurt: pair('这一笔，我写进值勤簿。', 'That goes in the duty log.', '弄坏制服，可得另算。', 'Uniform damage is a separate charge.'),
     blocked: pair('手续不全，驳回。', 'Incomplete paperwork. Rejected.', '照章办事，就该这样。', 'By the book. As it should be.'),
     pattern: pair('相同申请，已经退回过了。', 'We rejected that application.', '又是这套说辞？我记着呢。', 'That excuse again? I kept a record.'),
@@ -237,7 +237,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('你那个表情，我也记下了。', 'That look goes on the record too.', '沉默，我可有好几种解释。', 'I can interpret silence many ways.'),
   } },
   guard_c: { voice: 'weary-right-guard', lines: {
-    opening: pair('小声点，塔主刚安静下来。', 'Quiet. The Lord just settled down.', '别闹太久，我还等着换班。', 'Keep it short. My shift is ending.'),
+    opening: pair("右闸也曾属于一座小镇。", "Right Gate once served a small town.", "关闸之后，谁来守住黑夜？", "Who guards the night if we close it?"),
     hurt: pair('嘶……这伤能算工伤吧？', 'Ow... this counts as a work injury?', '下班之前，还来这一出。', 'This, right before clocking out.'),
     blocked: pair('省点事不好吗？非得撞。', 'Could we avoid the paperwork?', '好，少写一份受伤报告。', 'One less injury report.'),
     pattern: pair('又这套？我值班都没你规律。', 'More regular than my shifts.', '背都背下来了，累不累啊？', 'Know it by heart. Tired yet?'),
@@ -247,7 +247,7 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     idle: pair('叹气不算认输，别误会。', 'A sigh is not a surrender.', '我看起来好说话，是吧？', 'I look easy to talk past, right?'),
   } },
   bluffer: { voice: 'silver-tongue', lines: {
-    opening: pair('我今天句句实话。你先信着。', 'All truth today. Trust me for now.', '我一笑，你是不是就不敢信？', 'A smile, and you doubt me already?'),
+    opening: pair("账本会骗人。我也会。", "Ledgers lie. So do I.", "千面守塔，只认桌上胜负。", "Manyface yields only to a win."),
     hurt: pair('哎呀。演得像不像真的？', 'Ow. Did that look convincing?', '这一下，算我送你的信心。', 'A little confidence. My gift.'),
     blocked: pair('说了你打不着。碰巧说对了。', 'Told you. Happened to be right.', '你看，偶尔我也很诚实。', 'See? I am honest sometimes.'),
     pattern: pair('你这出戏，台词都没换。', 'Same scene. Same lines.', '套路露出来，可就不好骗了。', 'An obvious script fools nobody.'),
@@ -256,25 +256,25 @@ export const EXPEDITION_DIALOGUE: Record<string, ExpeditionVoice> = {
     crowd: pair('这么多证人，更得说实话了。', 'Witnesses! Best be truthful, then.', '信谁不好，非信最响的？', 'Must you trust the loudest one?'),
     idle: pair('这回不骗你。下回再说。', 'Truth this time. Next time? Well.', '你猜我在骗你，我猜到了。', 'I guessed you would doubt me.'),
   } },
-  lord_bozan: { voice: 'measured-lord', lines: {
-    opening: pair('坐到这里，已经值得一杯茶。', 'You have earned a cup of tea.', '同一张桌子。看谁先露怯。', 'One table. Who blinks first?'),
-    hurt: pair('不错。茶可以再续一杯。', 'Good. You may have another cup.', '这一手，比你的神情诚实。', 'That move was honest. Your face less so.'),
-    blocked: pair('你急了。茶倒还没凉。', 'In a hurry? The tea is still warm.', '先别赶着赢，看看桌上。', 'Before rushing to win, look around.'),
-    pattern: pair('旧故事，至少换个结尾。', 'An old tale needs a new ending.', '我听懂了。你还打算照念？', 'I know the script. Still reading it?'),
-    empty: pair('空杯，也能让人等一等。', 'An empty cup can make you wait.', '我也得喘气。很意外？', 'I need a breath too. Surprised?'),
-    ready: pair('茶续好了。你还从容吗？', 'Tea refilled. Still at ease?', '不妨再想一瞬。随你。', 'Take another moment. Your choice.'),
-    crowd: pair('桌上热闹，心里别跟着乱。', 'A busy table need not cloud the mind.', '人再多，眼神总会说话。', 'Many faces. Their eyes still speak.'),
-    idle: pair('你猜中了，我也会笑。', 'I smile even when you guess right.', '输赢之外，我想看看你会不会变。', 'I would like to see you adapt.'),
+  lord_bozan: { voice: 'rook-last-challenger', lines: {
+    opening: pair("又见面了。灯尾来的。", "Again, Emberwick.", "最后一桌。替两座城打一场。", "One last table. For both our towns."),
+    hurt: pair("这下比潮汐那次准。", "Cleaner than our Tide match.", "好。你真的变强了。", "Good. You really grew."),
+    blocked: pair("我也记得你当时的招。", "I remember your old moves too.", "旧套路，我也学会看了。", "I learned to read that old trick."),
+    pattern: pair("老朋友，还是老节拍？", "Old friend. Same old rhythm?", "别只变招，连心思也变变。", "Change your mind as well as moves."),
+    empty: pair("喘口气。终点不远了。", "A breath. The finish is close.", "牙还在。别急着收牌。", "Still got teeth. Keep your cards out."),
+    ready: pair("我没忘家乡。你也别忘。", "I remember home. Do you?", "这一桌之后，轮到王冠了。", "The Crown comes after this table."),
+    crowd: pair("人再多，我也认得你。", "I would know you in any crowd.", "不用别人让座。我们自己赢。", "We earn our seats. No favors."),
+    idle: pair("输给你，也不算白走这一程。", "Losing to you would not waste it.", "我能猜中你。你还能猜中我吗？", "I can read you. Still read me?"),
   } },
-  tower_soul: { voice: 'tower-chorus', lines: {
-    opening: pair('门已关。塔在听。', 'Doors closed. The tower listens.', '走到这里，你也有了回声。', 'You have an echo now.'),
-    hurt: pair('石头会裂。回声不会散。', 'Stone cracks. Echoes remain.', '我们听见了，这一道裂响。', 'We heard that crack.'),
-    blocked: pair('声音回来，手空着。', 'The sound returns. The hand is empty.', '墙记住了，你没有穿过去。', 'The wall remembers. You did not pass.'),
-    pattern: pair('又是这个回声。我们记得。', 'That echo again. We remember.', '旧脚步，在塔里走不远。', 'Old footsteps do not travel far.'),
-    empty: pair('寂静，也是一种回声。', 'Silence has an echo too.', '灯暗了。塔还站着。', 'Lights fade. The tower stands.'),
-    ready: pair('楼上传来的，是谁的脚步？', 'Whose footsteps sound above?', '石缝里的风，朝你来了。', 'Wind through stone. Toward you.'),
-    crowd: pair('几道影子，同一座塔。', 'Many shadows. One tower.', '你们的呼吸，我们都听见。', 'We hear all your breaths.'),
-    idle: pair('猜我们，还是猜自己？', 'Reading us, or reading yourself?', '塔没说话。是你心里在响。', 'The tower is quiet. You are not.'),
+  tower_soul: { voice: 'crown-king', lines: {
+    opening: pair("灯火归胜者。这是规矩。", "The victor takes the light. My rule.", "坐上王座，你也会懂。", "Sit on the throne. You will see."),
+    hurt: pair("众城的光，不该如此脆弱。", "City light should not crack so easily.", "王冠还在。你还没有赢。", "The Crown remains. You have not won."),
+    blocked: pair("想救一座城，先看清这张桌。", "Read this table before saving a town.", "善意，可抵不了一张坏牌。", "Good will cannot save a bad card."),
+    pattern: pair("每一座城，都走过这一步。", "Every city has tried this step.", "英雄也会重复同一种错误。", "Heroes repeat mistakes too."),
+    empty: pair("没有借来的光，我也能赢。", "I can win without borrowed light.", "空着的王座，也会让人害怕。", "An empty throne can still frighten."),
+    ready: pair("你想点亮哪座城？只许一座。", "Which city gets light? Choose one.", "众城都在看你会不会退。", "The cities are watching you hesitate."),
+    crowd: pair("多少挑战者，同一顶王冠。", "Many challengers. One Crown.", "每个席位，曾经都是一座城。", "Every seat once stood for a city."),
+    idle: pair("分给所有人，谁来做国王？", "Share it all. Who remains king?", "你赢以后，也会想留下王冠。", "Win, and you may want to keep it."),
   } },
 };
 

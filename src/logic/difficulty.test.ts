@@ -51,11 +51,13 @@ test('every normal encounter publishes its enemy bonus before choosing the first
   const originalStages = structuredClone(EXPEDITION_STAGES);
   for (const difficulty of ['beginner', 'normal'] as const) for (let stage = 0; stage < EXPEDITION_STAGES.length; stage++) {
     const battle = start(difficulty, {}, stage);
+    const baseline = start('beginner', { crownCleared: battle.run.crownCleared }, stage);
     assert.equal(hero(battle).dmgBonus, 0);
     assert.equal(hero(battle).hp, difficulty === 'normal' ? 1 : 3);
-    for (const enemy of enemies(battle)) {
+    for (const [index, enemy] of enemies(battle).entries()) {
       assert.equal(enemy.dmgBonus, difficulty === 'normal' ? .5 : 0);
-      assert.equal(enemy.energy, 0, 'Difficulty adds no surprise free opener');
+      assert.equal(enemy.energy, enemies(baseline)[index].energy, 'Difficulty adds no extra opener beyond the visible tower supply');
+      assert.equal(enemy.hp, enemies(baseline)[index].hp, 'Difficulty does not alter tower HP');
       assert.equal(enemy.pierce, false);
     }
     const armed = start(difficulty, { equipment: ['waraxe'] }, stage);

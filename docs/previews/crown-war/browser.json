@@ -1,0 +1,114 @@
+{
+  "scope": "Real browser introduction and first encounter; controlled local campaign fixtures for optional towers, ending, endless and multiplayer; no remote writes",
+  "results": [
+    {
+      "label": "1440x1000",
+      "comic": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      }
+    },
+    {
+      "label": "1440x1000",
+      "natural": true,
+      "layout": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      },
+      "turn": 3
+    },
+    {
+      "label": "1024x768",
+      "comic": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      }
+    },
+    {
+      "label": "1024x768",
+      "natural": true,
+      "layout": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      },
+      "turn": 3
+    },
+    {
+      "label": "768x1024",
+      "comic": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      }
+    },
+    {
+      "label": "768x1024",
+      "natural": true,
+      "layout": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      },
+      "turn": 3
+    },
+    {
+      "label": "390x844",
+      "comic": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      }
+    },
+    {
+      "label": "390x844",
+      "natural": true,
+      "layout": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      },
+      "turn": 3
+    },
+    {
+      "label": "844x390",
+      "comic": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      }
+    },
+    {
+      "label": "844x390",
+      "natural": true,
+      "layout": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      },
+      "turn": 3
+    },
+    {
+      "route": true,
+      "kingPowered": {
+        "hp": 6.5,
+        "energy": 3
+      },
+      "kingCut": {
+        "hp": 5,
+        "energy": 0
+      },
+      "ending": true,
+      "endless": true,
+      "arena": {
+        "page": false,
+        "dialog": false,
+        "missing": []
+      }
+    }
+  ],
+  "errors": []
+}

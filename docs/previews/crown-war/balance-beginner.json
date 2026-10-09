@@ -1,0 +1,2739 @@
+{
+  "generatedAt": "2026-10-09T17:14:46.133Z",
+  "seeds": 30,
+  "difficulty": {
+    "id": "beginner",
+    "label": {
+      "zh": "新手",
+      "en": "Beginner"
+    },
+    "startHp": 3,
+    "enemyDamageBonus": 0,
+    "goldMultiplier": 1
+  },
+  "stageCount": 18,
+  "routePolicy": "adaptive",
+  "maxTurnsPerStage": 80,
+  "method": "Shared production runtime; enemy intents committed first; separate seeded streams; reader sees public distributions and last three revealed cards, never sampled intents; exact one-opponent / 16 sampled multi-opponent forecasts.",
+  "economyPolicy": "Identical deterministic reward and one-purchase-per-shop-slot rules for all strategies. Prefer emergency healing, learned levels, useful relics; potions when missing at least 1 HP, then equipment. Route: adaptive; adaptive means risk at full HP, otherwise rest, after stage 3.",
+  "skillPolicy": "After each reward or purchase, the simulated player keeps the latest three permanent skills per category through the production loadout resolver. Basics and temporary/absorbed/derived cards do not use slots. Fixed expedition enemy rosters are unchanged; each stage asserts the player has no unresolved overflow.",
+  "limitations": [
+    "Read-history is an informed model-based benchmark, not an estimate of a human beginner.",
+    "80-round unfinished stages are counted as stalls, not victories.",
+    "Fixed reward/shop/route policy is one policy, not an exhaustive balance search.",
+    "All strategies keep the newest skills; this does not optimize retained combo ingredients or represent every human loadout choice."
+  ],
+  "summaries": [
+    {
+      "strategy": "random",
+      "seeds": 30,
+      "difficulty": "beginner",
+      "passed3": 0.6333333333333333,
+      "passed6": 0.06666666666666667,
+      "passedAll": 0,
+      "maxLevelReached": 5,
+      "runsAboveLevel5": 0,
+      "medianCleared": 3,
+      "medianTurns": 24,
+      "p95Turns": 52,
+      "stalled": 0,
+      "loadoutChoices": 5,
+      "routes": {
+        "rest": 7,
+        "risk": 31
+      },
+      "stages": [
+        {
+          "stage": 1,
+          "id": "s0",
+          "name": "Stage 1 · Axle’s Practice Table",
+          "reached": 30,
+          "cleared": 27,
+          "lost": 3,
+          "stalled": 0,
+          "medianTurns": 3
+        },
+        {
+          "stage": 2,
+          "id": "s1",
+          "name": "Stage 2 · Hold the Light",
+          "reached": 27,
+          "cleared": 24,
+          "lost": 3,
+          "stalled": 0,
+          "medianTurns": 5
+        },
+        {
+          "stage": 3,
+          "id": "s2",
+          "name": "Stage 3 · Earn Your Seat",
+          "reached": 24,
+          "cleared": 19,
+          "lost": 5,
+          "stalled": 0,
+          "medianTurns": 4
+        },
+        {
+          "stage": 4,
+          "id": "s3",
+          "name": "Stage 4 · A Rival Named Rook",
+          "reached": 19,
+          "cleared": 10,
+          "lost": 9,
+          "stalled": 0,
+          "medianTurns": 10
+        },
+        {
+          "stage": 5,
+          "id": "s17",
+          "name": "Stage 5 · The Veteran’s Seat",
+          "reached": 10,
+          "cleared": 4,
+          "lost": 6,
+          "stalled": 0,
+          "medianTurns": 11
+        },
+        {
+          "stage": 6,
+          "id": "s4",
+          "name": "Stage 6 · The Sibling Table",
+          "reached": 4,
+          "cleared": 2,
+          "lost": 2,
+          "stalled": 0,
+          "medianTurns": 5
+        },
+        {
+          "stage": 7,
+          "id": "s5",
+          "name": "Stage 7 · Keeper of the Ember Seal",
+          "reached": 2,
+          "cleared": 1,
+          "lost": 1,
+          "stalled": 0,
+          "medianTurns": 13
+        },
+        {
+          "stage": 8,
+          "id": "s6",
+          "name": "Stage 8 · Rook’s Rematch",
+          "reached": 1,
+          "cleared": 1,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 6
+        },
+        {
+          "stage": 9,
+          "id": "s7",
+          "name": "Stage 9 · The Tide Table",
+          "reached": 1,
+          "cleared": 1,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 10
+        },
+        {
+          "stage": 10,
+          "id": "s8",
+          "name": "Stage 10 · Keeper of the Tide Seal",
+          "reached": 1,
+          "cleared": 0,
+          "lost": 1,
+          "stalled": 0,
+          "medianTurns": 8
+        },
+        {
+          "stage": 11,
+          "id": "s9",
+          "name": "Stage 11 · A Guest in the Mist",
+          "reached": 0,
+          "cleared": 0,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 0
+        },
+        {
+          "stage": 12,
+          "id": "s10",
+          "name": "Stage 12 · Three Names",
+          "reached": 0,
+          "cleared": 0,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 0
+        },
+        {
+          "stage": 13,
+          "id": "s11",
+          "name": "Stage 13 · Keeper of the Mist Seal",
+          "reached": 0,
+          "cleared": 0,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 0
+        },
+        {
+          "stage": 14,
+          "id": "s12",
+          "name": "Stage 14 · Ember Supply Tower",
+          "reached": 0,
+          "cleared": 0,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 0
+        },
+        {
+          "stage": 15,
+          "id": "s13",
+          "name": "Stage 15 · Tide Supply Tower",
+          "reached": 0,
+          "cleared": 0,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 0
+        },
+        {
+          "stage": 16,
+          "id": "s14",
+          "name": "Stage 16 · Mist Supply Tower",
+          "reached": 0,
+          "cleared": 0,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 0
+        },
+        {
+          "stage": 17,
+          "id": "s15",
+          "name": "Stage 17 · Rook’s Last Table",
+          "reached": 0,
+          "cleared": 0,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 0
+        },
+        {
+          "stage": 18,
+          "id": "s16",
+          "name": "Stage 18 · Reclaim the City Lights",
+          "reached": 0,
+          "cleared": 0,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 0
+        }
+      ]
+    },
+    {
+      "strategy": "read-history",
+      "seeds": 30,
+      "difficulty": "beginner",
+      "passed3": 0.9,
+      "passed6": 0.7666666666666667,
+      "passedAll": 0.6333333333333333,
+      "maxLevelReached": 17,
+      "runsAboveLevel5": 23,
+      "medianCleared": 18,
+      "medianTurns": 159,
+      "p95Turns": 194,
+      "stalled": 0,
+      "loadoutChoices": 282,
+      "routes": {
+        "rest": 31,
+        "risk": 312
+      },
+      "stages": [
+        {
+          "stage": 1,
+          "id": "s0",
+          "name": "Stage 1 · Axle’s Practice Table",
+          "reached": 30,
+          "cleared": 30,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 2
+        },
+        {
+          "stage": 2,
+          "id": "s1",
+          "name": "Stage 2 · Hold the Light",
+          "reached": 30,
+          "cleared": 29,
+          "lost": 1,
+          "stalled": 0,
+          "medianTurns": 2
+        },
+        {
+          "stage": 3,
+          "id": "s2",
+          "name": "Stage 3 · Earn Your Seat",
+          "reached": 29,
+          "cleared": 27,
+          "lost": 2,
+          "stalled": 0,
+          "medianTurns": 3
+        },
+        {
+          "stage": 4,
+          "id": "s3",
+          "name": "Stage 4 · A Rival Named Rook",
+          "reached": 27,
+          "cleared": 27,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 5
+        },
+        {
+          "stage": 5,
+          "id": "s17",
+          "name": "Stage 5 · The Veteran’s Seat",
+          "reached": 27,
+          "cleared": 24,
+          "lost": 3,
+          "stalled": 0,
+          "medianTurns": 8
+        },
+        {
+          "stage": 6,
+          "id": "s4",
+          "name": "Stage 6 · The Sibling Table",
+          "reached": 24,
+          "cleared": 23,
+          "lost": 1,
+          "stalled": 0,
+          "medianTurns": 7
+        },
+        {
+          "stage": 7,
+          "id": "s5",
+          "name": "Stage 7 · Keeper of the Ember Seal",
+          "reached": 23,
+          "cleared": 22,
+          "lost": 1,
+          "stalled": 0,
+          "medianTurns": 12
+        },
+        {
+          "stage": 8,
+          "id": "s6",
+          "name": "Stage 8 · Rook’s Rematch",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 8
+        },
+        {
+          "stage": 9,
+          "id": "s7",
+          "name": "Stage 9 · The Tide Table",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 7
+        },
+        {
+          "stage": 10,
+          "id": "s8",
+          "name": "Stage 10 · Keeper of the Tide Seal",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 15
+        },
+        {
+          "stage": 11,
+          "id": "s9",
+          "name": "Stage 11 · A Guest in the Mist",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 6
+        },
+        {
+          "stage": 12,
+          "id": "s10",
+          "name": "Stage 12 · Three Names",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 6
+        },
+        {
+          "stage": 13,
+          "id": "s11",
+          "name": "Stage 13 · Keeper of the Mist Seal",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 11
+        },
+        {
+          "stage": 14,
+          "id": "s12",
+          "name": "Stage 14 · Ember Supply Tower",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 7
+        },
+        {
+          "stage": 15,
+          "id": "s13",
+          "name": "Stage 15 · Tide Supply Tower",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 8
+        },
+        {
+          "stage": 16,
+          "id": "s14",
+          "name": "Stage 16 · Mist Supply Tower",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 11
+        },
+        {
+          "stage": 17,
+          "id": "s15",
+          "name": "Stage 17 · Rook’s Last Table",
+          "reached": 22,
+          "cleared": 22,
+          "lost": 0,
+          "stalled": 0,
+          "medianTurns": 8
+        },
+        {
+          "stage": 18,
+          "id": "s16",
+          "name": "Stage 18 · Reclaim the City Lights",
+          "reached": 22,
+          "cleared": 19,
+          "lost": 3,
+          "stalled": 0,
+          "medianTurns": 17
+        }
+      ]
+    }
+  ],
+  "details": {
+    "random": [
+      {
+        "seed": 1,
+        "cleared": 2,
+        "turns": 19,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          2,
+          5,
+          12
+        ],
+        "moves": {
+          "charge": 4,
+          "liuke": 1,
+          "defend": 7,
+          "hong2": 1,
+          "smallfly": 6
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 3,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 2,
+        "cleared": 1,
+        "turns": 13,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          7,
+          6
+        ],
+        "moves": {
+          "defend": 5,
+          "charge": 7,
+          "ka": 1
+        },
+        "hp": 0,
+        "level": 1,
+        "damageTaken": 3.5,
+        "blocks": 0,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 3,
+        "cleared": 3,
+        "turns": 19,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 1
+        },
+        "stageTurns": [
+          3,
+          5,
+          4,
+          7
+        ],
+        "moves": {
+          "charge": 8,
+          "defend": 4,
+          "liuke": 2,
+          "hong2": 1,
+          "hong": 1,
+          "smallfly": 3
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 3,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 4,
+        "cleared": 1,
+        "turns": 22,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          12,
+          10
+        ],
+        "moves": {
+          "defend": 10,
+          "charge": 7,
+          "liuke": 2,
+          "hong": 3
+        },
+        "hp": 0,
+        "level": 0,
+        "damageTaken": 3.5,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 5,
+        "cleared": 3,
+        "turns": 35,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 1
+        },
+        "stageTurns": [
+          6,
+          16,
+          2,
+          11
+        ],
+        "moves": {
+          "charge": 12,
+          "defend": 10,
+          "ji": 1,
+          "hong": 3,
+          "hong2": 4,
+          "pegasus": 2,
+          "smallfly": 3
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 5,
+        "blocks": 3,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 6,
+        "cleared": 4,
+        "turns": 37,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 1
+        },
+        "stageTurns": [
+          5,
+          2,
+          5,
+          6,
+          19
+        ],
+        "moves": {
+          "charge": 11,
+          "hong": 4,
+          "hong2": 1,
+          "defend": 7,
+          "liuke": 1,
+          "smallfly": 7,
+          "pegasus": 1,
+          "iceult": 1,
+          "icesword": 1,
+          "dragonclaw": 1,
+          "dragondef": 2
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 4,
+        "blocks": 2,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 7,
+        "cleared": 2,
+        "turns": 23,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          4,
+          8,
+          11
+        ],
+        "moves": {
+          "defend": 5,
+          "charge": 7,
+          "hong": 3,
+          "pegasus": 3,
+          "liuke": 1,
+          "smallfly": 4
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 4,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 8,
+        "cleared": 4,
+        "turns": 31,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 2
+        },
+        "stageTurns": [
+          2,
+          3,
+          6,
+          5,
+          15
+        ],
+        "moves": {
+          "charge": 11,
+          "hong2": 1,
+          "hong": 4,
+          "defend": 6,
+          "icesword": 1,
+          "smallfly": 3,
+          "dragondef": 3,
+          "pegasus": 1,
+          "ka": 1
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 6,
+        "blocks": 2,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 9,
+        "cleared": 5,
+        "turns": 41,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 2
+        },
+        "stageTurns": [
+          2,
+          2,
+          9,
+          4,
+          6,
+          18
+        ],
+        "moves": {
+          "charge": 13,
+          "hong2": 3,
+          "liuke": 1,
+          "defend": 6,
+          "smallfly": 8,
+          "icesword": 3,
+          "pegasus": 1,
+          "dragonclaw": 1,
+          "dragondef": 4,
+          "hong": 1
+        },
+        "hp": 0,
+        "level": 4,
+        "damageTaken": 7.5,
+        "blocks": 2,
+        "loadoutChoices": 1
+      },
+      {
+        "seed": 10,
+        "cleared": 3,
+        "turns": 27,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 1
+        },
+        "stageTurns": [
+          5,
+          4,
+          2,
+          16
+        ],
+        "moves": {
+          "defend": 9,
+          "charge": 6,
+          "liuke": 1,
+          "hong2": 3,
+          "smallfly": 7,
+          "hong": 1
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 4,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 11,
+        "cleared": 9,
+        "turns": 83,
+        "stalled": false,
+        "routes": {
+          "rest": 3,
+          "risk": 4
+        },
+        "stageTurns": [
+          11,
+          8,
+          3,
+          8,
+          11,
+          5,
+          13,
+          6,
+          10,
+          8
+        ],
+        "moves": {
+          "defend": 14,
+          "charge": 26,
+          "liuke": 6,
+          "hong": 7,
+          "pegasus": 4,
+          "meteor": 1,
+          "smallfly": 10,
+          "icesword": 2,
+          "dragonclaw": 3,
+          "dragondef": 5,
+          "hong2": 1,
+          "hotmilk": 2,
+          "fireclaw": 1,
+          "bigfly": 1
+        },
+        "hp": 0,
+        "level": 4,
+        "damageTaken": 11.5,
+        "blocks": 6,
+        "loadoutChoices": 1
+      },
+      {
+        "seed": 12,
+        "cleared": 0,
+        "turns": 13,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          13
+        ],
+        "moves": {
+          "defend": 7,
+          "charge": 4,
+          "liuke": 1,
+          "hong": 1
+        },
+        "hp": 0,
+        "level": 0,
+        "damageTaken": 3,
+        "blocks": 0,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 13,
+        "cleared": 3,
+        "turns": 26,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 1
+        },
+        "stageTurns": [
+          3,
+          7,
+          3,
+          13
+        ],
+        "moves": {
+          "charge": 9,
+          "hong2": 1,
+          "defend": 8,
+          "hong": 1,
+          "meteor": 1,
+          "liuke": 1,
+          "smallfly": 5
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 3,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 14,
+        "cleared": 2,
+        "turns": 18,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          2,
+          2,
+          14
+        ],
+        "moves": {
+          "charge": 4,
+          "liuke": 2,
+          "smallfly": 8,
+          "defend": 2,
+          "icesword": 1,
+          "hong": 1
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 3,
+        "blocks": 0,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 15,
+        "cleared": 3,
+        "turns": 49,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 0
+        },
+        "stageTurns": [
+          4,
+          12,
+          12,
+          21
+        ],
+        "moves": {
+          "defend": 17,
+          "charge": 17,
+          "hong": 4,
+          "hong2": 1,
+          "liuke": 4,
+          "ji": 1,
+          "pegasus": 4,
+          "kajifen": 1
+        },
+        "hp": 0,
+        "level": 1,
+        "damageTaken": 6,
+        "blocks": 3,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 16,
+        "cleared": 4,
+        "turns": 52,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 2
+        },
+        "stageTurns": [
+          2,
+          3,
+          4,
+          28,
+          15
+        ],
+        "moves": {
+          "charge": 12,
+          "liuke": 1,
+          "hong2": 2,
+          "smallfly": 11,
+          "meteor": 1,
+          "defend": 10,
+          "dragondef": 12,
+          "skydragon": 1,
+          "icesword": 1,
+          "ji": 1
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 6,
+        "blocks": 6,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 17,
+        "cleared": 6,
+        "turns": 61,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 3
+        },
+        "stageTurns": [
+          2,
+          3,
+          3,
+          5,
+          8,
+          12,
+          28
+        ],
+        "moves": {
+          "charge": 15,
+          "hong2": 2,
+          "defend": 10,
+          "smallfly": 8,
+          "pegasus": 1,
+          "dragondef": 5,
+          "dragonclaw": 3,
+          "icesword": 2,
+          "hong": 3,
+          "liuke": 3,
+          "hotmilk": 1,
+          "doublewing": 4,
+          "bigfly": 4
+        },
+        "hp": 0,
+        "level": 5,
+        "damageTaken": 6.5,
+        "blocks": 3,
+        "loadoutChoices": 2
+      },
+      {
+        "seed": 18,
+        "cleared": 1,
+        "turns": 20,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          5,
+          15
+        ],
+        "moves": {
+          "defend": 7,
+          "charge": 6,
+          "hong": 2,
+          "ka": 1,
+          "pegasus": 1,
+          "liuke": 1,
+          "hong2": 2
+        },
+        "hp": 0,
+        "level": 1,
+        "damageTaken": 3.5,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 19,
+        "cleared": 4,
+        "turns": 40,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 2
+        },
+        "stageTurns": [
+          9,
+          2,
+          7,
+          12,
+          10
+        ],
+        "moves": {
+          "charge": 15,
+          "ji": 1,
+          "defend": 12,
+          "liuke": 3,
+          "hong2": 3,
+          "icesword": 2,
+          "pegasus": 1,
+          "smallfly": 3
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 8,
+        "blocks": 2,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 20,
+        "cleared": 4,
+        "turns": 24,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 2
+        },
+        "stageTurns": [
+          2,
+          2,
+          5,
+          4,
+          11
+        ],
+        "moves": {
+          "charge": 8,
+          "hong": 4,
+          "hong2": 2,
+          "pegasus": 2,
+          "smallfly": 4,
+          "icesword": 1,
+          "dragondef": 2,
+          "defend": 1
+        },
+        "hp": 0,
+        "level": 4,
+        "damageTaken": 4,
+        "blocks": 0,
+        "loadoutChoices": 1
+      },
+      {
+        "seed": 21,
+        "cleared": 0,
+        "turns": 16,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          16
+        ],
+        "moves": {
+          "defend": 8,
+          "charge": 5,
+          "hong2": 2,
+          "hong": 1
+        },
+        "hp": 0,
+        "level": 0,
+        "damageTaken": 3,
+        "blocks": 0,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 22,
+        "cleared": 5,
+        "turns": 48,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 3
+        },
+        "stageTurns": [
+          3,
+          16,
+          4,
+          8,
+          12,
+          5
+        ],
+        "moves": {
+          "charge": 12,
+          "hong": 3,
+          "defend": 18,
+          "liuke": 1,
+          "hong2": 2,
+          "smallfly": 5,
+          "pegasus": 1,
+          "dragondef": 4,
+          "icesword": 1,
+          "iceult": 1
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 8,
+        "blocks": 6,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 23,
+        "cleared": 3,
+        "turns": 26,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 1
+        },
+        "stageTurns": [
+          4,
+          7,
+          2,
+          13
+        ],
+        "moves": {
+          "defend": 8,
+          "charge": 9,
+          "liuke": 1,
+          "hong": 5,
+          "hong2": 1,
+          "pegasus": 2
+        },
+        "hp": 0,
+        "level": 1,
+        "damageTaken": 6,
+        "blocks": 2,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 24,
+        "cleared": 0,
+        "turns": 12,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          12
+        ],
+        "moves": {
+          "defend": 5,
+          "charge": 5,
+          "liuke": 2
+        },
+        "hp": 0,
+        "level": 0,
+        "damageTaken": 3,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 25,
+        "cleared": 2,
+        "turns": 17,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          2,
+          4,
+          11
+        ],
+        "moves": {
+          "charge": 3,
+          "liuke": 1,
+          "defend": 2,
+          "hong2": 1,
+          "smallfly": 10
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 4,
+        "blocks": 0,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 26,
+        "cleared": 3,
+        "turns": 43,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 1
+        },
+        "stageTurns": [
+          9,
+          8,
+          9,
+          17
+        ],
+        "moves": {
+          "defend": 14,
+          "charge": 17,
+          "hong2": 4,
+          "hong": 4,
+          "kajifen": 1,
+          "ji": 1,
+          "pegasus": 2
+        },
+        "hp": 0,
+        "level": 1,
+        "damageTaken": 8,
+        "blocks": 3,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 27,
+        "cleared": 2,
+        "turns": 23,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          2,
+          8,
+          13
+        ],
+        "moves": {
+          "charge": 10,
+          "liuke": 4,
+          "pegasus": 4,
+          "defend": 5
+        },
+        "hp": 0,
+        "level": 1,
+        "damageTaken": 5,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 28,
+        "cleared": 4,
+        "turns": 34,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 2
+        },
+        "stageTurns": [
+          3,
+          14,
+          4,
+          3,
+          10
+        ],
+        "moves": {
+          "charge": 9,
+          "defend": 11,
+          "liuke": 2,
+          "pegasus": 4,
+          "hong": 2,
+          "icesword": 1,
+          "dragondef": 3,
+          "hong2": 1,
+          "dragonclaw": 1
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 5,
+        "blocks": 4,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 29,
+        "cleared": 3,
+        "turns": 23,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 1
+        },
+        "stageTurns": [
+          2,
+          5,
+          3,
+          13
+        ],
+        "moves": {
+          "charge": 7,
+          "liuke": 2,
+          "defend": 5,
+          "pegasus": 1,
+          "hong": 1,
+          "dragondef": 3,
+          "smallfly": 4
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 4,
+        "blocks": 1,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 30,
+        "cleared": 3,
+        "turns": 20,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 1
+        },
+        "stageTurns": [
+          2,
+          4,
+          4,
+          10
+        ],
+        "moves": {
+          "charge": 7,
+          "liuke": 1,
+          "defend": 3,
+          "pegasus": 2,
+          "hong": 2,
+          "hong2": 1,
+          "dragondef": 2,
+          "dragonclaw": 2
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 4,
+        "blocks": 1,
+        "loadoutChoices": 0
+      }
+    ],
+    "read-history": [
+      {
+        "seed": 1,
+        "cleared": 18,
+        "turns": 134,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 15
+        },
+        "stageTurns": [
+          2,
+          2,
+          3,
+          7,
+          4,
+          11,
+          9,
+          10,
+          5,
+          11,
+          6,
+          8,
+          9,
+          7,
+          4,
+          14,
+          7,
+          15
+        ],
+        "moves": {
+          "charge": 47,
+          "hong2": 1,
+          "pegasus": 1,
+          "icesword": 2,
+          "dragonclaw": 20,
+          "fireclaw": 1,
+          "defend": 9,
+          "bigfly": 9,
+          "gun": 11,
+          "boiler": 5,
+          "hotmilk": 1,
+          "machete": 11,
+          "hangman": 1,
+          "footatk": 6,
+          "triplekick": 2,
+          "threestar": 2,
+          "fiveslap": 3,
+          "kajifen": 1,
+          "fiveg": 1
+        },
+        "hp": 4,
+        "level": 15,
+        "damageTaken": 1,
+        "blocks": 6,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 2,
+        "cleared": 18,
+        "turns": 159,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 15
+        },
+        "stageTurns": [
+          2,
+          2,
+          10,
+          3,
+          21,
+          6,
+          9,
+          5,
+          7,
+          11,
+          9,
+          5,
+          12,
+          6,
+          7,
+          11,
+          7,
+          26
+        ],
+        "moves": {
+          "charge": 49,
+          "hong2": 5,
+          "pegasus": 1,
+          "icesword": 6,
+          "defend": 30,
+          "dragonclaw": 11,
+          "bigfly": 1,
+          "gun": 4,
+          "machete": 26,
+          "gungod": 5,
+          "footatk": 5,
+          "triplekill": 2,
+          "threestar": 5,
+          "fiveg": 9
+        },
+        "hp": 4,
+        "level": 15,
+        "damageTaken": 2,
+        "blocks": 19,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 3,
+        "cleared": 18,
+        "turns": 155,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          6,
+          3,
+          2,
+          3,
+          4,
+          18,
+          19,
+          8,
+          17,
+          9,
+          11,
+          5,
+          10,
+          3,
+          6,
+          10,
+          8,
+          13
+        ],
+        "moves": {
+          "charge": 54,
+          "hong2": 3,
+          "pegasus": 1,
+          "hong": 1,
+          "icesword": 1,
+          "dragonclaw": 21,
+          "defend": 6,
+          "boiler": 7,
+          "bigfly": 25,
+          "gun": 9,
+          "machete": 9,
+          "gungod": 1,
+          "footatk": 11,
+          "pointdiff": 6
+        },
+        "hp": 4,
+        "level": 14,
+        "damageTaken": 4,
+        "blocks": 4,
+        "loadoutChoices": 11
+      },
+      {
+        "seed": 4,
+        "cleared": 5,
+        "turns": 42,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 3
+        },
+        "stageTurns": [
+          2,
+          2,
+          2,
+          5,
+          9,
+          22
+        ],
+        "moves": {
+          "charge": 10,
+          "hong2": 5,
+          "pegasus": 1,
+          "icesword": 1,
+          "hong": 2,
+          "defend": 19,
+          "dragonclaw": 4
+        },
+        "hp": 0,
+        "level": 4,
+        "damageTaken": 3,
+        "blocks": 6,
+        "loadoutChoices": 1
+      },
+      {
+        "seed": 5,
+        "cleared": 18,
+        "turns": 191,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          2,
+          3,
+          2,
+          5,
+          21,
+          5,
+          8,
+          13,
+          7,
+          19,
+          8,
+          5,
+          16,
+          19,
+          12,
+          6,
+          13,
+          27
+        ],
+        "moves": {
+          "charge": 55,
+          "hong2": 3,
+          "pegasus": 1,
+          "hong": 3,
+          "icesword": 1,
+          "dragonclaw": 17,
+          "defend": 40,
+          "boiler": 5,
+          "bigfly": 9,
+          "gun": 13,
+          "machete": 25,
+          "gungod": 1,
+          "footatk": 7,
+          "pointdiff": 1,
+          "fiveslap": 3,
+          "bang": 2,
+          "fiveg": 5
+        },
+        "hp": 4,
+        "level": 15,
+        "damageTaken": 6,
+        "blocks": 15,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 6,
+        "cleared": 2,
+        "turns": 39,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          4,
+          2,
+          33
+        ],
+        "moves": {
+          "charge": 5,
+          "hong2": 3,
+          "pegasus": 3,
+          "hong": 1,
+          "defend": 27
+        },
+        "hp": 0,
+        "level": 1,
+        "damageTaken": 3,
+        "blocks": 9,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 7,
+        "cleared": 18,
+        "turns": 178,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          2,
+          22,
+          3,
+          15,
+          8,
+          3,
+          19,
+          8,
+          7,
+          23,
+          3,
+          9,
+          6,
+          10,
+          8,
+          7,
+          8,
+          17
+        ],
+        "moves": {
+          "charge": 50,
+          "hong2": 3,
+          "pegasus": 5,
+          "defend": 33,
+          "hong": 5,
+          "icesword": 2,
+          "dragonclaw": 15,
+          "bigfly": 19,
+          "gun": 10,
+          "machete": 12,
+          "gungod": 4,
+          "footatk": 6,
+          "oneg": 2,
+          "threeg": 3,
+          "wave": 2,
+          "fiveslap": 4,
+          "bang": 3
+        },
+        "hp": 2.5,
+        "level": 17,
+        "damageTaken": 6,
+        "blocks": 15,
+        "loadoutChoices": 14
+      },
+      {
+        "seed": 8,
+        "cleared": 18,
+        "turns": 174,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 15
+        },
+        "stageTurns": [
+          2,
+          3,
+          2,
+          5,
+          9,
+          8,
+          6,
+          6,
+          6,
+          16,
+          5,
+          11,
+          14,
+          29,
+          3,
+          17,
+          14,
+          18
+        ],
+        "moves": {
+          "charge": 65,
+          "hong2": 3,
+          "pegasus": 1,
+          "hong": 1,
+          "icesword": 1,
+          "dragonclaw": 10,
+          "defend": 12,
+          "bigfly": 6,
+          "gun": 16,
+          "boiler": 2,
+          "machete": 26,
+          "gungod": 5,
+          "footatk": 2,
+          "fiveg": 17,
+          "fiveslap": 7
+        },
+        "hp": 4,
+        "level": 17,
+        "damageTaken": 3,
+        "blocks": 5,
+        "loadoutChoices": 14
+      },
+      {
+        "seed": 9,
+        "cleared": 18,
+        "turns": 169,
+        "stalled": false,
+        "routes": {
+          "rest": 3,
+          "risk": 12
+        },
+        "stageTurns": [
+          2,
+          2,
+          2,
+          8,
+          6,
+          6,
+          16,
+          8,
+          6,
+          21,
+          10,
+          9,
+          21,
+          3,
+          8,
+          10,
+          20,
+          11
+        ],
+        "moves": {
+          "charge": 51,
+          "hong2": 3,
+          "pegasus": 1,
+          "icesword": 1,
+          "dragonclaw": 11,
+          "defend": 19,
+          "bigfly": 21,
+          "gun": 17,
+          "machete": 18,
+          "gungod": 2,
+          "footatk": 17,
+          "pointdiff": 5,
+          "threeg": 1,
+          "hong": 2
+        },
+        "hp": 4,
+        "level": 15,
+        "damageTaken": 6,
+        "blocks": 7,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 10,
+        "cleared": 18,
+        "turns": 173,
+        "stalled": false,
+        "routes": {
+          "rest": 3,
+          "risk": 12
+        },
+        "stageTurns": [
+          2,
+          4,
+          2,
+          18,
+          8,
+          2,
+          8,
+          6,
+          12,
+          6,
+          8,
+          21,
+          9,
+          9,
+          8,
+          23,
+          13,
+          14
+        ],
+        "moves": {
+          "charge": 55,
+          "hong2": 3,
+          "hong": 2,
+          "icesword": 6,
+          "defend": 24,
+          "dragonclaw": 4,
+          "hotmilk": 9,
+          "boiler": 2,
+          "bigfly": 17,
+          "gun": 10,
+          "machete": 11,
+          "gungod": 3,
+          "footatk": 13,
+          "pointdiff": 5,
+          "fiveg": 9
+        },
+        "hp": 4,
+        "level": 16,
+        "damageTaken": 7,
+        "blocks": 9,
+        "loadoutChoices": 13
+      },
+      {
+        "seed": 11,
+        "cleared": 18,
+        "turns": 185,
+        "stalled": false,
+        "routes": {
+          "rest": 2,
+          "risk": 13
+        },
+        "stageTurns": [
+          2,
+          8,
+          6,
+          19,
+          5,
+          2,
+          13,
+          15,
+          8,
+          19,
+          9,
+          14,
+          17,
+          7,
+          8,
+          11,
+          8,
+          14
+        ],
+        "moves": {
+          "charge": 66,
+          "hong2": 2,
+          "pegasus": 4,
+          "hong": 3,
+          "icesword": 9,
+          "defend": 16,
+          "hotmilk": 1,
+          "dragonclaw": 12,
+          "gun": 11,
+          "bigfly": 18,
+          "boiler": 2,
+          "machete": 16,
+          "gungod": 7,
+          "oneg": 5,
+          "threestar": 6,
+          "fiveg": 6,
+          "kajifen": 1
+        },
+        "hp": 4,
+        "level": 16,
+        "damageTaken": 7,
+        "blocks": 10,
+        "loadoutChoices": 13
+      },
+      {
+        "seed": 12,
+        "cleared": 4,
+        "turns": 32,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 2
+        },
+        "stageTurns": [
+          2,
+          3,
+          3,
+          12,
+          12
+        ],
+        "moves": {
+          "charge": 7,
+          "hong2": 3,
+          "pegasus": 1,
+          "hong": 1,
+          "icesword": 2,
+          "dragonclaw": 3,
+          "defend": 15
+        },
+        "hp": 0,
+        "level": 4,
+        "damageTaken": 4,
+        "blocks": 3,
+        "loadoutChoices": 1
+      },
+      {
+        "seed": 13,
+        "cleared": 1,
+        "turns": 40,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          2,
+          38
+        ],
+        "moves": {
+          "charge": 5,
+          "hong2": 5,
+          "defend": 30
+        },
+        "hp": 0,
+        "level": 0,
+        "damageTaken": 3,
+        "blocks": 11,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 14,
+        "cleared": 18,
+        "turns": 185,
+        "stalled": false,
+        "routes": {
+          "rest": 4,
+          "risk": 11
+        },
+        "stageTurns": [
+          2,
+          2,
+          2,
+          3,
+          13,
+          6,
+          5,
+          6,
+          8,
+          15,
+          17,
+          11,
+          13,
+          7,
+          11,
+          7,
+          40,
+          17
+        ],
+        "moves": {
+          "charge": 59,
+          "hong2": 1,
+          "pegasus": 1,
+          "icesword": 1,
+          "dragonclaw": 9,
+          "madian": 5,
+          "defend": 27,
+          "bigfly": 5,
+          "gun": 10,
+          "boiler": 1,
+          "machete": 23,
+          "gungod": 3,
+          "footatk": 3,
+          "fiveg": 32,
+          "fiveslap": 5
+        },
+        "hp": 4,
+        "level": 16,
+        "damageTaken": 6,
+        "blocks": 12,
+        "loadoutChoices": 13
+      },
+      {
+        "seed": 15,
+        "cleared": 4,
+        "turns": 66,
+        "stalled": false,
+        "routes": {
+          "rest": 2,
+          "risk": 0
+        },
+        "stageTurns": [
+          2,
+          15,
+          8,
+          12,
+          29
+        ],
+        "moves": {
+          "charge": 15,
+          "hong2": 9,
+          "defend": 30,
+          "pegasus": 10,
+          "hong": 1,
+          "icesword": 1
+        },
+        "hp": 0,
+        "level": 1,
+        "damageTaken": 7,
+        "blocks": 11,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 16,
+        "cleared": 18,
+        "turns": 149,
+        "stalled": false,
+        "routes": {
+          "rest": 2,
+          "risk": 13
+        },
+        "stageTurns": [
+          2,
+          3,
+          2,
+          16,
+          10,
+          12,
+          10,
+          3,
+          3,
+          11,
+          9,
+          3,
+          18,
+          6,
+          11,
+          12,
+          8,
+          10
+        ],
+        "moves": {
+          "charge": 51,
+          "hong2": 3,
+          "pegasus": 1,
+          "hong": 1,
+          "icesword": 1,
+          "dragonclaw": 17,
+          "fireclaw": 1,
+          "defend": 23,
+          "hotmilk": 1,
+          "bigfly": 4,
+          "gun": 8,
+          "boiler": 3,
+          "machete": 11,
+          "hangman": 1,
+          "triplekill": 1,
+          "footatk": 11,
+          "pointdiff": 6,
+          "fiveg": 5
+        },
+        "hp": 4,
+        "level": 16,
+        "damageTaken": 6,
+        "blocks": 8,
+        "loadoutChoices": 13
+      },
+      {
+        "seed": 17,
+        "cleared": 17,
+        "turns": 201,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          2,
+          2,
+          3,
+          3,
+          3,
+          4,
+          15,
+          8,
+          4,
+          18,
+          15,
+          4,
+          12,
+          29,
+          6,
+          11,
+          9,
+          53
+        ],
+        "moves": {
+          "charge": 60,
+          "hong2": 1,
+          "pegasus": 1,
+          "icesword": 2,
+          "dragonclaw": 15,
+          "boiler": 4,
+          "bigfly": 17,
+          "gun": 14,
+          "machete": 31,
+          "defend": 22,
+          "gungod": 2,
+          "footatk": 6,
+          "triplekick": 3,
+          "fiveslap": 3,
+          "fiveg": 20
+        },
+        "hp": 0,
+        "level": 15,
+        "damageTaken": 8,
+        "blocks": 10,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 18,
+        "cleared": 2,
+        "turns": 19,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 0
+        },
+        "stageTurns": [
+          2,
+          2,
+          15
+        ],
+        "moves": {
+          "charge": 3,
+          "hong2": 1,
+          "pegasus": 1,
+          "icesword": 2,
+          "defend": 12
+        },
+        "hp": 0,
+        "level": 2,
+        "damageTaken": 3,
+        "blocks": 2,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 19,
+        "cleared": 17,
+        "turns": 222,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          2,
+          2,
+          33,
+          3,
+          4,
+          5,
+          8,
+          3,
+          15,
+          19,
+          4,
+          12,
+          8,
+          16,
+          8,
+          18,
+          8,
+          54
+        ],
+        "moves": {
+          "charge": 59,
+          "hong2": 1,
+          "pegasus": 1,
+          "icesword": 6,
+          "defend": 63,
+          "hong": 3,
+          "dragonclaw": 18,
+          "bigfly": 12,
+          "gun": 10,
+          "boiler": 2,
+          "machete": 15,
+          "gungod": 3,
+          "handatk": 4,
+          "oneg": 18,
+          "fiveslap": 7
+        },
+        "hp": 0,
+        "level": 15,
+        "damageTaken": 9,
+        "blocks": 21,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 20,
+        "cleared": 6,
+        "turns": 69,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 3
+        },
+        "stageTurns": [
+          2,
+          2,
+          5,
+          3,
+          5,
+          8,
+          44
+        ],
+        "moves": {
+          "charge": 12,
+          "hong2": 1,
+          "pegasus": 1,
+          "icesword": 2,
+          "hong": 1,
+          "dragonclaw": 15,
+          "defend": 2,
+          "bigfly": 35
+        },
+        "hp": 0,
+        "level": 6,
+        "damageTaken": 5,
+        "blocks": 0,
+        "loadoutChoices": 3
+      },
+      {
+        "seed": 21,
+        "cleared": 18,
+        "turns": 155,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 15
+        },
+        "stageTurns": [
+          2,
+          2,
+          7,
+          3,
+          8,
+          5,
+          24,
+          7,
+          7,
+          18,
+          6,
+          4,
+          6,
+          10,
+          9,
+          7,
+          7,
+          23
+        ],
+        "moves": {
+          "charge": 49,
+          "hong2": 2,
+          "pegasus": 1,
+          "icesword": 4,
+          "defend": 15,
+          "dragonclaw": 17,
+          "bigfly": 20,
+          "boiler": 5,
+          "gun": 9,
+          "machete": 18,
+          "hangman": 1,
+          "footatk": 4,
+          "pointdiff": 3,
+          "fiveslap": 3,
+          "fiveg": 4
+        },
+        "hp": 2,
+        "level": 15,
+        "damageTaken": 6,
+        "blocks": 4,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 22,
+        "cleared": 18,
+        "turns": 168,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          8,
+          2,
+          8,
+          6,
+          25,
+          2,
+          12,
+          11,
+          12,
+          9,
+          3,
+          5,
+          10,
+          6,
+          8,
+          13,
+          14,
+          14
+        ],
+        "moves": {
+          "charge": 62,
+          "hong2": 9,
+          "pegasus": 1,
+          "icesword": 3,
+          "defend": 23,
+          "dragonclaw": 20,
+          "boiler": 5,
+          "gun": 5,
+          "bigfly": 5,
+          "machete": 13,
+          "gungod": 2,
+          "footatk": 9,
+          "pointdiff": 6,
+          "threeg": 3,
+          "kajifen": 1,
+          "hong": 1
+        },
+        "hp": 4,
+        "level": 15,
+        "damageTaken": 5,
+        "blocks": 10,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 23,
+        "cleared": 17,
+        "turns": 189,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 15
+        },
+        "stageTurns": [
+          4,
+          3,
+          2,
+          3,
+          6,
+          8,
+          16,
+          10,
+          14,
+          15,
+          5,
+          6,
+          7,
+          15,
+          17,
+          9,
+          9,
+          40
+        ],
+        "moves": {
+          "charge": 60,
+          "hong2": 3,
+          "pegasus": 2,
+          "icesword": 3,
+          "defend": 33,
+          "iceult": 1,
+          "dragonclaw": 21,
+          "boiler": 5,
+          "gun": 9,
+          "bigfly": 3,
+          "machete": 12,
+          "gungod": 2,
+          "footatk": 15,
+          "triplekick": 1,
+          "fiveg": 14,
+          "fiveslap": 5
+        },
+        "hp": 0,
+        "level": 16,
+        "damageTaken": 4,
+        "blocks": 12,
+        "loadoutChoices": 13
+      },
+      {
+        "seed": 24,
+        "cleared": 18,
+        "turns": 178,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          2,
+          5,
+          15,
+          6,
+          7,
+          10,
+          15,
+          8,
+          15,
+          13,
+          3,
+          6,
+          4,
+          9,
+          22,
+          6,
+          7,
+          25
+        ],
+        "moves": {
+          "charge": 50,
+          "hong2": 1,
+          "pegasus": 2,
+          "hong": 7,
+          "icesword": 9,
+          "defend": 42,
+          "dragonclaw": 20,
+          "boiler": 3,
+          "bigfly": 7,
+          "hotmilk": 4,
+          "machete": 16,
+          "gun": 5,
+          "handatk": 4,
+          "pointdiff": 1,
+          "fiveslap": 2,
+          "kajifen": 1,
+          "oneg": 4
+        },
+        "hp": 2,
+        "level": 15,
+        "damageTaken": 12,
+        "blocks": 12,
+        "loadoutChoices": 12
+      },
+      {
+        "seed": 25,
+        "cleared": 18,
+        "turns": 186,
+        "stalled": false,
+        "routes": {
+          "rest": 3,
+          "risk": 12
+        },
+        "stageTurns": [
+          2,
+          2,
+          5,
+          8,
+          10,
+          25,
+          3,
+          17,
+          3,
+          14,
+          7,
+          6,
+          11,
+          23,
+          13,
+          13,
+          8,
+          16
+        ],
+        "moves": {
+          "charge": 58,
+          "hong2": 2,
+          "pegasus": 1,
+          "icesword": 6,
+          "defend": 25,
+          "dragonclaw": 13,
+          "fireclaw": 1,
+          "bigfly": 19,
+          "boiler": 2,
+          "gun": 10,
+          "machete": 8,
+          "gungod": 2,
+          "footatk": 27,
+          "pointdiff": 7,
+          "fiveg": 5
+        },
+        "hp": 4,
+        "level": 16,
+        "damageTaken": 5,
+        "blocks": 13,
+        "loadoutChoices": 13
+      },
+      {
+        "seed": 26,
+        "cleared": 18,
+        "turns": 194,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          2,
+          3,
+          3,
+          6,
+          21,
+          14,
+          8,
+          9,
+          6,
+          17,
+          4,
+          7,
+          9,
+          3,
+          10,
+          30,
+          10,
+          32
+        ],
+        "moves": {
+          "charge": 62,
+          "hong2": 6,
+          "pegasus": 2,
+          "icesword": 2,
+          "dragonclaw": 21,
+          "fireclaw": 1,
+          "defend": 26,
+          "gun": 7,
+          "bigfly": 11,
+          "machete": 14,
+          "triplekick": 1,
+          "handatk": 2,
+          "threeg": 3,
+          "hong": 1,
+          "fiveg": 26,
+          "pointdiff": 6,
+          "wave": 3
+        },
+        "hp": 3.5,
+        "level": 17,
+        "damageTaken": 5,
+        "blocks": 16,
+        "loadoutChoices": 14
+      },
+      {
+        "seed": 27,
+        "cleared": 4,
+        "turns": 40,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 2
+        },
+        "stageTurns": [
+          2,
+          8,
+          2,
+          6,
+          22
+        ],
+        "moves": {
+          "charge": 10,
+          "hong2": 4,
+          "pegasus": 3,
+          "hong": 6,
+          "icesword": 1,
+          "defend": 16
+        },
+        "hp": 0,
+        "level": 3,
+        "damageTaken": 4,
+        "blocks": 5,
+        "loadoutChoices": 0
+      },
+      {
+        "seed": 28,
+        "cleared": 18,
+        "turns": 157,
+        "stalled": false,
+        "routes": {
+          "rest": 0,
+          "risk": 15
+        },
+        "stageTurns": [
+          4,
+          2,
+          2,
+          3,
+          4,
+          24,
+          8,
+          14,
+          9,
+          22,
+          4,
+          3,
+          11,
+          6,
+          6,
+          6,
+          11,
+          18
+        ],
+        "moves": {
+          "charge": 51,
+          "hong2": 2,
+          "pegasus": 1,
+          "hong": 3,
+          "dragonclaw": 16,
+          "defend": 5,
+          "bigfly": 29,
+          "gun": 17,
+          "fireclaw": 1,
+          "hangman": 1,
+          "machete": 9,
+          "triplekick": 3,
+          "handatk": 2,
+          "ka": 1,
+          "oneg": 5,
+          "boiler": 1,
+          "fiveslap": 4,
+          "threeg": 6
+        },
+        "hp": 4,
+        "level": 16,
+        "damageTaken": 2,
+        "blocks": 3,
+        "loadoutChoices": 13
+      },
+      {
+        "seed": 29,
+        "cleared": 18,
+        "turns": 150,
+        "stalled": false,
+        "routes": {
+          "rest": 1,
+          "risk": 14
+        },
+        "stageTurns": [
+          2,
+          3,
+          2,
+          5,
+          13,
+          7,
+          21,
+          6,
+          4,
+          11,
+          4,
+          7,
+          13,
+          6,
+          4,
+          12,
+          7,
+          23
+        ],
+        "moves": {
+          "charge": 50,
+          "hong2": 1,
+          "pegasus": 1,
+          "hong": 2,
+          "dragonclaw": 19,
+          "defend": 16,
+          "boiler": 4,
+          "bigfly": 11,
+          "gun": 8,
+          "machete": 12,
+          "gungod": 1,
+          "shatter": 1,
+          "footatk": 8,
+          "threestar": 2,
+          "fiveslap": 5,
+          "fiveg": 9
+        },
+        "hp": 3.5,
+        "level": 16,
+        "damageTaken": 5,
+        "blocks": 7,
+        "loadoutChoices": 13
+      },
+      {
+        "seed": 30,
+        "cleared": 18,
+        "turns": 182,
+        "stalled": false,
+        "routes": {
+          "rest": 2,
+          "risk": 13
+        },
+        "stageTurns": [
+          2,
+          2,
+          2,
+          3,
+          7,
+          9,
+          14,
+          6,
+          15,
+          10,
+          10,
+          3,
+          16,
+          8,
+          10,
+          28,
+          27,
+          10
+        ],
+        "moves": {
+          "charge": 62,
+          "hong2": 1,
+          "pegasus": 1,
+          "icesword": 1,
+          "dragonclaw": 15,
+          "defend": 21,
+          "boiler": 6,
+          "bigfly": 11,
+          "gun": 13,
+          "machete": 16,
+          "gungod": 4,
+          "footatk": 23,
+          "pointdiff": 5,
+          "fiveg": 2,
+          "kajifen": 1
+        },
+        "hp": 4,
+        "level": 15,
+        "damageTaken": 7.5,
+        "blocks": 8,
+        "loadoutChoices": 12
+      }
+    ]
+  }
+}
