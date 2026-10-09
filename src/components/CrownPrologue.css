@@ -1,107 +1,126 @@
-/* A full-viewport story page. Its own grid keeps the skip/continue controls onscreen. */
+/* Alternating wide scenes and close-ups make a single, irregular comic page. */
 .crown-dialog.crown-opening {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100dvh;
-  min-height: 0;
-  max-width: none;
-  max-height: none;
-  margin: 0;
+  position: fixed; inset: 0; width: 100%; height: 100dvh; min-height: 0; max-width: none; max-height: none; margin: 0;
   padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
-  border: 0;
-  border-radius: 0;
-  box-shadow: none;
-  overflow: hidden;
-  background: #0c151b;
+  border: 0; border-radius: 0; box-shadow: none; overflow: hidden; background: #0c151b; color: #eee0bf;
 }
 .crown-dialog.crown-opening[open] { display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
 .crown-dialog.crown-opening::backdrop { background: #0c151b; backdrop-filter: none; }
 .crown-opening-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 13px clamp(16px, 3vw, 48px); }
 .crown-opening-header .crown-wordmark { gap: 10px; }
 .crown-opening-header .crown-mark { width: 34px; height: 34px; }
-.crown-opening-header .crown-wordmark h1 { font-size: clamp(21px, 2vw, 28px); }
-.crown-opening-header .crown-wordmark > div > span { font-size: 9px; letter-spacing: .2em; }
+.crown-opening-header .crown-wordmark h1 { font: 800 clamp(21px, 2vw, 30px)/1.25 'Crown Display', 'Crown CJK', Georgia, serif; letter-spacing: .045em; }
+.crown-opening-header .crown-wordmark > div > span { font-size: 9px; letter-spacing: .24em; }
 .crown-opening-header-actions { display: flex; align-items: center; gap: 16px; }
 .crown-opening-header-actions .crown-text-button { font-size: 14px; }
 .crown-opening-header-actions .crown-opening-lang { min-width: 44px; min-height: 44px; padding-inline: 5px; font: 750 12px/1.4 system-ui, sans-serif; }
-.crown-opening-page { min-height: 0; min-width: 0; display: grid; grid-template-columns: 1.08fr .92fr; grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 clamp(12px, 2vw, 32px); }
+.crown-opening-page { min-height: 0; min-width: 0; display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); grid-template-rows: .94fr 1.06fr; gap: 12px 0; padding: 0 clamp(12px, 2vw, 32px); }
 .crown-opening-panel {
-  position: relative;
-  display: block;
-  width: 100%;
-  min-width: 0;
-  min-height: 0;
-  padding: 0;
-  overflow: hidden;
-  text-align: left;
-  border: 3px solid #d4c8ad;
-  background: #20323b;
-  color: #182128;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateY(10px);
+  --panel-cut: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  position: relative; isolation: isolate; display: block; width: 100%; min-width: 0; min-height: 0; padding: 0; overflow: hidden;
+  text-align: left; border: 0; clip-path: var(--panel-cut); background: #d5c6a7; color: #182128; opacity: 0; visibility: hidden; transform: translateY(12px);
 }
-.crown-opening-panel[data-revealed="true"] { visibility: visible; opacity: 1; transform: none; animation: crown-panel-arrive .7s ease-out both; }
-.crown-opening-panel img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 47%; }
-.crown-opening-panel-1 img { object-position: 48% 48%; }
-.crown-opening-panel-3 img { object-position: 42% 53%; }
-.crown-opening-panel::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 0 0 1px #0b151b, inset 0 -38px 40px -28px #080f1a; }
-.crown-opening-panel-heading { position: absolute; display: flex; align-items: stretch; gap: 0; top: 12px; left: 12px; max-width: calc(100% - 24px); border: 2px solid #14212a; box-shadow: 3px 3px 0 #102027b8; background: #eee0be; font: 800 clamp(13px, 1.25vw, 19px)/1.3 Georgia, 'Songti SC', serif; }
-.crown-opening-panel-heading b { padding: 8px 10px; color: #edd7ad; background: #1a2c34; font: 750 12px/1.5 ui-monospace, monospace; }
-.crown-opening-panel-heading > span { display: block; padding: 8px 12px; }
-.crown-opening-speech { position: absolute; right: 18px; bottom: 18px; width: fit-content; max-width: min(85%, 430px); padding: 10px 16px; color: #1c2b30; background: #f1e5cb; border: 2px solid #13202a; box-shadow: 4px 4px 0 #102027c9; font: 750 clamp(14px, 1.25vw, 19px)/1.5 Georgia, 'Songti SC', serif; text-wrap: pretty; }
-.crown-opening-speech::after { content: ''; position: absolute; bottom: -9px; left: 23px; width: 13px; height: 13px; background: #f1e5cb; border-right: 2px solid #13202a; border-bottom: 2px solid #13202a; transform: skew(-18deg) rotate(45deg); }
-.crown-opening-fallback { position: absolute; inset: 24% 12% 24%; display: grid; align-content: center; color: #efe0bd; font-size: clamp(14px, 1.4vw, 20px); line-height: 1.75; text-align: center; }
+.crown-opening-panel-1 { grid-column: 1 / 8; --panel-cut: polygon(0 0, 100% 0, 94% 100%, 0 96%); }
+.crown-opening-panel-2 { grid-column: 8 / 13; --panel-cut: polygon(3% 0, 100% 4%, 100% 100%, 0 100%); }
+.crown-opening-panel-3 { grid-column: 1 / 6; --panel-cut: polygon(0 1%, 94% 0, 100% 100%, 0 100%); }
+.crown-opening-panel-4 { grid-column: 6 / 13; --panel-cut: polygon(0 0, 100% 0, 100% 96%, 6% 100%); }
+.crown-opening-panel[data-revealed="true"] { visibility: visible; opacity: 1; transform: none; animation: crown-panel-arrive 1.1s cubic-bezier(.2,.7,.3,1) both; }
+.crown-opening-panel:focus-visible { background: #fff1c5; outline: none; }
+.crown-opening-panel-art { position: absolute; inset: 3px; display: block; overflow: hidden; clip-path: var(--panel-cut); background: #1a2a31; }
+.crown-opening-panel img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 47%; transition: filter 1s ease; }
+.crown-opening-panel[data-current="false"] img { filter: brightness(.82) saturate(.88); }
+.crown-opening-panel-1 img { object-position: 48% 52%; }
+.crown-opening-panel-2 img { object-position: 44% 42%; }
+.crown-opening-panel-3 img { object-position: 36% 49%; }
+.crown-opening-panel-4 img { object-position: 50% 55%; }
+.crown-opening-panel-art::after { content: ''; position: absolute; inset: 0; pointer-events: none; box-shadow: inset 0 -70px 65px -40px #080f1aba; }
+.crown-opening-panel-heading { position: absolute; display: flex; align-items: center; gap: 9px; top: 14px; left: 16px; max-width: calc(100% - 40px); color: #f0e1c1; text-shadow: 1px 2px 1px #081016, -1px -1px 2px #081016; font: 800 clamp(13px, 1.25vw, 19px)/1.3 Georgia, 'Songti SC', serif; opacity: 0; transition: opacity .7s ease .2s; }
+.crown-opening-panel[data-revealed="true"] .crown-opening-panel-heading { opacity: 1; }
+.crown-opening-panel-heading b { display: grid; place-items: center; width: 25px; height: 25px; background: #12212bd9; border: 1px solid #cbb99099; font: 650 10px/1 ui-monospace, monospace; text-shadow: none; }
+.crown-opening-panel-2 .crown-opening-panel-heading { left: 9%; }
+.crown-opening-panel-4 .crown-opening-panel-heading { left: 5%; }
+.crown-opening-speech {
+  position: absolute; right: 7%; bottom: 24px; width: fit-content; max-width: min(77%, 400px); padding: 11px 17px 12px;
+  color: #1b292e; background: #f1e5cb; border: 2px solid #142028; border-radius: 18px 22px 17px 5px / 13px 15px 12px 6px;
+  box-shadow: 3px 4px 0 #0a151cbf; font: 650 clamp(14px, 1.2vw, 19px)/1.5 system-ui, sans-serif; text-wrap: pretty;
+  opacity: 0; transform: translateY(5px); transition: opacity .65s ease, transform .65s ease;
+}
+.crown-opening-panel[data-narrated="true"] .crown-opening-speech { opacity: 1; transform: none; }
+.crown-opening-speech::after { content: ''; position: absolute; top: -9px; left: 25px; width: 13px; height: 13px; background: #f1e5cb; border-left: 2px solid #142028; border-top: 2px solid #142028; transform: skew(20deg) rotate(45deg); }
+.crown-opening-speaker { display: block; margin-bottom: 3px; color: #6f5943; font: 700 10px/1.35 system-ui, sans-serif; letter-spacing: .12em; }
+.crown-opening-panel-1 .crown-opening-speech { right: 9%; left: auto; }
+.crown-opening-panel-1 .crown-opening-speech::after { left: auto; right: 25px; }
+.crown-opening-panel-2 .crown-opening-speech::after { left: auto; right: 25px; }
+.crown-opening-panel-3 .crown-opening-speech { right: 9%; bottom: 26px; }
+.crown-opening-panel-4 .crown-opening-speech { right: 5%; bottom: 8%; }
+.crown-opening-fallback { position: absolute; inset: 23% 10% 33%; display: grid; align-content: center; color: #efe0bd; font-size: clamp(14px, 1.4vw, 20px); line-height: 1.7; text-align: center; }
 .crown-opening-panel[data-failed="true"] img { visibility: hidden; }
-.crown-opening-footer { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 17px clamp(16px, 3vw, 48px) 20px; background: #0c151b; }
+.crown-opening-footer { display: flex; align-items: center; justify-content: space-between; gap: 28px; padding: 19px clamp(16px, 3vw, 48px) 20px; background: #0c151b; }
 .crown-opening-caption { flex: 1; min-width: 0; }
-.crown-opening-caption > span { display: flex; align-items: center; gap: 16px; color: #b9a77f; font: 650 11px/1.5 system-ui, sans-serif; letter-spacing: .1em; }
+.crown-opening-caption > span { display: flex; align-items: center; gap: 16px; color: #c5ad7d; font: 650 12px/1.5 system-ui, sans-serif; letter-spacing: .1em; }
 .crown-opening-caption b { flex: 0 0 auto; font: 600 11px/1.5 ui-monospace, monospace; color: #9dacaa; letter-spacing: .05em; }
 .crown-opening-caption p { padding-top: 5px; min-height: 1.5em; color: #e6dcc6; font: 500 clamp(14px, 1.25vw, 18px)/1.5 system-ui, sans-serif; text-wrap: pretty; }
+.crown-opening-caption p[data-ready="true"] { animation: crown-caption-arrive .65s ease both; }
 .crown-opening-controls { display: flex; align-items: center; flex: 0 0 auto; gap: 20px; }
 .crown-opening-controls .crown-primary-button { min-width: 160px; font-size: 15px; }
-.crown-opening-progress { display: flex; gap: 8px; }
-.crown-opening-progress i { display: block; height: 6px; width: 18px; background: #3c4b4d; }
+.crown-opening-progress { display: flex; align-items: center; gap: 7px; }
+.crown-opening-progress i { display: block; height: 5px; width: 17px; transform: skewX(-20deg); background: #3c4b4d; transition: background-color .5s ease; }
 .crown-opening-progress i[data-revealed="true"] { background: #e9c487; }
-@keyframes crown-panel-arrive { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-.crown-opening--still .crown-opening-panel { animation: none; transform: none; }
-
+@keyframes crown-panel-arrive { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes crown-caption-arrive { from { opacity: 0; } to { opacity: 1; } }
+.crown-opening--still .crown-opening-panel, .crown-opening--still .crown-opening-caption p { animation: none; transform: none; }
+.crown-opening--still .crown-opening-panel img, .crown-opening--still .crown-opening-panel-heading, .crown-opening--still .crown-opening-speech { transition: none; transform: none; }
 @media (max-width: 700px) {
   .crown-opening-header { padding: 10px 14px; }
   .crown-opening-header .crown-mark { width: 29px; height: 31px; }
   .crown-opening-header .crown-wordmark h1 { font-size: 22px; }
   .crown-opening-header-actions { gap: 8px; }
   .crown-opening-header-actions .crown-text-button { font-size: 13px; }
-  .crown-opening-page { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-inline: 10px; }
-  .crown-opening-panel { border-width: 2px; }
-  .crown-opening-panel-heading { top: 7px; left: 7px; max-width: calc(100% - 14px); font-size: 13px; line-height: 1.35; }
-  .crown-opening-panel-heading b { padding: 6px; font-size: 10px; }
-  .crown-opening-panel-heading > span { padding: 6px 7px; }
-  .crown-opening-speech { bottom: 12px; right: 7px; max-width: calc(100% - 14px); padding: 8px 9px; font-size: 14px; line-height: 1.45; box-shadow: 2px 2px 0 #102027b8; }
-  .crown-opening-speech::after { left: 15px; }
+  .crown-opening-page { grid-template-columns: repeat(2, minmax(0, 1fr)); grid-template-rows: repeat(2, minmax(0, 1fr)); gap: 9px 0; padding-inline: 9px; }
+  .crown-opening-panel-1, .crown-opening-panel-3 { grid-column: 1; }
+  .crown-opening-panel-2, .crown-opening-panel-4 { grid-column: 2; }
+  .crown-opening-panel-art { inset: 2px; }
+  .crown-opening-panel-heading { top: 8px; left: 10px; gap: 5px; max-width: calc(100% - 22px); font-size: 12px; }
+  .crown-opening-panel-heading b { width: 21px; height: 22px; font-size: 9px; }
+  .crown-opening-panel-heading > span { display: none; }
+  .crown-opening-panel-2 .crown-opening-panel-heading { left: 11%; }
+  .crown-opening-panel-4 .crown-opening-panel-heading { left: 7%; }
+  .crown-opening-panel-1 img { object-position: 37% 50%; }
+  .crown-opening-panel-2 img { object-position: 39% 43%; }
+  .crown-opening-panel-3 img { object-position: 31% 48%; }
+  .crown-opening-panel-4 img { object-position: 51% 56%; }
+  .crown-opening-speech { bottom: 17px; right: 8%; max-width: 84%; padding: 8px 9px 9px; font-size: 14px; line-height: 1.45; border-width: 1px; border-radius: 12px 15px 13px 4px; box-shadow: 2px 3px 0 #102027b8; }
+  .crown-opening-speech::after { width: 10px; height: 10px; top: -6px; left: 14px; border-width: 1px; }
+  .crown-opening-speaker { font-size: 9px; letter-spacing: .03em; }
+  .crown-opening-panel-1 .crown-opening-speech { right: 9%; left: auto; }
+  .crown-opening-panel-3 .crown-opening-speech { right: 6%; bottom: 17px; }
+  .crown-opening-panel-4 .crown-opening-speech { right: 4%; bottom: 8%; }
   .crown-opening-footer { flex-direction: column; align-items: stretch; gap: 12px; padding: 14px 16px 16px; }
-  .crown-opening-caption { min-height: 66px; }
-  .crown-opening-caption > span { font-size: 10px; letter-spacing: .03em; }
+  .crown-opening-caption { min-height: 68px; }
+  .crown-opening-caption > span { font-size: 11px; letter-spacing: .03em; }
   .crown-opening-caption b { margin-left: auto; }
   .crown-opening-caption p { font-size: 15px; line-height: 1.5; }
   .crown-opening-controls { justify-content: space-between; }
   .crown-opening-controls .crown-primary-button { min-height: 46px; padding: 9px 18px; min-width: 155px; }
-  .crown-opening-fallback { inset: 28% 8% 32%; font-size: 12px; line-height: 1.5; }
+  .crown-opening-fallback { inset: 18% 8% 44%; font-size: 12px; line-height: 1.5; }
 }
 @media (max-height: 600px) and (min-width: 701px) {
-  .crown-opening-header { padding: 5px 18px; }
+  .crown-opening-header { padding: 4px 18px; }
   .crown-opening-header .crown-wordmark > div > span { display: none; }
   .crown-opening-header .crown-wordmark h1 { font-size: 20px; }
   .crown-opening-header .crown-mark { width: 26px; height: 27px; }
-  .crown-opening-page { gap: 6px; padding-inline: 12px; }
-  .crown-opening-panel { border-width: 2px; }
-  .crown-opening-panel-heading { top: 6px; left: 6px; font-size: 12px; }
-  .crown-opening-panel-heading b { font-size: 10px; padding: 3px 7px; }
-  .crown-opening-panel-heading > span { padding: 3px 8px; }
-  .crown-opening-speech { bottom: 10px; right: 8px; padding: 4px 8px; font-size: 12px; max-width: 88%; }
+  .crown-opening-page { gap: 6px 0; padding-inline: 12px; }
+  .crown-opening-panel-art { inset: 2px; }
+  .crown-opening-panel-heading { top: 6px; left: 9px; font-size: 12px; gap: 6px; }
+  .crown-opening-panel-heading b { font-size: 9px; width: 20px; height: 20px; }
+  .crown-opening-panel-heading > span { display: none; }
+  .crown-opening-speech { bottom: 11px; padding: 5px 10px 6px; font-size: 12px; max-width: 85%; border-width: 1px; border-radius: 12px 13px 10px 4px; }
+  .crown-opening-speech::after { top: -6px; width: 10px; height: 10px; border-width: 1px; }
+  .crown-opening-speaker { font-size: 9px; margin-bottom: 0; }
+  .crown-opening-panel-3 .crown-opening-speech { bottom: 12px; }
+  .crown-opening-panel-4 .crown-opening-speech { bottom: 12px; }
   .crown-opening-footer { padding: 9px 18px 10px; gap: 18px; }
-  .crown-opening-caption > span { font-size: 9px; }
+  .crown-opening-caption > span { font-size: 10px; }
   .crown-opening-caption p { font-size: 13px; padding-top: 2px; }
   .crown-opening-controls { gap: 12px; }
   .crown-opening-controls .crown-primary-button { min-height: 44px; padding: 8px 14px; font-size: 13px; min-width: 140px; }
@@ -111,15 +130,15 @@
   .crown-opening-header { padding-block: 3px; }
   .crown-opening-header .crown-wordmark > div > span { display: none; }
   .crown-opening-header .crown-wordmark h1 { font-size: 19px; }
-  .crown-opening-page { gap: 6px; padding-inline: 8px; }
-  .crown-opening-panel-heading { font-size: 11px; top: 4px; left: 4px; max-width: calc(100% - 8px); }
-  .crown-opening-panel-heading > span { padding: 4px 5px; }
-  .crown-opening-panel-heading b { padding: 4px; }
-  .crown-opening-speech { font-size: 12px; padding: 5px 6px; right: 4px; bottom: 9px; max-width: calc(100% - 8px); }
+  .crown-opening-page { gap: 6px 0; padding-inline: 8px; }
+  .crown-opening-panel-heading { top: 5px; left: 7px; }
+  .crown-opening-speech { font-size: 12px; padding: 5px 7px 6px; bottom: 12px; }
+  .crown-opening-speaker { font-size: 8px; margin-bottom: 1px; }
+  .crown-opening-panel-3 .crown-opening-speech { bottom: 12px; }
   .crown-opening-footer { padding: 9px 12px 10px; gap: 8px; }
-  .crown-opening-caption { min-height: 59px; }
+  .crown-opening-caption { min-height: 62px; }
   .crown-opening-caption p { font-size: 13px; }
-  .crown-opening-caption > span { font-size: 9px; }
+  .crown-opening-caption > span { font-size: 10px; }
 }
 @media (max-width: 380px) {
   .crown-opening-header { gap: 6px; padding-inline: 12px; }
@@ -130,5 +149,6 @@
   .crown-opening-header-actions .crown-text-button { gap: 4px; font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .crown-opening-panel { animation: none !important; transform: none !important; }
+  .crown-opening-panel, .crown-opening-caption p { animation: none !important; transform: none !important; }
+  .crown-opening-panel img, .crown-opening-panel-heading, .crown-opening-speech { transition: none !important; transform: none !important; }
 }

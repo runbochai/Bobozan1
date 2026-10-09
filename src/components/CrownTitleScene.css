@@ -6,18 +6,36 @@
 .crown-title-scene { position: absolute; inset: 0; overflow: hidden; background: #0e1b26; isolation: isolate; }
 .pixel-app.crown-title-screen .brawl-menu-backdrop, .pixel-app.crown-arena-menu .brawl-menu-backdrop { min-height: 0; }
 .crown-title-castle { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 55% 42%; }
-.crown-title-distance { position: absolute; inset: 0; background: linear-gradient(90deg, #0b172c70, transparent 60%), linear-gradient(180deg, #0b172c12 32%, #0b172c10 58%, #0b172c6b); }
+.crown-title-distance { position: absolute; inset: 0; background: linear-gradient(90deg, #0b172c20, transparent 60%), linear-gradient(180deg, #0b172c12 32%, #0b172c10 58%, #0b172c6b); }
+.crown-title-gate-light { position: absolute; left: 31%; top: 44%; width: 27%; height: 38%; background: radial-gradient(ellipse, #e9aa4624, transparent 68%); mix-blend-mode: screen; pointer-events: none; }
+.crown-title-rook-shadow { position: absolute; width: 17%; height: 3svh; right: 38%; bottom: 25svh; border-radius: 50%; background: #06121eb3; filter: blur(7px); transform: skewX(-24deg); }
 .crown-title-cast { position: absolute; width: auto; max-width: none; object-fit: contain; object-position: bottom; filter: drop-shadow(0 14px 7px #030d17a6); user-select: none; }
-.crown-title-rook { height: 52svh; right: 43%; bottom: 21svh; filter: brightness(.83) saturate(.8) drop-shadow(0 12px 6px #0414219c); }
+.crown-title-rook { height: 47svh; right: 38%; bottom: 26svh; filter: brightness(.91) saturate(.84) drop-shadow(0 6px 4px #0414219c); }
 .crown-title-axle { height: 34svh; right: 5%; bottom: 26svh; filter: brightness(.92) drop-shadow(0 12px 8px #041421b0); }
 .crown-title-dragon { height: 80svh; right: 3%; bottom: -3svh; transform: scaleX(-1); }
-.crown-title-foreground { position: absolute; inset: 0; background: linear-gradient(0deg, #091522b5, transparent 23%), linear-gradient(90deg, #0d192bea 0%, #0d192b7a 30%, transparent 53%); }
+.crown-title-foreground { position: absolute; inset: 0; background: linear-gradient(0deg, #091522b5, transparent 23%), linear-gradient(90deg, #0d192b9c 0%, #0d192b42 30%, transparent 53%); }
+.crown-title-motes { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.crown-title-motes i { position: absolute; left: 29%; top: 60%; width: 2px; height: 3px; background: #e8c083; opacity: 0; animation: crown-drifting-dust 9s linear infinite; }
+.crown-title-motes i:nth-child(2) { left: 44%; top: 70%; animation-delay: -2s; }
+.crown-title-motes i:nth-child(3) { left: 20%; top: 56%; animation-delay: -5s; }
+.crown-title-motes i:nth-child(4) { left: 67%; top: 43%; animation-delay: -3s; }
+.crown-title-motes i:nth-child(5) { left: 88%; top: 70%; animation-delay: -6s; }
+.crown-title-motes i:nth-child(6) { left: 51%; top: 64%; animation-delay: -8s; }
+.crown-title-motes i:nth-child(7) { left: 8%; top: 58%; animation-delay: -4s; }
+.crown-title-motes i:nth-child(8) { left: 77%; top: 82%; animation-delay: -1s; }
+@keyframes crown-drifting-dust { 0%, 100% { opacity: 0; transform: translate(0, 8px); } 20% { opacity: .5; } 80% { opacity: .3; } 95% { transform: translate(14px, -60px); } }
 :root[data-world-theme] .crown-title-screen .brawl-menu-backdrop::after { background: none; }
 .pixel-app.crown-title-screen { padding: 76px max(28px, 8vw) max(28px, 5svh); align-items: flex-start; }
 .pixel-app.crown-title-screen .pixel-title-content { width: min(470px, 47vw); max-width: none; }
-.pixel-app.crown-title-screen .brawl-logo { top: 13svh; left: max(28px, 8vw); transform: none; }
-.pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { margin: 0; font-size: clamp(32px, 4vw, 60px); color: #efdfbb; text-shadow: 3px 4px #0b1523; }
-.pixel-app.crown-title-screen .crown-title-subtitle { margin-top: 12px; color: #f1d29b; font: 900 clamp(32px, 4vw, 58px)/1.3 Georgia, 'Songti SC', 'SimSun', serif; letter-spacing: .12em; text-shadow: 2px 4px #06101c; }
+.pixel-app.crown-title-screen .brawl-logo { top: 12svh; left: max(28px, 8vw); transform: none; width: min(480px, 40vw); text-align: center; filter: drop-shadow(0 4px 10px #06101c); }
+.crown-title-edition { display: block; margin-bottom: 11px; color: #cfb98f; font: 600 10px/1.5 Georgia, serif; letter-spacing: .35em; }
+.pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { margin: 0; font: 700 clamp(38px, 5vw, 76px)/1.1 'Crown Display', Georgia, serif; letter-spacing: -.025em; color: #f2dfb5; text-shadow: 0 2px #94744c, 0 5px 1px #08131d; }
+.pixel-app.crown-title-screen .crown-title-subtitle { margin-top: 10px; color: #efc990; font: 400 clamp(40px, 5.4vw, 82px)/1.25 'Crown CJK', 'Kaiti SC', 'KaiTi', serif; letter-spacing: .08em; text-shadow: 1px 2px #715332, 2px 5px #06101c; transform: rotate(-2deg); }
+.pixel-app.crown-title-screen .crown-title-subtitle[data-lang="en"] { font: 700 clamp(22px, 2.5vw, 36px)/1.3 'Crown Display', Georgia, serif; letter-spacing: .04em; transform: none; margin-top: 16px; }
+.crown-title-crest { display: flex; align-items: center; gap: 16px; max-width: 310px; margin: 18px auto 0; color: #cda775; }
+.crown-title-crest svg { width: 122px; height: 38px; flex: 0 0 auto; }
+.crown-title-crest > span { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, #c4a16a); }
+.crown-title-crest > span:last-child { transform: scaleX(-1); }
 .pixel-app.crown-title-screen .brawl-start-panel { gap: 18px; }
 :root[data-world-theme] .pixel-app.crown-title-screen .brawl-start-panel { background: transparent !important; }
 .pixel-app.crown-title-screen .pixel-player-setup [class*="grid-cols-4"] { top: auto; bottom: calc(100% + 10px); margin-top: 0; max-height: min(50svh, calc(100svh - 205px)); }
@@ -44,11 +62,16 @@
 @media (max-width: 700px), (max-aspect-ratio: 4/5) {
   .pixel-app.crown-title-screen { padding: 76px 20px max(22px, env(safe-area-inset-bottom)); align-items: center; }
   .pixel-app.crown-title-screen .pixel-title-content { width: 100%; max-width: 520px; }
-  .pixel-app.crown-title-screen .brawl-logo { top: 12svh; left: 7%; }
-  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: clamp(29px, 6.5vw, 48px); }
-  .pixel-app.crown-title-screen .crown-title-subtitle { margin-top: 7px; font-size: clamp(30px, 6.8vw, 46px); }
+  .pixel-app.crown-title-screen .brawl-logo { top: 10svh; left: 5%; width: 72%; max-width: 480px; }
+  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: clamp(32px, 8.1vw, 58px); }
+  .pixel-app.crown-title-screen .crown-title-subtitle { margin-top: 8px; font-size: clamp(39px, 10.5vw, 66px); }
+  .pixel-app.crown-title-screen .crown-title-subtitle[data-lang="en"] { font-size: clamp(21px, 4.6vw, 30px); margin-top: 10px; }
+  .crown-title-edition { font-size: 8px; margin-bottom: 7px; letter-spacing: .26em; }
+  .crown-title-crest { margin-top: 9px; max-width: 190px; gap: 12px; }
+  .crown-title-crest svg { width: 95px; height: 28px; }
   .crown-title-castle { object-position: 53% 38%; }
   .crown-title-rook { height: 35svh; left: -5%; right: auto; bottom: 17svh; }
+  .crown-title-rook-shadow { display: none; }
   .crown-title-axle { height: 22svh; left: auto; right: -2%; bottom: 49svh; }
   .crown-title-dragon { height: 59svh; right: -16%; bottom: 17svh; }
   .crown-title-foreground { background: linear-gradient(180deg, #09172412 38%, #09172445 56%, #091724eb 81%, #091724f5); }
@@ -70,15 +93,19 @@
   .pixel-app.crown-title-screen .pixel-player-setup > :first-child > span { font-size: 8px; letter-spacing: 0; white-space: nowrap; }
 }
 @media (max-width: 380px) {
-  .pixel-app.crown-title-screen .crown-title-subtitle { font-size: 24px; letter-spacing: .06em; }
+  .pixel-app.crown-title-screen .crown-title-subtitle { font-size: 37px; letter-spacing: .06em; }
   .pixel-app.crown-title-screen .pixel-start-panel button span { font-size: 11px; }
 }
 @media (max-height: 540px) and (min-width: 701px) {
   .pixel-app.crown-title-screen { padding: 64px 6vw 16px; }
   .pixel-app.crown-title-screen .pixel-title-content { width: 48vw; }
-  .pixel-app.crown-title-screen .brawl-logo { top: 65px; left: 6vw; }
-  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: 25px; line-height: 1.3; }
-  .pixel-app.crown-title-screen .crown-title-subtitle { font-size: 29px; margin-top: 3px; }
+  .pixel-app.crown-title-screen .brawl-logo { top: 67px; left: 6vw; width: 39vw; }
+  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: 35px; line-height: 1.1; }
+  .pixel-app.crown-title-screen .crown-title-subtitle { font-size: 41px; margin-top: 4px; }
+  .pixel-app.crown-title-screen .crown-title-subtitle[data-lang="en"] { font-size: 24px; margin-top: 7px; }
+  .crown-title-edition { display: none; }
+  .crown-title-crest { margin-top: 6px; max-width: 180px; }
+  .crown-title-crest svg { width: 92px; height: 26px; }
   .pixel-app.crown-title-screen .brawl-start-panel { gap: 8px; }
   .pixel-app.crown-title-screen .pixel-player-setup > :first-child > button { width: 48px; height: 48px; }
   .pixel-app.crown-title-screen .pixel-player-setup > :first-child > button > img { width: 48px !important; height: 48px !important; min-width: 48px !important; }
@@ -87,7 +114,10 @@
   .pixel-app.crown-title-screen .pixel-start-panel button span { font-size: 13px; }
   .pixel-app.crown-title-screen .crown-title-links { gap: 6px 16px; }
   .pixel-app.crown-title-screen .crown-title-links button { min-height: 32px; font-size: 12px; }
-  .crown-title-rook { height: 62svh; right: 25%; bottom: 6svh; }
+  .crown-title-rook { height: 53svh; right: 27%; bottom: 10svh; }
+  .crown-title-rook-shadow { display: none; }
   .crown-title-axle { height: 36svh; right: 1%; bottom: 30svh; }
   .crown-title-dragon { height: 87svh; right: -2%; bottom: -8svh; }
 }
+@media (prefers-reduced-motion: reduce) { .crown-title-motes i { animation: none; } }
+.reduce-motion .crown-title-motes i { animation: none; }

@@ -18,7 +18,7 @@ import ExpeditionBriefing, { type ExpeditionRecap } from './components/Expeditio
 import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
 import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
 import { getBattleSeat } from './logic/battleLayout';
-import CrownTitleScene from './components/CrownTitleScene';
+import CrownTitleScene, { CrownTitleCrest } from './components/CrownTitleScene';
 import PixelBackdrop from './components/PixelBackdrop';
 import { AVATAR_OPTIONS } from './data/avatars';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
@@ -1466,8 +1466,10 @@ export default function BobozanOnline() {
         <header className="pixel-title-header brawl-title-header brawl-menu-backdrop">
           <CrownTitleScene />
           <div className="brawl-logo">
+            <span className="crown-title-edition" aria-hidden="true">THE CHRONICLES OF</span>
             <h1 className="pixel-wordmark">{t.title}</h1>
-            <p className="crown-title-subtitle">{lang === 'zh' ? '王 冠 战 争' : 'THE CROWN WAR'}</p>
+            <p className="crown-title-subtitle" data-lang={lang}>{lang === 'zh' ? '王冠战争' : 'THE CROWN WAR'}</p>
+            <CrownTitleCrest />
           </div>
         </header>
 

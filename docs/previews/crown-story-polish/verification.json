@@ -1,0 +1,18 @@
+{
+  "date": "2026-10-09",
+  "tests": 301,
+  "typecheck": "passed",
+  "eslint": "passed",
+  "productionBuild": "passed",
+  "checks": [
+    "Four accumulated irregular panels, image first then dialogue 850 ms later, varied reading pauses and final held frame",
+    "Six prologue viewports, nine bilingual comic layouts and twelve language-toggle checks",
+    "Slow/failed images, click and keyboard navigation, system/app reduced motion",
+    "Fourteen title layouts across desktop, iPad and phone sizes; no horizontal overflow; fonts and images loaded",
+    "Avatar picker and language changes do not move the dragon or background",
+    "Wolf WebP alpha exactly matches generated PNG; local fonts include OFL licenses"
+  ],
+  "limitations": [
+    "Responsive checks use Chromium viewport and touch emulation, not physical iPad Safari."
+  ]
+}

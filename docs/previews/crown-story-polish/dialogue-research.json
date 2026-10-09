@@ -1,0 +1,53 @@
+{
+  "task": "Crown War opening and chapter dialogue revision",
+  "date": "2026-10-09",
+  "sources": [
+    {
+      "title": "Ursula K. Le Guin — Navigating the Ocean of Story: Session 1, Continued",
+      "url": "https://www.ursulakleguin.com/bvc-navigating-the-ocean-of-story-session-1-continued",
+      "type": "Author's own writing advice, on the author's website",
+      "principle": "Test dialogue as speech. Cut lines that sound bookish or perform an author's argument; characters need distinct interests and voices."
+    },
+    {
+      "title": "inkle — Pacing dialogue",
+      "url": "https://medium.com/@inklestudios/pacing-dialogue-5bd5a99bfc20",
+      "type": "Game developer's own discussion of dialogue pacing",
+      "principle": "Comic-like game dialogue benefits from short cascading utterances, subtext, varied line length, and room to absorb the final beat. Automatic continuation can support this rhythm."
+    },
+    {
+      "title": "inkle — A Highland Song development blog, Letters / Autocut",
+      "url": "https://www.inklestudios.com/highland/",
+      "type": "Game developer's own development diary",
+      "principle": "A line should relate to what the player currently sees and knows. Let players leave a conversation instead of making them wait for exposition."
+    }
+  ],
+  "application": {
+    "prologue": "Keep the four existing illustrated events. Let captions give context and dialogue reveal a present concern: an official carries out an order, a villager asks to retain one roadside lamp, Axle offers a blank entry card, then makes the next step small enough to try.",
+    "voices": {
+      "Axle": "Practical, observant, reassuring in small actions; not a prophecy delivery system.",
+      "Rook": "Initially guarded and impatient, later unsettled by where the light comes from, finally asks the player not to forget his home.",
+      "keepers": "Old gatekeeper is matter-of-fact; Copper Keeper is protective; Tide Keeper is patient; Mist Keeper withholds what he knows.",
+      "Crownkeeper": "Calm, terse, assured of his advantage."
+    },
+    "scope": "Only narrative values and localized prologue speaker labels in src/data/crownCampaign.ts changed. Stage count, chapter bounds, theme mapping, rules, enemies and mechanics unchanged.",
+    "copyright": "Original dialogue; no novel or game dialogue copied."
+  },
+  "examples": [
+    {
+      "before": "把灯带回来。先从读懂一双手开始。",
+      "after": "还有个名额。想试试吗？",
+      "reason": "Axle is visibly offering an entry card; the line now belongs to that action."
+    },
+    {
+      "before": "拿齐三枚印，你就能看见王冠。也会看见它的影子。",
+      "after": "赢了我，城门就会开。进去以后，别说没人劝过你。",
+      "reason": "A gatekeeper's warning replaces an abstract slogan."
+    },
+    {
+      "before": "最后一个席位，我们公平争。赢的人，把两座城的灯都带回来。",
+      "after": "最后一个位子，还是得打一场。你要赢了，别忘了我家那边也还黑着。",
+      "reason": "Rook's request exposes personal stakes without announcing the theme."
+    }
+  ],
+  "validation": "TypeScript project build passed after edits; prose reviewed against the four existing art prompts and actual campaign encounter names."
+}
