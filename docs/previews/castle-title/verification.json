@@ -1,0 +1,27 @@
+{
+  "date": "2026-10-09",
+  "scope": "Crown War title and arena entrance; fictional local preview, no online room created",
+  "unitTestsPassed": 298,
+  "typecheck": true,
+  "lint": true,
+  "build": true,
+  "browser": "Chromium viewport emulation, not physical-device Safari",
+  "viewports": [
+    "1440x1000",
+    "1920x1080",
+    "1024x768",
+    "768x1024",
+    "390x844",
+    "844x390",
+    "320x568"
+  ],
+  "screens": 21,
+  "errors": [],
+  "horizontalOverflow": false,
+  "allArtworkLoaded": true,
+  "avatarPicker": "In viewport, selection closes picker, backdrop remains fixed",
+  "entry": [
+    "Title > comic > journey > playable battle; replay closes to title",
+    "Returning home restores castle; saved world theme unchanged"
+  ]
+}

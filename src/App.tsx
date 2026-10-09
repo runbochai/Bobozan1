@@ -18,7 +18,7 @@ import ExpeditionBriefing, { type ExpeditionRecap } from './components/Expeditio
 import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
 import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
 import { getBattleSeat } from './logic/battleLayout';
-import BrawlCover from './components/BrawlCover';
+import CrownTitleScene from './components/CrownTitleScene';
 import PixelBackdrop from './components/PixelBackdrop';
 import { AVATAR_OPTIONS } from './data/avatars';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
@@ -160,7 +160,7 @@ const TopControls = ({
 
   return (
     <div className="pixel-controls absolute top-4 right-4 z-50 flex items-center gap-3">
-      {campaignScene ? <span className="crown-scene-mark" title={lang === 'zh' ? '场景随主线章节变化' : 'The scene follows the story chapter'} aria-label={lang === 'zh' ? '主线场景' : 'Story scene'}><Crown size={18} /></span> : <ThemePicker lang={lang} />}
+      {campaignScene ? <span className="crown-scene-mark" title={lang === 'zh' ? '王冠主线场景' : 'Crown War story setting'} aria-label={lang === 'zh' ? '主线场景' : 'Story scene'}><Crown size={18} /></span> : <ThemePicker lang={lang} />}
 
       {/* Back Button */}
       {onBack && (
@@ -1449,10 +1449,9 @@ export default function BobozanOnline() {
       onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? enterCrownCampaign : undefined} /> : null;
 
   if (view === 'NAME_INPUT') return (
-    <div className="pixel-app pixel-screen-title brawl-title-screen brawl-menu-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-title brawl-title-screen brawl-menu-screen crown-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       {learningOverlay}
       
-      <PixelBackdrop scene="title" />
 
       <TopControls 
         muted={muted} 
@@ -1462,6 +1461,7 @@ export default function BobozanOnline() {
         logOpen={logOpen} 
         toggleLog={() => setLogOpen(o => !o)} 
         showLogToggle={false} 
+        campaignScene
         musicVolume={musicVolume}
         setMusicVolume={setMusicVolume}
         reduceMotion={reduceMotion}
@@ -1472,7 +1472,7 @@ export default function BobozanOnline() {
       <div className="pixel-title-content relative z-10 flex flex-col items-center w-full max-w-2xl px-4">
         
         <header className="pixel-title-header brawl-title-header brawl-menu-backdrop">
-          <BrawlCover />
+          <CrownTitleScene />
           <div className="brawl-logo">
             <h1 className="pixel-wordmark">{t.title}</h1>
             <p className="crown-title-subtitle">{lang === 'zh' ? '王 冠 战 争' : 'THE CROWN WAR'}</p>
@@ -1485,6 +1485,9 @@ export default function BobozanOnline() {
                <div className="relative z-50 flex flex-col items-center gap-2">
             <button
               onClick={() => { playSound('click', muted); setIsAvatarMenuOpen(!isAvatarMenuOpen); }}
+              aria-label={lang === 'zh' ? '更换头像' : 'Change avatar'}
+              aria-expanded={isAvatarMenuOpen}
+              aria-controls="title-avatar-options"
               className={`
                 w-28 h-28 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(234,88,12,0.3)] 
                 transition-all duration-300 relative border-4 border-white/10 overflow-hidden group
@@ -1508,7 +1511,7 @@ export default function BobozanOnline() {
 
             {/* --- POPUP MENU --- */}
             {isAvatarMenuOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-w-[calc(100vw-24px)] max-h-[50vh] overflow-y-auto bg-slate-900/95 border border-slate-700 p-4 rounded-2xl shadow-2xl grid grid-cols-4 gap-3 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 z-[100]">
+              <div id="title-avatar-options" className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-w-[calc(100vw-24px)] max-h-[50vh] overflow-y-auto bg-slate-900/95 border border-slate-700 p-4 rounded-2xl shadow-2xl grid grid-cols-4 gap-3 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 z-[100]">
                 {AVATAR_OPTIONS.map(({ path, name }) => (
                   <button
                     key={path}
@@ -1591,15 +1594,14 @@ export default function BobozanOnline() {
   );
 
   if (view === 'HOME') return (
-    <div className="pixel-app pixel-screen-home brawl-menu-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
+    <div className="pixel-app pixel-screen-home brawl-menu-screen crown-arena-menu min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       {learningOverlay}
       
-      <PixelBackdrop scene="home" />
-      <div className="brawl-menu-backdrop" aria-hidden="true"><BrawlCover /></div>
+      <div className="brawl-menu-backdrop" aria-hidden="true"><CrownTitleScene /></div>
 
       {/* ================= MAIN CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage}/>
+      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage} campaignScene />
       
       {toastMsg && (
         <div className="pixel-toast fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 font-bold tracking-wide animate-in slide-in-from-top-4">
