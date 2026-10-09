@@ -1,0 +1,37 @@
+{
+  "checks": [
+    {
+      "naturalRewardShopJourney": true,
+      "publicHistory": [
+        "charge",
+        "hong2"
+      ]
+    },
+    {
+      "seenSkip": true,
+      "replay": true,
+      "newRunResetsHistory": true
+    },
+    {
+      "english": true,
+      "storageDenied": true
+    },
+    {
+      "multiplayer": [
+        1024,
+        768
+      ],
+      "overflow": false,
+      "actors": 8
+    },
+    {
+      "multiplayer": [
+        390,
+        844
+      ],
+      "overflow": false,
+      "actors": 8
+    }
+  ],
+  "errors": []
+}

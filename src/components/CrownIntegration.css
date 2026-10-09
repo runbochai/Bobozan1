@@ -1,0 +1,19 @@
+.crown-title-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px 22px; }
+.crown-scene-mark { display: inline-flex; align-items: center; justify-content: center; width: 32px; color: var(--world-accent); }
+.crown-title-subtitle { margin-top: 5px; color: #f3d7a4; font-size: clamp(13px, 1.8vw, 21px); font-weight: 800; letter-spacing: .28em; text-shadow: 2px 3px #15201c; }
+.crown-title-links button { min-height: 38px; padding: 5px 0; color: #f3dbaf; border-bottom: 1px solid #bca77970; font-size: 13px; text-shadow: 1px 2px #161a18; }
+.crown-title-links button:hover { color: #fff5dc; border-color: currentColor; }
+.crown-title-links button:focus-visible { outline: 2px solid #f6db95; outline-offset: 4px; }
+.crown-arena-heading small { display: block; margin: 8px auto 0; max-width: 34em; font-size: 12px; line-height: 1.7; color: #d4c3aa; }
+.crown-arena-links { display: grid; grid-template-columns: 1fr auto; gap: 8px; }
+.crown-arena-links button { font-size: 12px; }
+.crown-lobby-note { max-width: 26em; margin-top: 10px; font-size: 13px; line-height: 1.7; color: #d4c3aa; }
+.pixel-screen-battle .expedition-learning-hud { background: color-mix(in srgb, var(--world-panel) 96%, transparent); border-color: var(--world-rim); }
+.pixel-screen-battle .expedition-learning-hud .crown-quest-strip { min-height: 22px; padding: 0 0 3px; gap: 7px; background: none; border: 0; }
+.pixel-screen-battle .expedition-learning-hud .crown-quest-strip > .crown-mark { width: 17px; height: 18px; }
+.pixel-screen-battle .expedition-learning-hud .crown-quest-strip > div:not(.crown-seal-row) > span { display: none; }
+.pixel-screen-battle .expedition-learning-hud .crown-quest-strip strong { font-size: 11px; line-height: 18px; }
+.pixel-screen-battle .expedition-learning-hud .crown-seal-row--compact .crown-mark { width: 15px; height: 18px; }
+:root[data-world-theme] .pixel-screen-home.brawl-menu-screen .brawl-cover { opacity: .35; }
+:root[data-world-theme] .pixel-screen-home.brawl-menu-screen .brawl-menu-backdrop::after { background: linear-gradient(90deg, #111a1760, #111a17e8 36%, #111a17e8 64%, #111a1760); }
+@media (max-width: 500px) { .crown-arena-links { grid-template-columns: 1fr; } }

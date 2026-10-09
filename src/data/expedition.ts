@@ -18,6 +18,8 @@ aggression: number; // 0-1 爱进攻
 defense: number; // 0-1 爱防守
 charge: number; // 0-1 爱攒气
 smart: number; // 0-1 走位聪明程度（记仇/针对）
+/** A soft tendency based only on public state and completed turns. */
+habit?: 'press' | 'patient' | 'feint';
 }
 
 export interface ExpeditionEnemyDef {
@@ -55,245 +57,245 @@ rewardTier: 1 | 2 | 3;
 tip?: LocalizedText;
 }
 
-const P = (aggression: number, defense: number, charge: number, smart: number): ExpeditionPersonality =>
-({ aggression, defense, charge, smart});
+const P = (aggression: number, defense: number, charge: number, smart: number, habit?: ExpeditionPersonality['habit']): ExpeditionPersonality =>
+({ aggression, defense, charge, smart, ...(habit ? { habit } : {}) });
 
 const expeditionStages: ExpeditionStage[] = [
-// ---------- 序章 · 新手村 ----------
+// ---------- 资格赛 · 灯尾酒馆 ----------
 {
-id: 's0', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
-name: { zh: '第 1 关 · 木桩', en: 'Stage 1 · Dummy'},
+id: 's0', chapter: { zh: '资格赛 · 灯尾酒馆', en: 'Qualifier · Emberwick Tavern' },
+name: { zh: '第 1 关 · 阿栓的练习桌', en: 'Stage 1 · Axle’s Practice Table' },
 rewardTier: 1,
 tip: { zh: '攒到能量，抓住对手补气的空当。', en: 'Build Energy, then catch a refill.'},
 enemies: [{
-id: 'dummy', name: { zh: '🤖 训练假人', en: '🤖 Training Dummy'}, hp: 1, inventory: [0],
+id: 'dummy', name: { zh: '阿栓的练习木桩', en: 'Axle’s Practice Dummy' }, hp: 1, inventory: [0],
 personality: P(0.1, 0.1, 0.9, 0),
-intro: { zh: '师父：先学会攒气，再谈打架。', en: 'Master: learn to charge before you fight.'},
+intro: { zh: '灯尾的灯还等着你。先坐下。', en: 'Emberwick is waiting. Take a seat.' },
 }],
 },
 {
-id: 's1', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
-name: { zh: '第 2 关 · 胆小鬼', en: 'Stage 2 · Coward'},
+id: 's1', chapter: { zh: '资格赛 · 灯尾酒馆', en: 'Qualifier · Emberwick Tavern' },
+name: { zh: '第 2 关 · 守住灯火', en: 'Stage 2 · Hold the Light' },
 rewardTier: 1,
 tip: { zh: '先防住进攻；等它补气时反击。', en: 'Block an attack; counter during a refill.'},
 enemies: [{
-id: 'coward', name: { zh: '🪵 胆小木桩', en: '🪵 Cowardly Post'}, hp: 1, inventory: [0],
+id: 'coward', name: { zh: '酒馆陪练 · 木木', en: 'Momo · Tavern Sparring Post' }, hp: 1, inventory: [0],
 personality: P(0.6, 0.25, 0.5, 0.1),
-intro: { zh: '木桩瑟瑟发抖……但它偶尔也会还手！', en: 'The post trembles… but sometimes it fights back!'},
+intro: { zh: '别忙着赢。先保住自己的灯。', en: 'Keep your light before chasing mine.' },
 }],
 },
 {
-id: 's2', chapter: { zh: '序章 · 新手村', en: 'Prologue · Rookie Village'},
-name: { zh: '第 3 关 · 龟缩', en: 'Stage 3 · Turtle'},
+id: 's2', chapter: { zh: '资格赛 · 灯尾酒馆', en: 'Qualifier · Emberwick Tavern' },
+name: { zh: '第 3 关 · 入场资格', en: 'Stage 3 · Earn Your Seat' },
 rewardTier: 1,
 tip: { zh: '它爱防守。攒够 3 能量，用咔破防。', en: 'It likes Defend. Save 3 Energy for Ka.'},
 enemies: [{
-id: 'turtle', name: { zh: '🐢 龟缩假人', en: '🐢 Turtling Dummy'}, hp: 1, inventory: [0],
+id: 'turtle', name: { zh: '龟伯 · 资格考官', en: 'Old Shell · Qualifier' }, hp: 1, inventory: [0],
 personality: P(0.2, 0.75, 0.5, 0.1),
-intro: { zh: '它经常防守，也会变招。', en: 'It often Defends, but can change its mind.'},
+intro: { zh: '拿走这枚报名章，要靠脑子。', en: 'Earn the entry stamp with your head.' },
 }],
 },
-// ---------- 第一章 · 山脚 ----------
+// ---------- 赤焰印记 ----------
 {
-id: 's3', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
-name: { zh: '第 4 关 · 史莱姆', en: 'Stage 4 · Slime'},
+id: 's3', chapter: { zh: '第一枚印记 · 赤铜赛区', en: 'Ember Seal · Copper District' },
+name: { zh: '第 4 关 · 与洛牙交手', en: 'Stage 4 · A Rival Named Rook' },
 rewardTier: 1,
 tip: { zh: '天马只花 1 费；用轰轰或六克可以打平。', en: 'Pegasus costs 1; Double Blast or Six Cuts can tie it.'},
 enemies: [{
-id: 'slime', name: { zh: '🟢 史莱姆', en: '🟢 Slime'}, hp: 1.5, inventory: [0, 1],
+id: 'slime', avatarId: 'wolf', name: { zh: '洛牙 · 初遇', en: 'Rook · First Meeting' }, hp: 1.5, inventory: [0, 1],
 personality: P(0.5, 0.3, 0.5, 0.2),
-intro: { zh: '一只野生的史莱姆跳了出来！', en: 'A wild Slime appeared!'},
+intro: { zh: '洛牙。我也替家乡来，试试身手？', en: 'Rook. Here for my hometown too. A match?' },
 }],
 },
 {
-id: 's17', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
-name: { zh: '第 5 关 · 越级试炼', en: 'Stage 5 · Veteran Trial'},
+id: 's17', chapter: { zh: '第一枚印记 · 赤铜赛区', en: 'Ember Seal · Copper District' },
+name: { zh: '第 5 关 · 老将的席位', en: 'Stage 5 · The Veteran’s Seat' },
 rewardTier: 1,
 tip: { zh: '别硬撞更高等级的普通招；能防、能打平，也能抓攒。', en: 'Do not clash blindly with the stronger skill. Block, tie, or catch a Charge.' },
 enemies: [{
-id: 'veteran', avatarId: 'knight', name: { zh: '🛡️ 守关前辈', en: '🛡️ Gate Veteran' },
+id: 'veteran', avatarId: 'knight', name: { zh: '赤铜老将 · 岩盾', en: 'Flint · Ember Veteran' },
 hp: 1.5, inventory: [0, 1], levelAdvantage: 1,
 personality: P(0.5, 0.3, 0.6, 0.35),
-intro: { zh: '前辈：牌比你老，脑子可未必。', en: 'Veteran: older cards. Not necessarily wiser.' },
+intro: { zh: '我牌比你高，你未必就会输。', en: 'Stronger cards need not decide this.' },
 }],
 },
 {
-id: 's4', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
-name: { zh: '第 5 关 · 双子史莱姆', en: 'Stage 5 · Twin Slimes'},
+id: 's4', chapter: { zh: '第一枚印记 · 赤铜赛区', en: 'Ember Seal · Copper District' },
+name: { zh: '第 6 关 · 双人混战', en: 'Stage 6 · The Sibling Table' },
 rewardTier: 1,
 tip: { zh: '留意两人的能量；他们也会互相攻击。', en: 'Watch both Energy bars; they can hit each other.'},
 enemies: [
 {
-id: 'slime_a', name: { zh: '🟢 史莱姆兄', en: '🟢 Slime Bro'}, hp: 1, inventory: [0],
+id: 'slime_a', name: { zh: '红炉兄长 · 赤', en: 'Red · Furnace Elder' }, hp: 1, inventory: [0],
 personality: P(0.45, 0.25, 0.5, 0.2),
-intro: { zh: '我们兄弟同心！', en: 'Brothers fight as one!'},
+intro: { zh: '印记只有一枚。弟弟也别让。', en: 'One seal. No favors, even for family.' },
 },
 {
-id: 'slime_b', name: { zh: '🟢 史莱姆弟', en: '🟢 Slime Sis'}, hp: 1, inventory: [0],
+id: 'slime_b', name: { zh: '红炉小弟 · 烬', en: 'Ash · Furnace Younger' }, hp: 1, inventory: [0],
 personality: P(0.45, 0.25, 0.5, 0.2),
-intro: { zh: '其利断金！', en: 'Together we are strong!'},
+intro: { zh: '谁说我总得听他的？', en: 'Who says I have to listen to him?' },
 },
 ],
 },
 {
-id: 's5', chapter: { zh: '第一章 · 山脚', en: 'Ch.1 · Mountain Foot'},
-name: { zh: '第 6 关 · 精英：铁壁', en: 'Stage 6 · Elite: Iron Wall'},
+id: 's5', chapter: { zh: '第一枚印记 · 赤铜赛区', en: 'Ember Seal · Copper District' },
+name: { zh: '第 7 关 · 余烬守印人', en: 'Stage 7 · Keeper of the Ember Seal' },
 rewardTier: 1,
 tip: { zh: '攻、防、攒都会出。习惯是线索，不是答案。', en: 'Attack, Defend, or Charge: a habit is a clue, not a promise.'},
 enemies: [{
-id: 'ironwall', name: { zh: '🦍 铁壁阿强', en: '🦍 Iron Wall Qiang'}, hp: 2, inventory: [0, 1],
-personality: P(0.55, 0.55, 0.55, 0.3), elite: true,
-intro: { zh: '阿强：猜猜我这次会不会防。', en: 'Qiang: will I Defend this time?'},
+id: 'ironwall', name: { zh: '余烬守印人 · 铁壁', en: 'Ironwall · Ember Keeper' }, hp: 2, inventory: [0, 1],
+personality: P(0.55, 0.55, 0.55, 0.3, 'press'), elite: true,
+intro: { zh: '赢我，把灯尾的名字留下。', en: 'Beat me. Put Emberwick on the board.' },
 }],
 },
-// ---------- 第二章 · 云雾道馆 ----------
+// ---------- 潮汐印记 ----------
 {
-id: 's6', chapter: { zh: '第二章 · 云雾道馆', en: 'Ch.2 · Mist Dojo'},
-name: { zh: '第 7 关 · 疾风狼', en: 'Stage 7 · Gale Wolf'},
+id: 's6', chapter: { zh: '第二枚印记 · 潮汐赛区', en: 'Tide Seal · Tidehold' },
+name: { zh: '第 8 关 · 洛牙的再挑战', en: 'Stage 8 · Rook’s Rematch' },
 rewardTier: 2,
 enemies: [{
-id: 'wolf', name: { zh: '🐺 疾风狼', en: '🐺 Gale Wolf'}, hp: 2, inventory: [0, 1],
-personality: P(0.7, 0.2, 0.4, 0.4),
-intro: { zh: '疾风狼露出了天马般的獠牙……', en: 'The wolf bares its Pegasus fangs…'},
+id: 'wolf', avatarId: 'wolf', name: { zh: '洛牙', en: 'Rook' }, hp: 2, inventory: [0, 1],
+personality: P(0.7, 0.2, 0.4, 0.4, 'press'),
+intro: { zh: '灯尾来的，又见面了。这次不同。', en: 'Emberwick. Again. This time is different.' },
 }],
 },
 {
-id: 's7', chapter: { zh: '第二章 · 云雾道馆', en: 'Ch.2 · Mist Dojo'},
-name: { zh: '第 8 关 · 双头怪', en: 'Stage 8 · Two Heads'},
+id: 's7', chapter: { zh: '第二枚印记 · 潮汐赛区', en: 'Tide Seal · Tidehold' },
+name: { zh: '第 9 关 · 潮汐双席', en: 'Stage 9 · The Tide Table' },
 rewardTier: 2,
 enemies: [
 {
-id: 'head_a', name: { zh: '👹 左头', en: '👹 Left Head'}, hp: 2, inventory: [0, 2],
+id: 'head_a', name: { zh: '潮汐哨兵 · 左潮', en: 'Left Tide · Sentinel' }, hp: 2, inventory: [0, 2],
 personality: P(0.75, 0.2, 0.35, 0.5),
-intro: { zh: '左头：我先来！', en: 'Left Head: I go first!'},
+intro: { zh: '潮来了，轮到谁站不稳？', en: 'Tide is in. Who loses their footing?' },
 },
 {
-id: 'head_b', name: { zh: '👹 右头', en: '👹 Right Head'}, hp: 1.5, inventory: [0],
+id: 'head_b', name: { zh: '潮汐哨兵 · 右汐', en: 'Right Tide · Sentinel' }, hp: 1.5, inventory: [0],
 personality: P(0.4, 0.4, 0.6, 0.3),
-intro: { zh: '右头：我也来！', en: 'Right Head: me too!'},
+intro: { zh: '听他吵。不如看水面。', en: 'Forget his noise. Watch the water.' },
 },
 ],
 },
 {
-id: 's8', chapter: { zh: '第二章 · 云雾道馆', en: 'Ch.2 · Mist Dojo'},
-name: { zh: '第 9 关 · 精英：龙爪长老', en: 'Stage 9 · Elite: Dragon Elder'},
+id: 's8', chapter: { zh: '第二枚印记 · 潮汐赛区', en: 'Tide Seal · Tidehold' },
+name: { zh: '第 10 关 · 潮汐守印人', en: 'Stage 10 · Keeper of the Tide Seal' },
 rewardTier: 2,
 tip: { zh: '龙爪压过天马；轰轰、六克仍能打平。', en: 'Dragon Claw beats Pegasus; Double Blast and Six Cuts still tie.'},
 enemies: [{
-id: 'dragon_elder', name: { zh: '🐉 龙爪长老', en: '🐉 Dragon Elder'}, hp: 3, inventory: [0, 3],
-personality: P(0.75, 0.25, 0.35, 0.7), elite: true,
-intro: { zh: '长老：感受龙爪的等级压制吧！', en: 'Elder: feel the pressure of the Dragon Claw!'},
+id: 'dragon_elder', name: { zh: '潮汐守印人 · 苍鳞', en: 'Old Scale · Tide Keeper' }, hp: 3, inventory: [0, 3],
+personality: P(0.75, 0.25, 0.35, 0.7, 'patient'), elite: true,
+intro: { zh: '急着出手，就看不见退潮。', en: 'Rush in, and miss the ebb.' },
 }],
 },
-// ---------- 第三章 · 黑风岭 ----------
+// ---------- 迷雾印记 ----------
 {
-id: 's9', chapter: { zh: '第三章 · 黑风岭', en: 'Ch.3 · Black Wind Ridge'},
-name: { zh: '第 10 关 · 寒冰法师', en: 'Stage 10 · Frost Mage'},
+id: 's9', chapter: { zh: '第三枚印记 · 迷雾赛区', en: 'Mist Seal · Veilmarket' },
+name: { zh: '第 11 关 · 雾中来客', en: 'Stage 11 · A Guest in the Mist' },
 rewardTier: 3,
 enemies: [{
-id: 'frost', name: { zh: '🧊 寒冰法师', en: '🧊 Frost Mage'}, hp: 2, inventory: [0, 2],
-personality: P(0.55, 0.4, 0.35, 0.6),
-intro: { zh: '法师：冰剑无情，小心你的走位。', en: 'Mage: the ice sword is merciless. Watch your step.'},
+id: 'frost', name: { zh: '雾港术士 · 凝霜', en: 'Rime · Veilmarket Mage' }, hp: 2, inventory: [0, 2],
+personality: P(0.55, 0.4, 0.35, 0.6, 'patient'),
+intro: { zh: '这枚印记，真值一个家乡？', en: 'A seal. Is it worth your home?' },
 }],
 },
 {
-id: 's10', chapter: { zh: '第三章 · 黑风岭', en: 'Ch.3 · Black Wind Ridge'},
-name: { zh: '第 11 关 · 暗影三煞', en: 'Stage 11 · Shadow Trio'},
+id: 's10', chapter: { zh: '第三枚印记 · 迷雾赛区', en: 'Mist Seal · Veilmarket' },
+name: { zh: '第 12 关 · 三个名字', en: 'Stage 12 · Three Names' },
 rewardTier: 3,
 enemies: [
 {
-id: 'shadow_a', name: { zh: '🌑 影兄', en: '🌑 Shadow Bro'}, hp: 2, inventory: [0, 3],
+id: 'shadow_a', name: { zh: '雾市长兄 · 影一', en: 'First Shade · Veilmarket' }, hp: 2, inventory: [0, 3],
 personality: P(0.75, 0.3, 0.3, 0.7),
-intro: { zh: '影兄：黑风岭可不是好闯的。', en: 'Shadow Bro: this ridge shows no mercy.'},
+intro: { zh: '这里每个人，都欠王冠一盏灯。', en: 'Everyone here owes the Crown a light.' },
 },
 {
-id: 'shadow_b', name: { zh: '🌑 影中', en: '🌑 Shadow Mid'}, hp: 1.5, inventory: [0, 2],
+id: 'shadow_b', name: { zh: '雾市账房 · 影二', en: 'Second Shade · Bookkeeper' }, hp: 1.5, inventory: [0, 2],
 personality: P(0.6, 0.35, 0.4, 0.6),
-intro: { zh: '影中：三打一，优势在我！', en: 'Shadow Mid: three on one!'},
+intro: { zh: '赢的越多，送走的灯越多。', en: 'More victories. More lights taken.' },
 },
 {
-id: 'shadow_c', name: { zh: '🌑 影弟', en: '🌑 Shadow Lil'}, hp: 1.5, inventory: [0, 1],
+id: 'shadow_c', name: { zh: '雾市小弟 · 影三', en: 'Third Shade · Younger' }, hp: 1.5, inventory: [0, 1],
 personality: P(0.45, 0.45, 0.5, 0.5),
-intro: { zh: '影弟：一起上！', en: 'Shadow Lil: together!'},
+intro: { zh: '别问灯去哪儿。哥不让我说。', en: 'Do not ask where. Bro says not to.' },
 },
 ],
 },
 {
-id: 's11', chapter: { zh: '第三章 · 黑风岭', en: 'Ch.3 · Black Wind Ridge'},
-name: { zh: '第 12 关 · 精英：吊死鬼', en: 'Stage 12 · Elite: Hangman'},
+id: 's11', chapter: { zh: '第三枚印记 · 迷雾赛区', en: 'Mist Seal · Veilmarket' },
+name: { zh: '第 13 关 · 迷雾守印人', en: 'Stage 13 · Keeper of the Mist Seal' },
 rewardTier: 3,
 tip: { zh: '同档普通终极比等级；基础叽能与它打平。', en: 'Ordinary Ults compare levels; basic Ji can still tie.'},
 enemies: [{
-id: 'hangman', name: { zh: '👻 吊死鬼', en: '👻 Hangman'}, hp: 3, inventory: [0, 2, 5],
-personality: P(0.65, 0.3, 0.35, 0.8), elite: true,
-intro: { zh: '吊死鬼：终极？我的更终极。', en: 'Hangman: ultimate? Mine is more ultimate.'},
+id: 'hangman', name: { zh: '迷雾守印人 · 无面', en: 'Faceless · Mist Keeper' }, hp: 3, inventory: [0, 2, 5],
+personality: P(0.65, 0.3, 0.35, 0.8, 'feint'), elite: true,
+intro: { zh: '拿齐三印，再看看王冠的背面。', en: 'Three seals. Then look behind it.' },
 }],
 },
-// ---------- 终章 · 塔顶 ----------
+// ---------- 供能塔与王冠决战 ----------
 {
-id: 's12', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
-name: { zh: '第 13 关 · 马甸骑士', en: 'Stage 13 · Madian Knight'},
+id: 's12', chapter: { zh: '暗线 · 王冠供能塔', en: 'Behind the Crown · Supply Towers' },
+name: { zh: '第 14 关 · 铜脉供能塔', en: 'Stage 14 · Copper Supply Tower' },
 rewardTier: 3,
 enemies: [{
-id: 'knight', name: { zh: '🐎 马甸骑士', en: '🐎 Madian Knight'}, hp: 2.5, inventory: [0, 5],
-personality: P(0.8, 0.2, 0.3, 0.7),
-intro: { zh: '骑士：塔主座下，最后一道防线！', en: 'Knight: the last line before the Tower Lord!'},
+id: 'knight', name: { zh: '铜脉塔卫 · 铁骑', en: 'Iron Rider · Copper Warden' }, hp: 2.5, inventory: [0, 5],
+personality: P(0.8, 0.2, 0.3, 0.7, 'press'),
+intro: { zh: '这座塔，可不只点亮王城。', en: 'This tower lights more than the court.' },
 }],
 },
 {
-id: 's13', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
-name: { zh: '第 14 关 · 塔卫三煞', en: 'Stage 14 · Triple Guards'},
+id: 's13', chapter: { zh: '暗线 · 王冠供能塔', en: 'Behind the Crown · Supply Towers' },
+name: { zh: '第 15 关 · 潮涌供能塔', en: 'Stage 15 · Tide Supply Tower' },
 rewardTier: 3,
 enemies: [
 {
-id: 'guard_a', name: { zh: '💂 塔卫·左', en: '💂 Guard Left'}, hp: 2, inventory: [0, 5],
-personality: P(0.8, 0.25, 0.25, 0.85),
-intro: { zh: '左卫：止步！', en: 'Left Guard: halt!'},
+id: 'guard_a', name: { zh: '潮汐塔卫 · 左闸', en: 'Left Gate · Tide Warden' }, hp: 2, inventory: [0, 5],
+personality: P(0.8, 0.25, 0.25, 0.85, 'press'),
+intro: { zh: '断这里，王冠就少一分底气。', en: 'Cut this, and the Crown loses strength.' },
 },
 {
-id: 'guard_b', name: { zh: '💂 塔卫·中', en: '💂 Guard Mid'}, hp: 2, inventory: [0, 3],
+id: 'guard_b', name: { zh: '潮汐塔卫 · 中枢', en: 'Core Gate · Tide Warden' }, hp: 2, inventory: [0, 3],
 personality: P(0.65, 0.35, 0.35, 0.75),
-intro: { zh: '中卫：擅闯者死！', en: 'Mid Guard: trespassers die!'},
+intro: { zh: '王城的灯，不能灭。', en: 'The court lights must stay on.' },
 },
 {
-id: 'guard_c', name: { zh: '💂 塔卫·右', en: '💂 Guard Right'}, hp: 2, inventory: [0, 2],
-personality: P(0.5, 0.5, 0.45, 0.6),
-intro: { zh: '右卫：塔主不容打扰！', en: 'Right Guard: the Lord must not be disturbed!'},
+id: 'guard_c', name: { zh: '潮汐塔卫 · 右闸', en: 'Right Gate · Tide Warden' }, hp: 2, inventory: [0, 2],
+personality: P(0.5, 0.5, 0.45, 0.6, 'patient'),
+intro: { zh: '关闸的人，会被王冠记住。', en: 'Close it, and the Crown remembers.' },
 },
 ],
 },
 {
-id: 's14', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
-name: { zh: '第 15 关 · 精英：诈唬大师', en: 'Stage 15 · Elite: Bluff Master'},
+id: 's14', chapter: { zh: '暗线 · 王冠供能塔', en: 'Behind the Crown · Supply Towers' },
+name: { zh: '第 16 关 · 迷光供能塔', en: 'Stage 16 · Mist Supply Tower' },
 rewardTier: 3,
 tip: { zh: '别只信台词；用能量和出牌历史判断。', en: 'Read Energy and history, not just the taunt.' },
 enemies: [{
-id: 'bluffer', name: { zh: '🎭 诈唬大师', en: '🎭 Bluff Master'}, hp: 3.5, inventory: [0, 2, 3, 5],
-personality: P(0.5, 0.35, 0.6, 0.55), elite: true,
+id: 'bluffer', name: { zh: '迷雾塔监 · 千面', en: 'Manyface · Mist Overseer' }, hp: 3.5, inventory: [0, 2, 3, 5],
+personality: P(0.5, 0.35, 0.6, 0.55, 'feint'), elite: true,
 passive: { deceiver: true },
-intro: { zh: '诈唬大师：我的话，你敢信吗？', en: 'Bluff Master: dare you believe a word I say?'},
+intro: { zh: '别信账本。也别太信我。', en: 'Trust no ledger. Nor me.' },
 }],
 },
 {
-id: 's15', chapter: { zh: '终章 · 塔顶', en: 'Finale · Tower Top'},
-name: { zh: '第 16 关 · Boss：塔主波赞', en: 'Stage 16 · Boss: Lord Bozan'},
+id: 's15', chapter: { zh: '终局 · 王冠竞技场', en: 'Finale · Crown Arena' },
+name: { zh: '第 17 关 · 洛牙的最后一桌', en: 'Stage 17 · Rook’s Last Table' },
 rewardTier: 3,
-tip: { zh: '塔主也要攒气。防攻击，抓补气，别白交终极。', en: 'The Lord must Charge too. Block attacks, catch refills, time your Ult.'},
+tip: { zh: '洛牙会改变节奏。看公开能量和历史，别只信台词。', en: 'Rook changes tempo. Read public Energy and history, not just words.'},
 enemies: [{
-id: 'lord_bozan', name: { zh: '👑 塔主波赞', en: '👑 Lord Bozan'}, hp: 4, inventory: [0, 2, 3, 5],
-personality: P(0.7, 0.35, 0.25, 1.0), boss: true,
-intro: { zh: '波赞：同样的规则，看谁猜得准。', en: 'Bozan: same rules. Let us see who reads better.'},
+id: 'lord_bozan', avatarId: 'wolf', name: { zh: '洛牙 · 最后的挑战者', en: 'Rook · Last Challenger' }, hp: 4, inventory: [0, 2, 3, 5],
+personality: P(0.7, 0.35, 0.25, 1.0, 'feint'), boss: true,
+intro: { zh: '我没忘家乡。你也别忘。', en: 'I remember my town. Remember yours.' },
 }],
 },
 {
-id: 's16', chapter: { zh: '终章 · 塔心', en: 'Finale · Tower Heart'},
-name: { zh: '第 17 关 · Boss：远古塔魂', en: 'Stage 17 · Boss: Ancient Tower Soul'},
+id: 's16', chapter: { zh: '终局 · 王冠竞技场', en: 'Finale · Crown Arena' },
+name: { zh: '第 18 关 · 夺回众城灯火', en: 'Stage 18 · Reclaim the City Lights' },
 rewardTier: 3,
-tip: { zh: '最后一战：看能量、读习惯，联合技也能被反制。', en: 'Final table: read Energy and habits. Combos have counters too.'},
+tip: { zh: '未切断的供能塔会增加冠主开局能量和生命；入场前可查看。', en: 'Active supply towers add starting Energy and HP; inspect them before entry.'},
 enemies: [{
-id: 'tower_soul', name: { zh: '🌑 远古塔魂', en: '🌑 Ancient Tower Soul'}, hp: 5, inventory: [0, 1, 2, 3, 5],
-personality: P(0.55, 0.7, 0.3, 0.9), boss: true,
-intro: { zh: '塔魂：波赞只是守门人。我，即是塔。', en: 'Soul: Bozan was merely the gatekeeper. I am the tower.'},
+id: 'tower_soul', avatarId: 'lord_bozan', name: { zh: '冠主 · 奥瑞恩', en: 'Aurion · Crown King' }, hp: 5, inventory: [0, 1, 2, 3, 5],
+personality: P(0.55, 0.7, 0.3, 0.9, 'patient'), boss: true,
+intro: { zh: '灯火归胜者。这是我的规矩。', en: 'The victor takes the light. My rule.' },
 }],
 },
 ];

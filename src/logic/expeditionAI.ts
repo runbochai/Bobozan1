@@ -180,6 +180,27 @@ export function expeditionMoveWeights(
 
   // Repeating our own move remains possible, but does not become a permanent loop.
   const ownHistory = recentMoves(enemy, options.history);
+  const lastType = ownHistory.at(-1)?.type;
+  // These are readable tendencies, never scripts or knowledge of a locked card.
+  // The young rival presses after a refill; his later self sometimes pauses instead.
+  if (!endless && personality.habit === 'press') {
+    typeWeights.ATTACK *= lastType === 'CHARGE' ? 1.55 : 1.15;
+    typeWeights.ULTIMATE *= lastType === 'CHARGE' ? 1.25 : 1;
+    if (lastType === 'ATTACK') typeWeights.CHARGE *= 1.15;
+  } else if (!endless && personality.habit === 'patient') {
+    typeWeights.DEFEND *= 1 + pressure * .45;
+    typeWeights.CHARGE *= 1 + defendRate * .45;
+    typeWeights.ATTACK *= .85 + chargeRate * .35;
+  } else if (!endless && personality.habit === 'feint') {
+    if (lastType === 'ATTACK' || lastType === 'ULTIMATE') {
+      typeWeights.CHARGE *= 1.4;
+      typeWeights.DEFEND *= 1.2;
+    } else if (lastType === 'CHARGE' && enemy.energy >= 3) {
+      typeWeights.CHARGE *= .75;
+      typeWeights.DEFEND *= 1.35;
+      typeWeights.ULTIMATE *= 1.15;
+    }
+  }
   if (ownHistory.length >= 3 && ownHistory.every(card => card.type === ownHistory[0].type)) {
     typeWeights[ownHistory[0].type] *= 0.7;
   }

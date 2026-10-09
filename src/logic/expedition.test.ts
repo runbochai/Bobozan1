@@ -175,15 +175,15 @@ test('关卡配置合法：18 关，含动态高阶对手、一打三和双 Boss
     assert.ok(new Set(tiers).size >= 2, `${s.id}: triple enemies should have mixed tiers`);
   }
   const boss = EXPEDITION_STAGES.find(stage => stage.id === 's15')!.enemies[0];
-  assert.ok(boss.boss, 'the tower lord must remain a boss');
+  assert.ok(boss.boss, 'the final rival must remain a boss');
   assert.ok(boss.hp >= 4, 'boss should have extra HP');
   assert.equal(boss.passive?.startEnergy ?? 0, 0, 'boss must earn its first attack');
   const finalBoss = EXPEDITION_STAGES.at(-1)!.enemies[0];
   assert.ok(finalBoss.boss, 'the final encounter must remain a boss');
-  // 新精英：诈唬大师（第 15 关，虚假意图）
+  // Stable encounter identity survives its move into the Crown supply-tower story.
   const blufferStage = EXPEDITION_STAGES.find(stage => stage.id === 's14')!;
-  assert.ok(blufferStage.name.zh.includes('诈唬大师'), 'stage 15 should be the Bluff Master');
   const bluffer = blufferStage.enemies[0];
+  assert.equal(bluffer.id, 'bluffer', 'the Mist Tower keeps its bluffing opponent');
   assert.ok(bluffer.elite, 'bluffer must be elite');
   assert.ok(bluffer.passive?.deceiver, 'bluffer must have the deceiver passive');
   assert.ok(bluffer.inventory.length >= 4, 'bluffer should have a decent deck');

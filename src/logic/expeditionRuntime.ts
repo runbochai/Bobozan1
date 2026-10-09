@@ -23,6 +23,8 @@ export interface ExpeditionRun extends SkillLoadoutState {
   endlessEnteredStageIdx?: number;
   endlessClearedStageIdx?: number;
   endlessRouteStageIdx?: number;
+  /** Actual victories in this run; bypassed towers never count as cleared. */
+  crownCleared?: number[];
 }
 export interface ExpeditionBattleMemory {
   maxHp: Record<string, number>;
@@ -32,6 +34,7 @@ export interface ExpeditionBattleMemory {
 export const EXPEDITION_HERO_ID = 'exp_me';
 const cloneRun = (run: ExpeditionRun): ExpeditionRun => ({ ...run, relics: [...run.relics], inventory: [...run.inventory],
   difficulty: normalizeExpeditionDifficulty(run.difficulty),
+  crownCleared: [...new Set((run.crownCleared ?? []).filter(index => Number.isInteger(index) && index >= 0 && index < 18))],
   ...(run.skillLoadout ? { skillLoadout: [...run.skillLoadout] } : {}),
   tempCards: run.tempCards.map(card => ({ ...card })), equipment: [...run.equipment] });
 const levelOf = (run: ExpeditionRun) => expeditionLevel(run.inventory);
@@ -58,8 +61,14 @@ export function resolveExpeditionEnemyLoadout(enemy: ExpeditionEnemyDef, playerI
 export function createExpeditionRun(difficulty: ExpeditionDifficulty = 'beginner'): ExpeditionRun {
   const config = getExpeditionDifficulty(difficulty);
   return { difficulty: config.id, stageIdx: 0, relics: [], inventory: [0], skillLoadout: [], hp: config.startHp, maxHp: config.startHp,
-    tempCards: [], gold: 0, equipment: [], ironShirtUsed: false, dollUsed: false, route: 'rest',
+    tempCards: [], gold: 0, equipment: [], ironShirtUsed: false, dollUsed: false, route: 'rest', crownCleared: [],
     ...(config.id === 'endless' ? { endlessLevel: 0, endlessEnemyLevel: 1, endlessDefeats: 0 } : {}) };
+}
+
+/** Supply is a visible, one-time setup bonus, never hidden extra damage. */
+export function getCrownSupplyBonus(run: Pick<ExpeditionRun, 'difficulty' | 'crownCleared'>) {
+  const activeTowers = run.difficulty === 'endless' ? [] : [13, 14, 15].filter(index => !run.crownCleared?.includes(index));
+  return { activeTowers, energy: activeTowers.length, hp: activeTowers.length * .5 };
 }
 
 /** Revive the settled state, never a pre-battle snapshot: spent cards and safeguards stay spent. */
@@ -139,7 +148,15 @@ export function setupExpeditionStage(previous: ExpeditionRun, stageIdx: number,
     run.endlessDefeats ??= 0;
   }
   const firstEntry = !endless || stageIdx > (run.endlessEnteredStageIdx ?? -1);
+  const crownSupply = stageIdx === 17 && !endless ? getCrownSupplyBonus(run) : { activeTowers: [], energy: 0, hp: 0 };
   const logs: LogEntry[] = [{ turn: 1, text: `${stage.chapter[identity.lang]} · ${stage.name[identity.lang]}`, type: 'info' }];
+  if (stageIdx === 17 && !endless) logs.push({ turn: 1, type: 'info', text: identity.lang === 'zh'
+    ? crownSupply.activeTowers.length
+      ? `${crownSupply.activeTowers.length} 座供能塔仍在运转：冠主开局能量 +${crownSupply.energy}、生命 +${crownSupply.hp}。`
+      : '三座供能塔已切断：冠主没有额外开局能量或生命。'
+    : crownSupply.activeTowers.length
+      ? `${crownSupply.activeTowers.length} supply towers remain: the Crown King starts with +${crownSupply.energy} Energy and +${crownSupply.hp} HP.`
+      : 'All three supply towers are cut: the Crown King has no extra starting Energy or HP.' });
   if (firstEntry && run.equipment.includes('luckydice')) {
     const card = drawGachaCard(levelOf(run), stageIdx, random);
     addCard(run, card.cardId, 1);
@@ -150,7 +167,8 @@ export function setupExpeditionStage(previous: ExpeditionRun, stageIdx: number,
     disabledSkills: [], freeSkills: [], kills: 0, tempSkills: [] };
   const enemies: Player[] = stage.enemies.map(enemy => ({ ...base, id: `exp_${stage.id}_${enemy.id}`,
     name: enemy.name[identity.lang], avatar: `avatars/enemies/${enemy.avatarId ?? enemy.id}.webp`, isBot: true,
-    hp: enemy.hp + (run.route === 'risk' && stageIdx >= 3 ? EXPEDITION_CHALLENGE_HP : 0), energy: endless ? 0 : enemy.passive?.startEnergy ?? 0,
+    hp: enemy.hp + crownSupply.hp + (run.route === 'risk' && stageIdx >= 3 ? EXPEDITION_CHALLENGE_HP : 0),
+    energy: endless ? 0 : (enemy.passive?.startEnergy ?? 0) + crownSupply.energy,
     ...(endless ? { ...getEndlessEnemyLoadout(run.endlessEnemyLevel!), endlessLevel: run.endlessEnemyLevel }
       : resolveExpeditionEnemyLoadout(enemy, run.inventory)), dmgBonus: enemy.passive?.attackBonus ?? 0,
     energyDrain: enemy.passive?.energyDrain ?? 0, pierce: enemy.passive?.pierce ?? false,
@@ -237,13 +255,15 @@ export function settleExpeditionRound(previous: ExpeditionRun, previousMemory: E
   run.tempCards = consumeExpeditionCard(run.tempCards, before.freeSkills?.includes(before.selectedCardId ?? '') ? null : before.selectedCardId);
   changeHero(player => ({ ...player, tempSkills: run.tempCards.map(card => card.cardId) }));
   const lost = after.isDead, won = !lost && players.every(player => player.id === heroId || player.isDead);
-  const freshWin = won && (run.difficulty !== 'endless' || run.stageIdx > (run.endlessClearedStageIdx ?? -1));
+  const freshWin = won && (run.difficulty === 'endless'
+    ? run.stageIdx > (run.endlessClearedStageIdx ?? -1) : !run.crownCleared!.includes(run.stageIdx));
   const stage = getExpeditionStage(run.stageIdx, run.difficulty);
   if (!stage) throw new Error('Unknown expedition stage');
   const gold = freshWin ? (goldForWin(run.stageIdx, stage, random)
     + (run.equipment.includes('treasurepot') ? 4 : 0) + (run.route === 'risk' && run.stageIdx >= 3 ? EXPEDITION_CHALLENGE_GOLD : 0))
     * getExpeditionDifficulty(run.difficulty).goldMultiplier : 0;
   if (freshWin) {
+    if (run.difficulty !== 'endless') run.crownCleared = [...run.crownCleared!, run.stageIdx].sort((a, b) => a - b);
     if (has('zstai')) changeHero(player => ({ ...player, hp: Math.min(run.maxHp, player.hp + .5) }));
     run.gold += gold;
     note(`过关 · 金币 +${gold}`, `Cleared · +${gold} gold`);

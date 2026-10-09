@@ -31,7 +31,7 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
   const endless = mode.id === 'endless';
   const choosingDifficulty = !!onStart && !recap;
   const restartNote = endless
-    ? (zh ? '倒下可保留成长继续；退出或刷新仍不保存本轮。' : 'Continue after defeat with your growth intact. Leaving or refreshing still does not save this run.')
+    ? (zh ? '守擂没有终点，倒下保留成长继续；退出或刷新不保存本轮。' : 'Continue after defeat with your growth intact. Leaving or refreshing still does not save this run.')
     : (zh ? '重开清空本轮成长，保留各难度最佳与练习记录；退出或刷新不保存本轮。' : 'Restart clears run growth, keeping each difficulty’s best and practice records. Leaving or refreshing does not save this run.');
   const quickRules = <div className="exp-briefing-rules">
     <article><PixelCardArt id="charge" /><p>{zh ? '攒能量，抓对手攒时出手。' : 'Build energy; attack when the opponent Charges.'}</p></article>
@@ -64,7 +64,7 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
     return () => { element.close(); document.body.style.overflow = overflow; if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, []);
   return createPortal(<dialog ref={dialog} className={`exp-briefing${choosingDifficulty ? ' exp-difficulty-dialog' : ''}`} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }}>
-    <header><h2 id={titleId}>{recap ? (zh ? `第 ${recap.turn} 回合` : `Turn ${recap.turn}`) : choosingDifficulty ? (zh ? '选择远征难度' : 'Choose expedition difficulty') : (zh ? '远征速览' : 'Expedition at a glance')}</h2>
+    <header><h2 id={titleId}>{recap ? (zh ? `第 ${recap.turn} 回合` : `Turn ${recap.turn}`) : choosingDifficulty ? (zh ? '王冠战争 · 选择旅程' : 'Crown War · Choose your journey') : (zh ? '远征速览' : 'Expedition at a glance')}</h2>
       <button type="button" onClick={onClose} aria-label={zh ? '关闭' : 'Close'}>×</button></header>
     {recap ? <>
       <p className="exp-recap-stats">♥ {recap.hpBefore} → {recap.hpAfter} <span>⚡ {recap.energyBefore} → {recap.energyAfter}</span></p>
@@ -89,13 +89,13 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
       </> : <>{quickRules}<p className="exp-briefing-note">{restartNote}</p></>}
       <details className="exp-briefing-details"><summary>{zh ? '更多规则' : 'More rules'}</summary>
         {choosingDifficulty && <>{quickRules}<p className="exp-briefing-note">{restartNote}</p></>}
-        <p>{endless ? (zh ? '无尽没有终点。击败本关最高 Lv.N 的敌人，直接升至 Lv.N+1，获得这一阶的新技能；保留旧技能，不补发跳过的等级。胜利进入下一关；倒下则保留成长、恢复生命重试，敌方再升 1 级。' : 'Endless has no final stage. Beat the strongest Lv.N opponent to reach Lv.N+1 and learn that tier’s skills. Keep old skills; skipped tiers are not awarded. A win advances; defeat keeps growth and restores HP for a retry, while enemies gain one level.') : (zh ? `打过全部 ${EXPEDITION_STAGES.length} 关即通关。每关击败所有对手才能领奖；对手之间也会互打。` : `Clear all ${EXPEDITION_STAGES.length} stages to win. Defeat every opponent for a reward; they can hit each other too.`)}</p>
+        <p>{endless ? (zh ? '无尽没有终点。击败本关最高 Lv.N 的敌人，直接升至 Lv.N+1，获得这一阶的新技能；保留旧技能，不补发跳过的等级。胜利进入下一关；倒下则保留成长、恢复生命重试，敌方再升 1 级。' : 'Endless has no final stage. Beat the strongest Lv.N opponent to reach Lv.N+1 and learn that tier’s skills. Keep old skills; skipped tiers are not awarded. A win advances; defeat keeps growth and restores HP for a retry, while enemies gain one level.') : (zh ? `主线含 ${EXPEDITION_STAGES.length} 场挑战。夺取三枚赛区印记，再击败冠主。供能塔可绕过，但每座保留的塔使冠主多 0.5 生命和 1 初始能量。每关击败所有对手才能领奖；对手之间也会互打。` : `The story spans ${EXPEDITION_STAGES.length} encounters. Collect three seals, then defeat the Crown King. Towers are optional; each active tower gives him +0.5 HP and +1 starting energy. Defeat every opponent for a reward; they can hit each other too.`)}</p>
         <p>{zh ? '双方同时出牌，台词不是出牌预告。攒通常获得 2 能量，受到 1 点伤害会被打断。' : 'Moves resolve together. Dialogue is not a move preview. Charge normally gains 2 energy; taking 1 damage interrupts it.'}</p>
         <p>{endless ? (zh ? '敌方至少比你高 1 级，每次失败再加 1 级。无尽中已学的等级攻击按当前等级比较同档强弱；基础牌与特殊克制仍按原规则。没有额外伤害或金币倍率。' : 'Enemies are at least one level above you; each defeat adds another level. Learned leveled attacks use your current level in same-tier clashes. Basic cards and special counters retain their rules. No extra damage or gold multiplier.') : (zh ? '升级沿完整技能表解锁新招，不再限制到 Lv.5；旧牌不会变强。重开时等级、金币、遗物、装备和秘技清空。' : 'Leveling follows the full skill list without the old Lv.5 restriction; old moves stay unchanged. Restart clears levels, gold, relics, gear and limited skills.')}</p>
         <p>{zh ? `新手从 ${EXPEDITION_DIFFICULTIES.beginner.startHp} 血开始；普通从 ${EXPEDITION_DIFFICULTIES.normal.startHp} 血开始，敌人伤害 +${EXPEDITION_DIFFICULTIES.normal.enemyDamageBonus}，胜利金币 ×${EXPEDITION_DIFFICULTIES.normal.goldMultiplier}。装备只在本轮有效。` : `Beginner starts at ${EXPEDITION_DIFFICULTIES.beginner.startHp} HP. Normal starts at ${EXPEDITION_DIFFICULTIES.normal.startHp} HP, with +${EXPEDITION_DIFFICULTIES.normal.enemyDamageBonus} enemy damage and ×${EXPEDITION_DIFFICULTIES.normal.goldMultiplier} victory gold. Gear lasts for this run.`}</p>
         <p>{zh ? `多人从 ${MAX_HP} 血开始：淘汰后若至少两人存活，幸存者回到 ${MAX_HP} 血，能量和层数归零；远征没有这次重置。基础攻防规则相同。` : `Multiplayer starts at ${MAX_HP} HP: after an elimination with at least two survivors, their HP resets to ${MAX_HP}, energy and layer to 0. Expedition has no such reset. Basic combat rules are shared.`}</p>
       </details>
     </>}
-    <footer><button type="button" onClick={onPractice}>{zh ? '练习 / 查规则' : 'Practice / rules'}</button><button type="button" className="exp-briefing-primary" onClick={onStart ?? onClose}>{onStart ? (zh ? '开始远征' : 'Start expedition') : (zh ? '明白了' : 'Got it')}</button></footer>
+    <footer><button type="button" onClick={onPractice}>{zh ? '练习 / 查规则' : 'Practice / rules'}</button><button type="button" className="exp-briefing-primary" onClick={onStart ?? onClose}>{onStart ? (zh ? '踏上旅程' : 'Begin the journey') : (zh ? '明白了' : 'Got it')}</button></footer>
   </dialog>, document.body);
 }

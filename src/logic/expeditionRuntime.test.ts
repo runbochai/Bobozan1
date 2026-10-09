@@ -24,9 +24,9 @@ function play(battle: Battle, own: string, other: string, heroPatch: Partial<Pla
 }
 const gear = (id: string) => ({ kind: 'equipment' as const, equipment: EXPEDITION_EQUIPMENTS.find(item => item.id === id)! });
 
-test('every stage starts enemies at zero Energy and lets a fresh hero safely Charge against any legal opener', () => {
+test('ordinary encounters and a disconnected Crown King start at zero Energy, allowing a safe first Charge', () => {
   EXPEDITION_STAGES.forEach((_, stage) => {
-    const battle = start({}, stage), enemies = battle.players.filter(player => player.id !== EXPEDITION_HERO_ID);
+    const battle = start({ crownCleared: [13, 14, 15] }, stage), enemies = battle.players.filter(player => player.id !== EXPEDITION_HERO_ID);
     assert.equal(hero(battle).energy, 0);
     const choices = enemies.map(enemy => {
       assert.equal(enemy.energy, 0);
