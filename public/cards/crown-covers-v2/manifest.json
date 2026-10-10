@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "tool": "built-in image_gen.imagegen",
+  "styleReferences": [
+    "cards/crown-engraved-v1/folder-attack.webp",
+    "cards/crown-engraved-v1/folder-defend.webp"
+  ],
+  "cards": [
+    {
+      "id": "charge",
+      "file": "charge.webp",
+      "source": "exec-d4216b2a-4ad1-45fb-b15c-f39bf8769f1e.png",
+      "prompt": "Use case: stylized-concept. Make ONE text-free game folder cover illustration, portrait 2:3. The supplied images are STYLE and SIZE references for existing ATTACK and DEFEND folder covers; reproduce their finely engraved woodcut ink, worn brass, deep midnight navy, subtly printed grain, hard carved shading, restrained high contrast. Subject: ONE substantial antique brass lantern, upright centered, with a small warm amber steady flame inside, large recognizable faceted body and a simple loop handle. Match the single isolated emblem composition of the shield reference: object fills about 72% image width and spans from 13% to 74% image height. QUIET near-flat midnight navy textured background matching the references. Leave bottom 23% empty dark navy for a title drawn by code. Top 10% quiet for small emblem. No city, street, buildings, scenery, hanging bracket, people, hands, frame, border, numbers, labels or lettering. Not bright neon, no rays, no sparks, no swirl. Only the lantern has warm light, the rest calm dark blue. Detailed engraved illustration, no glossy vector, no photographic 3D, no pixel blocks. This cover will sit beside these exact shield and swords covers at the same size."
+    }
+  ]
+}

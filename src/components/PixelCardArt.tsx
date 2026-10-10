@@ -25,8 +25,16 @@ export default function PixelCardArt({ id }: { id: string }) {
   const [failedId, setFailedId] = useState<string | null>(null);
   const portrait = ULT_CUTINS[id] ?? ULT_CUTINS[relatives[id]];
   const Symbol = symbols[id] ?? Scroll;
-  const engraved = WOODCUT_CARDS[id];
-  if (engraved && failedId !== id) return <img className="pixel-card-art crown-skill-thumbnail" src={assetUrl(engraved)} alt="" draggable={false} decoding="async" style={{ imageRendering: 'auto', objectFit: 'cover', objectPosition: 'center' }} onError={() => setFailedId(id)} />;
+  const art = WOODCUT_CARDS[id];
+  // The approved prints contain sample badges and titles. Small icons show only
+  // their illustration; live costs and levels are supplied by the surrounding UI.
+  if (art && failedId !== id) {
+    if (art.startsWith('cards/woodcut-')) return <span className="pixel-card-art woodcut-skill-thumbnail" style={{ position: 'relative', display: 'inline-block', overflow: 'hidden' }}>
+      <img src={assetUrl(art)} alt="" draggable={false} decoding="async" data-art-crop="true"
+        style={{ position: 'absolute', left: '-9.52381%', top: '-35.483871%', width: '119.047619%', height: '161.290323%', maxWidth: 'none', maxHeight: 'none', objectFit: 'fill', imageRendering: 'auto' }} onError={() => setFailedId(id)} />
+    </span>;
+    return <img className="pixel-card-art crown-skill-thumbnail" src={assetUrl(art)} alt="" draggable={false} decoding="async" style={{ imageRendering: 'auto', objectFit: 'cover', objectPosition: 'center' }} onError={() => setFailedId(id)} />;
+  }
   if (portrait?.combo) return <ComboCutinArt id={portrait.combo} className="pixel-card-art" />;
   if (portrait && failedId !== id) return <img className="pixel-card-art" src={assetUrl(portrait.image)} alt="" draggable={false} onError={() => setFailedId(id)} />;
   return <span className={`pixel-card-symbol pixel-symbol-${id}`}><Symbol size={44} /></span>;
