@@ -92,7 +92,7 @@ tip: { zh: '它爱防守。攒够 3 能量，用咔破防。', en: 'It likes Def
 enemies: [{
 id: 'turtle', name: { zh: '龟伯 · 资格考官', en: 'Old Shell · Qualifier' }, hp: 1, inventory: [0],
 personality: P(0.2, 0.75, 0.5, 0.1),
-intro: { zh: '拿走这枚报名章，要靠脑子。', en: 'Earn the entry stamp with your head.' },
+intro: { zh: '印是真的。让我看看你怎么出牌。', en: 'The seal is real. Show me how you play.' },
 }],
 },
 // ---------- 赤焰印记 ----------
@@ -104,7 +104,7 @@ tip: { zh: '天马只花 1 费；用轰轰或六克可以打平。', en: 'Pegasu
 enemies: [{
 id: 'slime', avatarId: 'wolf', name: { zh: '洛牙 · 初遇', en: 'Rook · First Meeting' }, hp: 1.5, inventory: [0, 1],
 personality: P(0.5, 0.3, 0.5, 0.2),
-intro: { zh: '洛牙。我也替家乡来，试试身手？', en: 'Rook. Here for my hometown too. A match?' },
+intro: { zh: '洛牙。我来讨回祖屋，先过这一桌。', en: 'Rook. I want my family’s land back. A match?' },
 }],
 },
 {
@@ -206,12 +206,12 @@ enemies: [
 {
 id: 'shadow_a', name: { zh: '雾市长兄 · 影一', en: 'First Shade · Veilmarket' }, hp: 2, inventory: [0, 3],
 personality: P(0.75, 0.3, 0.3, 0.7),
-intro: { zh: '这里每个人，都欠王冠一盏灯。', en: 'Everyone here owes the Crown a light.' },
+intro: { zh: '税单来了，我们的灯就没了。', en: 'The tax bill came. Our lights went.' },
 },
 {
 id: 'shadow_b', name: { zh: '雾市账房 · 影二', en: 'Second Shade · Bookkeeper' }, hp: 1.5, inventory: [0, 2],
 personality: P(0.6, 0.35, 0.4, 0.6),
-intro: { zh: '赢的越多，送走的灯越多。', en: 'More victories. More lights taken.' },
+intro: { zh: '税加一笔，灯少一盏。账我记着。', en: 'Another levy. Another lantern gone. I count.' },
 },
 {
 id: 'shadow_c', name: { zh: '雾市小弟 · 影三', en: 'Third Shade · Younger' }, hp: 1.5, inventory: [0, 1],
@@ -284,18 +284,18 @@ tip: { zh: '洛牙会改变节奏。看公开能量和历史，别只信台词�
 enemies: [{
 id: 'lord_bozan', avatarId: 'wolf', name: { zh: '洛牙 · 最后的挑战者', en: 'Rook · Last Challenger' }, hp: 4, inventory: [0, 2, 3, 5],
 personality: P(0.7, 0.35, 0.25, 1.0, 'feint'), boss: true,
-intro: { zh: '我没忘家乡。你也别忘。', en: 'I remember my town. Remember yours.' },
+intro: { zh: '真坐上王位，别变成我们恨的人。', en: 'Take the throne. Do not become him.' },
 }],
 },
 {
 id: 's16', chapter: { zh: '终局 · 王冠竞技场', en: 'Finale · Crown Arena' },
-name: { zh: '第 18 关 · 夺回众城灯火', en: 'Stage 18 · Reclaim the City Lights' },
+name: { zh: '第 18 关 · 让王冠易主', en: 'Stage 18 · A New Ruler' },
 rewardTier: 3,
 tip: { zh: '未切断的供能塔会增加冠主开局能量和生命；入场前可查看。', en: 'Active supply towers add starting Energy and HP; inspect them before entry.'},
 enemies: [{
-id: 'tower_soul', avatarId: 'lord_bozan', name: { zh: '冠主 · 奥瑞恩', en: 'Aurion · Crown King' }, hp: 5, inventory: [0, 1, 2, 3, 5],
+id: 'tower_soul', avatarId: 'lord_bozan', name: { zh: '老国王 · 奥瑞恩', en: 'Aurion · The Old King' }, hp: 5, inventory: [0, 1, 2, 3, 5],
 personality: P(0.55, 0.7, 0.3, 0.9, 'patient'), boss: true,
-intro: { zh: '灯火归胜者。这是我的规矩。', en: 'The victor takes the light. My rule.' },
+intro: { zh: '祖法认你的牌。我倒要看看你的本事。', en: 'The law honors your card. Show your worth.' },
 }],
 },
 ];

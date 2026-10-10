@@ -1,0 +1,909 @@
+{
+  "collection": "Crown engraved cards",
+  "generator": "Built-in image_gen",
+  "styleReference": "story/crown-v1/prologue-1.webp",
+  "width": 360,
+  "height": 540,
+  "artOnly": true,
+  "liveValues": true,
+  "atlases": [
+    {
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "width": 1448,
+      "height": 1086,
+      "prompt": "Use case: illustration-story. Asset type: production game illustration atlas 1 of 8. Create one large contact sheet, EXACTLY 4 columns × 2 rows, 8 perfectly equal rectangular PORTRAIT cells, no gaps, each cell about 2:3 aspect ratio. Sheet aspect ratio 4:3. Each cell is an independent full-bleed card ILLUSTRATION, not a completed card. The reference image is STYLE REFERENCE ONLY: use its hand-engraved dark storybook graphic novel woodcut print style, scratchy rich crosshatching, blue-black night shadows, tarnished gold/amber lantern lighting, sophisticated matte ink texture. Tiny jagged ink edges, not chunky low-resolution pixel art, not smooth plastic or 3D. Rich scene depth inside each small composition, excellent readable silhouettes. Background of every cell deep midnight navy #152536; dynamic subjects kept in middle 75%, dark quiet top 12% and bottom 14% for UI overlay. No text, NO NUMBERS, no border, no badges, no labels, no white gutters, no letters or logos. Do not add people unless explicitly specified. Basic skills only objects/hands, never whole characters. Each subject has its own element palette (ice blue, poison green, purple, copper) without losing overall blue-and-amber storybook family. Exact row-major subjects, left-to-right top row then bottom row: CELL 1: One antique iron street lantern glowing gold, suspended in darkness; this is the same angular capped lantern as the reference, small light motes gathering; CELL 2: Two gloved forearms crossed behind a solid round iron shield, teal halo; CELL 3: One gloved hand projecting a single concentrated amber energy orb, a sharp comet trail; CELL 4: Two gloved hands sending TWO distinct amber energy orbs side by side, twin trails; CELL 5: One armored fist punching forward through six angular fragments, copper slash; CELL 6: A broad bronze sword cleaving a blue iron shield in two, purple streak; CELL 7: A four-point luminous amethyst star piercing layers of dark cloud; CELL 8: A faceted violet crystal exploding with controlled gold and purple rays. Grid edges must align perfectly at 25%,50%,75% width and50% height. Ensure complete eachsubject contained within its own cell. No overlaps between cells.",
+      "cells": [
+        "charge",
+        "defend",
+        "hong",
+        "hong2",
+        "liuke",
+        "ka",
+        "ji",
+        "kajifen"
+      ]
+    },
+    {
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "width": 1448,
+      "height": 1086,
+      "prompt": "Use case: illustration-story. Asset type: production game illustration atlas 2 of 8. Create one large contact sheet, EXACTLY 4 columns × 2 rows, 8 perfectly equal rectangular PORTRAIT cells, no gaps, each cell about 2:3 aspect ratio. Sheet aspect ratio 4:3. Each cell is an independent full-bleed card ILLUSTRATION, not a completed card. The reference image is STYLE REFERENCE ONLY: use its hand-engraved dark storybook graphic novel woodcut print style, scratchy rich crosshatching, blue-black night shadows, tarnished gold/amber lantern lighting, sophisticated matte ink texture. Tiny jagged ink edges, not chunky low-resolution pixel art, not smooth plastic or 3D. Rich scene depth inside each small composition, excellent readable silhouettes. Background of every cell deep midnight navy #152536; dynamic subjects kept in middle 75%, dark quiet top 12% and bottom 14% for UI overlay. No text, NO NUMBERS, no border, no badges, no labels, no white gutters, no letters or logos. Do not add people unless explicitly specified. Basic skills only objects/hands, never whole characters. Each subject has its own element palette (ice blue, poison green, purple, copper) without losing overall blue-and-amber storybook family. Exact row-major subjects, left-to-right top row then bottom row: CELL 1: An enormous radiant purple crystal core with a surrounding crown of smaller shards and concentric golden shockwaves; CELL 2: A single empty leather boot rising above a cloud ledge, upward ivory wind, no body; CELL 3: A trapdoor-like stone opening with a descending golden trail and scattered soil, no figure; CELL 4: A brave compact cream-white winged pegasus leaping toward viewer, full body, teal mane, gold feathers; CELL 5: A rain of three brilliant silver-blue shooting stars blazing downward over a distant dark ridge; CELL 6: One icy translucent pale blue sword, embedded at an angle in frost, crystalline chipped edges; CELL 7: A huge ice sword suspended over a ring of smaller crystalline blades, dramatic frost storm; CELL 8: Two small ivory feathers lifted by a curling turquoise gust, one upward spiral. Grid edges must align perfectly at 25%,50%,75% width and50% height. Ensure complete eachsubject contained within its own cell. No overlaps between cells.",
+      "cells": [
+        "kajisuper",
+        "ascend",
+        "descend",
+        "pegasus",
+        "meteor",
+        "icesword",
+        "iceult",
+        "smallfly"
+      ]
+    },
+    {
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "width": 1448,
+      "height": 1086,
+      "prompt": "Use case: illustration-story. Asset type: production game illustration atlas 3 of 8. Create one large contact sheet, EXACTLY 4 columns × 2 rows, 8 perfectly equal rectangular PORTRAIT cells, no gaps, each cell about 2:3 aspect ratio. Sheet aspect ratio 4:3. Each cell is an independent full-bleed card ILLUSTRATION, not a completed card. The reference image is STYLE REFERENCE ONLY: use its hand-engraved dark storybook graphic novel woodcut print style, scratchy rich crosshatching, blue-black night shadows, tarnished gold/amber lantern lighting, sophisticated matte ink texture. Tiny jagged ink edges, not chunky low-resolution pixel art, not smooth plastic or 3D. Rich scene depth inside each small composition, excellent readable silhouettes. Background of every cell deep midnight navy #152536; dynamic subjects kept in middle 75%, dark quiet top 12% and bottom 14% for UI overlay. No text, NO NUMBERS, no border, no badges, no labels, no white gutters, no letters or logos. Do not add people unless explicitly specified. Basic skills only objects/hands, never whole characters. Each subject has its own element palette (ice blue, poison green, purple, copper) without losing overall blue-and-amber storybook family. Exact row-major subjects, left-to-right top row then bottom row: CELL 1: A compact orange baby dragon with small horns, pale belly and two wings angrily swiping one oversized claw towards viewer, curled body rotation; CELL 2: Same compact orange baby dragon with small horns and two wings, sweeping an enormous claw through one orange fire arc, dramatic twist; CELL 3: Same compact orange baby dragon holding both sturdy clawed forearms crossed before its face, a protective amber barrier; CELL 4: A ceramic mug of hot milk tipping to unleash one crescent of luminous white steam; CELL 5: A stout antique iron boiler exploding a huge white steam column, copper rivets; CELL 6: A shadowy spectral horse surging out of dark violet fog, turquoise eyes; CELL 7: A spectral hooded figure suspended by curling shadow ribbons, eerie violet aura, no gore; CELL 8: Two great spread ivory wings, layered teal wind rising strongly, no figure. Grid edges must align perfectly at 25%,50%,75% width and50% height. Ensure complete eachsubject contained within its own cell. No overlaps between cells.",
+      "cells": [
+        "dragonclaw",
+        "fireclaw",
+        "dragondef",
+        "hotmilk",
+        "boiler",
+        "madian",
+        "hangman",
+        "bigfly"
+      ]
+    },
+    {
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "width": 1448,
+      "height": 1086,
+      "prompt": "Use case: illustration-story. Asset type: production game illustration atlas 4 of 8. Create one large contact sheet, EXACTLY 4 columns × 2 rows, 8 perfectly equal rectangular PORTRAIT cells, no gaps, each cell about 2:3 aspect ratio. Sheet aspect ratio 4:3. Each cell is an independent full-bleed card ILLUSTRATION, not a completed card. The reference image is STYLE REFERENCE ONLY: use its hand-engraved dark storybook graphic novel woodcut print style, scratchy rich crosshatching, blue-black night shadows, tarnished gold/amber lantern lighting, sophisticated matte ink texture. Tiny jagged ink edges, not chunky low-resolution pixel art, not smooth plastic or 3D. Rich scene depth inside each small composition, excellent readable silhouettes. Background of every cell deep midnight navy #152536; dynamic subjects kept in middle 75%, dark quiet top 12% and bottom 14% for UI overlay. No text, NO NUMBERS, no border, no badges, no labels, no white gutters, no letters or logos. Do not add people unless explicitly specified. Basic skills only objects/hands, never whole characters. Each subject has its own element palette (ice blue, poison green, purple, copper) without losing overall blue-and-amber storybook family. Exact row-major subjects, left-to-right top row then bottom row: CELL 1: A gloved hand drawing three small colored spell motes into an indigo spiral at the palm; CELL 2: A small ornate antique flintlock pistol projecting one bright golden bolt, angled foreshortened; CELL 3: One ornate antique flintlock pistol firing a luminous bolt through three elliptical blue portals; CELL 4: A pointed bronze helmet lunging forward with copper impact streaks, no face; CELL 5: A closed steel helmet inside a calm cyan protective halo, no face; CELL 6: A heavy broad curved blade cutting a block of stone cleanly in half, ember sparks; CELL 7: Three distinct crossing silver blade cuts and three sweeping amber trails; CELL 8: One large armored gauntlet thrust toward viewer with dramatic angular impact. Grid edges must align perfectly at 25%,50%,75% width and50% height. Ensure complete eachsubject contained within its own cell. No overlaps between cells.",
+      "cells": [
+        "absorb",
+        "gun",
+        "gungod",
+        "helmetatk",
+        "helmetdef",
+        "machete",
+        "triplekill",
+        "handatk"
+      ]
+    },
+    {
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "width": 1448,
+      "height": 1086,
+      "prompt": "Use case: illustration-story. Asset type: production game illustration atlas 5 of 8. Create one large contact sheet, EXACTLY 4 columns × 2 rows, 8 perfectly equal rectangular PORTRAIT cells, no gaps, each cell about 2:3 aspect ratio. Sheet aspect ratio 4:3. Each cell is an independent full-bleed card ILLUSTRATION, not a completed card. The reference image is STYLE REFERENCE ONLY: use its hand-engraved dark storybook graphic novel woodcut print style, scratchy rich crosshatching, blue-black night shadows, tarnished gold/amber lantern lighting, sophisticated matte ink texture. Tiny jagged ink edges, not chunky low-resolution pixel art, not smooth plastic or 3D. Rich scene depth inside each small composition, excellent readable silhouettes. Background of every cell deep midnight navy #152536; dynamic subjects kept in middle 75%, dark quiet top 12% and bottom 14% for UI overlay. No text, NO NUMBERS, no border, no badges, no labels, no white gutters, no letters or logos. Do not add people unless explicitly specified. Basic skills only objects/hands, never whole characters. Each subject has its own element palette (ice blue, poison green, purple, copper) without losing overall blue-and-amber storybook family. Exact row-major subjects, left-to-right top row then bottom row: CELL 1: An enchanted obsidian card-shaped tablet shattering into suspended gold-edged fragments, violet light; CELL 2: Two open armored gauntlets holding up a circular luminous blue barrier, no figure; CELL 3: One iron-plated boot kicking toward viewer, orange impact arcs, no figure; CELL 4: Three iron boots arranged as successive kicking echoes around a golden circular motion sweep, no bodies; CELL 5: Two heavy armored boots firmly braced on a stone step with a teal shield glyph between, no body; CELL 6: Two open gloved hands pulling an enormous violet vortex of colored spell fragments inward; CELL 7: A single copper spearhead piercing the darkness with a precise single point of gold light; CELL 8: A single impossibly bright star point splitting into concentric gold and violet rings. Grid edges must align perfectly at 25%,50%,75% width and50% height. Ensure complete eachsubject contained within its own cell. No overlaps between cells.",
+      "cells": [
+        "shatter",
+        "handdef",
+        "footatk",
+        "triplekick",
+        "footdef",
+        "aoxi",
+        "oneg",
+        "pointdiff"
+      ]
+    },
+    {
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "width": 1448,
+      "height": 1086,
+      "prompt": "Use case: illustration-story. Asset type: production game illustration atlas 6 of 8. Create one large contact sheet, EXACTLY 4 columns × 2 rows, 8 perfectly equal rectangular PORTRAIT cells, no gaps, each cell about 2:3 aspect ratio. Sheet aspect ratio 4:3. Each cell is an independent full-bleed card ILLUSTRATION, not a completed card. The reference image is STYLE REFERENCE ONLY: use its hand-engraved dark storybook graphic novel woodcut print style, scratchy rich crosshatching, blue-black night shadows, tarnished gold/amber lantern lighting, sophisticated matte ink texture. Tiny jagged ink edges, not chunky low-resolution pixel art, not smooth plastic or 3D. Rich scene depth inside each small composition, excellent readable silhouettes. Background of every cell deep midnight navy #152536; dynamic subjects kept in middle 75%, dark quiet top 12% and bottom 14% for UI overlay. No text, NO NUMBERS, no border, no badges, no labels, no white gutters, no letters or logos. Do not add people unless explicitly specified. Basic skills only objects/hands, never whole characters. Each subject has its own element palette (ice blue, poison green, purple, copper) without losing overall blue-and-amber storybook family. Exact row-major subjects, left-to-right top row then bottom row: CELL 1: Three copper spearheads converging into one sharp forward thrust; CELL 2: A long coiling mythic blue dragon surrounding exactly three glowing golden stars; CELL 3: Five gold-tipped metal shards forming a five-point rushing strike; CELL 4: An open armored palm with four ghostly trailing palm echoes, five strikes total, golden arcs; CELL 5: A pentagonal blue iron shield with five brass studs, calm pale cyan halo; CELL 6: Seven sharp copper shards orbiting a lance of golden light; CELL 7: A single violent gold impact burst cracking a dark stone slab, strong radial engraved lines; CELL 8: An octagonal dark blue shield with eight brass rivets, turquoise defensive ring. Grid edges must align perfectly at 25%,50%,75% width and50% height. Ensure complete eachsubject contained within its own cell. No overlaps between cells.",
+      "cells": [
+        "threeg",
+        "threestar",
+        "fiveg",
+        "fiveslap",
+        "fivedef",
+        "seveng",
+        "bang",
+        "eightdef"
+      ]
+    },
+    {
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "width": 1448,
+      "height": 1086,
+      "prompt": "Use case: illustration-story. Asset type: production game illustration atlas 7 of 8. Create one large contact sheet, EXACTLY 4 columns × 2 rows, 8 perfectly equal rectangular PORTRAIT cells, no gaps, each cell about 2:3 aspect ratio. Sheet aspect ratio 4:3. Each cell is an independent full-bleed card ILLUSTRATION, not a completed card. The reference image is STYLE REFERENCE ONLY: use its hand-engraved dark storybook graphic novel woodcut print style, scratchy rich crosshatching, blue-black night shadows, tarnished gold/amber lantern lighting, sophisticated matte ink texture. Tiny jagged ink edges, not chunky low-resolution pixel art, not smooth plastic or 3D. Rich scene depth inside each small composition, excellent readable silhouettes. Background of every cell deep midnight navy #152536; dynamic subjects kept in middle 75%, dark quiet top 12% and bottom 14% for UI overlay. No text, NO NUMBERS, no border, no badges, no labels, no white gutters, no letters or logos. Do not add people unless explicitly specified. Basic skills only objects/hands, never whole characters. Each subject has its own element palette (ice blue, poison green, purple, copper) without losing overall blue-and-amber storybook family. Exact row-major subjects, left-to-right top row then bottom row: CELL 1: A narrow steel dagger thrust sharply toward viewer, strong foreshortening and one amber trail; CELL 2: A strong layered blue iron shield set with nine golden studs in three rows, protective turquoise halo; CELL 3: A huge curling midnight-blue ocean wave with luminous pale teal crest; CELL 4: An overwhelming towering spiral tidal wave around a brilliant blue moon, gold flecks; CELL 5: A concentrated golden spell beam blasting upward into storm clouds; CELL 6: A concentrated copper spell bolt slamming downward into cracked dark earth; CELL 7: An ornate crimson heart-shaped jewel under an all-seeing golden eye, sharp red rays; CELL 8: An overturned apothecary bottle releasing curling moss-green toxic fog and pale droplets. Grid edges must align perfectly at 25%,50%,75% width and50% height. Ensure complete eachsubject contained within its own cell. No overlaps between cells.",
+      "cells": [
+        "stab",
+        "ninedef",
+        "wave",
+        "superwave",
+        "hongtian",
+        "hongdi",
+        "hearteye",
+        "poison"
+      ]
+    },
+    {
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "width": 1448,
+      "height": 1086,
+      "prompt": "Use case: illustration-story. Asset type: production game illustration atlas 8 of 8. Create one large contact sheet, EXACTLY 4 columns × 2 rows, 8 perfectly equal rectangular PORTRAIT cells, no gaps, each cell about 2:3 aspect ratio. Sheet aspect ratio 4:3. Each cell is an independent full-bleed card ILLUSTRATION, not a completed card. The reference image is STYLE REFERENCE ONLY: use its hand-engraved dark storybook graphic novel woodcut print style, scratchy rich crosshatching, blue-black night shadows, tarnished gold/amber lantern lighting, sophisticated matte ink texture. Tiny jagged ink edges, not chunky low-resolution pixel art, not smooth plastic or 3D. Rich scene depth inside each small composition, excellent readable silhouettes. Background of every cell deep midnight navy #152536; dynamic subjects kept in middle 75%, dark quiet top 12% and bottom 14% for UI overlay. No text, NO NUMBERS, no border, no badges, no labels, no white gutters, no letters or logos. Do not add people unless explicitly specified. Basic skills only objects/hands, never whole characters. Each subject has its own element palette (ice blue, poison green, purple, copper) without losing overall blue-and-amber storybook family. Exact row-major subjects, left-to-right top row then bottom row: CELL 1: A majestic serpentine blue dragon coiling around one golden celestial sword, pale turquoise clouds; CELL 2: Two powerful pairs of ivory wings soaring together through an airy teal spiral; CELL 3: Three imposing bronze guardian shields in a triangular formation, a gold protective field; CELL 4: Three radiant explosions linked vertically by a golden beam across sky ground and earth layers; CELL 5: A crimson jeweled heart entangled with luminous green poison vapor, gold thorn ornament; CELL 6: ONE simple heraldic crossed-swords insignia in copper and ivory, large centered, very quiet midnight background, no scene; CELL 7: ONE simple heraldic blue iron shield insignia with a gold rim, large centered, very quiet midnight background, no scene; CELL 8: ONE simple heraldic three-point gold crown enclosing an amethyst star, large centered, very quiet midnight background, no scene. Grid edges must align perfectly at 25%,50%,75% width and50% height. Ensure complete eachsubject contained within its own cell. No overlaps between cells.",
+      "cells": [
+        "skydragon",
+        "doublewing",
+        "vajra",
+        "allbomb",
+        "heartpoison",
+        "folder-attack",
+        "folder-defend",
+        "folder-ultimate"
+      ]
+    }
+  ],
+  "cards": [
+    {
+      "id": "charge",
+      "file": "charge.webp",
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "crop": {
+        "left": 2,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "One antique iron street lantern glowing gold, suspended in darkness; this is the same angular capped lantern as the reference, small light motes gathering"
+    },
+    {
+      "id": "defend",
+      "file": "defend.webp",
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "crop": {
+        "left": 364,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Two gloved forearms crossed behind a solid round iron shield, teal halo"
+    },
+    {
+      "id": "hong",
+      "file": "hong.webp",
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "crop": {
+        "left": 726,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "One gloved hand projecting a single concentrated amber energy orb, a sharp comet trail"
+    },
+    {
+      "id": "hong2",
+      "file": "hong2.webp",
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "crop": {
+        "left": 1088,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Two gloved hands sending TWO distinct amber energy orbs side by side, twin trails"
+    },
+    {
+      "id": "liuke",
+      "file": "liuke.webp",
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "crop": {
+        "left": 2,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "One armored fist punching forward through six angular fragments, copper slash"
+    },
+    {
+      "id": "ka",
+      "file": "ka.webp",
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "crop": {
+        "left": 364,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A broad bronze sword cleaving a blue iron shield in two, purple streak"
+    },
+    {
+      "id": "ji",
+      "file": "ji.webp",
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "crop": {
+        "left": 726,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A four-point luminous amethyst star piercing layers of dark cloud"
+    },
+    {
+      "id": "kajifen",
+      "file": "kajifen.webp",
+      "source": "exec-e982aa06-3ed8-4dd6-8406-217b4925cd73.png",
+      "crop": {
+        "left": 1088,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A faceted violet crystal exploding with controlled gold and purple rays"
+    },
+    {
+      "id": "kajisuper",
+      "file": "kajisuper.webp",
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "crop": {
+        "left": 2,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "An enormous radiant purple crystal core with a surrounding crown of smaller shards and concentric golden shockwaves"
+    },
+    {
+      "id": "ascend",
+      "file": "ascend.webp",
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "crop": {
+        "left": 364,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A single empty leather boot rising above a cloud ledge, upward ivory wind, no body"
+    },
+    {
+      "id": "descend",
+      "file": "descend.webp",
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "crop": {
+        "left": 726,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A trapdoor-like stone opening with a descending golden trail and scattered soil, no figure"
+    },
+    {
+      "id": "pegasus",
+      "file": "pegasus.webp",
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "crop": {
+        "left": 1088,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A brave compact cream-white winged pegasus leaping toward viewer, full body, teal mane, gold feathers"
+    },
+    {
+      "id": "meteor",
+      "file": "meteor.webp",
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "crop": {
+        "left": 2,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A rain of three brilliant silver-blue shooting stars blazing downward over a distant dark ridge"
+    },
+    {
+      "id": "icesword",
+      "file": "icesword.webp",
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "crop": {
+        "left": 364,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "One icy translucent pale blue sword, embedded at an angle in frost, crystalline chipped edges"
+    },
+    {
+      "id": "iceult",
+      "file": "iceult.webp",
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "crop": {
+        "left": 726,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A huge ice sword suspended over a ring of smaller crystalline blades, dramatic frost storm"
+    },
+    {
+      "id": "smallfly",
+      "file": "smallfly.webp",
+      "source": "exec-42fefceb-117f-42e8-abb7-c64b8638fb0b.png",
+      "crop": {
+        "left": 1088,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Two small ivory feathers lifted by a curling turquoise gust, one upward spiral"
+    },
+    {
+      "id": "dragonclaw",
+      "file": "dragonclaw.webp",
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "crop": {
+        "left": 2,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A compact orange baby dragon with small horns, pale belly and two wings angrily swiping one oversized claw towards viewer, curled body rotation"
+    },
+    {
+      "id": "fireclaw",
+      "file": "fireclaw.webp",
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "crop": {
+        "left": 364,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Same compact orange baby dragon with small horns and two wings, sweeping an enormous claw through one orange fire arc, dramatic twist"
+    },
+    {
+      "id": "dragondef",
+      "file": "dragondef.webp",
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "crop": {
+        "left": 726,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Same compact orange baby dragon holding both sturdy clawed forearms crossed before its face, a protective amber barrier"
+    },
+    {
+      "id": "hotmilk",
+      "file": "hotmilk.webp",
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "crop": {
+        "left": 1088,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A ceramic mug of hot milk tipping to unleash one crescent of luminous white steam"
+    },
+    {
+      "id": "boiler",
+      "file": "boiler.webp",
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "crop": {
+        "left": 2,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A stout antique iron boiler exploding a huge white steam column, copper rivets"
+    },
+    {
+      "id": "madian",
+      "file": "madian.webp",
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "crop": {
+        "left": 364,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A shadowy spectral horse surging out of dark violet fog, turquoise eyes"
+    },
+    {
+      "id": "hangman",
+      "file": "hangman.webp",
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "crop": {
+        "left": 726,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A spectral hooded figure suspended by curling shadow ribbons, eerie violet aura, no gore"
+    },
+    {
+      "id": "bigfly",
+      "file": "bigfly.webp",
+      "source": "exec-41df6118-1345-4c46-a46f-43cf57fe765a.png",
+      "crop": {
+        "left": 1088,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Two great spread ivory wings, layered teal wind rising strongly, no figure"
+    },
+    {
+      "id": "absorb",
+      "file": "absorb.webp",
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "crop": {
+        "left": 2,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A gloved hand drawing three small colored spell motes into an indigo spiral at the palm"
+    },
+    {
+      "id": "gun",
+      "file": "gun.webp",
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "crop": {
+        "left": 364,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A small ornate antique flintlock pistol projecting one bright golden bolt, angled foreshortened"
+    },
+    {
+      "id": "gungod",
+      "file": "gungod.webp",
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "crop": {
+        "left": 726,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "One ornate antique flintlock pistol firing a luminous bolt through three elliptical blue portals"
+    },
+    {
+      "id": "helmetatk",
+      "file": "helmetatk.webp",
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "crop": {
+        "left": 1088,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A pointed bronze helmet lunging forward with copper impact streaks, no face"
+    },
+    {
+      "id": "helmetdef",
+      "file": "helmetdef.webp",
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "crop": {
+        "left": 2,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A closed steel helmet inside a calm cyan protective halo, no face"
+    },
+    {
+      "id": "machete",
+      "file": "machete.webp",
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "crop": {
+        "left": 364,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A heavy broad curved blade cutting a block of stone cleanly in half, ember sparks"
+    },
+    {
+      "id": "triplekill",
+      "file": "triplekill.webp",
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "crop": {
+        "left": 726,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Three distinct crossing silver blade cuts and three sweeping amber trails"
+    },
+    {
+      "id": "handatk",
+      "file": "handatk.webp",
+      "source": "exec-8218947d-d1b0-413e-afa4-631a66cac40b.png",
+      "crop": {
+        "left": 1088,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "One large armored gauntlet thrust toward viewer with dramatic angular impact"
+    },
+    {
+      "id": "shatter",
+      "file": "shatter.webp",
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "crop": {
+        "left": 2,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "An enchanted obsidian card-shaped tablet shattering into suspended gold-edged fragments, violet light"
+    },
+    {
+      "id": "handdef",
+      "file": "handdef.webp",
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "crop": {
+        "left": 364,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Two open armored gauntlets holding up a circular luminous blue barrier, no figure"
+    },
+    {
+      "id": "footatk",
+      "file": "footatk.webp",
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "crop": {
+        "left": 726,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "One iron-plated boot kicking toward viewer, orange impact arcs, no figure"
+    },
+    {
+      "id": "triplekick",
+      "file": "triplekick.webp",
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "crop": {
+        "left": 1088,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Three iron boots arranged as successive kicking echoes around a golden circular motion sweep, no bodies"
+    },
+    {
+      "id": "footdef",
+      "file": "footdef.webp",
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "crop": {
+        "left": 2,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Two heavy armored boots firmly braced on a stone step with a teal shield glyph between, no body"
+    },
+    {
+      "id": "aoxi",
+      "file": "aoxi.webp",
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "crop": {
+        "left": 364,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Two open gloved hands pulling an enormous violet vortex of colored spell fragments inward"
+    },
+    {
+      "id": "oneg",
+      "file": "oneg.webp",
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "crop": {
+        "left": 726,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A single copper spearhead piercing the darkness with a precise single point of gold light"
+    },
+    {
+      "id": "pointdiff",
+      "file": "pointdiff.webp",
+      "source": "exec-1ffc1fa3-e503-44fb-a571-414b4dd6e23d.png",
+      "crop": {
+        "left": 1088,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A single impossibly bright star point splitting into concentric gold and violet rings"
+    },
+    {
+      "id": "threeg",
+      "file": "threeg.webp",
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "crop": {
+        "left": 2,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Three copper spearheads converging into one sharp forward thrust"
+    },
+    {
+      "id": "threestar",
+      "file": "threestar.webp",
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "crop": {
+        "left": 364,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A long coiling mythic blue dragon surrounding exactly three glowing golden stars"
+    },
+    {
+      "id": "fiveg",
+      "file": "fiveg.webp",
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "crop": {
+        "left": 726,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Five gold-tipped metal shards forming a five-point rushing strike"
+    },
+    {
+      "id": "fiveslap",
+      "file": "fiveslap.webp",
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "crop": {
+        "left": 1088,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "An open armored palm with four ghostly trailing palm echoes, five strikes total, golden arcs"
+    },
+    {
+      "id": "fivedef",
+      "file": "fivedef.webp",
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "crop": {
+        "left": 2,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A pentagonal blue iron shield with five brass studs, calm pale cyan halo"
+    },
+    {
+      "id": "seveng",
+      "file": "seveng.webp",
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "crop": {
+        "left": 364,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Seven sharp copper shards orbiting a lance of golden light"
+    },
+    {
+      "id": "bang",
+      "file": "bang.webp",
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "crop": {
+        "left": 726,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A single violent gold impact burst cracking a dark stone slab, strong radial engraved lines"
+    },
+    {
+      "id": "eightdef",
+      "file": "eightdef.webp",
+      "source": "exec-a6f17fda-cc8c-400a-ac67-ed7544011f56.png",
+      "crop": {
+        "left": 1088,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "An octagonal dark blue shield with eight brass rivets, turquoise defensive ring"
+    },
+    {
+      "id": "stab",
+      "file": "stab.webp",
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "crop": {
+        "left": 2,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A narrow steel dagger thrust sharply toward viewer, strong foreshortening and one amber trail"
+    },
+    {
+      "id": "ninedef",
+      "file": "ninedef.webp",
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "crop": {
+        "left": 364,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A strong layered blue iron shield set with nine golden studs in three rows, protective turquoise halo"
+    },
+    {
+      "id": "wave",
+      "file": "wave.webp",
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "crop": {
+        "left": 726,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A huge curling midnight-blue ocean wave with luminous pale teal crest"
+    },
+    {
+      "id": "superwave",
+      "file": "superwave.webp",
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "crop": {
+        "left": 1088,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "An overwhelming towering spiral tidal wave around a brilliant blue moon, gold flecks"
+    },
+    {
+      "id": "hongtian",
+      "file": "hongtian.webp",
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "crop": {
+        "left": 2,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A concentrated golden spell beam blasting upward into storm clouds"
+    },
+    {
+      "id": "hongdi",
+      "file": "hongdi.webp",
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "crop": {
+        "left": 364,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A concentrated copper spell bolt slamming downward into cracked dark earth"
+    },
+    {
+      "id": "hearteye",
+      "file": "hearteye.webp",
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "crop": {
+        "left": 726,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "An ornate crimson heart-shaped jewel under an all-seeing golden eye, sharp red rays"
+    },
+    {
+      "id": "poison",
+      "file": "poison.webp",
+      "source": "exec-2b4d2c72-2d24-4308-82fc-1166e0d62216.png",
+      "crop": {
+        "left": 1088,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "An overturned apothecary bottle releasing curling moss-green toxic fog and pale droplets"
+    },
+    {
+      "id": "skydragon",
+      "file": "skydragon.webp",
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "crop": {
+        "left": 2,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A majestic serpentine blue dragon coiling around one golden celestial sword, pale turquoise clouds"
+    },
+    {
+      "id": "doublewing",
+      "file": "doublewing.webp",
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "crop": {
+        "left": 364,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Two powerful pairs of ivory wings soaring together through an airy teal spiral"
+    },
+    {
+      "id": "vajra",
+      "file": "vajra.webp",
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "crop": {
+        "left": 726,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Three imposing bronze guardian shields in a triangular formation, a gold protective field"
+    },
+    {
+      "id": "allbomb",
+      "file": "allbomb.webp",
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "crop": {
+        "left": 1088,
+        "top": 2,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "Three radiant explosions linked vertically by a golden beam across sky ground and earth layers"
+    },
+    {
+      "id": "heartpoison",
+      "file": "heartpoison.webp",
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "crop": {
+        "left": 2,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "A crimson jeweled heart entangled with luminous green poison vapor, gold thorn ornament"
+    },
+    {
+      "id": "folder-attack",
+      "file": "folder-attack.webp",
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "crop": {
+        "left": 364,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "ONE simple heraldic crossed-swords insignia in copper and ivory, large centered, very quiet midnight background, no scene"
+    },
+    {
+      "id": "folder-defend",
+      "file": "folder-defend.webp",
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "crop": {
+        "left": 726,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "ONE simple heraldic blue iron shield insignia with a gold rim, large centered, very quiet midnight background, no scene"
+    },
+    {
+      "id": "folder-ultimate",
+      "file": "folder-ultimate.webp",
+      "source": "exec-ce93c028-8e9e-45d6-9fd7-123d578cc26e.png",
+      "crop": {
+        "left": 1088,
+        "top": 545,
+        "width": 358,
+        "height": 539
+      },
+      "subject": "ONE simple heraldic three-point gold crown enclosing an amethyst star, large centered, very quiet midnight background, no scene"
+    }
+  ]
+}

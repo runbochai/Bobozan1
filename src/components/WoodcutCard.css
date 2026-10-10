@@ -1,28 +1,38 @@
-/* One printed face for the hand, table, details and skill rewards. */
-.woodcut-face { position: relative; display: block; width: 100%; height: 100%; container-type: inline-size; isolation: isolate; overflow: hidden; border-radius: 3px; color: #f5ead4; font-family: 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif; text-shadow: none; pointer-events: none; }
-.woodcut-face .woodcut-print { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
-.woodcut-face .woodcut-badge { position: absolute; top: 1.7%; width: 28%; height: 18.5%; padding: 3% 1% 1%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; background: #eddfc6; color: #fff1d9; clip-path: polygon(24% 0, 76% 0, 100% 24%, 100% 76%, 76% 100%, 24% 100%, 0 76%, 0 24%); line-height: 1; }
-.woodcut-face .woodcut-badge::before { content: ''; position: absolute; inset: 3%; z-index: -1; background: #b94825; clip-path: inherit; border: 2px solid #212d2b; }
-.woodcut-face .woodcut-badge::after { content: ''; position: absolute; inset: 7%; z-index: -1; opacity: .12; background: repeating-linear-gradient(23deg, transparent 0 3px, #f8ead5 3px 4px); clip-path: inherit; }
-.woodcut-face .woodcut-cost { left: 1.7%; }
-.woodcut-face .woodcut-rank { right: 1.7%; }
-.woodcut-face .woodcut-rank::before { background: #285960; }
-.woodcut-face[data-family='ULTIMATE'] .woodcut-rank::before { background: #654071; }
-.woodcut-face .woodcut-badge small { display: block; color: inherit; font-size: 7cqw; line-height: 1.1; font-weight: 800; letter-spacing: 0; }
-.woodcut-face .woodcut-badge b { display: block; font: 900 18cqw/1.02 system-ui,sans-serif; letter-spacing: -.07em; padding-right: .07em; }
-.woodcut-face .woodcut-badge b[data-wide='true'] { font-size: 11cqw; letter-spacing: -.08em; }
-.woodcut-face .woodcut-title { position: absolute; display: flex; align-items: center; justify-content: center; left: 15%; right: 15%; top: 86.4%; bottom: 4.4%; margin: 0; padding: 0 1%; background: #202826; color: #f9edd5; font-size: 13cqw; font-weight: 900; line-height: 1.05; text-align: center; white-space: normal; }
-.woodcut-face .woodcut-title[data-long='true'] { font-size: 9cqw; }
-.woodcut-face[data-language='en'] .woodcut-title { font-size: 10cqw; }
-.woodcut-face[data-language='en'] .woodcut-title[data-long='true'] { font-size: 7cqw; }
-.woodcut-face[data-folder='true'][data-language='zh'] .woodcut-title { display: none; }
-.woodcut-face[data-folder='true'][data-language='en'] .woodcut-title { top: 73%; bottom: 8%; left: 14%; right: 14%; font-size: 15cqw; background: #af4d3d; }
-.woodcut-face[data-folder='true'][data-family='DEFEND'] .woodcut-title { background: #416b71; }
-.woodcut-face[data-folder='true'][data-family='ULTIMATE'] .woodcut-title { background: #795a6f; }
+/* The engraved print and its restrained brass mount share the comic's ink palette. */
+.woodcut-face { --engraved-accent: #c88650; --engraved-ink: #142534; position: relative; display: block; width: 100%; height: 100%; container-type: inline-size; isolation: isolate; overflow: hidden; border-radius: 3px; color: #f5e5c5; font-family: 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif; text-shadow: none; pointer-events: none; background: var(--engraved-ink); }
+.woodcut-face[data-family='CHARGE'] { --engraved-accent: #e0b964; }
+.woodcut-face[data-family='DEFEND'] { --engraved-accent: #86c3c5; }
+.woodcut-face[data-family='ULTIMATE'] { --engraved-accent: #b79ada; }
+.woodcut-face:is([data-family='SPECIAL'], [data-family='ABSORB']) { --engraved-accent: #acbd92; }
+.woodcut-face .woodcut-print { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
+.woodcut-face::after { content: ''; position: absolute; inset: 0; z-index: 0; background: linear-gradient(180deg, #08131e55, transparent 26%, transparent 70%, #071019b3); pointer-events: none; }
+.woodcut-engraved-frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; overflow: visible; }
+.woodcut-frame-edge { fill: none; stroke: #9e8560; stroke-width: 3; }
+.woodcut-frame-line { fill: none; stroke: #d0b88a; stroke-width: .85; opacity: .85; }
+.woodcut-frame-corners { fill: #d2b586; }
+.woodcut-face .woodcut-seal { position: absolute; left: 45%; top: 1.9%; width: 10%; height: 7%; z-index: 2; color: var(--engraved-accent); filter: drop-shadow(0 1px 1px #050a12); }
+.woodcut-face .woodcut-badge { position: absolute; top: 2.2%; width: 25%; height: 17.2%; padding: 2% .5% 1%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; z-index: 2; background: #bfa579; color: #fff1d8; clip-path: polygon(16% 0, 84% 0, 100% 16%, 100% 82%, 50% 100%, 0 82%, 0 16%); line-height: 1; isolation: isolate; }
+.woodcut-face .woodcut-badge::before { content: ''; position: absolute; inset: 4%; z-index: -1; background: #683e28; clip-path: inherit; }
+.woodcut-face .woodcut-badge::after { content: ''; position: absolute; inset: 6%; z-index: -1; opacity: .1; background: repeating-linear-gradient(25deg, transparent 0 3px, #f8ead5 3px 4px); clip-path: inherit; }
+.woodcut-face .woodcut-cost { left: 3.2%; }
+.woodcut-face .woodcut-rank { right: 3.2%; }
+.woodcut-face .woodcut-rank::before { background: #233e4d; }
+.woodcut-face[data-family='ULTIMATE'] .woodcut-rank::before { background: #413254; }
+.woodcut-face[data-family='CHARGE'] .woodcut-cost::before { background: #685020; }
+.woodcut-face .woodcut-badge small { display: block; color: inherit; font-size: 6.2cqw; line-height: 1.05; font-weight: 800; letter-spacing: .03em; }
+.woodcut-face .woodcut-badge b { display: block; font: 900 19cqw/1.02 Georgia, 'Times New Roman', serif; letter-spacing: -.07em; padding-right: .07em; font-variant-numeric: lining-nums tabular-nums; text-shadow: 0 1px #0a1723; }
+.woodcut-face .woodcut-badge b[data-wide='true'] { font-size: 10.5cqw; letter-spacing: -.06em; }
+.woodcut-face .woodcut-title { position: absolute; z-index: 2; display: flex; align-items: center; justify-content: center; left: 9%; right: 9%; top: 86%; bottom: 7%; margin: 0; padding: 0 1%; background: #101d28ed; color: #f5e5c5; font-size: 11.5cqw; font-weight: 900; line-height: 1.05; letter-spacing: .04em; text-align: center; white-space: normal; }
+.woodcut-face .woodcut-title[data-long='true'] { font-size: 8.5cqw; }
+.woodcut-face[data-language='en'] .woodcut-title { font-size: 9.5cqw; letter-spacing: 0; font-family: 'Crown Display', Georgia, serif; }
+.woodcut-face[data-language='en'] .woodcut-title[data-long='true'] { font-size: 6.7cqw; }
+.woodcut-face[data-folder='true'] .woodcut-title { top: 80%; bottom: 9%; background: #101d28eb; font-size: 16cqw; color: var(--engraved-accent); }
+.woodcut-face[data-folder='true'][data-language='en'] .woodcut-title { font-size: 11.5cqw; }
+.woodcut-face[data-folder='true'] .woodcut-seal { top: 5%; opacity: .75; }
 
 :root .pixel-app .battle-hand button.hand-card[data-card-type],
 :root .pixel-app .battle-hand .hand-locked-card[data-card-type],
-:root .pixel-app .center-table-board .table-played-card[data-card-type] { padding: 0; border: 0 !important; background: #e8dcc6 !important; box-shadow: 2px 3px #dbcaa8, 4px 6px #08121c85 !important; border-radius: 3px; }
+:root .pixel-app .center-table-board .table-played-card[data-card-type] { padding: 0; border: 0 !important; background: #142534 !important; box-shadow: 1px 2px #a68b60, 3px 5px #07111cd9 !important; border-radius: 3px; }
 :root .pixel-app .battle-hand .hand-card::after { display: none; }
 :root .pixel-app .battle-hand :is(.hand-card, .hand-locked-card)::before { display: none; }
 .pixel-app .battle-hand .hand-skill-slot { padding-bottom: 0; }

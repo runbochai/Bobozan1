@@ -1,0 +1,211 @@
+{
+  "kind": "review-previews",
+  "title": "啵啵仔 · 灯纹继承者",
+  "opening": {
+    "pages": 5,
+    "panels": 20,
+    "language": "zh",
+    "playback": "Accelerated review capture with the actual image-first fade and speech timing."
+  },
+  "captures": [
+    {
+      "file": "opening-page-1.webp",
+      "width": 1024,
+      "height": 768,
+      "bytes": 154762,
+      "sourceDimensions": [
+        1024,
+        768
+      ]
+    },
+    {
+      "file": "opening-page-2.webp",
+      "width": 1024,
+      "height": 768,
+      "bytes": 143136,
+      "sourceDimensions": [
+        1024,
+        768
+      ]
+    },
+    {
+      "file": "opening-page-3.webp",
+      "width": 1024,
+      "height": 768,
+      "bytes": 153866,
+      "sourceDimensions": [
+        1024,
+        768
+      ]
+    },
+    {
+      "file": "opening-page-4.webp",
+      "width": 1024,
+      "height": 768,
+      "bytes": 147466,
+      "sourceDimensions": [
+        1024,
+        768
+      ]
+    },
+    {
+      "file": "opening-page-5.webp",
+      "width": 1024,
+      "height": 768,
+      "bytes": 164200,
+      "sourceDimensions": [
+        1024,
+        768
+      ]
+    },
+    {
+      "file": "opening-phone-page-2.webp",
+      "width": 390,
+      "height": 844,
+      "bytes": 62248,
+      "sourceDimensions": [
+        390,
+        844
+      ]
+    },
+    {
+      "file": "opening-phone-page-5.webp",
+      "width": 390,
+      "height": 844,
+      "bytes": 71546,
+      "sourceDimensions": [
+        390,
+        844
+      ]
+    },
+    {
+      "file": "title.webp",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 235664,
+      "sourceDimensions": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "battle.webp",
+      "width": 1440,
+      "height": 1000,
+      "bytes": 175240,
+      "sourceDimensions": [
+        1440,
+        1000
+      ]
+    },
+    {
+      "file": "all-64-cards.webp",
+      "width": 1600,
+      "height": 2397,
+      "bytes": 883692,
+      "sourceDimensions": [
+        1600,
+        2397
+      ]
+    }
+  ],
+  "validation": {
+    "initialComicLayouts": 70,
+    "focusedLayoutsAfterPhoneCropFix": 30,
+    "endingLayouts": 8,
+    "fullTestSuitePassed": 302,
+    "viewports": [
+      [
+        1440,
+        1000
+      ],
+      [
+        1920,
+        1080
+      ],
+      [
+        1024,
+        768
+      ],
+      [
+        768,
+        1024
+      ],
+      [
+        390,
+        844
+      ],
+      [
+        844,
+        390
+      ],
+      [
+        320,
+        568
+      ]
+    ],
+    "languages": [
+      "zh",
+      "en"
+    ],
+    "checks": [
+      "Sequential image then dialogue reveal",
+      "Page endings wait for reader input",
+      "Previous-page and individual-panel rereading",
+      "Narration pauses while the tab is hidden",
+      "Slow and failed images retain readable narration",
+      "Keyboard navigation and Escape",
+      "Ending buttons remain reachable when scrolling",
+      "Ending can enter multiplayer",
+      "Phone crops keep the speaking characters visible"
+    ],
+    "errors": 0,
+    "builtPreviewFlow": {
+      "viewports": [
+        [
+          1440,
+          1000
+        ],
+        [
+          390,
+          844
+        ]
+      ],
+      "checks": [
+        "All 20 panels and 5 pages",
+        "Title screen after closing comic",
+        "Enter the first real expedition battle"
+      ],
+      "pageErrors": 0,
+      "missingAssets": 0
+    }
+  },
+  "video": {
+    "file": "opening.webm",
+    "width": 900,
+    "height": 676,
+    "frameRate": 15,
+    "durationSeconds": 55.53,
+    "bytes": 2521883,
+    "panels": 20,
+    "pages": 5,
+    "audio": false
+  },
+  "imageEncoding": {
+    "format": "WebP",
+    "quality": 78
+  },
+  "integrity": {
+    "opening-page-1.webp": "927dd0ebfbcfa4555fa86c7eee167d62c53cbc9d8a074740de69a0ff645f84b7",
+    "opening-page-2.webp": "52fc640b51d1efba29260964d2f828c3e76cab79d186d75591eaf0ed144a0906",
+    "opening-page-3.webp": "29e89ab73069b9ca94277ee8bb7b5e08ec039be7e946b76631f0dc95c3c9d554",
+    "opening-page-4.webp": "2ffb06b97973f639908d1c06f568857df5f88b4926bacc4c2e92436d08d7420c",
+    "opening-page-5.webp": "1afd6fd7042fc5cb2c525558328aa6ffeb88d684563ac05b6b0669bbea80648f",
+    "opening-phone-page-2.webp": "ce4ab3f8a44313ab719cec490b8d0f68422d779ac7f46280dd68b08495071551",
+    "opening-phone-page-5.webp": "a32257019b3f5c8329e78c006ae51a494528141564f79aeeeb75a49c037e7e93",
+    "title.webp": "e7fdb8355dfeae95202a32ed1cfd65f29b42aacc2cad6cb6bea41e212f31a004",
+    "battle.webp": "d634710853e79480cde56e549a67e3555731c6a91547d9d2052afaadd25bbe2f",
+    "all-64-cards.webp": "6be4c82cd2601d7070daeb5ec42891be1b06238632ccad6da1d33b29cc21092e",
+    "opening.webm": "78fbbf820ef5e9b35ba302ab7aea420da09354c6ad4b22bf1f7ae3c785bd51e9"
+  }
+}

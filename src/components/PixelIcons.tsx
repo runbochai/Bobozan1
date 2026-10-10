@@ -8,6 +8,8 @@ function icon(path: string) {
   };
 }
 export const Zap = icon('M8 1h5L9 6h4L5 15l2-6H3z');
+/** The town's light: shared by Charge and the Crown story. */
+export const Lantern = icon('M6 0h4v1h1v3h2v2h1v1h-1v6h-1v2H9v1H7v-1H4v-2H3V7H2V6h1V4h2V1h1z M6 2v2h4V2z M5 7v5h2V7z M9 7v5h2V7z');
 export const Shield = icon('M2 2h12v7h-2v3h-2v2H6v-2H4V9H2z M5 4v5h2v3h2V9h2V4z');
 export const Swords = icon('M1 1h3v2h2v2h2v2h2V5h2V3h2V1h1v4h-2v2h-2v2h2v2h2v2h-2v2h-2v-2H9v-2H7v2H5v2H3v-2H1v-2h2V9h2V7H3V5H1z');
 export const Sword = icon('M11 1h4v4h-2v2h-2v2H9v2H7v2H5v2H2v-3h2v-2H2V8h2v2h2V8h2V6h2V4h1z');
