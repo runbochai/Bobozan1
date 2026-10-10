@@ -1146,7 +1146,7 @@ export default function BobozanOnline() {
     } finally { setLoading(false); }
   };
 
-  const copyGameInvite = () => { playSound('click', muted); const currentUrl = window.location.href.split('?')[0]; const inviteUrl = `${currentUrl}?room=${roomCode}`; const text = `Bobozan · ${lang === 'zh' ? '王冠竞技场' : 'Crown Arena'} ${t.roomCode}: ${roomCode}\n${inviteUrl}`; copyToClipboard(text, t.inviteCopied); };
+  const copyGameInvite = () => { playSound('click', muted); const currentUrl = window.location.href.split('?')[0]; const inviteUrl = `${currentUrl}?room=${roomCode}`; const text = `啵啵仔 · ${lang === 'zh' ? '王冠竞技场' : 'Crown Arena'} ${t.roomCode}: ${roomCode}\n${inviteUrl}`; copyToClipboard(text, t.inviteCopied); };
   const startGameHost = async () => {
     if (!isOnline || !user) return;
     try {
@@ -1610,7 +1610,7 @@ export default function BobozanOnline() {
 
         <div className="pixel-panel relative backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden p-8 md:p-10 flex flex-col gap-8 animate-in fade-in zoom-in duration-300">
             
-            <header className="pixel-section-heading crown-arena-heading"><span className="pixel-kicker">CROWN WAR · MULTIPLAYER</span><h1>{lang === 'zh' ? '王冠竞技场' : 'Crown Arena'}</h1><p>{lang === 'zh' ? '城邦的挑战者已经入席。下一张牌，你信谁？' : 'The cities’ challengers are seated. Whose next move do you trust?'}</p><small>{lang === 'zh' ? '每局幸存者获得成长；赛季终局以击杀数争夺王冠。' : 'Each survivor grows stronger. The season’s crown goes to the kill leader.'}</small></header>
+            <header className="pixel-section-heading crown-arena-heading"><span className="pixel-kicker">CROWN WAR · MULTIPLAYER</span><h1>{lang === 'zh' ? '王冠竞技场' : 'Crown Arena'}</h1><p>{lang === 'zh' ? '各地的持牌者已经入席。有人为王冠，有人为家里那盏灯。' : 'Challengers take their seats. Some want the crown. Others want the light back home.'}</p><small>{lang === 'zh' ? '每局幸存者获得成长；赛季终局以击杀数争夺王冠。' : 'Each survivor grows stronger. The season’s crown goes to the kill leader.'}</small></header>
             {/* User Profile */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
@@ -2147,7 +2147,7 @@ export default function BobozanOnline() {
           <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
             <div className="pixel-dialog bg-slate-900/80 backdrop-blur-xl border border-white/15 rounded-2xl p-8 w-full max-w-md text-center shadow-[0_10px_40px_rgba(0,0,0,0.5)]">
               <div className="text-5xl mb-3">💀</div>
-              <h2 className="text-2xl font-black text-white mb-2">{isEndless ? (lang === 'zh' ? '王冠易主，仍可再战' : 'The crown changes hands') : (lang === 'zh' ? '这次，灯火尚未归来' : 'The lights still wait')}</h2>
+              <h2 className="text-2xl font-black text-white mb-2">{isEndless ? (lang === 'zh' ? '王冠易主，仍可再战' : 'The crown changes hands') : (lang === 'zh' ? '这次，还没走到王座前' : 'The throne is still out of reach')}</h2>
               <p className="text-slate-400 text-sm mb-1">
                 {lang === 'zh' ? `倒在${getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}` : `Fell at ${getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}`}
               </p>

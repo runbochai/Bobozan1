@@ -5,7 +5,7 @@ import { getCrownSupplyBonus } from '../logic/expeditionRuntime';
 import { themeImagePath } from '../data/gameThemes';
 import {
   chapterForStage, crownProgress, crownStageBeat, CROWN_CHAPTERS,
-  CROWN_PROLOGUE, CROWN_SEALS, CROWN_STAGE_BEATS, CROWN_TOWERS,
+  CROWN_PROLOGUE, CROWN_PROLOGUE_PAGE_SIZE, CROWN_PROLOGUE_PAGE_TITLES, CROWN_SEALS, CROWN_STAGE_BEATS, CROWN_TOWERS,
 } from '../data/crownCampaign';
 import './CrownCampaign.css';
 import './CrownPrologue.css';
@@ -49,15 +49,30 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
 }) {
   const zh = lang === 'zh';
   const titleId = useId();
+  const nextButton = useRef<HTMLButtonElement>(null);
+  const [page, setPage] = useState(0);
+  const [inspected, setInspected] = useState<number | null>(null);
   const [requested, setRequested] = useState(1);
   const [narrated, setNarrated] = useState(0);
   const [images, setImages] = useState<('loading' | 'ready' | 'error')[]>(() => CROWN_PROLOGUE.map(() => 'loading'));
   const [systemReducedMotion, setSystemReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+  const [visible, setVisible] = useState(() => document.visibilityState === 'visible');
   const still = reduceMotion || systemReducedMotion;
   let revealed = 0;
   while (revealed < requested && images[revealed] !== 'loading') revealed += 1;
-  const current = CROWN_PROLOGUE[Math.max(0, revealed - 1)];
-  const finished = revealed === CROWN_PROLOGUE.length;
+  const pageStart = page * CROWN_PROLOGUE_PAGE_SIZE;
+  const pageEnd = Math.min(pageStart + CROWN_PROLOGUE_PAGE_SIZE, CROWN_PROLOGUE.length);
+  const pageRevealed = Math.min(revealed, pageEnd);
+  const currentIndex = inspected ?? Math.max(pageStart, pageRevealed - 1);
+  const current = CROWN_PROLOGUE[currentIndex];
+  const waiting = pageRevealed < Math.min(requested, pageEnd);
+  const pageComplete = pageRevealed === pageEnd && narrated >= pageEnd;
+  const finished = pageComplete && pageEnd === CROWN_PROLOGUE.length;
+
+  useEffect(() => {
+    // A page's panel may have owned focus before being hidden; keep keyboard navigation in view.
+    nextButton.current?.focus({ preventScroll: true });
+  }, [page]);
 
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -67,56 +82,100 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   }, []);
 
   useEffect(() => {
+    const update = () => setVisible(document.visibilityState === 'visible');
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
+
+  useEffect(() => {
+    // A stalled download must not trap the reader. Its description carries the story instead.
+    if (revealed >= requested) return;
+    const timer = window.setTimeout(() => setImages(values => values.map((value, index) =>
+      index === revealed && value === 'loading' ? 'error' : value)), 12000);
+    return () => window.clearTimeout(timer);
+  }, [revealed, requested]);
+
+  useEffect(() => {
     // Let the image establish the scene before its voice arrives. Failed images still tell the story.
     if (!revealed) return;
-    const timer = window.setTimeout(() => setNarrated(revealed), still ? 0 : 850);
+    const timer = window.setTimeout(() => setNarrated(value => Math.max(value, revealed)), still ? 0 : 850);
     return () => window.clearTimeout(timer);
   }, [revealed, still]);
 
   useEffect(() => {
-    // Reading time begins with the words, never while an illustration is still downloading.
-    if (revealed === 0 || narrated !== revealed || finished || requested !== revealed) return;
+    // Only turn a panel after its words have had reading time. Page turns are always the reader's.
+    if (!visible || inspected !== null || revealed <= pageStart || revealed >= pageEnd || narrated < revealed || requested !== revealed) return;
     const words = current.caption[lang].length + current.speech[lang].length;
-    // Hold on the extinguished lamp a little longer; let the invitation answer that silence.
-    const scenePause = [350, 750, 0, 0][revealed - 1];
-    const readingTime = Math.min(6500, Math.max(3200, words * (zh ? 90 : 38))) + scenePause;
-    const timer = window.setTimeout(() => setRequested(value => Math.min(value + 1, CROWN_PROLOGUE.length)), readingTime);
+    const scenePause = currentIndex === 7 || currentIndex === 11 ? 750 : 250;
+    const readingTime = Math.min(7800, Math.max(3600, words * (zh ? 95 : 32))) + scenePause;
+    const timer = window.setTimeout(() => setRequested(value => Math.min(value + 1, pageEnd)), readingTime);
     return () => window.clearTimeout(timer);
-  }, [revealed, narrated, requested, finished, current, lang, zh]);
+  }, [revealed, narrated, requested, pageStart, pageEnd, current, currentIndex, lang, zh, visible, inspected]);
 
   const settleImage = (index: number, status: 'ready' | 'error') => {
     setImages(values => values[index] === status ? values : values.map((value, i) => i === index ? status : value));
   };
   const advance = () => {
-    if (finished) onComplete();
-    else setRequested(value => Math.min(value + 1, CROWN_PROLOGUE.length));
+    if (inspected !== null) {
+      setInspected(null);
+    } else if (waiting) {
+      // The reader can continue with the narration immediately on a slow connection.
+      settleImage(pageRevealed, 'error');
+    } else if (narrated < pageRevealed) {
+      setNarrated(pageRevealed);
+    } else if (finished) {
+      onComplete();
+    } else if (pageComplete) {
+      setPage(value => value + 1);
+      setRequested(value => Math.max(value, pageEnd + 1));
+    } else {
+      setRequested(value => Math.max(value, pageRevealed + 1));
+    }
+  };
+  const previousPage = () => {
+    setInspected(null);
+    setPage(value => Math.max(0, value - 1));
   };
 
   return <CrownDialog className={`crown-prologue crown-opening${still ? ' crown-opening--still' : ''}`} titleId={titleId} onClose={onClose} onKeyDown={event => {
     if (event.key === 'ArrowRight') { event.preventDefault(); advance(); }
+    if (event.key === 'ArrowLeft') { event.preventDefault(); previousPage(); }
   }}>
     <header className="crown-opening-header">
-      <div className="crown-wordmark"><CrownMark /><div><span>BOBOZAN</span><h1 id={titleId}>{zh ? '王冠战争' : 'Crown War'}</h1></div></div>
+      <div className="crown-wordmark"><CrownMark /><div><span>啵啵仔</span><h1 id={titleId}>{zh ? '王冠战争' : 'Crown War'}</h1></div></div>
       <div className="crown-opening-header-actions">{onToggleLang && <button type="button" className="crown-text-button crown-opening-lang" onClick={onToggleLang} aria-label={zh ? 'Switch language to English' : '切换为中文'} lang={zh ? 'en' : 'zh'}>{zh ? 'EN' : '中文'}</button>}<button type="button" className="crown-text-button" onClick={onComplete}>{zh ? '跳过' : 'Skip'} <span aria-hidden="true">↗</span></button><button type="button" className="crown-text-button crown-prologue-exit" onClick={onClose} aria-label={zh ? '关闭漫画，进入主页面' : 'Close the comic and open the menu'}>×</button></div>
     </header>
-    <div className="crown-opening-page" aria-label={zh ? '开场漫画' : 'Opening comic'}>
-      {CROWN_PROLOGUE.map((item, index) => <button type="button" key={index}
-        className={`crown-opening-panel crown-opening-panel-${index + 1}`} data-revealed={index < revealed} data-failed={images[index] === 'error'}
-        data-current={index === revealed - 1} data-narrated={index < narrated || index < revealed - 1}
-        tabIndex={index < revealed ? 0 : -1} aria-hidden={index >= revealed} onClick={advance}
-        aria-label={`${item.title[lang]}。${item.caption[lang]} ${item.speech[lang]}`}>
-        <span className="crown-opening-panel-art"><img src={asset(`story/crown-v1/prologue-${index + 1}.webp`)} alt="" fetchPriority={index === 0 ? 'high' : 'auto'}
-          onLoad={() => settleImage(index, 'ready')} onError={() => settleImage(index, 'error')} />
-        {images[index] === 'error' && <span className="crown-opening-fallback">{item.alt[lang]}</span>}</span>
-        <span className="crown-opening-panel-heading"><b aria-hidden="true">0{index + 1}</b><span>{item.title[lang]}</span></span>
-        <span className="crown-opening-speech"><span className="crown-opening-speaker">{item.speaker[lang]}</span>{item.speech[lang]}</span>
-      </button>)}
+    <div className="crown-opening-book" aria-label={zh ? '开场漫画' : 'Opening comic'}>
+      {CROWN_PROLOGUE_PAGE_TITLES.map((pageTitle, pageIndex) => <section key={pageIndex} hidden={pageIndex !== page}
+        className={`crown-opening-page crown-opening-page-${pageIndex + 1}`} data-page={pageIndex + 1}
+        aria-label={`${pageIndex + 1} / ${CROWN_PROLOGUE_PAGE_TITLES.length} · ${pageTitle[lang]}`}>
+        {CROWN_PROLOGUE.slice(pageIndex * CROWN_PROLOGUE_PAGE_SIZE, (pageIndex + 1) * CROWN_PROLOGUE_PAGE_SIZE).map((item, localIndex) => {
+          const index = pageIndex * CROWN_PROLOGUE_PAGE_SIZE + localIndex;
+          return <button type="button" key={item.image}
+            className={`crown-opening-panel crown-opening-panel-${localIndex + 1}`} data-panel={index + 1}
+            data-revealed={index < revealed} data-failed={images[index] === 'error'}
+            data-current={index === currentIndex} data-narrated={index < narrated || index < revealed - 1}
+            tabIndex={index < revealed ? 0 : -1} aria-hidden={index >= revealed} onClick={() => {
+              if (index < pageRevealed - 1) setInspected(index);
+              else advance();
+            }}
+            aria-label={`${item.title[lang]}。${item.caption[lang]} ${item.speech[lang]}`}>
+            <span className="crown-opening-panel-art"><img src={asset(item.image)} alt="" fetchPriority={index === 0 ? 'high' : 'auto'}
+              onLoad={() => settleImage(index, 'ready')} onError={() => settleImage(index, 'error')} />
+              {images[index] === 'error' && <span className="crown-opening-fallback">{item.alt[lang]}</span>}</span>
+            <span className="crown-opening-panel-heading"><b aria-hidden="true">{String(index + 1).padStart(2, '0')}</b><span>{item.title[lang]}</span></span>
+            <span className="crown-opening-speech"><span className="crown-opening-speaker">{item.speaker[lang]}</span>{item.speech[lang]}</span>
+          </button>;
+        })}
+      </section>)}
+      {waiting && <span className="crown-opening-loading" role="status">{zh ? '画面载入中，仍可继续阅读。' : 'Loading the scene. You can keep reading.'}</span>}
     </div>
     <footer className="crown-opening-footer">
-      <div className="crown-opening-caption" aria-live="polite" aria-atomic="true"><span>{revealed ? current.title[lang] : (zh ? '灯尾镇' : 'Emberwick')} <b>{String(revealed).padStart(2, '0')} / 04</b></span><p key={revealed} data-ready={narrated >= revealed && revealed > 0}>{revealed && narrated >= revealed ? current.caption[lang] : '\u00a0'}</p></div>
+      <div className="crown-opening-caption" aria-live="polite" aria-atomic="true"><span>{CROWN_PROLOGUE_PAGE_TITLES[page][lang]} <b>{String(inspected === null ? Math.max(pageStart, pageRevealed) : inspected + 1).padStart(2, '0')} / {CROWN_PROLOGUE.length}</b></span><p key={currentIndex} data-ready={inspected !== null || (narrated >= pageRevealed && pageRevealed > pageStart)}>{inspected !== null || (pageRevealed > pageStart && narrated >= pageRevealed) ? current.caption[lang] : '\u00a0'}</p></div>
       <div className="crown-opening-controls">
-        <span className="crown-opening-progress" aria-hidden="true">{CROWN_PROLOGUE.map((_, index) => <i key={index} data-revealed={index < revealed} />)}</span>
-        <button type="button" data-crown-initial-focus className="crown-primary-button" onClick={advance}>{finished ? (zh ? '走吧' : 'Let’s go') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
+        <button type="button" className="crown-text-button crown-opening-back" onClick={previousPage} disabled={page === 0} aria-label={zh ? '上一页' : 'Previous page'}>←</button>
+        <div className="crown-opening-page-count"><span aria-label={zh ? `第 ${page + 1} 页，共 ${CROWN_PROLOGUE_PAGE_TITLES.length} 页` : `Page ${page + 1} of ${CROWN_PROLOGUE_PAGE_TITLES.length}`}>{String(page + 1).padStart(2, '0')} <b>/ {String(CROWN_PROLOGUE_PAGE_TITLES.length).padStart(2, '0')}</b></span><span className="crown-opening-progress" aria-hidden="true">{Array.from({ length: CROWN_PROLOGUE_PAGE_SIZE }, (_, index) => <i key={index} data-revealed={pageStart + index < revealed} />)}</span></div>
+        <button type="button" ref={nextButton} data-crown-initial-focus className="crown-primary-button" onClick={advance}>{inspected !== null ? (zh ? '继续阅读' : 'Keep reading') : finished ? (zh ? '走吧' : 'Let’s go') : pageComplete ? (zh ? '下一页' : 'Turn the page') : waiting ? (zh ? '继续阅读' : 'Keep reading') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
       </div>
     </footer>
   </CrownDialog>;
@@ -205,15 +264,15 @@ export function CrownEnding({ lang, cleared, onHome, onArena, onEndless }: {
   const zh = lang === 'zh';
   const progress = crownProgress(cleared);
   return <CrownDialog className="crown-ending" titleId={titleId} onClose={onHome}>
-    <div className="crown-ending-background" style={{ backgroundImage: `url("${asset('themes/woodcut-v1/woodcut-tavern.webp')}")` }} aria-hidden="true" />
+    <div className="crown-ending-background" style={{ backgroundImage: `url("${asset(themeImagePath('crown-citadel'))}")` }} aria-hidden="true" />
     <div className="crown-ending-content">
       <span className="crown-ending-eyebrow">{zh ? '王冠战争 · 终章' : 'CROWN WAR · EPILOGUE'}</span>
       <CrownMark className="crown-ending-crown" />
-      <h1 id={titleId}>{zh ? '这一晚，灯为所有人亮起。' : 'Tonight, the light belongs to everyone.'}</h1>
-      <p className="crown-ending-story">{zh ? '你放下王冠，让灯火回到每一座城。阿栓在老酒馆摆好了椅子，洛牙带着另一座城的来信，坐到了你的对面。' : 'You set down the crown and return the light to every city. Axle puts out the tavern chairs. Rook sits across from you, carrying a letter from home.'}</p>
-      <blockquote>{zh ? '“这次，输的人请喝一杯。”' : '“This time, the loser buys a round.”'}</blockquote>
+      <h1 id={titleId}>{zh ? '你接过王冠，先点亮回家的路。' : 'You take the crown—and light the road home.'}</h1>
+      <p className="crown-ending-story">{zh ? '老国王输了。依他不肯改变的祖法，你成为新王。你的第一道命令，是废除苛税，归还被征走的灯芯。灯尾镇的炉子重新暖了起来，父母在门口留了一盏灯，等你回家。' : 'The old king has lost. By the law he refused to change, you become the new ruler. Your first decree ends the punishing levies and returns the seized light cores. In Emberwick, the stove is warm again. Your parents leave a lantern by the door, waiting for you.'}</p>
+      <blockquote>{zh ? '“往后，想上桌的人，不必先有个贵族姓氏。”' : '“From now on, you don’t need a noble name to take a seat.”'}</blockquote>
       <div className="crown-ending-record"><CrownSeals lang={lang} cleared={cleared} /><div className="crown-ending-tower-record"><CrownMark variant="tower" /><span>{zh ? `供能塔切断 ${progress.towers.length} / 3` : `Supply towers cut: ${progress.towers.length} / 3`}</span></div></div>
-      <p className="crown-ending-next">{zh ? '故事暂告一段落。牌桌上，总有新的对手。' : 'The story rests here. The table always has another challenger.'}</p>
+      <p className="crown-ending-next">{zh ? '你将挑战资格向所有人开放。洛牙坐到了新竞技场的第一张桌前；阿栓替下一个来客拉开了椅子。王冠换了主人，新的对局才刚开始。' : 'You open the right of challenge to everyone. Rook takes the first seat in the new arena; Axle pulls out a chair for the next arrival. The crown has changed hands. The next game is only beginning.'}</p>
       <div className="crown-ending-actions"><button type="button" data-crown-initial-focus className="crown-primary-button" onClick={onArena}>{zh ? '王冠竞技场 · 多人' : 'Crown Arena · Multiplayer'} <span aria-hidden="true">→</span></button><button type="button" className="crown-secondary-button" onClick={onEndless}>{zh ? '开启无尽守擂' : 'Start an endless defense'}</button></div>
       <button type="button" className="crown-text-button crown-ending-home" onClick={onHome}>{zh ? '回到主页面' : 'Return home'}</button>
     </div>

@@ -1,0 +1,187 @@
+{
+  "version": "lantern-origin-v1",
+  "generator": "OpenAI built-in imagegen",
+  "style": "Navy and amber engraved woodcut comic",
+  "width": 1200,
+  "height": 800,
+  "assets": [
+    {
+      "file": "p01-town.webp",
+      "source": "exec-89908da1-6747-44a8-b2ba-7ddbafc17c82.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Scene: BEFORE the lights were taken, a lived-in hillside town beneath a distant imposing crown-shaped castle at dusk. A warmly glowing tall street lantern dominates center-left while rabbit baker, small fox courier, and turtle shopkeeper go about ordinary evening life under timber awnings. One shopkeeper hangs up a lantern; modest people welcoming their neighbors, a child beside parent, no sadness yet. Warm pools of gold join across cobbled street, some windows warm, cold blue castle high and small in background. A human-height eye-level view draws the viewer down the street. This is the establishing panel explaining what is worth protecting. Keep faces characterful and simple, similar proportions to villagers in style reference.",
+      "references": [
+        "prologue-1.webp"
+      ],
+      "bytes": 410184
+    },
+    {
+      "file": "p02-family.webp",
+      "source": "exec-5204fb24-d101-4e45-a4b7-0427b2ebd27e.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. New establishing home scene showing ordinary hardworking parents before light taxes worsen. A modest little combined HOME AND LANTERN-REPAIR SHOP in this anthropomorphic animal kingdom. LEFT: a middle-aged orange-russet dragon father, simple small horns, shortsnout and foldedlittlewings, brown linen shirt and practical leather apron, repairs an old iron lantern at woodworkbench with handtools; his expression is tired but kind, visibly adult with broad muzzle. RIGHT: a middle-aged muted terracotta dragon mother, simple creamshawl and darktealdress, smaller swept horns and no eyelashes cartoon, patiently folds bandages and prepares herbal medicine at same large battered wooden table. Center lantern emits modest warm gold from its small diamondcore. Small iron stove below window warms covered soup pot, stacked bowls, folded blankets and tools communicate warmth matters for food and health. The viewer is their child but no child body or specific player avatar appears. Wide threequarter room view eyelevel, parents upperbodies and lantern clearlyreadable center. Ordinary home notwealthy, no royal regalia. No text on bottles.",
+      "references": [
+        "prologue-3.webp"
+      ],
+      "bytes": 435164
+    },
+    {
+      "file": "p02-result.webp",
+      "source": "exec-1b548921-8534-47d1-8ea2-fc43932b8a08.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Scene: the town has LOST its sanctioned Crown card tournament. In a modest stone tournament hall, dejected animal town representatives sit at the near and left side of a substantial square wooden card table: a tired brown rabbit in plain red scarf and a fox courier, cards laid face up and a hand lowered in resignation. On opposite right sits a tall black-and-gold Crown automaton with single amber circular eye and crown crest. The victor calmly slides THREE amber lantern-core tokens to its own side of the table; one little unlit lantern stands beside losing rabbit. A huge crown banner on back wall makes the power imbalance clear without text. Cards are small rectangle medieval engraved cards not modernpoker text. Medium-wide shot at tableheight, rabbit face and lost cards central, not combat, no violence, no guns, no gore. Solemn outcome with clear readable gestures.",
+      "references": [
+        "prologue-1.webp"
+      ],
+      "bytes": 348914
+    },
+    {
+      "file": "p05-cold-home.webp",
+      "source": "exec-76643ac0-dc0c-4e1c-9d66-9cc031375b52.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Use attached image as STRICT identity and same room reference. NEW LATER PANEL after the king's collectors took the family's lantern cores and fuel. Keep SAME orange-russet adultdragonfather leatherapron and SAME terracottadragonmother creamshawldarktealdress in SAME modest homeworkshop. Camera sameworktable but slightlycloser. Father's broadshoulders slumped, one hand rests beside an EMPTY UNLIT IRON LANTERN with open glassdoor atcenter. Mother huddled in hershawl holding unfinishedbandage, worriedtired but composed face. They glance toward thecamera/child as if trying toreassure. Ironstove atleft now DARK/COLD, soup potunheated and no steam. Two smallbowls of thin soup, neatlyfoldedbandages nowmostlyinshadow. ALL previous amberworklamps inbackground now dark emptygrayglass. Only a TINY stubcandle byworktable provides enough warm sidelight to see parents' expressions; coldmoonlight throughwindowdominatesnavyteal shadows. Emptylamp has no magicalglow. Show quiet hardship, love and deprivation, not physicalinjury, no cryingmelodrama, no horror. Do not add extra people. Broad clear centralemptylamp visuallyexplains why stolenlightmatters.",
+      "references": [
+        "exec-5204fb24-d101-4e45-a4b7-0427b2ebd27e.png"
+      ],
+      "bytes": 405198
+    },
+    {
+      "file": "p05-dark-road.webp",
+      "source": "exec-26557af7-7b55-4351-84ba-8c7ab921cad7.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Scene: AFTER the collection of the town's lantern cores. First-person eye-level view walking alone through the now-dark cobbled street. Empty street-lantern glass casings hang without light, closed shops under deep blue darkness, warm gleaming castle far uphill. At CENTER-RIGHT a narrow crooked alley between two timber buildings has a sliver of faint warm amber light, and the vague silhouette of a short hooded elderly turtle barely visible just inside. The alley should feel secret and inviting, not evil horror. A long navy shadow leads from foreground toward alley. Atmospheric quiet pause, no protagonist body shown, no crowd. Descriptive carved texture consistent with earlier street references.",
+      "references": [
+        "prologue-1.webp"
+      ],
+      "bytes": 351038
+    },
+    {
+      "file": "p06-elder-call.webp",
+      "source": "exec-7e72464f-e508-4332-9dcf-a8b5c6de8f16.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Scene: viewer has turned into the narrow stone alley. A mysterious elderly TURTLE, moss-gray / desaturated green skin, wrinkled rounded turtle face and beak mouth, a SHORT PALE CHIN BEARD and heavy kind eyebrows, wearing a worn INDIGO hooded cloak with simple wooden clasp, stands on RIGHT HALF at center-height. He discreetly beckons toward the camera with one small scaly hand, looking directly at the viewer with alert but compassionate eyes. Turtle shell mostly hidden under cloak, SHORT STOCKY silhouette, no staff necessary. Left half contains the alley recess and rough masonry. A tiny old lantern casts restrained amber rim-light under his hood, cool navy fill, secrecy and urgency, not a wizard casting magic. Medium shot from waist up; face and beckoning hand clearly readable. This defines a recurring elder; make the simple face memorable and reproducible.",
+      "references": [
+        "prologue-1.webp"
+      ],
+      "bytes": 313586,
+      "refinements": [
+        {
+          "source": "exec-7e72464f-e508-4332-9dcf-a8b5c6de8f16.png",
+          "reference": "exec-73e8ac8e-a285-40e7-9d72-2a2dab67812b.png",
+          "prompt": "Use case: lighting-weather / precise-object-edit. This is a strict minor continuity correction to the attached finished engraved comic panel. Keep ALL character faces, hands, poses, props, perspective, layout, framing, colors, woodcut textures and art quality exactly unchanged. Keep only the single secret alley lantern close to the elderly turtle (at right ifvisible) lit, and keep any card's lantern emblem softly glowing gold. PUBLIC street lanterns behind him in the middle and far distance must be completely dark and empty. Keep the distant high crown castle warmly illuminated because the ruling castle stole the town's light. Lower-town windows in distant buildings should be mostly dark navy (one tiny candlelit home is okay). Remove the large gold reflections of those extinguished public lamps from the distant cobbled street, replacing them with muted midnight-blue reflections. Do not move, replace, redraw or crop the elder, card, robot or foreground, and do not add anything. No text or watermark. Deliver exact same 3:2 full-bleed composition."
+        }
+      ]
+    },
+    {
+      "file": "p07-question.webp",
+      "source": "exec-7996cc07-b607-4009-802a-b801ed5b3044.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Image1 is strict elder identity and engraving style reference. NEW SHOT in same narrow alley, immediately after his beckoning. Intimate shoulder-up closeup of exactly this elderly turtle in worn dark indigo hood, gray-green face, expressive dark eyes, pale thick eyebrows and little white chin beard, woodencloakclasp. He looks directly at the camera with a serious, searching and gentle expression, lips slightly parted as if asking the viewer an important question. Face occupies center-right; softly carved bare dark brick wall and hints of ivy on left; warm tiny hidden lantern lights edge of face. Most town lighting has been confiscated so any background street is DARK blue with unlit windows. No card yet. No floating magic. Leave some left lower negative space for UI dialogue without drawing a bubble. Avoid another picturesque wide town view; this is an emotional portrait in a private alley.",
+      "references": [
+        "exec-73e8ac8e-a285-40e7-9d72-2a2dab67812b.png"
+      ],
+      "bytes": 314462
+    },
+    {
+      "file": "p08-glowing-card.webp",
+      "source": "exec-76ba02e5-824b-49ba-8794-548dd0c05689.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Image1 establishes exact hooded elderly turtle identity; image2 shows the SIMPLE LANTERN EMBLEM on a card. NEW SHOT: the elderly turtle's moss-gray hand reaches out from worn indigo sleeve and holds one rectangular ivory paper card toward the camera. On its face is exactly a SIMPLE dark old lantern silhouette: ring handle, tapered roof, vertical cage uprights and little golden diamond-shaped light inside. The single lantern icon is the card's ONLY design, no text, numbers, ornate corners, flames. The center of this engraved lantern emits modest but clear golden light that spills onto his fingers and beard. CARD is center and occupies roughly40% of image height, elder's recognizable kindly face behind at upper right, rough DARK teal alley stones behind. Close view of object being OFFERED, not accepted yet, unseen viewer has no hand in frame. Emphasize secret hope and tangible slightlyworn paper, limited amber light, no flashy effects.",
+      "references": [
+        "exec-73e8ac8e-a285-40e7-9d72-2a2dab67812b.png",
+        "prologue-3.webp"
+      ],
+      "bytes": 308090,
+      "refinements": [
+        {
+          "source": "exec-76ba02e5-824b-49ba-8794-548dd0c05689.png",
+          "reference": "exec-dbfbf82c-2e1a-4262-beca-643ccfccec5b.png",
+          "prompt": "Use case: lighting-weather / precise-object-edit. This is a strict minor continuity correction to the attached finished engraved comic panel. Keep ALL character faces, hands, poses, props, perspective, layout, framing, colors, woodcut textures and art quality exactly unchanged. Keep only the single secret alley lantern close to the elderly turtle (at right ifvisible) lit, and keep any card's lantern emblem softly glowing gold. PUBLIC street lanterns behind him in the middle and far distance must be completely dark and empty. Keep the distant high crown castle warmly illuminated because the ruling castle stole the town's light. Lower-town windows in distant buildings should be mostly dark navy (one tiny candlelit home is okay). Remove the large gold reflections of those extinguished public lamps from the distant cobbled street, replacing them with muted midnight-blue reflections. Do not move, replace, redraw or crop the elder, card, robot or foreground, and do not add anything. No text or watermark. Deliver exact same 3:2 full-bleed composition."
+        }
+      ]
+    },
+    {
+      "file": "p09-accept.webp",
+      "source": "exec-c3f219a9-9dc4-412c-8fc6-bc1757a75b91.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Image1 establishes hoodedelder appearance; image2 establishes SIMPLE LANTERN ICON card. NEW SHOT immediately after offer: first-person view of the viewer taking the single softly glowing lantern card from the elderly turtle. Viewer hand enters from LOWERLEFT, entirely wrapped in worn cream cloth with short dark clawtips and dark traveler sleeve, thus no visible human skin and no identifiable protagonist species. Elder graygreen scaly hand from upperright gently releases card at CENTER. The card ivory face has ONLY single dark lantern pictogram with golden diamondlight, no words or decorative frame. He is behind in upperright, his familiar indigohood, paleeyebrows and chinbeard, eyes encouraging. Central card stays flat readable with no fingers covering lantern emblem. Shadowy alley stones background, few restrained amber flecks, close shallow overlapping composition that clearly shows exchange and the viewer's choice. No extra hands or extra cards.",
+      "references": [
+        "exec-73e8ac8e-a285-40e7-9d72-2a2dab67812b.png",
+        "prologue-3.webp"
+      ],
+      "bytes": 273138,
+      "refinements": [
+        {
+          "source": "exec-c3f219a9-9dc4-412c-8fc6-bc1757a75b91.png",
+          "reference": "exec-262d8d03-aee0-4e07-8b61-fff90d3523c8.png",
+          "prompt": "Use case: lighting-weather / precise-object-edit. This is a strict minor continuity correction to the attached finished engraved comic panel. Keep ALL character faces, hands, poses, props, perspective, layout, framing, colors, woodcut textures and art quality exactly unchanged. Keep only the single secret alley lantern close to the elderly turtle (at right ifvisible) lit, and keep any card's lantern emblem softly glowing gold. PUBLIC street lanterns behind him in the middle and far distance must be completely dark and empty. Keep the distant high crown castle warmly illuminated because the ruling castle stole the town's light. Lower-town windows in distant buildings should be mostly dark navy (one tiny candlelit home is okay). Remove the large gold reflections of those extinguished public lamps from the distant cobbled street, replacing them with muted midnight-blue reflections. Do not move, replace, redraw or crop the elder, card, robot or foreground, and do not add anything. No text or watermark. Deliver exact same 3:2 full-bleed composition."
+        }
+      ]
+    },
+    {
+      "file": "p09-noble-seal.webp",
+      "source": "exec-d8d1df60-13f7-421f-aa2a-186290361cf2.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Sameelder character identity from reference: mossgray turtle, indigohoodedworncloak, palechinbeard and thickpaleeyebrows. Newstorybeat at night in secretalley, medium closeup: he quietly pulls aside the cloak with his right hand, revealing an OLD SMALL SILVER BROOCH engraved with a simple LANTERN crest on the inner breast of his faded darkblue garment. Brooch has ringhandle/toproof/cageuprights/diamondcenter, subtle relic of noblefamily notlarge royalcrown. Left hand touches the oldcrest with tenderness. Frayedgoldtrim visible under cloak signals formernoble status. Elderexpression calmserious, eyes meetviewer, no smile or magic display. Pin recognizable at center, faceupperright. Secret alley darkblue stone, ONLYtiny nearby private lantern warm, distant publicstreetlamps unlit. No playingcard visible yet. Refined detailed engravedlines and muted metal highlights, noble emblem is focal reveal.",
+      "references": [
+        "exec-7e72464f-e508-4332-9dcf-a8b5c6de8f16.png"
+      ],
+      "bytes": 360646
+    },
+    {
+      "file": "p10-door.webp",
+      "source": "exec-89cb5341-5be4-4c8e-b075-727ccb3f55b0.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Reference shows AXLE the recurring robot, match his blue rounded rectangular head with black face screen and TWO warmgold vertical rounded eyes, one antenna with goldtip, gold round chestcore, stout blue and brass segmented body. NEW SHOT: outside an old modest tavern in the dark town, first-person camera sees the door being pulled open by Axle. He stands CENTER-RIGHT inside the warm doorway, one hand on heavywooddoor, other open toward viewer as welcoming gesture. His head subtly tilted as though recognizing the card. Warm tavern with plain wooden cardtable, stools and low candles just visible behind him. In LOWERLEFT foreground edge, firstperson hand entirely wrapped in worn cloth holds the ivory card showing one SIMPLE dark lantern emblem softly glowinggold; no human skin. Outside stonealley and shop windows remain darknavy. Strong contrast of warm invitation and cooldarkstreet, no crowd, no text or signwriting, no menuUI. Medium-wide composition; Axle full upperbody visible, matching engravingdetail not cuteplastic render.",
+      "references": [
+        "prologue-3.webp"
+      ],
+      "bytes": 348246,
+      "refinements": [
+        {
+          "source": "exec-89cb5341-5be4-4c8e-b075-727ccb3f55b0.png",
+          "reference": "exec-b50061a2-25d6-491a-96a3-1ed710eac6ea.png",
+          "prompt": "Use case: lighting-weather / precise-object-edit. This is a strict minor continuity correction to the attached finished engraved comic panel. Keep ALL character faces, hands, poses, props, perspective, layout, framing, colors, woodcut textures and art quality exactly unchanged. Keep the tavern INTERIOR candlelight warmly lit, keep the small foreground lantern-card's gold glow, but every PUBLIC exterior street lantern visible at left must be empty and dark. Keep the distant high crown castle warmly illuminated because the ruling castle stole the town's light. Lower-town windows in distant buildings should be mostly dark navy (one tiny candlelit home is okay). Remove the large gold reflections of those extinguished public lamps from the distant cobbled street, replacing them with muted midnight-blue reflections. Do not move, replace, redraw or crop the elder, card, robot or foreground, and do not add anything. No text or watermark. Deliver exact same 3:2 full-bleed composition."
+        }
+      ]
+    },
+    {
+      "file": "p11-guarded-throne.webp",
+      "source": "exec-b156db25-ff85-4cfb-b04a-36ed1008cec0.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. FLASHBACK: the same turtle elder MANY YEARS YOUNGER, still recognizably samegraygreenroundturtleface, wearing indigo noblecoat with simple SILVER LANTERNbrooch, standing leftforeground facing palacecourt. He holds a few engravedduelcards low at his side, chinraised with resolve. Across the vast thronehall stretches an UNBROKEN LINE of SIX imposing blackandgold clockworkroyalretainers, eachholdingduelcards at the ready; they form a barrierbetweenhim and the distantking. Far uppercenter a tyrantKING sits on highthrone undergoldcrownshapedarch, oversizedheavygoldcrown and darkredcloak, face obscuredbydistance, symbolofpowernotdetailedportrait. Tallpillars,faintcrownbanners,no readablewriting. Camera broadmiddlewide from behindandthreequartersyoungerelder, hisdeterminedprofilevisible and recognizablesmallturtle. Court guardsoutnumberhim; his twofellowchallengers smallshapes behindhim. Storyshows unfairnumericalpower atcardduels, no weapons,no swordfighting,no physicalviolence. A desaturatedamber flashbacktone overnavyengraving, but fullyconsistentseriesstyle.",
+      "references": [
+        "exec-7e72464f-e508-4332-9dcf-a8b5c6de8f16.png",
+        "prologue-1.webp"
+      ],
+      "bytes": 431460
+    },
+    {
+      "file": "p12-faltering-hand.webp",
+      "source": "exec-e75bba52-ed87-48d5-8b26-5b273bcdf661.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. PRESENT DAY immediately after memory of defeat. Tight closeup inside secretalley: elderly turtle's wrinkled graygreen hand emerging from frayed INDIGO sleeve holds a single small worn ivory lanterncard over roughstoneledge. His aged fingers shake slightly, shown by TWO subtle engravedghostmotionlines nearfingertips, notduplicatedhands. The card's centerlanternsymbol has an extremely SMALL weakwarmamberdiamondlight: fragilebutstillalive, no blaze or bigmagic. In softbackground upperright see sameelder's palechinbeard and downcast kindlyeye beneathdarkhood, showing ageandfatigue. Card and tremblinghand dominate center70%, no text, no visible protagonist. Palettecoolmidnightandagedcreamwith tinyamberlight, emotionalquietframe. Exactly onecard, exactly onehand infront.",
+      "references": [
+        "exec-7e72464f-e508-4332-9dcf-a8b5c6de8f16.png",
+        "p08-glowing-card.webp"
+      ],
+      "bytes": 296566
+    },
+    {
+      "file": "p17-challengers.webp",
+      "source": "exec-6228db6d-f4fe-4687-8b5c-891b74ba9d20.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Newscene previewing OTHER REAL COMPETITORS for the crown: castle registrationhall atdusk, timbercounter and stonearchway under a simple crowncrest. A variedline of FOUR distinctanthropomorphicanimalchallengers carries singleengravedduelpasses with simpleicons, now empowered by noble-sponsoredcards: sterngraywolf withnavyscarf andleathervest center; scruffyrabbitcourier inpatchedredcoat left; proudtawnyfoxnoble inlongdarktealcoat right; shortbronzerobotwithsmallamberoptics furtherback. Eachhas own posture andexpression: resolve, nerves, ambition, calculation. They donot all smile orattack; these are independent rivals withpersonalgoals, not an identicalarmy. A humbletraveler hands a lantern-emblemduelcard to elderlyowlregistrationclerk behindwoodcounter. Small lanterns light thecounter. Wide3/4hallshot likeanimatedstoryboard, central groupreadable; nohumancharacters,no text onwalls orcards,norows oftinycards. ReferenceRookischaracterreference only; keep paintingfull engravedscene.",
+      "references": [
+        "prologue-3.webp",
+        "rook.webp"
+      ],
+      "bytes": 403286
+    },
+    {
+      "file": "p19-rivals.webp",
+      "source": "exec-943efe78-2196-43aa-9fa7-9b3dee401156.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Same GRAY WOLF ROOK as referenceimage1, sharpgrayears, creamcheeks, thicknavyscarf, brownleathervest withbronze rivets, seriousalertdarkeyes. NEW SCENE: quiet night roadcamp belowcastlewalls. Rook sits CENTER-RIGHT at makeshiftlowwoodcrate table under stonearch, practicing a few engravedcards faceup infrontofhim; he lifts hiseyes towardcamera with measuredcompetitiveexpression, onefingerrestsoncard, not angry. Atleft a brownrabbittravelergently studiesher ownsmallhandofcards beside blanketpack; inbackground foxwayfarer bysmallemberfire withmug, eachquietly pursuingtheir own journey. No gunsorweapons. Scattered travelpacks, short grass, oldstoneblocks, moonlitcastleoutline inback. One tinywarmcamp lantern givesgoldedges onRook'sface; navytealnightoverall. Naturalpersonalityandstakes, potentialalliesandrivals, no bigbattle. KeepRookcenter-right andcardscenterlower incentralsafearea. Do notposeeveryonein a lineup. Text-free. The roadside camp sits beside the OLD INN, with a subtle dark woodwindowframe along the outer imageedges because theviewer insideinn glimpsesrivals throughwindow. Rook may liftONEcardpartwayas a quietrecognitiongesture; retain hisseriousface andpracticecards.",
+      "references": [
+        "rook.webp",
+        "prologue-3.webp"
+      ],
+      "bytes": 348188
+    },
+    {
+      "file": "p20-first-duel.webp",
+      "source": "exec-584f46dc-0992-4417-ae41-efd2f6a7c74c.png",
+      "prompt": "Use case: illustration-story. Create ONE standalone landscape 3:2 full-bleed comic panel for a polished fantasy game opening. Use attached image ONLY as style and world reference, create new composition. Match exactly its refined engraved woodcut / linocut storybook printing, deep midnight navy and muted teal shadows, amber gold lamplight, restrained cream highlights, bold expressive shapes, fine carved ink hatching and visible paper grain. Serious but inviting anthropomorphic-animal medieval city, not humans, not photorealistic or 3D. No text, lettering, panels within panel, speech bubbles, border, watermark, logos, UI, or frame. Clear focal composition readable as small comic panel; important subjects central 70%. Match exact AXLE referenceidentity: blue roundedmetalhead, blackrectangularface withtwoverticalamberroundeyes, onegoldtippedantenna, goldroundchestcore, metaljointedhands. FINAL PROLOGUE SHOT beginningtheFIRSTPRACTICE cardduel. Firstperson seatedat simple squarewoodentavern table acrossfromAxle CENTER, Axle opensonehand towardthe EMPTY MIDDLE oftable invitingplay, otherhand holdsTHREEsmallcards closechest. Foregroundlowerleft shows player's handentirelywrappedcreamcloth with darkshortclawtips holding the lantern-emblemcard ALREADY OWNED byplayer, notbeinggifted. Tablehasthreeother smallengravedcards withdistinctsingleicons (shield,crossedswords,star), orderedloosely andampleemptycentralplayarea. DO NOT depictAxle offeringa card toviewer. Lanterncard nothovering. Dimhearth andonewarmlantern, oldtavern timberbeamsshelvesbackground. Axle friendlybutcalmmentor, mediumover-the-table perspective invitingplayerintogame. No dialogue,text,costnumbersorlogosdrawn.",
+      "references": [
+        "prologue-3.webp"
+      ],
+      "bytes": 385864
+    }
+  ]
+}

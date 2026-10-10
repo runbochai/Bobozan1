@@ -1,7 +1,7 @@
 import type { SkillEffect } from '../data/skillEffects';
 
 const glyphs: Record<SkillEffect['family'], string> = {
-  charge: 'M44 8h20L50 36h20L32 88l8-34H22z',
+  charge: 'M36 4h24v8h8v12h12v12h4v8h-8v32h-8v12H28V76h-8V44h-8v-8h4V24h12V12h8z M36 12v12h24V12z M32 44v24h10V44z M54 44v24h10V44z',
   shield: 'M20 16h56v36H68v16H56v12H40V68H28V52h-8z M32 28v20h8v16h16V48h8V28z',
   orb: 'M36 20h24v8h12v12h8v20h-8v12H60v8H36v-8H24V60h-8V40h8V28h12z',
   slash: 'M72 8h16v16L36 76H20v12H8V76h12V60z',

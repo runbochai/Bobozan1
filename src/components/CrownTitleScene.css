@@ -29,7 +29,7 @@
 .pixel-app.crown-title-screen .pixel-title-content { width: min(470px, 47vw); max-width: none; }
 .pixel-app.crown-title-screen .brawl-logo { top: 12svh; left: max(28px, 8vw); transform: none; width: min(480px, 40vw); text-align: center; filter: drop-shadow(0 4px 10px #06101c); }
 .crown-title-edition { display: block; margin-bottom: 11px; color: #cfb98f; font: 600 10px/1.5 Georgia, serif; letter-spacing: .35em; }
-.pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { margin: 0; font: 700 clamp(38px, 5vw, 76px)/1.1 'Crown Display', Georgia, serif; letter-spacing: -.025em; color: #f2dfb5; text-shadow: 0 2px #94744c, 0 5px 1px #08131d; }
+.pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { margin: 0; font: 400 clamp(72px, 8.8vw, 126px)/1.08 'Crown CJK', 'Kaiti SC', 'KaiTi', serif; letter-spacing: .055em; color: #f2dfb5; text-shadow: 0 2px #94744c, 0 5px 1px #08131d; transform: rotate(-3deg); }
 .pixel-app.crown-title-screen .crown-title-subtitle { margin-top: 10px; color: #efc990; font: 400 clamp(40px, 5.4vw, 82px)/1.25 'Crown CJK', 'Kaiti SC', 'KaiTi', serif; letter-spacing: .08em; text-shadow: 1px 2px #715332, 2px 5px #06101c; transform: rotate(-2deg); }
 .pixel-app.crown-title-screen .crown-title-subtitle[data-lang="en"] { font: 700 clamp(22px, 2.5vw, 36px)/1.3 'Crown Display', Georgia, serif; letter-spacing: .04em; transform: none; margin-top: 16px; }
 .crown-title-crest { display: flex; align-items: center; gap: 16px; max-width: 310px; margin: 18px auto 0; color: #cda775; }
@@ -63,7 +63,7 @@
   .pixel-app.crown-title-screen { padding: 76px 20px max(22px, env(safe-area-inset-bottom)); align-items: center; }
   .pixel-app.crown-title-screen .pixel-title-content { width: 100%; max-width: 520px; }
   .pixel-app.crown-title-screen .brawl-logo { top: 10svh; left: 5%; width: 72%; max-width: 480px; }
-  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: clamp(32px, 8.1vw, 58px); }
+  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: clamp(57px, 16vw, 88px); }
   .pixel-app.crown-title-screen .crown-title-subtitle { margin-top: 8px; font-size: clamp(39px, 10.5vw, 66px); }
   .pixel-app.crown-title-screen .crown-title-subtitle[data-lang="en"] { font-size: clamp(21px, 4.6vw, 30px); margin-top: 10px; }
   .crown-title-edition { font-size: 8px; margin-bottom: 7px; letter-spacing: .26em; }
@@ -100,7 +100,7 @@
   .pixel-app.crown-title-screen { padding: 64px 6vw 16px; }
   .pixel-app.crown-title-screen .pixel-title-content { width: 48vw; }
   .pixel-app.crown-title-screen .brawl-logo { top: 67px; left: 6vw; width: 39vw; }
-  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: 35px; line-height: 1.1; }
+  .pixel-app.crown-title-screen .brawl-logo .pixel-wordmark { font-size: 62px; line-height: 1.08; }
   .pixel-app.crown-title-screen .crown-title-subtitle { font-size: 41px; margin-top: 4px; }
   .pixel-app.crown-title-screen .crown-title-subtitle[data-lang="en"] { font-size: 24px; margin-top: 7px; }
   .crown-title-edition { display: none; }
