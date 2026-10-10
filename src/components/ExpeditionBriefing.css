@@ -23,6 +23,11 @@
 .exp-difficulty-badge--endless { color:#d6b8f3; }
 .exp-difficulty-dialog .exp-briefing-details { margin:10px 0 12px; padding-top:6px; }
 .exp-difficulty-dialog .exp-briefing-details summary { min-height:32px; }
+.exp-difficulty-dialog,
+.exp-difficulty-dialog .exp-difficulty-option,
+.exp-difficulty-dialog footer > button { clip-path:polygon(0 2px,13% 0,13.7% 1px,35% 0,35.8% 2px,56% 0,75% 1px,76% 0,calc(100% - 2px) 0,100% 2px,calc(100% - 1px) 26%,100% 27%,100% 61%,calc(100% - 2px) 62%,100% calc(100% - 2px),calc(100% - 2px) 100%,80% calc(100% - 1px),79% 100%,51% 100%,50% calc(100% - 2px),29% 100%,28% calc(100% - 1px),2px 100%,0 calc(100% - 3px),1px 71%,0 70%,0 41%,2px 40%,0 23%); }
+.exp-difficulty-dialog .exp-difficulty-option:focus-within { outline-offset:-5px; }
+.exp-difficulty-dialog footer > button:focus-visible { outline-offset:-4px; }
 @media(max-width:480px) {
   .exp-difficulty-options { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; margin-top:14px; }
   .exp-difficulty-option { padding:11px 9px; }

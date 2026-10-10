@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "tool": "built-in image_gen.imagegen",
+  "approval": "User approved turtle elder, with hood-shadowed eyes followed by card-lit face",
+  "prompt": "Use case: illustration-story. Create a TWO-PANEL sequential comic proof, portrait 3:4 canvas containing TWO landscape 3:2 panels stacked with one narrow black gutter. MOST IMPORTANT: strictly keep the ORIGINAL TURTLE ELDER identity, cartoon proportions, simple expressive animated-animal face and hands from the provided two references. REFERENCE1 is exact face/design; REFERENCE2 is exact lantern-card emblem and ink printing style. The human version is rejected; absolutely NO human man, human realistic anatomy or photorealistic skin. This is exactly the familiar cute-but-serious gray/olive TURTLE with rounded broad snout, small nostrils, big dark cartoon eyes when visible, thick off-white eyebrows, small short pointed white chin beard, moss-green stubby fingers, old dark indigo hooded cloak and wooden clasp. The same elder in both panels. Original finely engraved cartoon/comic/woodcut style, navy shadows, muted amber light, restrained cream highlights, same level of stylization as reference, not detailed realistic old-man facial anatomy under a turtle mask. TOP PANEL: the turtle stands chest-up center-right in a dark narrow medieval alley, head slightly BOWED under deep overhanging hood. His forehead, eyebrows and BOTH EYES are ENTIRELY hidden in an opaque dark hood shadow. Only LOWER rounded TURTLE muzzle/mouth, chin and short white beard visible beneath it. No glint or bright eye dots, no upper-face detail. Mouth slightly parted as if calling the unseen player, quiet and gentle mysterious expression, not threatening. Both hands held near cloak, NO card visible. Background public street lantern on wall unlit; distant castle has a few golden windows. Cool navy alley, faint ambient rim on cloak. BOTTOM PANEL: immediate next moment, same exact camera axis, alley bricks and same old turtle, raises his head and brings ONE worn ivory paper card out in his short rounded turtle hand, holding it in front of his chest toward viewer. The card bears ONLY the dark SIMPLE LANTERN icon with a small golden diamond light, matching reference2. The card glows softly and is the dominant amber LIGHT SOURCE, lighting his fingers, white chin beard, cheeks and snout from below, then catching his now-visible big soft cartoon eyes under the hood. Clear lighting logic: face now readable because of card light, hood remains navy, forehead still partly shadowed. His expression is serious, patient and recognizably the SAME turtle from reference, not angry human brows, not a new mascot. Subtle magic, no sparks, no huge radiance; background lamps STILL UNLIT. Card occupies about one quarter of panel, face remains central emphasis; no separate light on face. Preserve identity, expressive simplified cartoon forms, old cloak/classic muted palette. No extra characters, no dialogue text, no headings, no speech bubbles, no decorative page frame, no UI. Intended transition is hidden face -> head lifting and card revealing face. Both shots are inseparable story continuity, not unrelated character design variants.",
+  "panels": [
+    {
+      "file": "p06-elder-call.webp",
+      "top": 0,
+      "height": 715,
+      "width": 1086
+    },
+    {
+      "file": "p07-question.webp",
+      "top": 731,
+      "height": 717,
+      "width": 1086
+    }
+  ],
+  "source": "turtle-elder-comic.png"
+}
