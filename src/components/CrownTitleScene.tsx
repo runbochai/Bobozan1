@@ -4,15 +4,16 @@ import './CrownTypography.css';
 import './CrownTitleScene.css';
 
 /** Fixed scenery and independent cast layers keep the menu from shifting the artwork. */
-export default function CrownTitleScene() {
+export default function CrownTitleScene({ showCart = false }: { showCart?: boolean }) {
   return <div className="crown-title-scene" aria-hidden="true">
     <img className="crown-title-castle" src={assetUrl('story/crown-title-v1/castle-gate.webp')} alt="" fetchPriority="high" draggable={false} />
     <div className="crown-title-distance" />
     <div className="crown-title-gate-light" />
+    {showCart && <img className="crown-title-cart" src={assetUrl('story/crown-title-v3/cart.webp')} alt="" draggable={false} />}
     <div className="crown-title-rook-shadow" />
     <img className="crown-title-cast crown-title-rook" src={assetUrl('story/crown-title-v2/rook.webp')} alt="" draggable={false} />
     <img className="crown-title-cast crown-title-axle" src={assetUrl('story/crown-title-v1/axle.webp')} alt="" draggable={false} />
-    <img className="crown-title-cast crown-title-dragon" src={assetUrl('story/crown-title-v1/dragon.webp')} alt="" fetchPriority="high" draggable={false} />
+    <img className="crown-title-cast crown-title-dragon" src={assetUrl('story/crown-title-v3/dragon.webp')} alt="" fetchPriority="high" draggable={false} />
     <div className="crown-title-foreground" />
     <div className="crown-title-motes">{Array.from({ length: 8 }, (_, index) => <i key={index} />)}</div>
   </div>;

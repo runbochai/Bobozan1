@@ -1464,9 +1464,8 @@ export default function BobozanOnline() {
       <div className="pixel-title-content relative z-10 flex flex-col items-center w-full max-w-2xl px-4">
         
         <header className="pixel-title-header brawl-title-header brawl-menu-backdrop">
-          <CrownTitleScene />
+          <CrownTitleScene showCart />
           <div className="brawl-logo">
-            <span className="crown-title-edition" aria-hidden="true">THE CHRONICLES OF</span>
             <h1 className="pixel-wordmark">{t.title}</h1>
             <p className="crown-title-subtitle" data-lang={lang}>{lang === 'zh' ? '王冠战争' : 'THE CROWN WAR'}</p>
             <CrownTitleCrest />
@@ -1476,7 +1475,7 @@ export default function BobozanOnline() {
         {/* --- INPUT AREA --- */}
         <div className="pixel-panel pixel-start-panel brawl-start-panel w-full flex flex-col items-center gap-5">
             <div className="pixel-player-setup flex items-center gap-5 w-full">
-               <div className="relative z-50 flex flex-col items-center gap-2">
+               <div className="crown-avatar-setup relative z-50 flex flex-col items-center gap-2">
             <button
               onClick={() => { playSound('click', muted); setIsAvatarMenuOpen(!isAvatarMenuOpen); }}
               aria-label={lang === 'zh' ? '更换头像' : 'Change avatar'}
@@ -1497,11 +1496,6 @@ export default function BobozanOnline() {
                 <Edit size={14} />
               </div>
             </button>
-
-            {/* 3. Text Hint */}
-            <span className="text-[10px] font-black tracking-[0.2em] text-slate-500 uppercase animate-pulse">
-              {lang === 'zh' ? '点击更换' : 'TAP TO CHANGE'}
-            </span>
 
             {/* --- POPUP MENU --- */}
             {isAvatarMenuOpen && (
@@ -1610,7 +1604,7 @@ export default function BobozanOnline() {
 
         <div className="pixel-panel relative backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden p-8 md:p-10 flex flex-col gap-8 animate-in fade-in zoom-in duration-300">
             
-            <header className="pixel-section-heading crown-arena-heading"><span className="pixel-kicker">CROWN WAR · MULTIPLAYER</span><h1>{lang === 'zh' ? '王冠竞技场' : 'Crown Arena'}</h1><p>{lang === 'zh' ? '各地的持牌者已经入席。有人为王冠，有人为家里那盏灯。' : 'Challengers take their seats. Some want the crown. Others want the light back home.'}</p><small>{lang === 'zh' ? '每局幸存者获得成长；赛季终局以击杀数争夺王冠。' : 'Each survivor grows stronger. The season’s crown goes to the kill leader.'}</small></header>
+            <header className="pixel-section-heading crown-arena-heading"><h1>{lang === 'zh' ? '王冠竞技场' : 'Crown Arena'}</h1></header>
             {/* User Profile */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
@@ -1633,7 +1627,7 @@ export default function BobozanOnline() {
 
             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-            <div className="crown-arena-links"><button type="button" className="btn-secondary px-4 py-3" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '从灯尾镇开始 · 剧情远征' : 'Start in Emberwick · Campaign'}</button><button type="button" className="btn-secondary px-4 py-3" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '练习 / 规则' : 'Practice / Rules'}</button></div>
+            <div className="crown-arena-links"><button type="button" className="btn-secondary px-4 py-3" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '远征模式' : 'Campaign'}</button><button type="button" className="btn-secondary px-4 py-3" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '练习 / 规则' : 'Practice / Rules'}</button></div>
             {/* Actions */}
             <div className="space-y-6">
               {/* 🎨 CHANGED: Create Button (Orange/Red Theme) */}
@@ -1643,7 +1637,6 @@ export default function BobozanOnline() {
                     {loading ? <Loader className="animate-spin text-white" /> : <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white/20 transition-colors"><Users size={28} className="text-orange-100" /></div>}
                     <div className="flex flex-col items-start">
                         <span className="text-xl font-black text-white tracking-wide">{t.createRoom}</span>
-                        <span className="text-[10px] text-orange-200 group-hover:text-white/80 font-medium uppercase tracking-wider">Create a Lobby</span>
                     </div>
                   </div>
               </button>
@@ -1652,13 +1645,13 @@ export default function BobozanOnline() {
                   <div className="relative flex-1 group">
                     {/* 🎨 CHANGED: Input Focus Color (Orange) */}
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Target className="text-slate-500 group-focus-within:text-orange-400 transition-colors" size={20} /></div>
-                    <input type="text" placeholder="Join a Lobby" maxLength={6} className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-800/50 border border-slate-600 focus:border-orange-500 focus:bg-slate-800/80 text-center font-mono text-xl font-bold tracking-[0.3em] uppercase outline-none transition-all placeholder:text-slate-600 placeholder:tracking-normal text-white"
+                    <input type="text" placeholder={lang === 'zh' ? '输入6位房间码' : 'Enter 6-character room code'} maxLength={6} className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-800/50 border border-slate-600 focus:border-orange-500 focus:bg-slate-800/80 text-center font-mono text-xl font-bold tracking-[0.3em] uppercase outline-none transition-all placeholder:text-slate-600 placeholder:tracking-normal text-white"
                       value={roomCode} onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                     />
                   </div>
                   {/* 🎨 CHANGED: Join Button Hover (Orange) */}
-                  <button onClick={joinRoom} disabled={loading || !user || !firebaseConfigured || roomCode.length < 6} className="aspect-square h-auto bg-slate-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center group">
-                    {loading ? <Loader className="animate-spin" size={24} /> : <ArrowUp className="rotate-90 group-hover:translate-x-1 transition-transform" size={28} />}
+                  <button onClick={joinRoom} disabled={loading || !user || !firebaseConfigured || roomCode.length < 6} className="crown-arena-join h-auto bg-slate-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center group">
+                    {loading ? <Loader className="animate-spin" size={24} /> : (lang === 'zh' ? '加入房间' : 'Join Room')}
                   </button>
               </div>
               

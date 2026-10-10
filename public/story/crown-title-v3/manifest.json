@@ -1,0 +1,41 @@
+{
+  "version": 3,
+  "tool": "built-in image_gen.imagegen",
+  "approval": "User approved preview and requested merge",
+  "assets": [
+    {
+      "file": "cart.webp",
+      "prompt": "Use case: stylized-concept. Create ONE isolated environmental prop cluster with a genuinely transparent background, for compositing as a modest small midground detail left of the wolf in reference1. Reference1 is the actual title screen for composition/perspective and relative scale; reference2 is background engraved style and lighting. Draw a small medieval HUMAN town wooden HANDCART in three-quarter view, two battered spoked wooden wheels, dark worn wood and a couple of square cargo crates, one rolled burlap sack and a dim small amber lantern hanging near the cart handle. No merchants, no people, no animals, no elder, no faces, no creature-shaped ornaments. Practical ordinary objects below a human castle. Cart points slightly to viewer right toward the gate, compact low silhouette, one wheel clearly visible, handles slant upward modestly. Ground plane matches reference's eye-level castle courtyard perspective, no isometric bird view. Fine engraved woodcut storybook ink hatching and stippled print grain, muted midnight blue and cold charcoal wooden shadows, restrained warm ochre edge light, not a bright cartoon clipart prop. Keep all object details clean, recognizable at approximately 240 pixels wide in title screen. Small contact shadow under wheels only, background and gaps between spokes truly transparent. No floor tile patch, no scenery rectangle, no frame, no text, no logos. Entire cluster contained in square canvas with comfortable transparent padding. No huge straw pile, no flowers, no multicolor decorations, no spectacular glow. Lighting from warm castle on viewer right, otherwise dark blue evening."
+    },
+    {
+      "file": "dragon.webp",
+      "prompt": "Use case: precise-object-edit. Edit this exact transparent character sprite with ONE TINY correction only. Preserve the ENTIRE original character pixel-for-pixel as much as possible: canvas composition, dimensions/proportions, silhouette, orange scales, wings, horns, arms, paper lantern card, scarf, serious mouth, body pose, hand, feet, tail, rough engraved woodcut ink hatching, exact colors, transparency. The large near EYE on VIEWER LEFT of this UNMIRRORED input currently has a plain black pupil without catchlight, unlike the smaller far eye on viewer right which already has a small pale cream light reflection. Add a SINGLE SMALL pale cream/white catchlight in the upper part of the black pupil of the large VIEWER LEFT eye, matching the existing far-eye highlight's shape and size adjusted only minimally for perspective. Keep black pupil and cream sclera EXACT same shape and position, keep serious eyebrow. Do NOT redraw or enlarge eyes or change gaze. Do not make two sparkles, do not add stars or anime lashes. Existing highlight of other eye unchanged. It should look like both eyes are lit by same small light. No other changes anywhere. Preserve the genuinely transparent background. Full character remains in same pose and framing."
+    }
+  ],
+  "export": {
+    "cartBounds": {
+      "w": 1254,
+      "h": 1254,
+      "l": 75,
+      "t": 287,
+      "r": 1242,
+      "b": 1060
+    },
+    "dragonOriginal": {
+      "w": 940,
+      "h": 1000,
+      "l": 70,
+      "t": 9,
+      "r": 841,
+      "b": 994
+    },
+    "dragonReplacement": {
+      "w": 1216,
+      "h": 1294,
+      "l": 87,
+      "t": 10,
+      "r": 1049,
+      "b": 1239
+    }
+  }
+}
