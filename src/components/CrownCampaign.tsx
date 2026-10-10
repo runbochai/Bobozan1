@@ -159,11 +159,10 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
               if (index < pageRevealed - 1) setInspected(index);
               else advance();
             }}
-            aria-label={`${item.title[lang]}。${item.caption[lang]} ${item.speech[lang]}`}>
+            aria-label={`${item.caption[lang]} ${item.speech[lang]}`}>
             <span className="crown-opening-panel-art"><img src={asset(item.image)} alt="" fetchPriority={index === 0 ? 'high' : 'auto'}
               onLoad={() => settleImage(index, 'ready')} onError={() => settleImage(index, 'error')} />
               {images[index] === 'error' && <span className="crown-opening-fallback">{item.alt[lang]}</span>}</span>
-            <span className="crown-opening-panel-heading"><b aria-hidden="true">{String(index + 1).padStart(2, '0')}</b><span>{item.title[lang]}</span></span>
             <span className="crown-opening-speech"><span className="crown-opening-speaker">{item.speaker[lang]}</span>{item.speech[lang]}</span>
           </button>;
         })}
