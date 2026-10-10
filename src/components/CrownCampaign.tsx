@@ -22,9 +22,10 @@ function CrownMark({ variant = 'crown', className = '' }: { variant?: string; cl
   </svg>;
 }
 
-function CrownDialog({ className, titleId, onClose, children, onKeyDown }: {
+function CrownDialog({ className, titleId, onClose, children, onKeyDown, onClick }: {
   className: string; titleId: string; onClose: () => void; children: ReactNode;
   onKeyDown?: (event: React.KeyboardEvent<HTMLDialogElement>) => void;
+  onClick?: (event: React.MouseEvent<HTMLDialogElement>) => void;
 }) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
@@ -41,7 +42,7 @@ function CrownDialog({ className, titleId, onClose, children, onKeyDown }: {
     };
   }, []);
   return createPortal(<dialog ref={ref} className={`crown-dialog ${className}`} aria-labelledby={titleId}
-    onKeyDown={onKeyDown} onCancel={event => { event.preventDefault(); onClose(); }}>{children}</dialog>, document.body);
+    onKeyDown={onKeyDown} onClick={onClick} onCancel={event => { event.preventDefault(); onClose(); }}>{children}</dialog>, document.body);
 }
 
 export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false, onToggleLang }: {
@@ -51,7 +52,6 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   const titleId = useId();
   const nextButton = useRef<HTMLButtonElement>(null);
   const [page, setPage] = useState(0);
-  const [inspected, setInspected] = useState<number | null>(null);
   const [requested, setRequested] = useState(1);
   const [narrated, setNarrated] = useState(0);
   const [images, setImages] = useState<('loading' | 'ready' | 'error')[]>(() => CROWN_PROLOGUE.map(() => 'loading'));
@@ -62,7 +62,7 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   const pageStart = page * CROWN_PROLOGUE_PAGE_SIZE;
   const pageEnd = Math.min(pageStart + CROWN_PROLOGUE_PAGE_SIZE, CROWN_PROLOGUE.length);
   const pageRevealed = Math.min(revealed, pageEnd);
-  const currentIndex = inspected ?? Math.max(pageStart, pageRevealed - 1);
+  const currentIndex = Math.max(pageStart, pageRevealed - 1);
   const current = CROWN_PROLOGUE[currentIndex];
   const waiting = pageRevealed < Math.min(requested, pageEnd);
   const pageComplete = pageRevealed === pageEnd;
@@ -99,9 +99,7 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
     setImages(values => values[index] === status ? values : values.map((value, i) => i === index ? status : value));
   };
   const advance = () => {
-    if (inspected !== null) {
-      setInspected(null);
-    } else if (waiting) {
+    if (waiting) {
       // The reader can continue with the narration immediately on a slow connection.
       settleImage(pageRevealed, 'error');
     } else if (finished) {
@@ -116,11 +114,14 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
     }
   };
   const previousPage = () => {
-    setInspected(null);
     setPage(value => Math.max(0, value - 1));
   };
 
-  return <CrownDialog className={`crown-prologue crown-opening${still ? ' crown-opening--still' : ''}`} titleId={titleId} onClose={onClose} onKeyDown={event => {
+  return <CrownDialog className={`crown-prologue crown-opening${still ? ' crown-opening--still' : ''}`} titleId={titleId} onClose={onClose} onClick={event => {
+    const control = (event.target as Element).closest('button, a, input, select, textarea, [role="button"]');
+    // The whole page is a next-panel target; dedicated controls keep their own actions.
+    if (!control || control.classList.contains('crown-opening-panel')) advance();
+  }} onKeyDown={event => {
     // Holding a navigation key must not race through the story.
     if (event.repeat && ['ArrowRight', 'ArrowLeft', 'Enter', ' '].includes(event.key)) { event.preventDefault(); return; }
     if (event.key === 'ArrowRight') { event.preventDefault(); advance(); }
@@ -140,10 +141,7 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
             className={`crown-opening-panel crown-opening-panel-${localIndex + 1}`} data-panel={index + 1}
             data-revealed={index < revealed} data-failed={images[index] === 'error'}
             data-current={index === currentIndex} data-narrated={index < narrated || index < revealed - 1}
-            tabIndex={index < revealed ? 0 : -1} aria-hidden={index >= revealed} onClick={() => {
-              if (index < pageRevealed - 1) setInspected(index);
-              else advance();
-            }}
+            tabIndex={index < revealed ? 0 : -1} aria-hidden={index >= revealed}
             aria-label={`${item.caption[lang]} ${item.speech[lang]}`}>
             <span className="crown-opening-panel-art"><img src={asset(item.image)} alt="" fetchPriority={index === 0 ? 'high' : 'auto'}
               onLoad={() => settleImage(index, 'ready')} onError={() => settleImage(index, 'error')} />
@@ -155,11 +153,11 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
       {waiting && <span className="crown-opening-loading" role="status">{zh ? '画面载入中，仍可继续阅读。' : 'Loading the scene. You can keep reading.'}</span>}
     </div>
     <footer className="crown-opening-footer">
-      <div className="crown-opening-caption" aria-live="polite" aria-atomic="true"><span>{CROWN_PROLOGUE_PAGE_TITLES[page][lang]} <b>{String(inspected === null ? Math.max(pageStart, pageRevealed) : inspected + 1).padStart(2, '0')} / {CROWN_PROLOGUE.length}</b></span><p key={currentIndex} data-ready={inspected !== null || (narrated >= pageRevealed && pageRevealed > pageStart)}>{inspected !== null || (pageRevealed > pageStart && narrated >= pageRevealed) ? current.caption[lang] : '\u00a0'}</p></div>
+      <div className="crown-opening-caption" aria-live="polite" aria-atomic="true"><span>{CROWN_PROLOGUE_PAGE_TITLES[page][lang]} <b>{String(Math.max(pageStart, pageRevealed)).padStart(2, '0')} / {CROWN_PROLOGUE.length}</b></span><p key={currentIndex} data-ready={narrated >= pageRevealed && pageRevealed > pageStart}>{pageRevealed > pageStart && narrated >= pageRevealed ? current.caption[lang] : '\u00a0'}</p></div>
       <div className="crown-opening-controls">
         <button type="button" className="crown-text-button crown-opening-back" onClick={previousPage} disabled={page === 0} aria-label={zh ? '上一页' : 'Previous page'}>←</button>
         <div className="crown-opening-page-count"><span aria-label={zh ? `第 ${page + 1} 页，共 ${CROWN_PROLOGUE_PAGE_TITLES.length} 页` : `Page ${page + 1} of ${CROWN_PROLOGUE_PAGE_TITLES.length}`}>{String(page + 1).padStart(2, '0')} <b>/ {String(CROWN_PROLOGUE_PAGE_TITLES.length).padStart(2, '0')}</b></span><span className="crown-opening-progress" aria-hidden="true">{Array.from({ length: CROWN_PROLOGUE_PAGE_SIZE }, (_, index) => <i key={index} data-revealed={pageStart + index < revealed} />)}</span></div>
-        <button type="button" ref={nextButton} data-crown-initial-focus className="crown-primary-button" onClick={advance}>{inspected !== null ? (zh ? '继续阅读' : 'Keep reading') : finished ? (zh ? '走吧' : 'Let’s go') : pageComplete ? (zh ? '下一页' : 'Turn the page') : waiting ? (zh ? '继续阅读' : 'Keep reading') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
+        <button type="button" ref={nextButton} data-crown-initial-focus className="crown-primary-button" onClick={advance}>{finished ? (zh ? '走吧' : 'Let’s go') : pageComplete ? (zh ? '下一页' : 'Turn the page') : waiting ? (zh ? '继续阅读' : 'Keep reading') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
       </div>
     </footer>
   </CrownDialog>;
