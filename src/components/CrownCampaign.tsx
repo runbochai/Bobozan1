@@ -56,7 +56,6 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   const [narrated, setNarrated] = useState(0);
   const [images, setImages] = useState<('loading' | 'ready' | 'error')[]>(() => CROWN_PROLOGUE.map(() => 'loading'));
   const [systemReducedMotion, setSystemReducedMotion] = useState(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches);
-  const [visible, setVisible] = useState(() => document.visibilityState === 'visible');
   const still = reduceMotion || systemReducedMotion;
   let revealed = 0;
   while (revealed < requested && images[revealed] !== 'loading') revealed += 1;
@@ -66,7 +65,7 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   const currentIndex = inspected ?? Math.max(pageStart, pageRevealed - 1);
   const current = CROWN_PROLOGUE[currentIndex];
   const waiting = pageRevealed < Math.min(requested, pageEnd);
-  const pageComplete = pageRevealed === pageEnd && narrated >= pageEnd;
+  const pageComplete = pageRevealed === pageEnd;
   const finished = pageComplete && pageEnd === CROWN_PROLOGUE.length;
 
   useEffect(() => {
@@ -79,12 +78,6 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
     const update = () => setSystemReducedMotion(preference.matches);
     preference.addEventListener('change', update);
     return () => preference.removeEventListener('change', update);
-  }, []);
-
-  useEffect(() => {
-    const update = () => setVisible(document.visibilityState === 'visible');
-    document.addEventListener('visibilitychange', update);
-    return () => document.removeEventListener('visibilitychange', update);
   }, []);
 
   useEffect(() => {
@@ -102,16 +95,6 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
     return () => window.clearTimeout(timer);
   }, [revealed, still]);
 
-  useEffect(() => {
-    // Only turn a panel after its words have had reading time. Page turns are always the reader's.
-    if (!visible || inspected !== null || revealed <= pageStart || revealed >= pageEnd || narrated < revealed || requested !== revealed) return;
-    const words = current.caption[lang].length + current.speech[lang].length;
-    const scenePause = currentIndex === 7 || currentIndex === 11 ? 750 : 250;
-    const readingTime = Math.min(7800, Math.max(3600, words * (zh ? 95 : 32))) + scenePause;
-    const timer = window.setTimeout(() => setRequested(value => Math.min(value + 1, pageEnd)), readingTime);
-    return () => window.clearTimeout(timer);
-  }, [revealed, narrated, requested, pageStart, pageEnd, current, currentIndex, lang, zh, visible, inspected]);
-
   const settleImage = (index: number, status: 'ready' | 'error') => {
     setImages(values => values[index] === status ? values : values.map((value, i) => i === index ? status : value));
   };
@@ -121,14 +104,14 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
     } else if (waiting) {
       // The reader can continue with the narration immediately on a slow connection.
       settleImage(pageRevealed, 'error');
-    } else if (narrated < pageRevealed) {
-      setNarrated(pageRevealed);
     } else if (finished) {
       onComplete();
     } else if (pageComplete) {
       setPage(value => value + 1);
       setRequested(value => Math.max(value, pageEnd + 1));
     } else {
+      // A click requests exactly one new panel, including while the current speech fades in.
+      setNarrated(value => Math.max(value, pageRevealed));
       setRequested(value => Math.max(value, pageRevealed + 1));
     }
   };
@@ -138,6 +121,8 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   };
 
   return <CrownDialog className={`crown-prologue crown-opening${still ? ' crown-opening--still' : ''}`} titleId={titleId} onClose={onClose} onKeyDown={event => {
+    // Holding a navigation key must not race through the story.
+    if (event.repeat && ['ArrowRight', 'ArrowLeft', 'Enter', ' '].includes(event.key)) { event.preventDefault(); return; }
     if (event.key === 'ArrowRight') { event.preventDefault(); advance(); }
     if (event.key === 'ArrowLeft') { event.preventDefault(); previousPage(); }
   }}>
