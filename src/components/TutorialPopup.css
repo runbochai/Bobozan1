@@ -1,0 +1,25 @@
+.tutorial-popup {
+  position: fixed; inset: 0; margin: 0; padding: 24px;
+  width: 100vw; height: 100dvh; max-width: none; max-height: none;
+  border: 0; outline: 0; background: transparent; color: #f4e9d2;
+  font: 18px/1.75 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
+  cursor: pointer; touch-action: manipulation; box-sizing: border-box;
+}
+.tutorial-popup[open] { display: grid; place-items: center; }
+.tutorial-popup::backdrop { background: #030911cf; }
+.tutorial-popup *, .tutorial-popup *::before, .tutorial-popup *::after { box-sizing: border-box; }
+.tutorial-popup-panel {
+  width: min(100%, 460px); max-height: calc(100dvh - 48px); overflow-y: auto;
+  padding: 26px 28px 20px; border: 2px solid #d6b779; background: #182a39;
+  box-shadow: 0 0 0 4px #09121d, 7px 7px 0 #02060cc7;
+}
+.tutorial-popup-panel h2 { margin: 0 0 14px; color: #ffe0a0; font-size: 23px; line-height: 1.5; font-weight: 900; }
+.tutorial-popup-copy { overflow-wrap: anywhere; }
+.tutorial-popup-copy p { margin: 0; }
+.tutorial-popup-copy p + p { margin-top: 10px; }
+.tutorial-popup-hint { display: block; margin-top: 20px; padding-top: 12px; border-top: 1px solid #526471; color: #b5c5ca; font-size: 13px; text-align: center; }
+@media (max-width: 560px) {
+  .tutorial-popup { padding: 22px; font-size: 17px; }
+  .tutorial-popup-panel { padding: 21px 19px 16px; }
+  .tutorial-popup-panel h2 { font-size: 21px; }
+}

@@ -1,6 +1,7 @@
 import type { LocalizedText } from '../types';
 import { EXPEDITION_STAGES, EXPEDITION_START_HP } from './expedition';
 import { EXPEDITION_DIFFICULTIES } from './expeditionDifficulty';
+import { FINAL_LEVEL } from './constants';
 
 export type AcademyGoal = 'gain-energy' | 'block' | 'hit' | 'tie' | 'survive';
 
@@ -35,6 +36,14 @@ export interface RuleTopic {
   id: string;
   title: LocalizedText;
   items: LocalizedText[];
+}
+
+export interface MultiplayerAcademyLesson {
+  id: 'turn-and-match' | 'winner-and-leader' | 'final-standings' | 'elimination-reset';
+  title: LocalizedText;
+  intro: LocalizedText;
+  prompt: LocalizedText;
+  choices: { id: string; label: LocalizedText }[];
 }
 
 const text = (zh: string, en: string): LocalizedText => ({ zh, en });
@@ -209,6 +218,54 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
   },
 ];
 
+/** The displayed positions and correct answers come from the multiplayer engine. */
+export const MULTIPLAYER_ACADEMY_LESSONS: MultiplayerAcademyLesson[] = [
+  {
+    id: 'turn-and-match',
+    title: text('出完牌，还没散场', 'A turn is not a match'),
+    intro: text('你和对手同时出了攒，都获得了 2 能量。桌上还没有人淘汰。', 'You and the opponent both Charged and gained 2 energy. Nobody has been eliminated.'),
+    prompt: text('接下来会发生什么？', 'What happens next?'),
+    choices: [
+      { id: 'next-turn', label: text('继续这一局，用现有能量选下一回合的牌。', 'Keep playing this match and choose the next turn’s card with the energy you have.') },
+      { id: 'next-match', label: text('这一局已经结束，等房主开下一局。', 'This match is over; wait for the host to start another.') },
+      { id: 'series-over', label: text('看谁能量更多，直接决定总冠军。', 'Compare energy to decide the overall champion now.') },
+    ],
+  },
+  {
+    id: 'winner-and-leader',
+    title: text('这一局赢了，总冠军呢？', 'Match winner and series leader'),
+    intro: text('你用轰击中了正在攒的对手，成为最后的幸存者；但对手此前累计的击杀仍比你多。', 'Your Blast hit the charging opponent, leaving you as the last survivor. The opponent still has more kills from earlier matches.'),
+    prompt: text('这一局的新技能该由谁领取？', 'Who earns the new skill for this match?'),
+    choices: [
+      { id: 'leader-reward', label: text('击杀榜第一领技能，最后活下来也不算赢。', 'The kill leader earns the skill; being the last survivor does not count.') },
+      { id: 'survivor-reward', label: text('你领本局胜者奖励；累计击杀榜继续保留。', 'You earn the match winner’s reward; cumulative kills stay on the leaderboard.') },
+      { id: 'series-over', label: text('现在就按累计击杀决出总冠军，整场结束。', 'Award the overall champion by kills now and end the series.') },
+    ],
+  },
+  {
+    id: 'final-standings',
+    title: text('最后一局，总要有个结尾', 'The final result'),
+    intro: text(`这是第 ${FINAL_LEVEL} 局的最后一次交锋。你活到了最后，双方累计击杀数却一样。`, `This is the last exchange of match ${FINAL_LEVEL}. You survived, but both players have the same total kills.`),
+    prompt: text('这次应该怎样公布成绩？', 'How should the final result be announced?'),
+    choices: [
+      { id: 'survivor-champion', label: text('只有最后活下来的人是总冠军。', 'Only the last survivor is the overall champion.') },
+      { id: 'next-match', label: text('再开下一局，一直打到有人独占第一。', 'Keep starting matches until only one player leads.') },
+      { id: 'joint-champions', label: text('累计击杀相同，并列总冠军，赛程结束。', 'The tied kill leaders are joint champions; the series is complete.') },
+    ],
+  },
+  {
+    id: 'elimination-reset',
+    title: text('有人倒下，其他人继续', 'An elimination does not clear the table'),
+    intro: text('三人同桌：你防住了轰，另一位玩家在攒时被击中。结算后，你和攻击者仍然存活。', 'At a three-player table, you blocked a Blast while another player was hit during Charge. You and the attacker survived.'),
+    prompt: text('幸存者的生命和能量重置了，接下来呢？', 'The survivors’ HP and energy reset. What happens next?'),
+    choices: [
+      { id: 'survivors-continue', label: text('两人保留技能继续这一局；淘汰者等下一局再加入。', 'The two survivors keep their skills and continue this match; the eliminated player returns next match.') },
+      { id: 'everyone-respawns', label: text('所有人立刻复活，把刚才的一回合重新打一次。', 'Everyone immediately respawns to replay the same turn.') },
+      { id: 'inventory-cleared', label: text('幸存者失去所有已获得技能，从头开始。', 'Survivors lose all earned skills and start from scratch.') },
+    ],
+  },
+];
+
 export const RULE_TOPICS: RuleTopic[] = [
   {
     id: 'basics', title: text('一回合怎么结算', 'How a turn works'),
@@ -264,9 +321,11 @@ export const RULE_TOPICS: RuleTopic[] = [
     ],
   },
   {
-    id: 'multiplayer', title: text('联机成长与重置', 'Multiplayer progression'),
+    id: 'multiplayer', title: text('多人怎样赢，什么时候结束', 'Winning and finishing multiplayer'),
     items: [
-      text('技能表最高 Lv.23。联机胜者按局数领新技能；第 23 局起转为最终击杀榜，不再发升级奖励。最终成绩看累计击杀，不只看最后存活。', 'The skill list reaches Lv.23. Multiplayer winners earn skills by match number; from match 23, the final kill leaderboard replaces upgrade rewards. Overall results use total kills, not just the last survivor.'),
+      text(`一回合是大家同时出一次牌；一局要打到至多一人存活。整场比赛共有 ${FINAL_LEVEL} 局，最终按累计击杀排名，不按最后一局谁活下来。`, `A turn is one simultaneous card choice. A match ends with at most one survivor. A multiplayer series lasts ${FINAL_LEVEL} matches, then ranks players by total kills, not who survived the final match.`),
+      text(`前 ${FINAL_LEVEL - 1} 局的最后幸存者按局数领新技能；所有人同归于尽则无人领胜者奖励。局间由房主开始下一局，淘汰者恢复生命、能量归零并重新加入，已获得技能和累计击杀保留。`, `Before match ${FINAL_LEVEL}, the last survivor earns a skill for that match number; if everyone dies, no one earns the winner’s reward. Between matches the host starts the next one. Eliminated players return with restored HP and zero energy, keeping earned skills and cumulative kills.`),
+      text(`第 ${FINAL_LEVEL} 局结束就公布总成绩，不再发升级奖励，也不继续第 ${FINAL_LEVEL + 1} 局。累计击杀最高者是总冠军；最高分相同则并列，没有额外加赛。`, `After match ${FINAL_LEVEL}, announce the final standings with no further skill reward or match ${FINAL_LEVEL + 1}. The highest total kills wins the series; tied leaders are joint champions, with no extra match.`),
       text('攻击、防守、终极各最多保留 3 个新技能，超出后分别选择。基础牌始终保留；临时、吸收、共享和联合技不占名额。', 'Keep up to 3 acquired skills each in Attack, Defense, and Ultimate; choose separately when full. Basic cards stay. Temporary, absorbed, shared, and combo skills do not use slots.'),
       text('特殊技能已归入对应分类：吸取、封印和身法在防守里。新获得的技能排在左边；换下一个技能不影响同等级的其他技能。', 'Special tools are grouped by role: absorption, disabling, and movement are in Defense. New acquisitions appear first. Replacing one skill does not remove other skills of the same level.'),
       text('联机阵亡不会抹去已获得的技能。下一局恢复生命、能量归零，保留技能库。', 'Dying in multiplayer does not erase earned skills. The next match restores HP and resets energy while keeping the inventory.'),

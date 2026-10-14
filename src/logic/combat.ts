@@ -3,9 +3,10 @@ import PixelCardArt from '../components/PixelCardArt';
 import type { Card, Player, LogEntry, Lang } from '../types';
 import { TEXT } from '../data/translations';
 import { SKILL_DB } from '../data/skills';
-import { FINAL_LEVEL, MAX_HP } from '../data/constants';
+import { MAX_HP } from '../data/constants';
 import { autoSelectSkillLoadout, COMBO_COMPONENTS, getRetainedSkillIds, grantSkillLevel, hasSkillOverflow, isAcquiredSkill } from './skillLoadout';
 import { getEffectiveLevel, getPlayerCard, withPlayerCardLevel } from './cardLevels';
+import { getMultiplayerMatchSummary } from './multiplayerMatch';
 export { getEffectiveLevel, getPlayerLevel, getPlayerCard, withPlayerCardLevel } from './cardLevels';
 
 // --- ICON HELPER ---
@@ -583,23 +584,19 @@ export const calculateTurnOutcome = (
 
   if (living.length <= 1) {
     isGameOver = true;
+    const matchSummary = getMultiplayerMatchSummary({ status: 'GAMEOVER', matchCount, players: finalPlayers });
     if (living.length === 1) {
       winner = living[0];
       
-      // 🟢 NEW: If Final Level reached, log the Kill Leader
       if (!multiplayer) {
           logs.push({ turn, text: lang === 'zh' ? `🏆 ${winner.name} 获胜!` : `🏆 ${winner.name} WINS!`, type: 'win' });
-      } else if (matchCount >= FINAL_LEVEL) {
-          const killLeader = finalPlayers.reduce((prev, curr) => 
-            ((curr.kills || 0) > (prev.kills || 0) ? curr : prev), 
-          finalPlayers[0]);
-
-          logs.push({ 
-            turn, 
+      } else if (matchSummary.isSeriesOver) {
+          logs.push({
+            turn,
             text: lang === 'zh' 
-              ? `🏆 最终决战结束! 击杀王: ${killLeader.name} (${killLeader.kills}杀)` 
-              : `🏆 FINAL BATTLE OVER! Kill Leader: ${killLeader.name} (${killLeader.kills} Kills)`, 
-            type: 'win' 
+              ? `🏆 ${winner.name} 赢下第 ${matchCount} 局！`
+              : `🏆 ${winner.name} wins match ${matchCount}!`,
+            type: 'win',
           });
       } else {
           const awarded = grantSkillLevel(winner, matchCount);
@@ -611,6 +608,18 @@ export const calculateTurnOutcome = (
       }
     } else {
       logs.push({ turn, text: lang === 'zh' ? `平局!` : `Draw!`, type: 'death' });
+    }
+    if (multiplayer && matchSummary.isSeriesOver && matchSummary.champions.length > 0) {
+      const names = matchSummary.champions.map(player => player.name).join(lang === 'zh' ? '、' : ', ');
+      const kills = matchSummary.champions[0].kills ?? 0;
+      const shared = matchSummary.champions.length > 1;
+      logs.push({
+        turn,
+        text: lang === 'zh'
+          ? `🏆 ${matchSummary.totalMatches} 局赛程结束！${shared ? '并列总冠军' : '总冠军'}：${names}（累计${shared ? '各' : ''} ${kills} 次击杀）`
+          : `🏆 ${matchSummary.totalMatches}-match series complete! ${shared ? 'Joint champions' : 'Champion'}: ${names} (${kills} total kills${shared ? ' each' : ''})`,
+        type: 'win',
+      });
     }
   }
 
