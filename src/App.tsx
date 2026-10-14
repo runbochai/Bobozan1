@@ -221,7 +221,7 @@ const TopControls = ({
                 type="range" 
                 min="0" 
                 max="1" 
-                step="0.05" 
+                step="0.005"
                 value={musicVolume}
                 onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
                 className="w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-orange-500 focus:outline-none"
@@ -633,7 +633,7 @@ export default function BobozanOnline() {
   };
 
   // --- Global Event Listeners ---
-  const [musicVolume, setMusicVolume] = useState(0.15); // Default 15%
+  const [musicVolume, setMusicVolume] = useState(0.075); // Default 7.5%
 
   const music = useBackgroundMusic(assetUrl('music/bgm.mp3'), view === 'GAME', muted, musicVolume);
 
