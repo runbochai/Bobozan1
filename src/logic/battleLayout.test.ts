@@ -1,125 +1,120 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { BATTLE_DIRECTIONS, SELF_SEAT, directionToward, directionTowardTable, getBattleFigure, getBattleFormation, getBattleSeat, getBattleStatusOffset, getTableGeometry } from './battleLayout';
+import { BATTLE_DIRECTIONS, SELF_SEAT, directionToward, directionTowardTable, getBattleFigure, getBattleFigureAnchor, getBattleFormation, getBattleSeat, getBattleStatusOffset, getTableGeometry, type BattleSeat } from './battleLayout';
 
-test('atlas compass directions remain consistent',()=>{
-  const p=[{x:50,y:0},{x:100,y:0},{x:100,y:50},{x:100,y:100},{x:50,y:100},{x:0,y:100},{x:0,y:50},{x:0,y:0}];
-  assert.deepEqual(p.map(s=>directionToward(s,{x:50,y:50})),BATTLE_DIRECTIONS);
+const close = (a: number, b: number) => assert.ok(Math.abs(a - b) < 1e-8, `${a} should equal ${b}`);
+const fixed = (seat: BattleSeat) => ({ x: seat.x, y: seat.y, facing: seat.facing, edge: seat.edge, sideIndex: seat.sideIndex, tableSides: seat.tableSides });
+const widths = [320, 390, 767, 768, 844, 1024, 1440, 1920, 3627];
+const heights = [320, 420, 540, 640, 760, 960];
+
+test('atlas compass directions remain consistent', () => {
+  const points = [{ x: 50, y: 0 }, { x: 100, y: 0 }, { x: 100, y: 50 }, { x: 100, y: 100 },
+    { x: 50, y: 100 }, { x: 0, y: 100 }, { x: 0, y: 50 }, { x: 0, y: 0 }];
+  assert.deepEqual(points.map(seat => directionToward(seat, { x: 50, y: 50 })), BATTLE_DIRECTIONS);
 });
 
-test('near-side labels inset symmetrically without moving far-side labels or the viewer',()=>{
-  for(const width of [320,390,768,844,1199,1200,1440])for(let total=2;total<=8;total++){
-    const bounds={width,height:width<768?960:1000},seats=getBattleFormation(total,0,width<768,bounds);
-    seats.forEach((seat,index)=>{
-      const offset=getBattleStatusOffset(seat,index===0,bounds),figure=getBattleFigure(seat,index===0,bounds);
-      assert.ok(Math.abs(offset)<=40);
-      if(index===0||!figure.foreground)assert.equal(offset,0);
-      else assert.ok(Math.abs(seat.x-50)<.001||Math.sign(offset)===Math.sign(50-seat.x));
-      const mirror={...seat,x:100-seat.x};
-      assert.ok(Math.abs(offset+getBattleStatusOffset(mirror,index===0,bounds))<1e-8);
+test('three to eight players receive the matching convex polygon; duels share a four-sided table', () => {
+  for (let total = 2; total <= 8; total++) {
+    const table = getTableGeometry(false, total), expected = total === 2 ? 4 : total;
+    assert.equal(table.sides, expected);
+    assert.equal(table.vertices.length, expected);
+    assert.deepEqual(getTableGeometry(true, total), table, 'A phone uses the same physical table');
+    close((table.vertices[0].x + table.vertices[1].x) / 2, SELF_SEAT.x);
+    close(table.vertices[0].y, SELF_SEAT.y);
+    close(table.vertices[1].y, SELF_SEAT.y);
+    table.vertices.forEach((a, index) => {
+      const b = table.vertices[(index + 1) % expected], c = table.vertices[(index + 2) % expected];
+      assert.ok((b.x - a.x) * (c.y - b.y) - (b.y - a.y) * (c.x - b.x) < 0, 'Every edge belongs to one convex tabletop');
+      assert.ok(a.x >= 12 - 1e-8 && a.x <= 88 + 1e-8 && a.y >= 25 - 1e-8 && a.y <= 85 + 1e-8);
+      const mirror = table.vertices[(1 - index + expected) % expected];
+      close(a.x + mirror.x, 100); close(a.y, mirror.y);
     });
+    assert.equal(table.center.x, 50);
   }
 });
 
-test('all viewers stay front-center with a straight back; duels face straight across',()=>{
-  for(const compact of [false,true])for(let n=2;n<=8;n++)for(let viewer=0;viewer<n;viewer++){
-    const seats=getBattleFormation(n,viewer,compact);
-    assert.equal(seats[viewer].x,50);assert.equal(seats[viewer].y,85);assert.equal(seats[viewer].facing,'n');
-    assert.equal(new Set(seats.map(s=>s.x+','+s.y)).size,n);
-    if(n===2){const opponent=seats[1-viewer];assert.ok(Math.abs(opponent.x-50)<1e-8);assert.equal(opponent.facing,'s');}
-  }
-});
-
-test('seat distances around the rendered quadrilateral are equal and mirror-symmetric',()=>{
-  for(const [width,height] of [[1440,760],[1920,900],[844,760],[768,1100],[844,1100],[1024,1000],[390,960],[320,680]])for(let n=2;n<=8;n++){
-    const compact=width<768,{corners}=getTableGeometry(compact);
-    const pixels=(p:{x:number;y:number})=>({x:p.x*width/100,y:p.y*height/100});
-    const path=[SELF_SEAT,corners[2],corners[1],corners[0],corners[3],SELF_SEAT].map(pixels);
-    const lengths=path.slice(1).map((b,i)=>Math.hypot(b.x-path[i].x,b.y-path[i].y));
-    const perimeter=lengths.reduce((a,b)=>a+b,0),seats=getBattleFormation(n,0,compact,{width,height});
-    seats.forEach((s,r)=>{
-      const p=pixels(s);let offset=0,found=false;
-      for(let i=0;i<lengths.length;i++){
-        const a=path[i],b=path[i+1],distance=Math.hypot(p.x-a.x,p.y-a.y);
-        if(Math.abs(distance+Math.hypot(p.x-b.x,p.y-b.y)-lengths[i])<1e-5){
-          assert.ok(Math.abs(offset+distance-r*perimeter/n)<1e-4);found=true;break;
-        }
-        offset+=lengths[i];
-      }
-      assert.ok(found,'seat must lie on tabletop edge');
-      const opposite=seats[(n-r)%n];
-      assert.ok(Math.abs(s.x+opposite.x-100)<1e-8);
-      assert.ok(Math.abs(s.y-opposite.y)<1e-8);
-      assert.ok(Number.isFinite(s.size)&&s.size!>0);
-      assert.equal(s.facing,directionTowardTable(s,compact));
+test('each fixed seat is exactly the midpoint of its own edge, with the viewer always front-center', () => {
+  for (let total = 2; total <= 8; total++) {
+    const table = getTableGeometry(false, total), seats = getBattleFormation(total, 0);
+    assert.equal(new Set(seats.map(seat => seat.sideIndex)).size, total);
+    seats.forEach((seat, index) => {
+      const edge = seat.sideIndex!, a = table.vertices[edge], b = table.vertices[(edge + 1) % table.sides];
+      close(seat.x, (a.x + b.x) / 2); close(seat.y, (a.y + b.y) / 2);
+      assert.equal(seat.tableSides, table.sides);
+      assert.equal(seat.facing, directionTowardTable(seat));
+      const mirror = seats[(total - index) % total];
+      close(seat.x + mirror.x, 100); close(seat.y, mirror.y);
     });
+    assert.equal(seats[0].x, SELF_SEAT.x); assert.equal(seats[0].y, SELF_SEAT.y); assert.equal(seats[0].facing, 'n');
+    if (total === 2) assert.deepEqual(fixed(seats[1]), { x: 50, y: 25, facing: 's', edge: 'far', sideIndex: 2, tableSides: 4 });
   }
 });
 
-test('perspective keeps far, side and near views distinct on both screen shapes',()=>{
-  for(const compact of [false,true]){
-    const {corners,center}=getTableGeometry(compact);
-    assert.equal(directionTowardTable({x:50,y:corners[0].y},compact),'s');
-    assert.equal(directionTowardTable({x:80,y:center.y},compact),'w');
-    assert.equal(directionTowardTable(corners[2],compact),'nw');
-    assert.equal(directionTowardTable(corners[3],compact),'ne');
-  }
-  assert.deepEqual(getBattleFormation(0,0),[]);
-  assert.equal(getBattleSeat(0,0,0).facing,'n');
-});
-
-test('figure offsets preserve rim seats and move side figures along the projected outward normal', () => {
-  for (const width of [320,390,767,768,844,1024,1440,1920,3627]) for (let total=2; total<=8; total++) {
-    const compact=width<768;
-    const height=compact?(total>4?960:680):total===8&&width<=900?1100:total===7&&width<=1199?1000:width>=1600?900:760;
-    const bounds={width,height}, seats=getBattleFormation(total,0,compact,bounds);
-    const original=JSON.stringify(seats), {corners}=getTableGeometry(compact);
-    seats.forEach((seat,index)=>{
-      const figure=getBattleFigure(seat,index===0,bounds), size=seat.size!, modelHeight=size*4/3;
-      const x=figure.x*width/100,y=figure.y*height/100,dx=(figure.x-seat.x)*width/100,dy=(figure.y-seat.y)*height/100;
-      const labelWidth=index===0?0:Math.min(compact?86:116,size+12);
-      assert.ok(x-Math.max(size,labelWidth)/2>=5.99 && x+Math.max(size,labelWidth)/2<=width-5.99);
-      assert.ok(y-modelHeight*(index===0?.5:.55)>=3.99);
-      if(index>0)assert.ok(y-modelHeight*.51-45>=3.99,'Header stays inside the board');
-      assert.ok(dy<=.001,'Near/far figures never move down the screen');
-      if(figure.foreground||seat.edge==='far')assert.ok(Math.abs(dx)<1e-7);
-      else {
-        const right=seat.edge==='right', a=corners[right?1:0],b=corners[right?2:3];
-        const edgeX=(b.x-a.x)*width/100,edgeY=(b.y-a.y)*height/100;
-        assert.ok(Math.abs(dx*edgeX+dy*edgeY)<1e-5,'Side shift stays perpendicular to its tabletop edge');
-        assert.ok(right?dx>=-.001:dx<=.001,'Side shift points out of the tabletop');
-      }
-      const mirror=getBattleFigure(seats[(total-index)%total],index===0,bounds);
-      assert.equal(figure.foreground,mirror.foreground);
-      assert.ok(Math.abs(figure.x+mirror.x-100)<1e-7 && Math.abs(figure.y-mirror.y)<1e-7);
-    });
-    assert.equal(JSON.stringify(seats),original,'Visual adjustment never mutates logical seats');
-  }
-});
-
-test('near table corners share the foreground treatment without changing their logical side', () => {
-  for (const width of [390,1440]) {
-    const {corners}=getTableGeometry(width<768), bounds={width,height:960};
-    const nearCorner={x:80,y:corners[0].y+(corners[3].y-corners[0].y)*.76,size:80,edge:'right' as const};
-    const figure=getBattleFigure(nearCorner,false,bounds);
-    assert.ok(figure.foreground);
-    assert.equal(figure.x,nearCorner.x);
-    assert.ok(figure.y<nearCorner.y);
-    assert.equal(nearCorner.edge,'right');
-    const middle={...nearCorner,y:corners[0].y+(corners[3].y-corners[0].y)*.6};
-    assert.equal(getBattleFigure(middle,false,bounds).foreground,false);
-  }
-});
-
-test('narrow side figures have room for their entire retreat without moving logical seats', () => {
-  for (const width of [320,360,390,428,600,767]) for (let total=2;total<=8;total++) {
-    const bounds={width,height:total>4?960:680},seats=getBattleFormation(total,0,true,bounds);
-    for(const [index,seat] of seats.entries()) {
-      const figure=getBattleFigure(seat,index===0,bounds);
-      if(figure.foreground||!(seat.edge==='left'||seat.edge==='right'))continue;
-      const distance=Math.hypot((figure.x-seat.x)*bounds.width/100,(figure.y-seat.y)*bounds.height/100);
-      assert.ok(Math.abs(distance-(seat.size!*.36+4))<.001, 'Side retreat is not clipped by viewport or header clearance');
-      assert.ok(seat.size!>=36,'Even a cramped side model remains visible');
+test('resizing only changes model sizes, never coordinates, edge ownership, or facing', () => {
+  for (let total = 2; total <= 8; total++) {
+    const expected = getBattleFormation(total, 0).map(fixed);
+    for (const width of widths) for (const height of heights) {
+      const seats = getBattleFormation(total, 0, width < 768, { width, height });
+      assert.deepEqual(seats.map(fixed), expected, `${total} players at ${width}×${height}`);
     }
   }
+});
+
+test('changing the viewer rotates roster ownership without rotating or repacking the physical table', () => {
+  for (const width of [320, 844, 1440]) for (let total = 2; total <= 8; total++) {
+    const bounds = { width, height: 640 }, expected = getBattleFormation(total, 0, width < 768, bounds);
+    for (let viewer = 0; viewer < total; viewer++) {
+      const seats = getBattleFormation(total, viewer, width < 768, bounds);
+      seats.forEach((seat, index) => assert.deepEqual(seat, expected[(index - viewer + total) % total]));
+      assert.equal(seats[viewer].facing, 'n');
+      assert.deepEqual(getBattleSeat(viewer, total, viewer, width < 768, bounds), seats[viewer]);
+    }
+    // Death/commit state is deliberately absent from this API: the full roster
+    // remains the seating contract for the entire match.
+    assert.deepEqual(getBattleFormation(total, total + 1, width < 768, bounds), getBattleFormation(total, 1, width < 768, bounds));
+  }
+});
+
+test('models remain attached at the waist, with visible figures and status labels inside the stage and clear of each other', () => {
+  for (const width of widths) for (const height of heights) for (let total = 2; total <= 8; total++) {
+    const bounds = { width, height }, seats = getBattleFormation(total, 0, width < 768, bounds);
+    const original = JSON.stringify(seats), context = `${total} players at ${width}×${height}`;
+    const groups = seats.map((seat, index) => {
+      const figure = getBattleFigure(seat, index === 0, bounds), size = seat.size!, h = size * 4 / 3;
+      assert.equal(figure.x, seat.x, context); assert.equal(figure.y, seat.y, context);
+      assert.ok(Number.isFinite(size) && size >= 22, context);
+      const anchor = getBattleFigureAnchor(seat, index === 0);
+      assert.equal(anchor, index === 0 ? .5 : figure.foreground ? .55 : .68);
+      const x = figure.x * width / 100, top = figure.y * height / 100 - h * anchor;
+      assert.ok(x - size / 2 >= 5.99 && x + size / 2 <= width - 5.99, 'Model width: ' + context);
+      assert.ok(top >= 3.99, 'Head stays inside stage: ' + context);
+      if (index === 0) assert.ok(top + h <= height - 3.99, 'Viewer stays inside stage: ' + context);
+      const regions = [{ left: x - size * .38, right: x + size * .38,
+        top: top + h * .09, bottom: top + h * (figure.foreground ? .93 : anchor + .05) }];
+      const offset = getBattleStatusOffset(seat, index === 0, bounds);
+      assert.ok(Math.abs(offset) <= 28);
+      if (index === 0 || !figure.foreground) assert.equal(offset, 0);
+      else if (Math.abs(seat.x - 50) > 1e-8) assert.equal(Math.sign(offset), Math.sign(seat.x - 50));
+      if (index > 0) {
+        const labelWidth = Math.min(width < 768 ? 86 : 116, size + 12), labelX = x + offset;
+        const bottom = top + h * (figure.foreground ? .04 : .17);
+        assert.ok(labelX - labelWidth / 2 >= 5.99 && labelX + labelWidth / 2 <= width - 5.99, 'Status width: ' + context);
+        assert.ok(bottom - 45 >= 3.99, 'Status top: ' + context);
+        regions.push({ left: labelX - labelWidth / 2, right: labelX + labelWidth / 2, top: bottom - 45, bottom });
+      }
+      return regions;
+    });
+    groups.forEach((regions, index) => groups.slice(index + 1).forEach(other => regions.forEach(a => other.forEach(b => {
+      assert.ok(a.right <= b.left || a.left >= b.right || a.bottom <= b.top || a.top >= b.bottom, 'Readable neighboring models/status: ' + context);
+    }))));
+    assert.equal(JSON.stringify(seats), original, 'Visual helpers never mutate seats');
+  }
+});
+
+test('invalid rosters and unmeasured bounds retain safe fallbacks', () => {
+  assert.deepEqual(getBattleFormation(0, 0), []);
+  assert.deepEqual(getBattleFormation(Number.NaN, 0), []);
+  assert.equal(getBattleSeat(0, 0, 0).facing, 'n');
+  const seats = getBattleFormation(8, 0, true, { width: 0, height: Number.NaN });
+  assert.ok(seats.every(seat => Number.isFinite(seat.x) && Number.isFinite(seat.y) && Number.isFinite(seat.size)));
 });

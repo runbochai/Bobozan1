@@ -1,19 +1,12 @@
-/* A table between the surrounding cast, with cards in the near foreground. */
-.battle-scenery { position: absolute; inset: 22% 12% 9%; pointer-events: none; overflow: hidden; }
-.battle-scenery > svg { width: 100%; height: 100%; opacity: .95; }
-.arena-sigil { opacity: .35; animation: arena-breathe 4s steps(6) infinite; }
-.arena-flame { animation: arena-fire .8s steps(2) infinite alternate; transform-origin: 0 179px; }
-.arena-flame-1 { animation-delay: -.3s; }
-.arena-round { position: absolute; top: 51%; left: 50%; transform: translate(-50%, -50%) rotate(-5deg); display: flex; flex-direction: column; align-items: center; color: #b8d5d0; text-shadow: 3px 3px #0a1725; white-space: nowrap; }
-.arena-round span { font: 9px 'Pixel Display', monospace; letter-spacing: 2px; }
-.arena-round strong { font: 46px 'Pixel Display', monospace; color: #edcb91; margin: 12px 0; }
-.arena-round small { font-size: 10px; letter-spacing: 2px; }
-.battle-scenery-clash .arena-round { opacity: .12; }
-.battle-scenery-clash .arena-sigil { stroke: #f5ae72; }
-.arena-embers i { position: absolute; width: 4px; height: 4px; background: #e9bb70; opacity: 0; animation: arena-ember 5s steps(12) infinite; }
-@keyframes arena-breathe { 50% { opacity: .65; } }
-@keyframes arena-fire { to { transform: scaleY(.78) translateX(2px); } }
-@keyframes arena-ember { 15% { opacity: .6; } 90% { opacity: 0; transform: translate(16px, -95px); } }
+/* One pixel table owns the scene; every layer uses the shared stage coordinates. */
+.battle-scenery,
+.pixel-table-supports { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+.battle-scenery > svg,
+.pixel-table-supports > svg { display: block; width: 100%; height: 100%; opacity: 1; overflow: visible; image-rendering: pixelated; }
+.pixel-table-supports { z-index: 5; }
+.pixel-table-scene { z-index: 20; }
+.pixel-table-emblem { opacity: .72; }
+.battle-scenery-clash .pixel-table-emblem { opacity: .25; }
 .table-cards { position: absolute; inset: 0; z-index: 30; pointer-events: none; }
 .table-card-flight { position: absolute; width: clamp(66px, 10cqw, 110px); translate: -50% -50%; animation: table-card-deal var(--card-flight-duration) cubic-bezier(.2,.7,.3,1) var(--card-release-delay) both; }
 .table-card-compare, .table-card-surface { position: relative; }
@@ -62,9 +55,6 @@
 }
 @keyframes table-hit { from { opacity: .85; transform: translate(-50%, -50%) scale(.4); } to { opacity: 0; transform: translate(-50%, -50%) scale(1.1); } }
 @media (max-width: 767px) {
-  .battle-scenery { inset: 24% 3% 14%; }
-  .arena-round strong { font-size: 30px; }
-  .arena-round small { font-size: 8px; letter-spacing: 0; }
   .table-card-flight { width: 10cqw; }
   .table-played-card { border-width: 2px; padding: 14px 2px 5px; gap: 2px; }
   .table-played-card .pixel-card-symbol { border-width: 1px; }
