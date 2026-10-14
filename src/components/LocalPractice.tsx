@@ -14,6 +14,7 @@ import WoodcutCardFace from './WoodcutCardFace';
 import { Settings, Volume2, VolumeX } from './PixelIcons';
 import { useEdgeScroll } from './useEdgeScroll';
 import { useSystemReducedMotion } from './useSystemReducedMotion';
+import { useCardTooltip } from './useCardTooltip';
 import {
   createLocalPractice, getLocalPracticeCards, getLocalPracticeLegalCards,
   LOCAL_BOT_ID, LOCAL_HERO_ID, resolveLocalPracticeTurn,
@@ -153,6 +154,8 @@ export default function LocalPractice({
   const legalIds = new Set(getLocalPracticeLegalCards(displayedPlayers).map(card => card.id));
   const basicCards = STARTER_CARDS.flatMap(id => cards.filter(card => card.id === id));
   const handCards = [...basicCards, ...cards.filter(card => !STARTER_CARDS.includes(card.id))];
+  const { bind, tooltip, isRepeatedMouseClick } = useCardTooltip({ cards: handCards, player: hero, lang, appearance: 'current',
+    enabled: phase === 'choose', scope: `practice:${duel.turn}:${phase}` });
   const heroWon = duel.winnerId === LOCAL_HERO_ID;
   const finalTitle = heroWon ? say('漂亮，拿下！', 'Well played!')
     : duel.winnerId === LOCAL_BOT_ID ? say('这局输了', 'Defeat') : say('同归于尽！', 'A double knockout!');
@@ -174,9 +177,9 @@ export default function LocalPractice({
   const renderCard = (card: Card, index?: number) => {
     const unavailable = !legalIds.has(card.id);
     return <button key={card.id} type="button"
+      {...bind(card)}
       className={`local-practice-card local-practice-card-${card.type.toLowerCase()}`}
-      disabled={unavailable || phase !== 'choose'} onClick={event => { if (event.detail <= 1) play(card); }}
-      title={`${card.name[lang]} · ${card.cost} ${say('能量', 'energy')} · ${cardSummary(card)}`}
+      aria-disabled={unavailable || phase !== 'choose'} onClick={event => { if (!isRepeatedMouseClick(event)) play(card); }}
       aria-label={`${card.name[lang]} · ${card.cost} ${say('能量', 'energy')} · ${cardSummary(card)}${unavailable ? ` · ${say(`还需 ${Math.max(0, card.cost - hero.energy)} 能量`, `Need ${Math.max(0, card.cost - hero.energy)} more energy`)}` : ''}`}>
       <span className="local-practice-card-face" aria-hidden="true"><WoodcutCardFace card={card} lang={lang} /></span>
       <span className="local-practice-card-description">{index !== undefined && <kbd aria-hidden="true">{index + 1}</kbd>}{cardSummary(card)}</span>
@@ -298,5 +301,6 @@ export default function LocalPractice({
         </footer>
       </div>
     </div>
+    {tooltip}
   </dialog>;
 }

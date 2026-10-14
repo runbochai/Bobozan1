@@ -1,11 +1,10 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
-import { createPortal } from 'react-dom';
 import { ArrowLeft, ArrowUp, CheckCircle, Crown, Ghost, Heart, Loader, LogOut, Scroll, Share2, Shield, Skull, Smile, User, X, Zap } from 'lucide-react';
 import type { BattleSpeed, Card, GameState, HandCategory, HandViewMode, Lang, Player } from '../types';
 import { avatarUrl } from '../assets';
 import { MAX_HP } from '../data/constants';
 import { TEXT } from '../data/translations';
-import { getShowdownWinner, isOffensiveCard } from '../logic/combat';
+import { getShowdownWinner } from '../logic/combat';
 import { getEffectiveLevel, getPlayerCard, getPlayerLevel } from '../logic/cardLevels';
 import { getHandCategory } from '../logic/skillLoadout';
 import { getMultiplayerMatchSummary } from '../logic/multiplayerMatch';
@@ -13,6 +12,7 @@ import { retroRoundTiming, retroSeat, retroSlamTargets, retroSlamTilt } from '..
 import { normalizeBattleSpeed } from '../logic/battleSpeed';
 import RetroBackdrop from './RetroBackdrop';
 import RetroCard, { RetroSkillIcon } from './RetroCard';
+import { useCardTooltip } from './useCardTooltip';
 import './RetroBattle.css';
 
 export interface RetroBattleProps {
@@ -47,24 +47,6 @@ export interface RetroBattleProps {
 const categories: HandCategory[] = ['CHARGE', 'ATTACK', 'DEFEND', 'ULTIMATE'];
 const categoryIcon = { CHARGE: 'charge', ATTACK: 'hong', DEFEND: 'defend', ULTIMATE: 'kajifen' };
 const emojis = ['😎', '😂', '😱', '🔥', '💀', '👑', '🤔', '👍'];
-
-function RetroCardDetails({ card, lang, free, onClose }: { card: Card; lang: Lang; free: boolean; onClose: () => void }) {
-  const ref = useRef<HTMLDialogElement>(null);
-  useEffect(() => {
-    const dialog = ref.current;
-    const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    dialog?.showModal();
-    return () => { dialog?.close(); if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true }); };
-  }, []);
-  return createPortal(<dialog ref={ref} className="retro-card-dialog" aria-labelledby="retro-detail-title" onCancel={event => { event.preventDefault(); onClose(); }}>
-    <button type="button" className="retro-detail-close" onClick={onClose} aria-label={lang === 'zh' ? '关闭详情' : 'Close details'}><X size={20} /></button>
-    <div className="retro-detail-face"><RetroCard card={card} lang={lang} free={free} /></div>
-    <h2 id="retro-detail-title">{card.name[lang]}</h2>
-    <p className="retro-detail-meta">{TEXT[lang].skillType[card.type]} · Lv.{getEffectiveLevel(card)}{isOffensiveCard(card) && ` · T${card.tier}`} · {lang === 'zh' ? '费用' : 'Cost'} {free ? 0 : card.cost}</p>
-    <p>{card.description[lang]}</p>
-    {isOffensiveCard(card) && <p>{lang === 'zh' ? '对攻先比较档位，同档再按技能规则比较等级。角色升级不强化旧招，能量费用不是伤害。' : 'Attack clashes compare tiers first, then apply skill level rules. Upgrading does not strengthen old moves, and energy cost is not damage.'}</p>}
-  </dialog>, document.body);
-}
 
 function PlayerEmoji({ emoji, timestamp, name }: { emoji: string; timestamp: number; name: string }) {
   const [remaining] = useState(() => Math.max(0, Math.min(2000, timestamp + 2000 - Date.now())));
@@ -173,10 +155,10 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
   player?: Player; knownCards: Card[]; cards: Card[]; lang: Lang; category: HandCategory; viewMode: HandViewMode;
   status: GameState['status']; submitting: boolean; onPlay: (id: string) => void; onCategory: (category: HandCategory) => void; onBack: () => void;
 }) {
-  const [detailId, setDetailId] = useState<string | null>(null);
-  const detail = knownCards.find(card => card.id === detailId);
   const locked = player && getPlayerCard(player, player.selectedCardId);
   const canChoose = !!player && !player.isDead && !player.selectedCardId && !submitting && status === 'PLAYING';
+  const { bind, tooltip } = useCardTooltip({ cards: knownCards, player, lang, appearance: 'retro',
+    enabled: canChoose, scope: `retro:${player?.id ?? ''}:${category}:${viewMode}` });
   const blocked = (card: Card) => !canChoose || !!player?.disabledSkills?.includes(card.id) || (!player?.freeSkills?.includes(card.id) && (player?.energy ?? 0) < card.cost);
   return <section className="retro-hand" aria-label={lang === 'zh' ? '手牌' : 'Your hand'}>
     {player && !player.isDead && !player.selectedCardId && viewMode === 'CARDS' ? <nav className="retro-hand-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
@@ -191,7 +173,7 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
         {viewMode === 'CATEGORIES' ? categories.map(cat => {
           const charge = knownCards.find(card => card.id === 'charge');
           const disabled = cat === 'CHARGE' && (!charge || blocked(charge));
-          return <button type="button" key={cat} className="retro-category-card" data-category={cat} disabled={disabled}
+          return <button {...(cat === 'CHARGE' && charge ? bind(charge) : {})} type="button" key={cat} className="retro-category-card" data-category={cat} aria-disabled={disabled}
             onClick={() => { if (cat === 'CHARGE') { if (charge && !blocked(charge)) onPlay(charge.id); } else onCategory(cat); }}>
             <RetroSkillIcon id={categoryIcon[cat]} /><strong>{TEXT[lang].categories[cat]}</strong>
             <small>{cat === 'CHARGE' && charge ? charge.description[lang] : `${knownCards.filter(card => getHandCategory(card) === cat).length} ${lang === 'zh' ? '张招式' : 'skills'}`}</small>
@@ -203,18 +185,17 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
           const shortage = freeCount ? 0 : Math.max(0, card.cost - player.energy);
           const hint = disabled ? (lang === 'zh' ? '已禁用' : 'Disabled') : shortage ? (lang === 'zh' ? `还需 ${shortage} 能量` : `Need ${shortage} energy`) : '';
           return <div key={card.id} className="retro-hand-slot">
-            <button type="button" className="retro-play-card" disabled={blocked(card)} data-card-id={card.id}
+            <button {...bind(card)} type="button" className="retro-play-card" aria-disabled={blocked(card)} data-card-id={card.id}
               aria-label={`${card.name[lang]} · ${lang === 'zh' ? '费用' : 'Cost'} ${freeCount ? 0 : card.cost} · Lv.${getEffectiveLevel(card)}${hint ? ` · ${hint}` : ''}`}
               onClick={() => { if (!blocked(card)) onPlay(card.id); }}>
               <RetroCard card={card} lang={lang} freeCount={freeCount} tempCount={tempCount} description />
               {hint && <span className="retro-card-blocked">{hint}</span>}
             </button>
-            <button type="button" className="retro-card-info" aria-label={`${lang === 'zh' ? '查看详情' : 'Details'}: ${card.name[lang]}`} aria-haspopup="dialog" onClick={() => setDetailId(card.id)}>i</button>
           </div>;
         })}
       </div>
     </>}
-    {detail && <RetroCardDetails card={detail} lang={lang} free={!!player?.freeSkills?.includes(detail.id)} onClose={() => setDetailId(null)} />}
+    {tooltip}
   </section>;
 }
 

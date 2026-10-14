@@ -65,15 +65,7 @@
 :root .pixel-app .battle-hand .hand-card::after,
 :root .pixel-app .battle-hand :is(.hand-card,.hand-locked-card)::before { display:none; }
 .pixel-app .battle-hand .hand-skill-slot { padding-bottom:0; }
-:root .pixel-app .battle-hand .hand-info,
-.ultimate-aura-anchor .woodcut-info-glyph {
-  position:absolute; display:grid; place-items:center; top:8%; bottom:auto; left:50%; right:auto;
-  transform:translateX(-50%);
-  width:25px; height:25px; border:1px solid #9a703d; border-radius:50%;
-  background:#f6dba3; color:#67421e; box-shadow:1px 2px #6f461d66; font:bold 15px Georgia,serif;
-}
-.ultimate-aura-anchor .woodcut-info-glyph { z-index:2; }
-/* Keep the details hit target in the exposed center of the fan, above a focused neighbour. */
+/* Keep hovered cards above neighbouring fan slots. */
 :root .pixel-app .battle-hand .hand-fan > .hand-skill-slot:hover { z-index:40; }
 .pixel-app .battle-hand .hand-card-action {
   position:absolute; z-index:5; top:70%; left:8%; right:8%; margin:0; padding:2px;
@@ -83,7 +75,6 @@
 .pixel-app .battle-hand .hand-card-action:empty { display:none; }
 :root .pixel-app .battle-hand .hand-card[aria-disabled='true'] .hand-card-action { color:#823c25; }
 .pixel-app .battle-hand .hand-temp { top:auto; bottom:32%; left:8%; padding:2px 4px; background:#edce91ed; color:#6b4721; z-index:5; }
-.hand-detail-print { width:190px; aspect-ratio:2 / 3; margin:0 auto 14px; }
 :root .pixel-app .battle-hand button.hand-category-card > :is(.hand-folder-finish,.hand-ultimate-finish) { z-index:2; inset:3px; opacity:.12; border:0; background:none; }
 :root .pixel-app .battle-hand .hand-category-card :is(.hand-folder-motif,.hand-ultimate-glints,.hand-ultimate-facets,.hand-folder-facets) { display:none; }
 :root .pixel-app .battle-hand [data-card-finish='gold-holo'] > .card-holo,
@@ -91,10 +82,6 @@
 .skill-loadout-card .skill-loadout-print { position:relative; display:block; width:100%; aspect-ratio:2 / 3; margin:7px 0; }
 .skill-loadout-print > .card-holo { z-index:3 !important; opacity:.36; }
 .pixel-app .battle-hand button.hand-card:focus-visible { outline:3px solid #f4dca5; outline-offset:3px; }
-@media (max-width:767px) {
-  :root .pixel-app .battle-hand .hand-info,
-  .ultimate-aura-anchor .woodcut-info-glyph { width:20px; height:20px; font-size:12px; }
-}
 /* Tiny played cards prioritize their emblem; full values remain in the accessible name. */
 @container (max-width:63px) {
   .woodcut-face .woodcut-badge { top:5%; height:19%; }

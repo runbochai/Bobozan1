@@ -214,7 +214,7 @@ export default function UltimateAura({ selector, host, active, layoutKey, face, 
   }, [selector, host, active, layoutKey]);
 
   return <span ref={layer} className="ultimate-aura" data-visible="false" aria-hidden="true">
-    <span className="ultimate-aura-card-clip"><span className="ultimate-aura-anchor" data-card-finish={holo ? 'gold-holo' : undefined}>{face}{holo && <CardHolo />}{selector.includes('hand-skill-card') && <span className="woodcut-info-glyph">i</span>}</span></span>
+    <span className="ultimate-aura-card-clip"><span className="ultimate-aura-anchor" data-card-finish={holo ? 'gold-holo' : undefined}>{face}{holo && <CardHolo />}</span></span>
     <canvas ref={canvas} className="ultimate-aura-fire" />
   </span>;
 }
