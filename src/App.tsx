@@ -8,7 +8,7 @@ import SkillLoadoutPicker from './components/SkillLoadoutPicker';
 import { SKILL_SLOT_LIMIT, getHandCategory, getSkillOverflow, hasSkillOverflow, normalizeSkillLoadout,
   autoSelectSkillLoadout, isAcquiredSkill, resolveSkillLoadout, sortHandCards, type SkillSelections } from './logic/skillLoadout';
 import BattleTableCards from './components/BattleTableCards';
-import { CARD_LAND_MS, CARD_COMPARE_IMPACT_MS, CARD_REVEAL_MS, ULT_CUTIN_MS, SOLO_MOTION_SCALE, SOLO_CUTIN_START_MS, SOLO_CUTIN_MS,
+import { CARD_LAND_MS, CARD_COMPARE_IMPACT_MS, SOLO_MOTION_SCALE, SOLO_CUTIN_START_MS, SOLO_CUTIN_MS,
   captureBattleRound, remainingBattleTime, showdownDurationMs, type BattleRoundClock } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
 import BattleLevelBadge from './components/BattleLevelBadge';
@@ -870,8 +870,8 @@ export default function BobozanOnline() {
     if (gameState.status === 'SHOWDOWN' && presentation?.key === battleRoundKey && !reduceMotion
       && !presentation.snapshot.motionStopped && !presentation.snapshot.cutinsPlayed) {
       const picks = pickUltCutins(presentation.snapshot.players, SKILL_DB, presentation.snapshot.lang);
-      const revealAt = isExpedition ? SOLO_CUTIN_START_MS : CARD_REVEAL_MS;
-      const cutinDuration = isExpedition ? SOLO_CUTIN_MS : ULT_CUTIN_MS;
+      const revealAt = SOLO_CUTIN_START_MS;
+      const cutinDuration = SOLO_CUTIN_MS;
       const finishIn = remainingBattleTime(presentation.startedAt, revealAt + cutinDuration, Date.now());
       if (picks.length > 0 && finishIn > 0) {
         setUltCutins([]);
@@ -884,14 +884,14 @@ export default function BobozanOnline() {
       }
     }
     setUltCutins([]);
-  }, [gameState.status, battleRoundKey, reduceMotion, isExpedition]);
+  }, [gameState.status, battleRoundKey, reduceMotion]);
 
   useEffect(() => {
     const presentation = battleRoundRef.current;
     if (muted || gameState.status !== 'SHOWDOWN' || presentation?.key !== battleRoundKey) return;
     const played = presentation.snapshot.players.filter(player => !player.isDead && player.selectedCardId);
     if (!played.length) return;
-    const motionScale = isExpedition ? SOLO_MOTION_SCALE : 1;
+    const motionScale = SOLO_MOTION_SCALE;
     const beats = [{ at: CARD_LAND_MS * motionScale, sound: 'card_slam' as const },
       ...(played.length > 1 ? [{ at: CARD_COMPARE_IMPACT_MS * motionScale, sound: 'card_clash' as const }] : [])];
     const timers = beats.flatMap(({ at, sound }) => {
@@ -903,17 +903,14 @@ export default function BobozanOnline() {
       }, wait)];
     });
     return () => timers.forEach(clearTimeout);
-  }, [muted, gameState.status, battleRoundKey, isExpedition]);
+  }, [muted, gameState.status, battleRoundKey]);
 
   useEffect(() => {
     const settled = prevShowdownRef.current && gameState.status !== 'SHOWDOWN';
     const previous = prevPlayersRef.current;
     prevPlayersRef.current = gameState.players;
     prevShowdownRef.current = gameState.status === 'SHOWDOWN';
-    if (!settled) {
-      if (gameState.status === 'SHOWDOWN' && !isExpedition) setDamageNumbers({});
-      return;
-    }
+    if (!settled) return;
     const damages: typeof damageNumbers = {};
     const eventKey = ++damageEventRef.current;
     for (const player of gameState.players) {
@@ -921,7 +918,7 @@ export default function BobozanOnline() {
       if (before && player.hp < before.hp) damages[player.id] = { amount: before.hp - player.hp, eventKey };
     }
     setDamageNumbers(damages);
-  }, [gameState.players, gameState.status, isExpedition]);
+  }, [gameState.players, gameState.status]);
 
   useEffect(() => {
     if (!Object.keys(damageNumbers).length) return;
@@ -1583,6 +1580,9 @@ export default function BobozanOnline() {
   const multiplayerOpening = <MultiplayerOpening key={`${roomCode}:${isCrownFinalBattle}`} gameKey={`${roomCode}:${multiplayerMode}:${isCrownFinalBattle ? 'final' : 'opening'}`} mode={multiplayerMode} lang={lang} reduceMotion={reduceMotion} finalBattle={isCrownFinalBattle}
     atStart={(gameState.matchCount === 1 || isCrownFinalBattle) && gameState.turn === 1 && (gameState.status === 'PLAYING' || gameState.status === 'SHOWDOWN')}
     finished={gameState.status === 'GAMEOVER' || (gameState.matchCount !== 1 && !isCrownFinalBattle)} />;
+  const ultCutinOverlay = ultCutins.map((u, i) => <UltCutin key={`ultcutin-${u.key}-${i}`}
+    def={u.def} quick playerName={u.playerName} skillName={u.skillName} level={u.level}
+    lang={lang} muted={muted} index={i} total={ultCutins.length} />);
 
   if (retro && !isExpedition) {
     const overlays = <>{learningOverlay}{skillSelectionOverlay}</>;
@@ -1599,7 +1599,7 @@ export default function BobozanOnline() {
       knownCards={knownCards} cards={orderedHand} category={handCategory} viewMode={handViewMode}
       submitting={submittingMove || skillOverflow.length > 0} reduceMotion={reduceMotion} roundKey={battleRoundKey}
       roundStartedAt={battleRoundRef.current?.startedAt} revealPlayers={battleRoundRef.current?.snapshot.players ?? gameState.players}
-      controls={retroControls} overlays={<>{overlays}{multiplayerOpening}{revengeCardId && SKILL_DB.find(card => card.id === revengeCardId) && <RetroRewardReveal
+      controls={retroControls} overlays={<>{overlays}{multiplayerOpening}{ultCutinOverlay}{revengeCardId && SKILL_DB.find(card => card.id === revengeCardId) && <RetroRewardReveal
         card={SKILL_DB.find(card => card.id === revengeCardId)!} lang={lang} reduceMotion={reduceMotion}
         onClose={() => { setRevengeCardId(null); playSound('confirm', muted); }} />}</>} toast={toastMsg}
       results={!academyTab && !moveManualOpen && gameState.status === 'GAMEOVER' && showBattleResult ? <MultiplayerResults
@@ -2302,7 +2302,7 @@ export default function BobozanOnline() {
         <div ref={tableRef} data-player-count={totalPlayers} className={`pixel-battle-board center-table-board ${totalPlayers > 4 ? 'battle-board-crowded' : ''} relative flex-1 w-full overflow-hidden bg-transparent`}>
            
            {/* Background Table Outline */}
-           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} compact={isSmallScreen} quick={isExpedition} />
+           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} compact={isSmallScreen} quick />
 
            {/* Player positions also drive card origins and facing directions. */}
            {gameState.players.map((p, i) => {
@@ -2315,30 +2315,17 @@ export default function BobozanOnline() {
              return <BattleFighter key={p.id} player={p} seat={pos} bounds={tableBounds} self={isMe}
                maxHp={isExpedition ? (expBattleRef.current.maxHp[p.id] ?? MAX_HP) : MAX_HP}
                level={pMaxLvl} viewerLevel={myPlayer ? getPlayerLevel(myPlayer) : undefined} endless={isExpedition && isEndless} lang={lang} roundKey={battleRoundKey}
-               showdown={gameState.status === 'SHOWDOWN'} quick={isExpedition}
+               showdown={gameState.status === 'SHOWDOWN'} quick
                damage={damageNumbers[p.id]?.amount} damageKey={damageNumbers[p.id]?.eventKey}
                hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
 
            {gameState.status === 'SHOWDOWN' && <BattleTableCards key={'cards-' + gameState.matchCount + '-' + gameState.turn}
-             players={gameState.players} lang={lang} reduced={reduceMotion} bounds={tableBounds} quick={isExpedition}
+             players={gameState.players} lang={lang} reduced={reduceMotion} bounds={tableBounds} quick
              seatFor={i => getPlayerPosition(i, totalPlayers, myIndex)} />}
 
            {/* 必杀技演出 overlay：左侧闪入巨型立绘 + 压暗 + 喊话 + 像素特效 */}
-           {ultCutins.map((u, i) => (
-             <UltCutin
-               key={`ultcutin-${u.key}-${i}`}
-               def={u.def}
-               quick={isExpedition}
-               playerName={u.playerName}
-               skillName={u.skillName}
-               level={u.level}
-               lang={lang}
-               muted={muted}
-               index={i}
-               total={ultCutins.length}
-             />
-           ))}
+           {ultCutinOverlay}
 
            {(music.status === 'blocked' || music.status === 'error') && (
              <button type="button" onClick={music.retry}

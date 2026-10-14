@@ -1,4 +1,5 @@
-import { CARD_COMPARE_END_MS, CARD_COMPARE_START_MS, CARD_LAND_MS, CARD_RELEASE_MS } from '../data/battleTiming';
+import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS,
+  CARD_LAND_MS, CARD_RELEASE_MS, SOLO_MOTION_SCALE } from '../data/battleTiming';
 
 /** The original avatar ring, rotated so the viewing player sits at the bottom. */
 export function retroSeat(index: number, total: number, viewer: number, mini = false) {
@@ -15,14 +16,41 @@ export function retroSeat(index: number, total: number, viewer: number, mini = f
 export function retroRoundTiming(startedAt: number, now: number) {
   const elapsed = Math.max(0, now - startedAt);
   return {
-    flightDelay: CARD_RELEASE_MS - elapsed,
-    flightDuration: CARD_LAND_MS - CARD_RELEASE_MS,
-    slamDelay: CARD_COMPARE_START_MS - elapsed,
-    slamDuration: CARD_COMPARE_END_MS - CARD_COMPARE_START_MS,
+    flightDelay: CARD_RELEASE_MS * SOLO_MOTION_SCALE - elapsed,
+    flightDuration: (CARD_LAND_MS - CARD_RELEASE_MS) * SOLO_MOTION_SCALE,
+    slamDelay: CARD_COMPARE_START_MS * SOLO_MOTION_SCALE - elapsed,
+    slamDuration: (CARD_COMPARE_END_MS - CARD_COMPARE_START_MS) * SOLO_MOTION_SCALE,
+    impactDelay: CARD_COMPARE_IMPACT_MS * SOLO_MOTION_SCALE - elapsed,
+    impactDuration: (CARD_COMPARE_END_MS - CARD_COMPARE_IMPACT_MS) * SOLO_MOTION_SCALE,
     elapsed,
   };
 }
 
 export function retroSlamTilt(playerId: string, turn: number) {
   return (Array.from(playerId).reduce((sum, char) => sum + char.charCodeAt(0), turn) % 80) - 40;
+}
+
+/** Winning faces and their owner labels share a grid, without moving the seats. */
+export function retroSlamTargets(count: number, bounds: { width: number; height: number }, card: { width: number; height: number }) {
+  if (count <= 0) return [];
+  if (count === 1) return [{ x: 50, y: 45, scale: 1.8 }];
+  const gap = 12, ownerHeight = 18;
+  let best = { columns: count, rows: 1, scale: 0 };
+  for (let columns = 1; columns <= count; columns++) {
+    const rows = Math.ceil(count / columns);
+    const scale = Math.min(1.8,
+      (bounds.width * .8 - (columns - 1) * gap) / (columns * card.width),
+      (bounds.height * .72 - (rows - 1) * gap) / (rows * (card.height + ownerHeight)));
+    if (scale > best.scale || scale === best.scale && rows < best.rows) best = { columns, rows, scale };
+  }
+  const width = card.width * best.scale, height = (card.height + ownerHeight) * best.scale;
+  return Array.from({ length: count }, (_, index) => {
+    const row = Math.floor(index / best.columns), column = index % best.columns;
+    const rowCount = Math.min(best.columns, count - row * best.columns);
+    return {
+      x: 50 + (column - (rowCount - 1) / 2) * (width + gap) / bounds.width * 100,
+      y: 45 + ((row - (best.rows - 1) / 2) * (height + gap) - ownerHeight * best.scale / 2) / bounds.height * 100,
+      scale: best.scale,
+    };
+  });
 }

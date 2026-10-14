@@ -21,7 +21,7 @@ interface Props {
   index?: number;
   /** 同屏总数 */
   total?: number;
-  /** Solo keeps the full cut-in with a compressed animation and sound clock. */
+  /** Keeps the full cut-in on the shared quick animation and sound clock. */
   quick?: boolean;
 }
 

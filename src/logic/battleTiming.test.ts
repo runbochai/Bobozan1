@@ -6,15 +6,21 @@ import { CARD_RAISE_MS, CARD_RELEASE_MS, CARD_LAND_MS, CARD_RECOVER_MS,
   SOLO_CUTIN_START_MS, SOLO_CUTIN_MS, SOLO_CUTIN_SCALE, SOLO_ULT_SHOWDOWN_MS,
   captureBattleRound, remainingBattleTime, showdownDurationMs } from '../data/battleTiming';
 
-test('cards leave after the raised pose, land before comparison, and settle after cut-ins', () => {
+test('cards leave after the raised pose and land before comparison on the source clock', () => {
   const milestones = [0, CARD_RAISE_MS, CARD_RELEASE_MS, CARD_LAND_MS, CARD_RECOVER_MS,
     CARD_COMPARE_START_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_END_MS, CARD_REVEAL_MS];
   milestones.slice(1).forEach((at, i) => assert.ok(at > milestones[i]));
-  assert.ok(showdownDurationMs(false, 'room') > CARD_COMPARE_END_MS);
-  assert.ok(showdownDurationMs(true, 'room') > CARD_REVEAL_MS + ULT_CUTIN_MS);
-  assert.equal(showdownDurationMs(false, 'room'), 2650);
-  assert.equal(showdownDurationMs(true, 'room'), 6150);
-  assert.equal(showdownDurationMs(true, 'room', true), showdownDurationMs(true, 'room', false));
+});
+
+test('multiplayer shares the fast battle clock without shortening other viewers for a reduced-motion host', () => {
+  for (const reduced of [false, true]) {
+    assert.equal(showdownDurationMs(false, 'room', reduced), 700);
+    assert.equal(showdownDurationMs(true, 'room', reduced), 1450);
+    assert.equal(showdownDurationMs(false, 'room', reduced), showdownDurationMs(false, 'expedition'));
+    assert.equal(showdownDurationMs(true, 'room', reduced), showdownDurationMs(true, 'expedition'));
+  }
+  assert.ok(showdownDurationMs(false, 'room') > CARD_COMPARE_END_MS * SOLO_MOTION_SCALE);
+  assert.ok(showdownDurationMs(true, 'room') > SOLO_CUTIN_START_MS + SOLO_CUTIN_MS);
 });
 
 test('solo cards land, compare and recover before the next move', () => {

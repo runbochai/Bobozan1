@@ -9,6 +9,7 @@ import { getBattleFigure, SELF_SEAT, type BattleBounds, type BattleSeat } from '
 import { playerAvatar } from '../logic/bots';
 import { tableCardPositions } from '../logic/tableCardLayout';
 import { tableCardClash } from '../logic/tableCardMotion';
+import { battleCardSlamPositions } from '../logic/battleCardSlam';
 import { getShowdownWinner } from '../logic/combat';
 import WoodcutCardFace from './WoodcutCardFace';
 import CardHolo from './CardHolo';
@@ -37,8 +38,13 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
   const clash = tableCardClash(positions, bounds);
   const comparing = played.length > 1;
   const winners = new Set(getShowdownWinner(players));
+  const slamPositions = battleCardSlamPositions(played.flatMap(({ player, index }) => {
+    const position = positions[index];
+    return winners.has(player.id) && position ? [{ index, width: position.width, cardHeight: position.cardHeight }] : [];
+  }), bounds);
   const scale = quick ? SOLO_MOTION_SCALE : 1;
   return <div className={`table-cards ${reduced || motionStopped ? 'table-cards-still' : ''}`} data-comparing={comparing}
+    data-slam-active={slamPositions.length > 0}
     aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'} style={{
       '--card-release-delay': `${CARD_RELEASE_MS * scale}ms`, '--card-flight-duration': `${CARD_FLIGHT_MS * scale}ms`,
       '--card-land-delay': `${CARD_LAND_MS * scale}ms`, '--card-land-duration': `${CARD_LANDING_MS * scale}ms`,
@@ -80,13 +86,9 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
         '--owner-height': `${ownerHeight}px`, '--owner-gap': `${ownerGap}px`, '--card-from-x': `${fromX}px`,
         '--card-from-y': `${fromY}px`, '--card-tilt': `${index % 2 ? 3 : -3}deg`,
         '--card-clash-x': `${inward.x}px`, '--card-clash-y': `${inward.y}px`,
-        // Crowded card slots keep their full footprint; the tilt/squash still
-        // conveys impact without lifting over a neighboring player's card.
-        '--card-slam-lift': `${players.length > 4 ? 0 : Math.min(12, cardHeight * .12)}px`,
       } as CSSProperties}>
         <div className="table-card-compare">
           <div className="table-card-slam">
-            {winner && <span className="table-slam-flash" aria-hidden="true"><i /><i /><i /><i /></span>}
             <div className="table-card-surface">
               <div className="pixel-showdown-card table-played-card" data-card-type={card.type} data-card-id={card.id}
                 data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}>
@@ -102,5 +104,48 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
         </div>
       </div>;
     })}
+    {/* Keep every source slot in place. Only actual advantage cards jump into
+        the center; equal attacks and blocked hits stay on the table. */}
+    <div className="table-slam-showcases" aria-hidden="true">
+      {slamPositions.map(slam => {
+        const play = played.find(item => item.index === slam.index);
+        const position = positions[slam.index];
+        if (!play || !position) return null;
+        const { player, card } = play;
+        const free = player.freeSkills?.includes(card.id) || card.cost === 0;
+        const sourceCenterY = position.y * bounds.height / 100 - (position.ownerHeight + position.ownerGap) / 2;
+        const targetCenterY = slam.y - slam.labelHeight / 2;
+        return <div className="table-slam-showcase" key={player.id} data-slam-player-id={player.id}
+          data-player-id={player.id} data-slam-scale={slam.scale}
+          title={`${player.name} · ${card.name[lang]} · ${lang === 'zh' ? '本回合出牌占优' : 'Card advantage this round'}`}
+          style={{ left: slam.x, top: slam.y, width: slam.width, height: slam.cardHeight + slam.labelHeight,
+            '--slam-showcase-width': `${slam.width}px`, '--slam-card-height': `${slam.cardHeight}px`,
+            '--slam-label-height': `${slam.labelHeight}px`, '--slam-scale': slam.scale,
+            '--slam-base-width': `${slam.width / slam.scale}px`, '--slam-base-height': `${slam.cardHeight / slam.scale}px`,
+            '--played-height': `${slam.cardHeight / slam.scale}px`,
+            '--slam-from-x': `${position.x * bounds.width / 100 - slam.x}px`,
+            '--slam-from-y': `${sourceCenterY - targetCenterY}px`,
+            '--slam-from-scale': position.width / (slam.width / slam.scale),
+            '--slam-lift': `${bounds.width < 768 ? 48 : 68}px`,
+            '--slam-tilt': `${slamPositions.length > 1 ? 0 : slam.index % 2 ? 6 : -6}deg`,
+          } as CSSProperties}>
+          <div className="table-slam-journey">
+            <div className="table-slam-card-anchor">
+              <span className="table-slam-impact-ring"><i /><i /><i /><i /><i /><i /><i /><i /></span>
+              <div className="pixel-showdown-card table-played-card table-slam-big-card" data-card-type={card.type}
+                data-slam-card-id={card.id} data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}>
+                {isHoloCard(card) && <CardHolo />}
+                <WoodcutCardFace card={card} lang={lang} free={free} />
+                <span className="table-slam-large-outline" />
+              </div>
+              <strong className="table-slam-impact-word">SLAM!</strong>
+            </div>
+            <div className="table-slam-caption">
+              <strong>{player.name}</strong><span>{card.name[lang]} · {lang === 'zh' ? '占优' : 'EDGE'}</span>
+            </div>
+          </div>
+        </div>;
+      })}
+    </div>
   </div>;
 }

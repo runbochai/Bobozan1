@@ -11,7 +11,7 @@ export const CARD_COMPARE_END_MS = 1400;
 export const CARD_REVEAL_MS = 1450;
 export const ULT_CUTIN_MS = 2850;
 
-/** Solo duels keep the same visible beats, compressed into one quick exchange. */
+/** All battles share this quick clock; existing SOLO names remain stable for callers. */
 export const SOLO_MOTION_SCALE = .42;
 export const SOLO_SHOWDOWN_MS = 700;
 export const SOLO_REDUCED_SHOWDOWN_MS = 450;
@@ -33,6 +33,6 @@ export function remainingBattleTime(startedAt: number, milestone: number, now: n
 
 /** A reduced-motion host must still leave time for everyone else's presentation. */
 export function showdownDurationMs(hasCutin: boolean, mode: 'room' | 'expedition', reduced = false): number {
-  if (mode === 'expedition') return reduced ? SOLO_REDUCED_SHOWDOWN_MS : hasCutin ? SOLO_ULT_SHOWDOWN_MS : SOLO_SHOWDOWN_MS;
-  return CARD_REVEAL_MS + (hasCutin ? 4700 : 1200);
+  if (mode === 'expedition' && reduced) return SOLO_REDUCED_SHOWDOWN_MS;
+  return hasCutin ? SOLO_ULT_SHOWDOWN_MS : SOLO_SHOWDOWN_MS;
 }

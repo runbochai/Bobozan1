@@ -1,80 +1,139 @@
-/* The same comparison clock drives flight, local impact and the owner marker.
-   Keep every card in its seat-owned slot, including crowded eight-player tables. */
+/* Winners leave a faint source card and jump into independent center showcases.
+   The comparison clock places the big impact at 40% of each quick animation. */
 .table-card-slam { position: relative; }
 .table-card-flight[data-slam-winner="true"] { z-index: 2; }
-.table-cards[data-comparing="true"] .table-card-flight[data-slam-winner="true"] .table-card-slam {
-  animation: table-winner-slam var(--card-compare-duration) linear var(--card-compare-delay) both;
+.table-card-flight[data-slam-winner="true"] .table-card-slam {
+  animation: table-slam-source-recedes 1ms linear var(--card-compare-delay) forwards;
 }
 .table-slam-outline {
-  position: absolute;
-  inset: 0;
-  z-index: 4;
+  position: absolute; inset: 0; z-index: 4;
   border: 2px solid #ffe8a1;
   box-shadow: 0 0 0 1px #64471c, inset 0 0 0 1px #bd8c31;
-  pointer-events: none;
-  transform: rotate(var(--card-tilt));
-  opacity: 0;
+  pointer-events: none; transform: rotate(var(--card-tilt)); opacity: 0;
   animation: table-slam-mark 1ms steps(1,end) var(--card-impact-delay) forwards;
 }
-.table-slam-flash {
-  position: absolute;
-  inset: -8%;
-  z-index: -1;
-  border: 2px solid #ffe4a0;
-  background: #ffd76a44;
-  opacity: 0;
-  pointer-events: none;
-  animation: table-winner-flash var(--card-impact-duration) steps(5) var(--card-impact-delay) both;
-}
-.table-slam-flash i { position: absolute; width: 4px; height: 4px; background: #fff0ad; box-shadow: 0 0 0 1px #a8782d; }
-.table-slam-flash i:nth-child(1) { top: -4px; left: 20%; }
-.table-slam-flash i:nth-child(2) { top: 20%; right: -4px; }
-.table-slam-flash i:nth-child(3) { bottom: -4px; right: 20%; }
-.table-slam-flash i:nth-child(4) { bottom: 20%; left: -4px; }
 .table-card-owner-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .table-card-flight[data-slam-winner="true"] .table-card-owner {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
+  display: flex; align-items: center; justify-content: center; gap: 3px;
   animation: table-owner-reveal 1ms linear var(--card-land-delay) both,
     table-slam-owner 1ms steps(1,end) var(--card-impact-delay) forwards;
 }
 .table-card-flight[data-slam-winner="true"] .table-card-owner-name { min-width: 0; }
 .table-slam-owner-mark {
-  flex: none;
-  color: #fff1b9;
-  font-size: 9px;
-  line-height: 1;
-  opacity: 0;
+  flex: none; color: #fff1b9; font-size: 9px; line-height: 1; opacity: 0;
   animation: table-slam-mark 1ms steps(1,end) var(--card-impact-delay) forwards;
 }
 .table-card-flight[data-small="true"] .table-slam-owner-mark { font-size: 0; }
 .table-card-flight[data-small="true"] .table-slam-owner-mark::before { content: '◆'; font-size: 7px; }
-@keyframes table-winner-slam {
-  0%, 100% { transform: perspective(350px) translateY(0) rotateX(0) scale(1); }
-  30%, 39% { transform: perspective(350px) translateY(calc(var(--card-slam-lift) * -1)) rotateX(-32deg) scale(.98); }
-  40% { transform: perspective(350px) translateY(0) rotateX(0) scale(.99,.92); }
-  60% { transform: perspective(350px) translateY(0) rotateX(0) scale(.98,.99); }
+
+.table-slam-showcases { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.center-table-board .table-cards[data-slam-active="true"] { z-index: 35; }
+.table-slam-showcase { position: absolute; translate: -50% -50%; }
+.table-slam-journey {
+  position: relative; width: 100%; height: 100%; opacity: 0;
+  animation: table-slam-travel var(--card-compare-duration) linear var(--card-compare-delay) both;
 }
-@keyframes table-winner-flash {
-  0% { opacity: .9; transform: scale(.92); }
-  100% { opacity: 0; transform: scale(1.12); }
+.table-slam-card-anchor { position: relative; width: 100%; height: var(--slam-card-height); }
+.table-slam-showcase .table-slam-big-card {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%;
+  width: var(--slam-base-width); height: var(--slam-base-height); min-height: 0;
+  padding: 0; gap: 0; overflow: visible;
+  transform: rotate(var(--slam-tilt)) scale(var(--slam-scale));
+  animation: table-slam-flip var(--card-compare-duration) linear var(--card-compare-delay) both;
 }
+.table-slam-showcase .table-slam-big-card::after { display: none; }
+.table-slam-showcase .table-slam-big-card > .woodcut-face { border-radius: 3px; }
+.table-slam-large-outline {
+  position: absolute; inset: -2px; z-index: 5; border: 2px solid #ffecaa; border-radius: 4px;
+  box-shadow: 0 0 0 1px #7e5521, 0 0 14px #ffcc63a8; opacity: 0;
+  animation: table-slam-mark 1ms linear var(--card-impact-delay) forwards;
+}
+.table-slam-impact-ring {
+  position: absolute; inset: -12% -16%; z-index: -1;
+  border: 5px solid #ffe29a; border-radius: 50%;
+  background: radial-gradient(ellipse, #fff1a8aa, #ffcb6270 40%, transparent 70%);
+  box-shadow: 0 0 0 3px #9c6d29, inset 0 0 0 3px #fff4bb;
+  opacity: 0;
+  animation: table-slam-shockwave var(--card-impact-duration) steps(5) var(--card-impact-delay) forwards;
+}
+.table-slam-impact-ring i {
+  position: absolute; left: 50%; top: 50%; width: 45%; height: 5px;
+  background: #fff3b9; box-shadow: 0 0 0 1px #c68f36;
+  transform-origin: 0 50%; transform: rotate(var(--slam-ray)) translateX(75%);
+}
+.table-slam-impact-ring i:nth-child(1) { --slam-ray: 0deg; }
+.table-slam-impact-ring i:nth-child(2) { --slam-ray: 45deg; }
+.table-slam-impact-ring i:nth-child(3) { --slam-ray: 90deg; }
+.table-slam-impact-ring i:nth-child(4) { --slam-ray: 135deg; }
+.table-slam-impact-ring i:nth-child(5) { --slam-ray: 180deg; }
+.table-slam-impact-ring i:nth-child(6) { --slam-ray: 225deg; }
+.table-slam-impact-ring i:nth-child(7) { --slam-ray: 270deg; }
+.table-slam-impact-ring i:nth-child(8) { --slam-ray: 315deg; }
+.table-slam-impact-word {
+  position: absolute; top: -12px; right: -12px; z-index: 7; margin: 0;
+  font: 900 italic clamp(16px, calc(var(--slam-showcase-width) * .23), 34px)/1.1 'Pixel Display', monospace;
+  color: #fff3bd; text-shadow: 2px 2px #4c2e16, -1px -1px #4c2e16, 0 0 10px #fbb944;
+  rotate: -9deg; opacity: 0;
+  animation: table-slam-stamp var(--card-impact-duration) steps(4) var(--card-impact-delay) forwards;
+}
+.table-slam-caption {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  position: relative; z-index: 8; height: var(--slam-label-height); padding: 1px 3px;
+  border: 1px solid #f6d38c; color: #fff1cf; background: #302616f5;
+  box-shadow: 2px 3px #080f17aa; text-align: center; opacity: 0;
+  animation: table-slam-mark 1ms linear var(--card-impact-delay) forwards;
+}
+.table-slam-caption > :is(strong, span) {
+  display: block; max-width: 100%; overflow: hidden; white-space: nowrap; text-overflow: ellipsis;
+  font-size: clamp(8px, calc(var(--slam-showcase-width) * .1), 13px); line-height: 1.05;
+}
+.table-slam-caption > span { color: #edcc8c; font-size: clamp(7px, calc(var(--slam-showcase-width) * .085), 11px); }
+
+@keyframes table-slam-source-recedes { to { opacity: .24; } }
 @keyframes table-slam-mark { to { opacity: 1; } }
 @keyframes table-slam-owner { to { color: #fff0bd; background: #624619; box-shadow: inset 0 0 0 1px #d9b666; } }
+@keyframes table-slam-travel {
+  0% { opacity: 0; transform: translate(var(--slam-from-x), var(--slam-from-y)); }
+  1% { opacity: 1; }
+  28%, 39% { opacity: 1; transform: translate(0, calc(var(--slam-lift) * -1)); }
+  40%, 100% { opacity: 1; transform: translate(0, 0); }
+  47% { transform: translate(-4px, 3px); }
+  54% { transform: translate(3px, -2px); }
+  64% { transform: translate(0, 0); }
+}
+@keyframes table-slam-flip {
+  0% { transform: perspective(600px) rotateX(0) rotate(0) scale(var(--slam-from-scale)); }
+  28%, 39% { transform: perspective(600px) rotateX(-56deg) rotate(-12deg) scale(calc(var(--slam-scale) * 1.1)); }
+  40% { transform: perspective(600px) rotateX(0) rotate(var(--slam-tilt)) scale(calc(var(--slam-scale) * 1.04), calc(var(--slam-scale) * .92)); }
+  54% { transform: perspective(600px) rotateX(0) rotate(calc(var(--slam-tilt) * .6)) scale(calc(var(--slam-scale) * .98)); }
+  64%, 100% { transform: perspective(600px) rotateX(0) rotate(var(--slam-tilt)) scale(var(--slam-scale)); }
+}
+@keyframes table-slam-shockwave {
+  0% { opacity: 1; transform: scale(.45); }
+  45% { opacity: .9; transform: scale(1); }
+  100% { opacity: 0; transform: scale(1.35); }
+}
+@keyframes table-slam-stamp {
+  0% { opacity: 1; transform: scale(1.5); }
+  35%, 100% { opacity: 1; transform: scale(1); }
+}
 
-/* Static gold and the named owner remain visible when animation is disabled. */
-.table-cards-still .table-slam-flash, .reduce-motion .table-slam-flash { display: none; }
-.table-cards-still :is(.table-slam-outline, .table-slam-owner-mark),
-.reduce-motion :is(.table-slam-outline, .table-slam-owner-mark) { opacity: 1; }
+/* Reduced motion retains the same large named result, without flying or flashes. */
+.table-cards-still .table-slam-impact-ring, .reduce-motion .table-slam-impact-ring { display: none; }
+.table-cards-still .table-slam-journey, .reduce-motion .table-slam-journey { opacity: 1; transform: none; }
+.table-cards-still :is(.table-slam-outline, .table-slam-owner-mark, .table-slam-large-outline, .table-slam-caption, .table-slam-impact-word),
+.reduce-motion :is(.table-slam-outline, .table-slam-owner-mark, .table-slam-large-outline, .table-slam-caption, .table-slam-impact-word) { opacity: 1; }
+.table-cards-still .table-card-flight[data-slam-winner="true"] .table-card-slam,
+.reduce-motion .table-card-flight[data-slam-winner="true"] .table-card-slam { opacity: .24; }
 .table-cards-still .table-card-flight[data-slam-winner="true"] .table-card-owner,
 .reduce-motion .table-card-flight[data-slam-winner="true"] .table-card-owner {
   color: #fff0bd; background: #624619; box-shadow: inset 0 0 0 1px #d9b666;
 }
 @media (prefers-reduced-motion: reduce) {
-  .table-slam-flash { display: none; }
-  .table-slam-outline, .table-slam-owner-mark { opacity: 1; }
+  .table-slam-impact-ring { display: none; }
+  .table-slam-journey { opacity: 1; transform: none; }
+  .table-slam-outline, .table-slam-owner-mark, .table-slam-large-outline, .table-slam-caption, .table-slam-impact-word { opacity: 1; }
+  .table-card-flight[data-slam-winner="true"] .table-card-slam { opacity: .24; }
   .table-card-flight[data-slam-winner="true"] .table-card-owner {
     color: #fff0bd; background: #624619; box-shadow: inset 0 0 0 1px #d9b666;
   }
