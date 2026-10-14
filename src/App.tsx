@@ -335,8 +335,8 @@ export default function BobozanOnline() {
   const [expRelics, setExpRelics] = useState<string[]>([]);
   const [expPhase, setExpPhase] = useState<'battle' | 'journey' | 'reward' | 'shop' | 'runover' | 'clear'>('battle');
   const [expNextStage, setExpNextStage] = useState(0);
-  const [crownPrologue, setCrownPrologue] = useState(() => !readInvitedRoom(window.location.search));
-  const [storyLeadsToPractice, setStoryLeadsToPractice] = useState(true);
+  const [crownPrologue, setCrownPrologue] = useState(false);
+  const [storyLeadsToSolo, setStoryLeadsToSolo] = useState(false);
   const [learningMode, setLearningMode] = useState<'tutorial' | 'practice' | null>(null);
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
@@ -1453,7 +1453,9 @@ export default function BobozanOnline() {
   const openSoloMode = () => {
     setLearningMode(null);
     setAcademyTab(null);
-    setExpHelp('intro');
+    setExpHelp(null);
+    setStoryLeadsToSolo(true);
+    setCrownPrologue(true);
   };
   const learningOverlay = <>
     {learningMode === 'tutorial' && <BattleAcademy intro lang={lang} avatar={playerAvatar}
@@ -1474,19 +1476,18 @@ export default function BobozanOnline() {
     {expHelp && <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
       difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty} best={expBest}
       onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
-      onStory={expHelp === 'intro' && !inMatch ? () => { setExpHelp(null); setStoryLeadsToPractice(false); setCrownPrologue(true); } : undefined}
+      onStory={expHelp === 'intro' && !inMatch ? openSoloMode : undefined}
       onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} />}
   </>;
 
-  // Preserve the original comic and the complete optional tutorial before choosing a mode.
-  // Invitations can go straight to their room without replaying the introduction.
-  // Keep the menu unmounted until dismissal so it cannot flash or receive focus behind the comic.
+  // The original comic belongs to the solo entry; multiplayer and the optional tutorial open directly.
+  // Independent replays return to the menu, while a solo entry continues to campaign preparation.
   if (crownPrologue) return <div className="pixel-app crown-opening-screen">
     <CrownTitleScene />
     <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang}
-      completeLabel={storyLeadsToPractice ? (lang === 'zh' ? '先坐下试试' : 'Take a seat') : undefined}
-      skipLabel={storyLeadsToPractice ? (lang === 'zh' ? '跳到实战' : 'Skip to practice') : undefined}
-      onComplete={() => { setCrownPrologue(false); if (storyLeadsToPractice) setLearningMode('tutorial'); }}
+      completeLabel={storyLeadsToSolo ? (lang === 'zh' ? '继续单人模式' : 'Continue to solo') : undefined}
+      skipLabel={storyLeadsToSolo ? (lang === 'zh' ? '跳过漫画' : 'Skip comic') : undefined}
+      onComplete={() => { setCrownPrologue(false); if (storyLeadsToSolo) setExpHelp('intro'); }}
       onClose={() => setCrownPrologue(false)} />
   </div>;
 
@@ -1616,7 +1617,7 @@ export default function BobozanOnline() {
             <div className="crown-title-links">
               <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '机器人练习' : 'Bot practice'}</button>
               <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
-              <button type="button" onClick={() => { setStoryLeadsToPractice(true); setCrownPrologue(true); }}>{lang === 'zh' ? '重看开场漫画' : 'Replay the opening comic'}</button>
+              <button type="button" onClick={() => { setStoryLeadsToSolo(false); setCrownPrologue(true); }}>{lang === 'zh' ? '重看开场漫画' : 'Replay the opening comic'}</button>
             </div>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
@@ -1716,7 +1717,7 @@ export default function BobozanOnline() {
               <button type="button" onClick={() => setLearningMode('tutorial')}>{lang === 'zh' ? '新手教程' : 'How to play'}</button>
               <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '先和机器人练一局' : 'Practice with a bot'}</button>
               <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
-              <button type="button" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
+              <button type="button" onClick={openSoloMode}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
             </div>
         </div>
       </div>
