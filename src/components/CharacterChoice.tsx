@@ -9,7 +9,7 @@ export default function CharacterChoice({ avatar, lang, appearance = 'current', 
   avatar?: string; lang: Lang; appearance?: 'current' | 'retro'; onChoose: () => void;
 }) {
   const character = playerCharacterOption(avatar);
-  return <button type="button" className={`character-choice character-choice-${appearance}`} onClick={onChoose}
+  return <button type="button" className={`character-choice character-choice-${appearance}`} data-lang={lang} onClick={onChoose}
     aria-label={`${lang === 'zh' ? '选择人物' : 'Choose character'} · ${character.name[lang]}`} aria-haspopup="dialog">
     <span className="character-choice-model"><CharacterPreview avatar={character.path} name={character.name[lang]} lang={lang} active={false} reduced /></span>
     <strong className="character-choice-name">{character.name[lang]}</strong>

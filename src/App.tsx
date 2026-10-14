@@ -25,6 +25,7 @@ import { getMultiplayerMatchSummary, getMultiplayerMode } from './logic/multipla
 import { migrateRoomSkillCatalog } from './logic/roomCatalog';
 import { SKILL_CATALOG_VERSION } from './logic/skillLoadout';
 import MultiplayerOpening from './components/MultiplayerOpening';
+import MultiplayerModePicker from './components/MultiplayerModePicker';
 import RetroMenu from './components/RetroMenu';
 import EditionSwitch from './components/EditionSwitch';
 import RetroBattle from './components/RetroBattle';
@@ -1629,14 +1630,10 @@ export default function BobozanOnline() {
         {/* Body Section */}
         <div className="p-8 md:p-10 space-y-8">
 
-            <fieldset className="multiplayer-mode-choice" disabled={modePending || gameState.hostId !== user?.uid} aria-busy={modePending}>
-              <legend>{lang === 'zh' ? '对战模式' : 'Game mode'}</legend>
-              <div className="multiplayer-mode-options">
-                <label data-selected={multiplayerMode === 'kills'}><input type="radio" name="multiplayer-mode" value="kills" checked={multiplayerMode === 'kills'} onChange={() => void chooseMultiplayerMode('kills')} /><span>{lang === 'zh' ? '杀敌赛' : 'Kill race'}</span></label>
-                <label data-selected={multiplayerMode === 'survival'}><input type="radio" name="multiplayer-mode" value="survival" checked={multiplayerMode === 'survival'} onChange={() => void chooseMultiplayerMode('survival')} /><span>{lang === 'zh' ? '生存赛' : 'Survival'}</span></label>
-              </div>
-            </fieldset>
-            
+            <MultiplayerModePicker mode={multiplayerMode} lang={lang} appearance="current"
+              reduceMotion={reduceMotion} disabled={gameState.hostId !== user?.uid || loading || revengePending || gameState.status !== 'LOBBY'}
+              pending={modePending} onChange={mode => { void chooseMultiplayerMode(mode); }} />
+
             <RevengeModeSetting enabled={isRevengeModeEnabled(gameState.revengeMode)} lang={lang}
               appearance="current" reduceMotion={reduceMotion} pending={revengePending}
               disabled={gameState.hostId !== user?.uid || gameState.status !== 'LOBBY'} onToggle={toggleRevengeMode} />

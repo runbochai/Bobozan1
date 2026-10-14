@@ -10,6 +10,7 @@ import type { GameState, Lang, MultiplayerMode } from '../types';
 import RetroBackdrop from './RetroBackdrop';
 import './RetroMenu.css';
 import RevengeModeSetting from './RevengeModeSetting';
+import MultiplayerModePicker from './MultiplayerModePicker';
 import { isRevengeModeEnabled } from '../logic/revenge';
 
 export interface RetroMenuProps {
@@ -75,32 +76,35 @@ export default function RetroMenu(props: RetroMenuProps) {
     {overlays}
     {toast && <div className="retro-menu-toast" role="status"><Check size={18} />{toast}</div>}
 
-    {view === 'NAME_INPUT' ? <main className="retro-title-main">
+    {view === 'NAME_INPUT' ? <main className="retro-title-main retro-home-main" data-reduced-motion={reduceMotion}>
       <header className="retro-title-art">
         <img className="retro-title-dragon" src={assetUrl('babydragtitle.png')} alt="" draggable={false} />
         <h1><img src={assetUrl('BoBoZantitle.png')} alt="bobozan" draggable={false} /></h1>
-        <span className="retro-edition-label">{zh ? '怀旧版' : 'CLASSIC EDITION'}</span>
+        <span className="retro-edition-label retro-home-edition-seal">{zh ? '怀旧版' : 'CLASSIC EDITION'}</span>
       </header>
-      <div className="retro-title-setup">
+      <div className="retro-title-setup retro-home-profile">
         <div className="retro-character-picker">
           <CharacterChoice avatar={avatar} lang={lang} appearance="retro" onChoose={onChooseCharacter} />
         </div>
-        <input type="text" className="retro-name-input" aria-label={zh ? '你的昵称' : 'Your nickname'} value={name} maxLength={10}
-          onChange={event => onNameChange(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') onEnter(); }}
-          placeholder={zh ? '你的昵称' : 'Your nickname'} autoComplete="nickname" />
+        <div className="retro-home-nameplate">
+          <span className="retro-home-nameplate-crest" aria-hidden="true"><Crown size={16} /></span>
+          <input type="text" className="retro-name-input" aria-label={zh ? '你的昵称' : 'Your nickname'} value={name} maxLength={10}
+            onChange={event => onNameChange(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') onEnter(); }}
+            placeholder={zh ? '你的昵称' : 'Your nickname'} autoComplete="nickname" />
+        </div>
       </div>
       {invited && <p className="retro-menu-invitation" role="status">{zh ? `朋友邀请你加入房间 ${roomCode}` : `You’re invited to room ${roomCode}`}</p>}
       <div className="retro-title-actions">
-        <button className="retro-menu-primary" type="button" onClick={onEnter} disabled={loading}>
-          {loading ? <LoaderCircle className="retro-menu-spinner" size={24} /> : <Users size={24} />}
-          {invited ? (zh ? '加入朋友房间' : 'Join your friends') : (zh ? '多人模式' : 'Multiplayer')}
+        <button className="retro-menu-primary retro-home-action retro-home-action-primary" type="button" onClick={onEnter} disabled={loading}>
+          <span className="retro-home-action-emblem" aria-hidden="true">{loading ? <LoaderCircle className="retro-menu-spinner" size={24} /> : <Users size={24} />}</span>
+          <span className="retro-home-action-label">{invited ? (zh ? '加入朋友房间' : 'Join your friends') : (zh ? '多人模式' : 'Multiplayer')}</span>
         </button>
-        <button className="retro-menu-secondary" type="button" onClick={onPractice}>
-          <Target size={18} />{zh ? '自由对练' : 'Free sparring'}
+        <button className="retro-menu-secondary retro-home-action retro-home-action-secondary" type="button" onClick={onPractice}>
+          <span className="retro-home-action-emblem" aria-hidden="true"><Target size={22} /></span><span className="retro-home-action-label">{zh ? '自由对练' : 'Free sparring'}</span>
         </button>
       </div>
-    </main> : view === 'HOME' ? <main className="retro-menu-panel retro-friends-panel">
-      <header className="retro-menu-heading"><span className="retro-edition-label">{zh ? '怀旧版' : 'CLASSIC EDITION'}</span><h1>{zh ? '和朋友玩' : 'Play with friends'}</h1></header>
+    </main> : view === 'HOME' ? <main className="retro-menu-panel retro-friends-panel" data-reduced-motion={reduceMotion}>
+      <header className="retro-menu-heading retro-home-heading"><span className="retro-home-heading-crest" aria-hidden="true"><Users size={26} /></span><span className="retro-edition-label retro-home-edition-seal">{zh ? '怀旧版' : 'CLASSIC EDITION'}</span><h1>{zh ? '和朋友玩' : 'Play with friends'}</h1></header>
       <div className="retro-friends-profile">
         <button type="button" className="retro-profile-edit" aria-label={zh ? '修改昵称与人物' : 'Edit name and character'} onClick={onEditProfile} disabled={!onEditProfile}>
           <Portrait avatar={avatar} name={name} /><span className="retro-avatar-edit"><Edit3 size={14} /></span>
@@ -109,10 +113,10 @@ export default function RetroMenu(props: RetroMenuProps) {
       </div>
       {invited && <p className="retro-menu-invitation" role="status">{zh ? `房间 ${roomCode} 的邀请已就绪。` : `Your invitation to room ${roomCode} is ready.`}</p>}
       <div className="retro-friends-actions">
-        <button type="button" className="retro-menu-primary" onClick={onCreate} disabled={!ready}>
-          {loading ? <LoaderCircle size={24} className="retro-menu-spinner" /> : <Users size={24} />}{zh ? '创建房间' : 'Create room'}
+        <button type="button" className="retro-menu-primary retro-home-action retro-home-action-primary" onClick={onCreate} disabled={!ready}>
+          <span className="retro-home-action-emblem" aria-hidden="true">{loading ? <LoaderCircle size={24} className="retro-menu-spinner" /> : <Users size={24} />}</span><span className="retro-home-action-label">{zh ? '创建房间' : 'Create room'}</span>
         </button>
-        <form className="retro-join-form" onSubmit={event => { event.preventDefault(); if (ready && roomCode.length === 6) onJoin(); }}>
+        <form className="retro-join-form retro-home-join" onSubmit={event => { event.preventDefault(); if (ready && roomCode.length === 6) onJoin(); }}>
           <input aria-label={zh ? '房间码' : 'Room code'} type="text" inputMode="numeric" maxLength={6} value={roomCode}
             onChange={event => onRoomCodeChange(event.target.value.toUpperCase())} placeholder={zh ? '输入6位房间码' : '6-digit room code'} />
           <button type="submit" className="retro-menu-secondary" disabled={!ready || roomCode.length !== 6}>{zh ? '加入房间' : 'Join room'}</button>
@@ -130,13 +134,8 @@ export default function RetroMenu(props: RetroMenuProps) {
         </div>
         <button type="button" className="retro-menu-primary retro-invite-button" onClick={onCopyInvite}><Share2 size={18} />{zh ? '复制邀请' : 'Copy invitation'}</button>
       </header>
-      <fieldset className="retro-mode-picker" disabled={!host || busy || game.status !== 'LOBBY'} aria-busy={modePending}>
-        <legend>{zh ? '对战模式' : 'Game mode'}</legend>
-        <div>{(['kills', 'survival'] as const).map(value => <label key={value} data-selected={mode === value}>
-          <input type="radio" name="multiplayer-mode" value={value} checked={mode === value} onChange={() => onModeChange(value)} />
-          <span>{value === 'kills' ? (zh ? '杀敌赛' : 'Kill race') : (zh ? '生存赛' : 'Survival')}</span>
-        </label>)}</div>
-      </fieldset>
+      <MultiplayerModePicker mode={mode} lang={lang} appearance="retro" reduceMotion={reduceMotion}
+        disabled={!host || loading || revengePending || game.status !== 'LOBBY'} pending={modePending} onChange={onModeChange} />
       <RevengeModeSetting enabled={isRevengeModeEnabled(game.revengeMode)} lang={lang} appearance="retro"
         reduceMotion={reduceMotion} disabled={!host || busy || game.status !== 'LOBBY'} pending={revengePending} onToggle={onToggleRevenge} />
       <div className="retro-lobby-players" aria-label={zh ? '房间玩家' : 'Players in room'}>

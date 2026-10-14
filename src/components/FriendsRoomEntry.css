@@ -1,93 +1,106 @@
-/* This entry owns its materials; legacy panel and gradient utility skins do not apply. */
-.pixel-app.pixel-screen-home.crown-arena-menu {
-  justify-content: center;
-  padding: 96px 24px 48px;
+/* A brass invitation plaque in the existing castle scene; no shared battle skin. */
+.pixel-app.pixel-screen-home.crown-arena-menu { justify-content: center; padding: 96px 24px 48px; }
+.pixel-app.crown-arena-menu .friends-room-entry { position: relative; z-index: 10; width: min(100%, 500px); color: #f0e3c7; font-family: system-ui, -apple-system, 'PingFang SC', sans-serif; }
+.pixel-app.crown-arena-menu .friends-entry-panel {
+  position: relative; isolation: isolate; display: grid; gap: 24px; padding: 32px;
+  border: 1px solid #b79b66; border-radius: 28px 28px 22px 22px;
+  background: radial-gradient(ellipse at 15% 0, #b6964a12, transparent 65%), linear-gradient(145deg, #293b3ff7, #162831fa 44%, #101d26fc);
+  box-shadow: 0 1px #efd7a37a, 0 5px #060e16, 0 24px 70px #02070db3, inset 0 1px #ffffff17, inset 0 -2px #0008;
 }
-.friends-room-entry {
-  position: relative; z-index: 10; width: min(100%, 500px);
-  color: #f0e3c7; font-family: system-ui, -apple-system, 'PingFang SC', sans-serif;
+.pixel-app.crown-arena-menu .friends-entry-panel::before {
+  content: ''; position: absolute; inset: 7px; z-index: -1; border: 1px solid #b89a5f3d; border-radius: 22px 22px 16px 16px; pointer-events: none;
+  background: repeating-linear-gradient(125deg, transparent 0 5px, #e1d4b403 5px 6px);
 }
-.friends-entry-panel {
-  position: relative; display: grid; gap: 24px; padding: 32px;
-  border: 1px solid #b59968;
-  background: linear-gradient(145deg, #2c3b40f5, #162831f7 38%, #101e27fa);
-  box-shadow: 0 1px 0 #efd3a173, 0 5px 0 #060e16, 0 24px 70px #02070db3,
-    inset 0 1px 0 #ffffff14, inset 0 -1px 0 #0009;
+.pixel-app.crown-arena-menu .friends-entry-panel::after {
+  content: ''; position: absolute; top: -1px; left: 22%; width: 56%; height: 3px; border-radius: 50%;
+  background: linear-gradient(90deg, transparent, #b58b47, #ffe2a2, #b58b47, transparent);
+  box-shadow: 0 2px 12px #dfb56c40; pointer-events: none; opacity: .75; animation: friends-entry-brass-glow 4s ease-in-out infinite;
 }
-.friends-entry-panel::before {
-  content: ''; position: absolute; inset: 6px; border: 1px solid #b89a5f33; pointer-events: none;
-  background: repeating-linear-gradient(0deg, transparent, transparent 3px, #e1d4b402 3px, #e1d4b402 4px);
+.pixel-app.crown-arena-menu .friends-entry-heading { position: relative; text-align: left; }
+.pixel-app.crown-arena-menu .friends-entry-heading h1 { margin: 0; color: #f5dfb4; font-size: 28px; font-weight: 800; line-height: 1.3; letter-spacing: .04em; text-shadow: 0 2px #080e14; }
+.pixel-app.crown-arena-menu .friends-entry-heading p { margin: 10px 0 0; color: #b8c2bf; font-size: 13px; line-height: 1.6; }
+.pixel-app.crown-arena-menu .friends-entry-profile {
+  position: relative; display: flex; align-items: center; gap: 15px; min-width: 0; padding: 12px;
+  border: 1px solid #9c976a54; border-radius: 18px 12px; background: linear-gradient(125deg, #283b3f88, #0b1922bf 40%, #111f27a6);
+  box-shadow: inset 0 2px 7px #0005, 0 1px #e5dbbd14;
 }
-.friends-entry-panel::after {
-  content: ''; position: absolute; top: -2px; left: 32px; width: 52px; height: 3px;
-  background: #e4c48b; box-shadow: 0 1px 8px #dfb56c35; pointer-events: none;
-}
-.friends-entry-heading { position: relative; text-align: left; }
-.friends-entry-heading h1 { margin: 0; color: #f5dfb4; font-size: 28px; font-weight: 800; line-height: 1.3; letter-spacing: .04em; text-shadow: 0 2px #080e14; }
-.friends-entry-heading p { margin: 10px 0 0; color: #b8c2bf; font-size: 13px; line-height: 1.6; }
-.friends-entry-profile {
-  display: flex; align-items: center; gap: 15px; min-width: 0; padding: 12px;
-  border: 1px solid #82918b45; background: linear-gradient(180deg, #0c1a228c, #101d2461);
-  box-shadow: inset 0 2px 4px #0004, 0 1px #e5dbbd0a;
-}
-.friends-entry-avatar { display: grid; place-items: center; flex: 0 0 56px; width: 56px; height: 56px; overflow: hidden; border: 1px solid #d8bc87; background: #203b43; box-shadow: 0 2px #030b12, inset 0 0 0 2px #0b1922; }
-.friends-entry-avatar img { width: 100%; height: 100%; object-fit: cover; }
-.friends-entry-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #f6ead0; font-size: 19px; line-height: 1.4; font-weight: 700; }
+.pixel-app.crown-arena-menu .friends-entry-avatar { display: grid; place-items: center; flex: 0 0 56px; width: 56px; height: 56px; overflow: hidden; border: 2px solid #d5b57d; border-radius: 50%; background: #203b43; box-shadow: 0 0 0 3px #0b1922, 0 0 0 4px #a58b5147, 0 3px 7px #020b16; }
+.pixel-app.crown-arena-menu .friends-entry-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pixel-app.crown-arena-menu .friends-entry-name { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #f6ead0; font-size: 19px; line-height: 1.4; font-weight: 700; }
 .pixel-app.crown-arena-menu .friends-entry-button {
-  position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
-  min-width: 0; min-height: 56px; padding: 12px 18px; border: 1px solid #c3a36b;
-  color: #f4dfb4; background: linear-gradient(180deg, #3d5057 0, #263b45 12%, #1d303a 76%, #182831 100%);
-  box-shadow: inset 0 1px 0 #f8e5b252, inset 1px 0 0 #f8e5b21a, inset -1px 0 0 #0005,
-    inset 0 -3px 0 #07131b8c, 0 3px 0 #050c13, 0 4px 0 #a1844933;
-  font: 700 15px/1.4 system-ui, -apple-system, 'PingFang SC', sans-serif;
-  text-shadow: 0 1px 1px #0009; cursor: pointer; filter: none;
-  transition: background-color .14s, border-color .14s, box-shadow .14s, color .14s;
+  --friends-hover-y: -2px; --friends-press-y: 1px;
+  position: relative; isolation: isolate; display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  min-width: 0; min-height: 56px; padding: 9px 16px; overflow: hidden;
+  border: 1px solid #c3a36b; border-radius: 14px 8px 14px 8px !important;
+  color: #f4dfb4; background: linear-gradient(180deg, #42575c, #263e47 18%, #1b303a 80%, #142630);
+  box-shadow: inset 0 1px #fff0ba61, inset 1px 0 #f8e5b226, inset -1px 0 #0005, inset 0 -3px #07131b9e, 0 4px #050c13, 0 5px #a1844947;
+  font: 700 15px/1.4 system-ui, -apple-system, 'PingFang SC', sans-serif; text-shadow: 0 1px 1px #0009; cursor: pointer; filter: none;
+  transition: transform .18s ease, background-color .18s, border-color .18s, box-shadow .18s, color .18s;
 }
-.friends-entry-button::after { content: ''; position: absolute; inset: 3px; border: 1px solid #e8cf9821; pointer-events: none; }
-.friends-entry-button > .pixel-icon { color: #e5c386; filter: drop-shadow(0 1px #060d15); }
-.friends-entry-create { width: 100%; }
-.pixel-app.crown-arena-menu .friends-entry-edit { flex: 0 0 44px; min-height: 44px; width: 44px; padding: 10px; }
-.friends-entry-join { display: grid; gap: 10px; min-width: 0; padding-top: 22px; border-top: 1px solid #b89b603b; }
-.friends-entry-code-label { color: #bfc8c3; font-size: 12px; line-height: 1.4; }
-.friends-entry-join-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
-.friends-entry-code-well { display: flex; align-items: center; position: relative; min-width: 0; }
-.friends-entry-code-well > .pixel-icon { position: absolute; left: 14px; z-index: 1; color: #b5a57d; pointer-events: none; }
+.pixel-app.crown-arena-menu .friends-entry-button::before { content: ''; position: absolute; inset: 0; z-index: 0; pointer-events: none; opacity: 0; background: linear-gradient(112deg, transparent 25%, #fff2cb1c 43%, #fff3ce69 49%, #fff3ce19 55%, transparent 70%); background-size: 250% 100%; background-position: 160% 0; }
+.pixel-app.crown-arena-menu .friends-entry-button::after { content: ''; position: absolute; inset: 3px; z-index: 0; border: 1px solid #e8cf9829; border-radius: 10px 5px 10px 5px; pointer-events: none; }
+.pixel-app.crown-arena-menu .friends-entry-button > :is(span, svg) { position: relative; z-index: 1; }
+.pixel-app.crown-arena-menu .friends-entry-button .pixel-icon { color: #e5c386; filter: drop-shadow(0 1px #060d15); }
+.pixel-app.crown-arena-menu .friends-entry-seal { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border: 1px solid #d6b7799c; border-radius: 50%; background: radial-gradient(circle at 35% 20%, #cbb47c26, transparent 65%), linear-gradient(#35464b, #152b33); box-shadow: inset 0 1px #ffe8a64d, inset 0 -2px #0512199c, 0 2px #030e17b3; }
+.pixel-app.crown-arena-menu .friends-entry-create { width: 100%; color: #fff0cb; border-color: #dcba75; background: radial-gradient(ellipse at 50% 0, #dfb96528, transparent 80%), linear-gradient(#76603c, #4f4431 16%, #3d382b 80%, #2d2c25); box-shadow: inset 0 1px #fff2bd80, inset 0 -3px #1b1c1b, 0 4px #050c13, 0 5px #a1844966, 0 0 22px #c8964217; }
+.pixel-app.crown-arena-menu .friends-entry-create:not(:disabled)::before { animation: friends-entry-brass-sheen 7s ease-in-out infinite; }
+.pixel-app.crown-arena-menu .friends-entry-create .friends-entry-seal { border-color: #efcb80; background: linear-gradient(#9e7b42, #50452f 65%, #3d382b); }
+.pixel-app.crown-arena-menu .friends-entry-edit { flex: 0 0 44px; min-height: 44px; width: 44px; padding: 10px; border-radius: 50% !important; }
+.pixel-app.crown-arena-menu .friends-entry-join { display: grid; gap: 10px; min-width: 0; padding-top: 22px; border-top: 1px solid #b89b603b; }
+.pixel-app.crown-arena-menu .friends-entry-code-label { color: #bfc8c3; font-size: 12px; line-height: 1.4; }
+.pixel-app.crown-arena-menu .friends-entry-join-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; }
+.pixel-app.crown-arena-menu .friends-entry-code-well { display: flex; align-items: center; position: relative; min-width: 0; }
+.pixel-app.crown-arena-menu .friends-entry-code-well > .pixel-icon { position: absolute; left: 14px; z-index: 1; color: #c7b180; pointer-events: none; }
 .pixel-app.crown-arena-menu .friends-entry-code-well input {
   width: 100%; min-width: 0; height: 56px; padding: 12px 12px 12px 42px;
-  border: 1px solid #7b8a87; background: linear-gradient(180deg, #09151e, #13242d);
-  box-shadow: inset 0 3px 5px #0006, 0 1px #fff1c914; color: #ffe7b7;
-  font: 600 20px/1.4 ui-monospace, monospace; letter-spacing: .17em; text-align: center;
+  border: 1px solid #7b8a87; border-radius: 14px 8px !important; background: linear-gradient(180deg, #08151d, #13262e);
+  box-shadow: inset 0 3px 7px #0008, inset 0 0 0 3px #e8d9a708, 0 1px #fff1c91c; color: #ffe7b7;
+  font: 600 20px/1.4 ui-monospace, monospace; letter-spacing: .17em; text-align: center; transition: border-color .18s, box-shadow .18s;
 }
 .pixel-app.crown-arena-menu .friends-entry-code-well input::placeholder { color: #8c9d9f; font: 400 12px/1.4 system-ui, sans-serif; letter-spacing: 0; }
-.pixel-app.crown-arena-menu .friends-entry-code-well input:focus { border-color: #ddbf81; }
+.pixel-app.crown-arena-menu .friends-entry-code-well input:focus { border-color: #e3c78c; box-shadow: inset 0 3px 7px #0008, 0 0 0 2px #ddbb6e22; }
 .pixel-app.crown-arena-menu .friends-entry-code-well input:disabled { color: #aab5ac; border-color: #5f706f; cursor: wait; }
-.pixel-app.crown-arena-menu .friends-entry-join-button { white-space: nowrap; padding-inline: 16px; gap: 7px; }
-.friends-entry-invitation, .friends-entry-message { display: flex; align-items: flex-start; gap: 8px; margin: -6px 0 0; padding: 10px 12px; border: 1px solid #ad955351; background: #c49b4310; color: #e2cca1; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
-.friends-entry-message { border-color: #ae7b5b66; color: #e2bda5; background: #ad573510; }
-.friends-entry-message .pixel-icon { margin-top: 2px; }
+.pixel-app.crown-arena-menu .friends-entry-join-button { white-space: nowrap; padding-inline: 14px; gap: 7px; }
+.pixel-app.crown-arena-menu .friends-entry-join-button .friends-entry-seal { width: 28px; height: 28px; }
+.pixel-app.crown-arena-menu :is(.friends-entry-invitation, .friends-entry-message) { display: flex; align-items: flex-start; gap: 8px; margin: -6px 0 0; padding: 10px 12px; border: 1px solid #ad955351; border-radius: 12px 6px; background: #c49b4310; color: #e2cca1; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
+.pixel-app.crown-arena-menu .friends-entry-message { border-color: #ae7b5b66; color: #e2bda5; background: #ad573510; }
+.pixel-app.crown-arena-menu .friends-entry-message .pixel-icon { margin-top: 2px; }
 @media (hover: hover) {
-  .pixel-app.crown-arena-menu .friends-entry-button:hover:not(:disabled) { border-color: #f5dca5; color: #fff0d0; background: linear-gradient(180deg, #526267, #324a54 16%, #273f48 78%, #21353e); filter: none; box-shadow: inset 0 1px #fff0c780, inset 0 -3px #08151c99, 0 3px #050c13, 0 0 14px #d6ae4b16; }
+  .pixel-app.crown-arena-menu .friends-entry-button:hover:not(:disabled) { transform: translateY(var(--friends-hover-y)) !important; border-color: #f5dca5; color: #fff0d0; filter: none; box-shadow: inset 0 1px #fff0c780, inset 0 -3px #08151c99, 0 5px #050c13, 0 0 18px #d6ae4b24; }
+  .pixel-app.crown-arena-menu .friends-entry-button:hover:not(:disabled)::before { animation: friends-entry-brass-sheen .8s ease-out 1; }
+  .pixel-app.crown-arena-menu .friends-entry-create:hover:not(:disabled) { background: linear-gradient(#967746, #655139 18%, #4d422e 80%, #353024); }
 }
-.pixel-app.crown-arena-menu .friends-entry-button:active:not(:disabled) { background: linear-gradient(180deg, #14252e, #273b44); border-color: #e9cc95; box-shadow: inset 0 3px 5px #020b16aa, inset 0 -1px #f3d49a24, 0 1px #050c13; }
-.pixel-app.crown-arena-menu .friends-entry-button:disabled { color: #a0a8a4; border-color: #6d7770; background: linear-gradient(180deg, #2d3c41, #1b2b33); box-shadow: inset 0 1px #cfceb81f, inset 0 -2px #08121b80, 0 2px #050c13; filter: none; cursor: not-allowed; }
-.friends-entry-button:disabled > .pixel-icon { color: #969d8e; }
+.pixel-app.crown-arena-menu .friends-entry-button:active:not(:disabled) { transform: translateY(var(--friends-press-y)) !important; border-color: #e9cc95; box-shadow: inset 0 3px 5px #020b16aa, inset 0 -1px #f3d49a24, 0 1px #050c13; }
+.pixel-app.crown-arena-menu .friends-entry-button:disabled { color: #a0a8a4; border-color: #6d7770; background: linear-gradient(#2d3c41, #1b2b33); box-shadow: inset 0 1px #cfceb81f, inset 0 -2px #08121b80, 0 2px #050c13; filter: none; cursor: not-allowed; }
+.pixel-app.crown-arena-menu .friends-entry-button:disabled .pixel-icon { color: #969d8e; }
+.pixel-app.crown-arena-menu .friends-entry-button:disabled .friends-entry-seal { border-color: #7a847573; background: #23343b; }
 .friends-entry-spinner { animation: friends-entry-spin .8s steps(8, end) infinite; }
 @keyframes friends-entry-spin { to { rotate: 360deg; } }
+@keyframes friends-entry-brass-glow { 0%, 100% { opacity: .6; } 50% { opacity: 1; } }
+@keyframes friends-entry-brass-sheen { 0%, 70% { opacity: 0; background-position: 160% 0; } 75% { opacity: .65; } 92%, 100% { opacity: 0; background-position: -70% 0; } }
 @media (max-width: 600px) {
   .pixel-app.pixel-screen-home.crown-arena-menu { padding: 88px 16px 32px; }
-  .friends-entry-panel { padding: 24px; gap: 22px; }
-  .friends-entry-heading h1 { font-size: 25px; }
-  .friends-entry-profile { padding: 10px; gap: 12px; }
-  .friends-entry-avatar { flex-basis: 48px; width: 48px; height: 48px; }
-  .friends-entry-name { font-size: 17px; }
+  .pixel-app.crown-arena-menu .friends-entry-panel { padding: 24px; gap: 22px; border-radius: 24px 24px 18px 18px; }
+  .pixel-app.crown-arena-menu .friends-entry-panel::before { border-radius: 18px 18px 12px 12px; }
+  .pixel-app.crown-arena-menu .friends-entry-heading h1 { font-size: 25px; }
+  .pixel-app.crown-arena-menu .friends-entry-profile { padding: 10px; gap: 12px; }
+  .pixel-app.crown-arena-menu .friends-entry-avatar { flex-basis: 48px; width: 48px; height: 48px; }
+  .pixel-app.crown-arena-menu .friends-entry-name { font-size: 17px; }
 }
 @media (max-width: 360px) {
-  .friends-entry-panel { padding: 22px 18px; }
-  .friends-entry-join-row { gap: 8px; }
+  .pixel-app.crown-arena-menu .friends-entry-panel { padding: 22px 18px; }
+  .pixel-app.crown-arena-menu .friends-entry-join-row { gap: 8px; }
   .pixel-app.crown-arena-menu .friends-entry-join-button { padding-inline: 10px; font-size: 13px; }
-  .friends-entry-join-button > .pixel-icon { display: none; }
+  .pixel-app.crown-arena-menu .friends-entry-join-button .friends-entry-seal { display: none; }
   .pixel-app.crown-arena-menu .friends-entry-code-well input { padding-left: 30px; font-size: 18px; }
-  .friends-entry-code-well > .pixel-icon { left: 9px; width: 14px; }
+  .pixel-app.crown-arena-menu .friends-entry-code-well > .pixel-icon { left: 9px; width: 14px; }
 }
-@media (prefers-reduced-motion: reduce) { .friends-entry-button, .friends-entry-spinner { transition: none !important; animation: none !important; } }
-.reduce-motion .friends-entry-button, .reduce-motion .friends-entry-spinner { transition: none !important; animation: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  .pixel-app.crown-arena-menu .friends-entry-button, .pixel-app.crown-arena-menu .friends-entry-code-well input { --friends-hover-y: 0px; --friends-press-y: 0px; transition: none !important; transform: none !important; }
+  .pixel-app.crown-arena-menu .friends-entry-button::before, .pixel-app.crown-arena-menu .friends-entry-panel::after, .friends-entry-spinner { animation: none !important; }
+}
+.reduce-motion .pixel-app.crown-arena-menu .friends-entry-button, .reduce-motion.pixel-app.crown-arena-menu .friends-entry-button,
+.reduce-motion .pixel-app.crown-arena-menu .friends-entry-code-well input, .reduce-motion.pixel-app.crown-arena-menu .friends-entry-code-well input { --friends-hover-y: 0px; --friends-press-y: 0px; transition: none !important; transform: none !important; }
+.reduce-motion .pixel-app.crown-arena-menu .friends-entry-button::before, .reduce-motion.pixel-app.crown-arena-menu .friends-entry-button::before,
+.reduce-motion .pixel-app.crown-arena-menu .friends-entry-panel::after, .reduce-motion.pixel-app.crown-arena-menu .friends-entry-panel::after,
+.reduce-motion .friends-entry-spinner { animation: none !important; }
