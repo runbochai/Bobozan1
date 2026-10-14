@@ -1,70 +1,98 @@
-/* One printed face for the hand, table, details and skill rewards. */
-.woodcut-face { position: relative; display: block; width: 100%; height: 100%; container-type: inline-size; isolation: isolate; overflow: hidden; border-radius: 3px; color: #f5ead4; font-family: 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif; text-shadow: none; pointer-events: none; }
-.woodcut-face .woodcut-print { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: fill; }
-.woodcut-face .woodcut-badge { position: absolute; top: 1.7%; width: 28%; height: 18.5%; padding: 3% 1% 1%; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 0; background: #eddfc6; color: #fff1d9; clip-path: polygon(24% 0, 76% 0, 100% 24%, 100% 76%, 76% 100%, 24% 100%, 0 76%, 0 24%); line-height: 1; }
-.woodcut-face .woodcut-badge::before { content: ''; position: absolute; inset: 3%; z-index: -1; background: #b94825; clip-path: inherit; border: 2px solid #212d2b; }
-.woodcut-face .woodcut-badge::after { content: ''; position: absolute; inset: 7%; z-index: -1; opacity: .12; background: repeating-linear-gradient(23deg, transparent 0 3px, #f8ead5 3px 4px); clip-path: inherit; }
-.woodcut-face .woodcut-cost { left: 1.7%; }
-.woodcut-face .woodcut-rank { right: 1.7%; }
-.woodcut-face .woodcut-rank::before { background: #285960; }
-.woodcut-face[data-family='ULTIMATE'] .woodcut-rank::before { background: #654071; }
-.woodcut-face .woodcut-badge small { display: block; color: inherit; font-size: 7cqw; line-height: 1.1; font-weight: 800; letter-spacing: 0; }
-.woodcut-face .woodcut-badge b { display: block; font: 900 18cqw/1.02 system-ui,sans-serif; letter-spacing: -.07em; padding-right: .07em; }
-.woodcut-face .woodcut-badge b[data-three='true'] { font-size: 14cqw; }
-.woodcut-face .woodcut-badge b[data-wide='true'] { font-size: 11cqw; letter-spacing: -.08em; }
-.woodcut-face .woodcut-title { position: absolute; display: flex; align-items: center; justify-content: center; left: 15%; right: 15%; top: 86.4%; bottom: 4.4%; margin: 0; padding: 0 1%; background: #202826; color: #f9edd5; font-size: 13cqw; font-weight: 900; line-height: 1.05; text-align: center; white-space: normal; }
-.woodcut-face .woodcut-title[data-long='true'] { font-size: 9cqw; }
-.woodcut-face[data-language='en'] .woodcut-title { font-size: 10cqw; }
-.woodcut-face[data-language='en'] .woodcut-title[data-long='true'] { font-size: 7cqw; }
+/* One warm, printed face for every skill. Card geometry and fan motion live elsewhere. */
+.woodcut-face {
+  --print-ink:#553516; --print-accent:#896026;
+  position:relative; display:block; width:100%; height:100%; container-type:inline-size;
+  isolation:isolate; overflow:hidden; border-radius:4px; pointer-events:none;
+  color:var(--print-ink); text-shadow:none;
+  background:#f4d392 url('/cards/parchment-stock.svg') center / 100% 100%;
+  box-shadow:inset 0 0 0 1px #8c5f36a6, inset 0 0 16px #92501c26;
+  font-family:Georgia,'Songti SC','SimSun',serif;
+}
+.woodcut-face[data-family='ATTACK'] { --print-accent:#985035; }
+.woodcut-face[data-family='DEFEND'] { --print-accent:#586746; }
+.woodcut-face[data-family='ULTIMATE'] { --print-accent:#78523e; }
+.woodcut-face[data-combo='true'] { --print-accent:#946718; }
+.woodcut-engraved-frame { position:absolute; inset:0; width:100%; height:100%; z-index:1; }
+.woodcut-frame-edge { fill:none; stroke:#95602e; stroke-width:3; opacity:.8; }
+.woodcut-frame-line { fill:none; stroke:#a16b35; stroke-width:.85; opacity:.65; }
+.woodcut-frame-stitch { fill:none; stroke:#ae7b42; stroke-width:1.1; stroke-dasharray:2 5; opacity:.65; }
+.woodcut-frame-corners { fill:#9d682f; opacity:.75; }
+.woodcut-face .woodcut-emblem {
+  position:absolute; left:17%; right:17%; top:24%; bottom:25%;
+  display:flex; align-items:center; justify-content:center; color:var(--print-ink);
+}
+.woodcut-face[data-folder='true'] .woodcut-emblem { left:25%; right:25%; top:28%; bottom:30%; }
+.woodcut-face[data-family='CHARGE'] .woodcut-emblem { left:22%; right:22%; top:23%; bottom:25%; }
+.woodcut-face .woodcut-badge {
+  position:absolute; top:6%; width:33%; height:16%; z-index:2;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  border:1px solid #a3743d94; border-radius:45% 45% 4px 4px;
+  background:#eed097ad; color:var(--print-ink); line-height:1;
+  box-shadow:inset 0 0 0 2px #f8e1ae99, 0 1px #b1814740;
+}
+.woodcut-face .woodcut-cost { left:8%; }
+.woodcut-face .woodcut-rank { right:8%; color:var(--print-accent); border-color:var(--print-accent); }
+.woodcut-face .woodcut-badge small { font:700 6cqw/1.2 system-ui,sans-serif; letter-spacing:.06em; }
+.woodcut-face .woodcut-badge b { display:flex; align-items:baseline; justify-content:center; gap:1cqw; font:900 14cqw/1.15 Georgia,serif; white-space:nowrap; }
+.woodcut-face .woodcut-badge .pixel-icon { width:7cqw; height:7cqw; align-self:center; }
+.woodcut-face .woodcut-rank b { width:100%; font-size:12cqw; }
+.woodcut-face .woodcut-rank b[data-wide='true'] { letter-spacing:-.04em; }
+.woodcut-face .woodcut-badge i { font:700 6cqw/1 system-ui,sans-serif; }
+.woodcut-face[data-skill-level]:not([data-skill-level='0']) .woodcut-rank { border-width:2px; }
+.woodcut-face .woodcut-title {
+  position:absolute; left:12%; right:12%; top:80%; bottom:10%; margin:0;
+  display:flex; align-items:center; justify-content:center; padding:0; background:none;
+  color:var(--print-ink); font-size:13cqw; font-weight:900; line-height:1.1;
+  text-align:center; white-space:normal; overflow-wrap:anywhere; letter-spacing:.04em;
+}
+.woodcut-face .woodcut-title[data-long='true'] { font-size:9.4cqw; letter-spacing:0; }
+.woodcut-face[data-language='en'] .woodcut-title { font-size:11cqw; letter-spacing:0; }
+.woodcut-face[data-language='en'] .woodcut-title[data-long='true'] { font-size:8.2cqw; }
+.woodcut-face .woodcut-subtitle,.woodcut-face .woodcut-folder-count {
+  position:absolute; bottom:4.7%; left:13%; right:13%; height:4.4%;
+  color:var(--print-accent); font:700 6.2cqw/1 system-ui,sans-serif; text-align:center;
+  letter-spacing:.04em; white-space:nowrap;
+}
+.woodcut-face .woodcut-subtitle:empty { display:none; }
 
-/* Charge is visually a cover but remains a directly playable skill. */
-/* The engraved print and its restrained brass mount share the comic's ink palette. */
-.woodcut-face[data-cover='true'] { --engraved-accent: #c88650; --engraved-ink: #142534; position: relative; display: block; width: 100%; height: 100%; container-type: inline-size; isolation: isolate; overflow: hidden; border-radius: 3px; color: #f5e5c5; font-family: 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif; text-shadow: none; pointer-events: none; background: var(--engraved-ink); }
-.woodcut-face[data-cover='true'][data-family='CHARGE'] { --engraved-accent: #e0b964; }
-.woodcut-face[data-cover='true'][data-family='DEFEND'] { --engraved-accent: #86c3c5; }
-.woodcut-face[data-cover='true'][data-family='ULTIMATE'] { --engraved-accent: #b79ada; }
-.woodcut-face[data-cover='true']:is([data-family='SPECIAL'], [data-family='ABSORB']) { --engraved-accent: #acbd92; }
-.woodcut-face[data-cover='true'] .woodcut-print { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; image-rendering: auto; }
-.woodcut-face[data-cover='true']::after { content: ''; position: absolute; inset: 0; z-index: 0; background: linear-gradient(180deg, #08131e55, transparent 26%, transparent 70%, #071019b3); pointer-events: none; }
-.woodcut-engraved-frame { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; overflow: visible; }
-.woodcut-frame-edge { fill: none; stroke: #9e8560; stroke-width: 3; }
-.woodcut-frame-line { fill: none; stroke: #d0b88a; stroke-width: .85; opacity: .85; }
-.woodcut-frame-corners { fill: #d2b586; }
-.woodcut-face[data-cover='true'] .woodcut-seal { position: absolute; left: 45%; top: 1.9%; width: 10%; height: 7%; z-index: 2; color: var(--engraved-accent); filter: drop-shadow(0 1px 1px #050a12); }
-.woodcut-face[data-cover='true'] .woodcut-title { position: absolute; z-index: 2; display: flex; align-items: center; justify-content: center; left: 9%; right: 9%; top: 86%; bottom: 7%; margin: 0; padding: 0 1%; background: #101d28ed; color: #f5e5c5; font-size: 11.5cqw; font-weight: 900; line-height: 1.05; letter-spacing: .04em; text-align: center; white-space: normal; }
-.woodcut-face[data-cover='true'] .woodcut-title[data-long='true'] { font-size: 8.5cqw; }
-.woodcut-face[data-cover='true'][data-language='en'] .woodcut-title { font-size: 9.5cqw; letter-spacing: 0; font-family: 'Crown Display', Georgia, serif; }
-.woodcut-face[data-cover='true'][data-language='en'] .woodcut-title[data-long='true'] { font-size: 6.7cqw; }
-.woodcut-face[data-cover='true'] .woodcut-title { top: 80%; bottom: 9%; background: #101d28eb; font-size: 16cqw; color: var(--engraved-accent); }
-.woodcut-face[data-cover='true'][data-language='en'] .woodcut-title { font-size: 11.5cqw; }
-.woodcut-face[data-cover='true'] .woodcut-seal { top: 5%; opacity: .75; }
-
-
+/* Leave the complete paper face visible in existing hands and tabletop slots. */
 :root .pixel-app .battle-hand button.hand-card[data-card-type],
 :root .pixel-app .battle-hand .hand-locked-card[data-card-type],
-:root .pixel-app .center-table-board .table-played-card[data-card-type] { padding: 0; border: 0 !important; background: #e8dcc6 !important; box-shadow: 2px 3px #dbcaa8, 4px 6px #08121c85 !important; border-radius: 3px; }
-:root .pixel-app .battle-hand button.hand-category-card[data-card-type],
-:root .pixel-app .battle-hand .hand-locked-card[data-card-type='CHARGE'],
-:root .pixel-app .center-table-board .table-played-card[data-card-type='CHARGE'] { background: #142534 !important; box-shadow: 1px 2px #a68b60, 3px 5px #07111cd9 !important; }
-:root .pixel-app .battle-hand .hand-card::after { display: none; }
-:root .pixel-app .battle-hand :is(.hand-card, .hand-locked-card)::before { display: none; }
-.pixel-app .battle-hand .hand-skill-slot { padding-bottom: 0; }
+:root .pixel-app .center-table-board .table-played-card[data-card-type] {
+  padding:0; border:0 !important; border-radius:4px;
+  background:#edca89 !important; box-shadow:1px 2px #9a6c3a, 3px 5px #080f1b75 !important;
+}
+:root .pixel-app .battle-hand .hand-card::after,
+:root .pixel-app .battle-hand :is(.hand-card,.hand-locked-card)::before { display:none; }
+.pixel-app .battle-hand .hand-skill-slot { padding-bottom:0; }
 :root .pixel-app .battle-hand .hand-info,
-.ultimate-aura-anchor .woodcut-info-glyph { position: absolute; display: grid; place-items: center; top: auto; bottom: 22%; right: 5px; width: 25px; height: 25px; border: 1px solid #e6d2a3; border-radius: 50%; background: #223834ed; color: #f8edd4; box-shadow: 1px 2px #141d24; font: bold 15px Georgia,serif; }
-.ultimate-aura-anchor .woodcut-info-glyph { z-index: 2; }
-.pixel-app .battle-hand .hand-card-action { position: absolute; z-index: 5; top: 72%; left: 7%; right: 7%; margin: 0; padding: 2px; background: #182824ed; color: #f5e9cd; font-size: 10px; line-height: 1.3; text-align: center; pointer-events: none; }
-.pixel-app .battle-hand .hand-card-action:empty { display: none; }
-.pixel-app .battle-hand .hand-card[aria-disabled='true'] .hand-card-action { color: #ffcead; }
-.pixel-app .battle-hand .hand-temp { top: auto; bottom: 31%; left: 7%; padding: 2px 4px; background: #18322bdb; color: #f1d8a6; z-index: 5; }
-.hand-detail-print { width: 190px; aspect-ratio: 2 / 3; margin: 0 auto 14px; }
-:root .pixel-app .battle-hand button.hand-category-card > .hand-folder-finish,
-:root .pixel-app .battle-hand button.hand-category-card > .hand-ultimate-finish { z-index: 2; inset: 3px; opacity: .28; border: 0; }
-:root .pixel-app .battle-hand .hand-category-card .hand-folder-motif,
-:root .pixel-app .battle-hand .hand-category-card .hand-ultimate-glints,
-:root .pixel-app .battle-hand .hand-category-card .hand-ultimate-facets,
-:root .pixel-app .battle-hand .hand-category-card .hand-folder-facets { display: none; }
+.ultimate-aura-anchor .woodcut-info-glyph {
+  position:absolute; display:grid; place-items:center; top:auto; bottom:22%; right:5px;
+  width:25px; height:25px; border:1px solid #9a703d; border-radius:50%;
+  background:#f6dba3; color:#67421e; box-shadow:1px 2px #6f461d66; font:bold 15px Georgia,serif;
+}
+.ultimate-aura-anchor .woodcut-info-glyph { z-index:2; }
+.pixel-app .battle-hand .hand-card-action {
+  position:absolute; z-index:5; top:70%; left:8%; right:8%; margin:0; padding:2px;
+  background:#f3d599ed; color:#6b3e21; border:1px solid #a1784480;
+  font-size:10px; line-height:1.3; text-align:center; pointer-events:none;
+}
+.pixel-app .battle-hand .hand-card-action:empty { display:none; }
+:root .pixel-app .battle-hand .hand-card[aria-disabled='true'] .hand-card-action { color:#823c25; }
+.pixel-app .battle-hand .hand-temp { top:auto; bottom:32%; left:8%; padding:2px 4px; background:#edce91ed; color:#6b4721; z-index:5; }
+.hand-detail-print { width:190px; aspect-ratio:2 / 3; margin:0 auto 14px; }
+:root .pixel-app .battle-hand button.hand-category-card > :is(.hand-folder-finish,.hand-ultimate-finish) { z-index:2; inset:3px; opacity:.12; border:0; background:none; }
+:root .pixel-app .battle-hand .hand-category-card :is(.hand-folder-motif,.hand-ultimate-glints,.hand-ultimate-facets,.hand-folder-facets) { display:none; }
 :root .pixel-app .battle-hand [data-card-finish='gold-holo'] > .card-holo,
-:root .pixel-app .center-table-board [data-card-finish='gold-holo'] > .card-holo { z-index: 3; opacity: .65; }
-.skill-loadout-card .skill-loadout-print { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; margin: 7px 0; }
-.skill-loadout-print > .card-holo { z-index: 3 !important; }
-.pixel-app .battle-hand button.hand-card:focus-visible { outline: 3px solid #f4dca5; outline-offset: 3px; }
+:root .pixel-app .center-table-board [data-card-finish='gold-holo'] > .card-holo { z-index:3; opacity:.36; }
+.skill-loadout-card .skill-loadout-print { position:relative; display:block; width:100%; aspect-ratio:2 / 3; margin:7px 0; }
+.skill-loadout-print > .card-holo { z-index:3 !important; opacity:.36; }
+.pixel-app .battle-hand button.hand-card:focus-visible { outline:3px solid #f4dca5; outline-offset:3px; }
+/* Tiny played cards prioritize their emblem; full values remain in the accessible name. */
+@container (max-width:63px) {
+  .woodcut-face .woodcut-badge { top:5%; height:19%; }
+  .woodcut-face .woodcut-badge small { display:none; }
+  .woodcut-face .woodcut-badge b { font-size:16cqw; }
+  .woodcut-face .woodcut-rank b { font-size:14cqw; }
+  .woodcut-face .woodcut-subtitle { display:none; }
+}

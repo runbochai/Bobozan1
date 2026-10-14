@@ -6,7 +6,7 @@ import { MAX_HP } from '../data/constants';
 import { assetUrl } from '../assets';
 import { initAudio, playSound } from '../audio/sound';
 import BattleSprite from './BattleSprite';
-import PixelCardArt from './PixelCardArt';
+import WoodcutCardFace from './WoodcutCardFace';
 import { Volume2, VolumeX } from './PixelIcons';
 import { useSystemReducedMotion } from './useSystemReducedMotion';
 import {
@@ -161,11 +161,8 @@ export default function LocalPractice({
       className={`local-practice-card local-practice-card-${card.type.toLowerCase()}`}
       disabled={unavailable || phase !== 'choose'} onClick={() => play(card)}
       aria-label={`${card.name[lang]} · ${card.cost} ${say('能量', 'energy')} · ${cardSummary(card)}${unavailable ? ` · ${say(`还需 ${Math.max(0, card.cost - hero.energy)} 能量`, `Need ${Math.max(0, card.cost - hero.energy)} more energy`)}` : ''}`}>
-      <span className="local-practice-card-top"><span className="local-practice-cost">{card.cost}<span className="local-practice-sr-only"> {say('能量', 'energy')}</span></span>
-        {index !== undefined && <kbd aria-hidden="true">{index + 1}</kbd>}</span>
-      <span className="local-practice-card-art" aria-hidden="true"><PixelCardArt id={card.id} /></span>
-      <strong className="local-practice-card-name">{card.name[lang]}</strong>
-      <span className="local-practice-card-description">{cardSummary(card)}</span>
+      <span className="local-practice-card-face" aria-hidden="true"><WoodcutCardFace card={card} lang={lang} /></span>
+      <span className="local-practice-card-description">{index !== undefined && <kbd aria-hidden="true">{index + 1}</kbd>}{cardSummary(card)}</span>
       {unavailable && <span className="local-practice-card-locked">{say(`还需 ${Math.max(0, card.cost - hero.energy)} 能量`, `${Math.max(0, card.cost - hero.energy)} more energy`)}</span>}
     </button>;
   };
@@ -221,8 +218,8 @@ export default function LocalPractice({
                 {[LOCAL_HERO_ID, LOCAL_BOT_ID].map(id => {
                   const card = SKILL_DB.find(candidate => candidate.id === round?.moves[id])!;
                   return <div key={id} className={`local-practice-reveal-card local-practice-reveal-${card.type.toLowerCase()}`}>
+                    <span className="local-practice-reveal-art"><WoodcutCardFace card={card} lang={lang} /></span>
                     <span className="local-practice-reveal-label">{id === LOCAL_HERO_ID ? say('你', 'YOU') : say('对手', 'BOT')}</span>
-                    <span className="local-practice-reveal-art"><PixelCardArt id={card.id} /></span><strong>{card.name[lang]}</strong>
                   </div>;
                 })}
               </div>}

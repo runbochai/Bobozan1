@@ -129,7 +129,7 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
     if (event.key === 'ArrowLeft') { event.preventDefault(); previousPage(); }
   }}>
     <header className="crown-opening-header">
-      <div className="crown-wordmark"><CrownMark /><div><span>啵啵仔</span><h1 id={titleId}>{zh ? '王冠战争' : 'Crown War'}</h1></div></div>
+      <div className="crown-wordmark"><CrownMark /><div><span>bobozan</span><h1 id={titleId}>{zh ? '王冠战争' : 'Crown War'}</h1></div></div>
       <div className="crown-opening-header-actions">{onToggleLang && <button type="button" className="crown-text-button crown-opening-lang" onClick={onToggleLang} aria-label={zh ? 'Switch language to English' : '切换为中文'} lang={zh ? 'en' : 'zh'}>{zh ? 'EN' : '中文'}</button>}<button type="button" className="crown-text-button" onClick={onComplete}>{skipLabel ?? (zh ? '跳过' : 'Skip')} <span aria-hidden="true">↗</span></button><button type="button" className="crown-text-button crown-prologue-exit" onClick={onClose} aria-label={zh ? '关闭漫画，选择模式' : 'Close the comic and choose a mode'}>×</button></div>
     </header>
     <div className="crown-opening-book" aria-label={zh ? '开场漫画' : 'Opening comic'}>

@@ -339,7 +339,6 @@ export default function BobozanOnline() {
   const [expPhase, setExpPhase] = useState<'battle' | 'journey' | 'reward' | 'shop' | 'runover' | 'clear'>('battle');
   const [expNextStage, setExpNextStage] = useState(0);
   const [crownPrologue, setCrownPrologue] = useState(false);
-  const [storyLeadsToSolo, setStoryLeadsToSolo] = useState(false);
   const [learningMode, setLearningMode] = useState<'tutorial' | 'practice' | null>(null);
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
@@ -1183,7 +1182,7 @@ export default function BobozanOnline() {
     } finally { setLoading(false); }
   };
 
-  const copyGameInvite = () => { playSound('click', muted); const currentUrl = window.location.href.split('?')[0]; const inviteUrl = `${currentUrl}?room=${roomCode}`; const text = `啵啵仔 · ${lang === 'zh' ? '王冠竞技场' : 'Crown Arena'} ${t.roomCode}: ${roomCode}\n${inviteUrl}`; copyToClipboard(text, t.inviteCopied); };
+  const copyGameInvite = () => { playSound('click', muted); const currentUrl = window.location.href.split('?')[0]; const inviteUrl = `${currentUrl}?room=${roomCode}`; const text = `bobozan · ${lang === 'zh' ? '王冠竞技场' : 'Crown Arena'} ${t.roomCode}: ${roomCode}\n${inviteUrl}`; copyToClipboard(text, t.inviteCopied); };
   const startGameHost = async () => {
     if (!isOnline || !user) return;
     try {
@@ -1468,7 +1467,6 @@ export default function BobozanOnline() {
     setMoveManualOpen(false);
     setAcademyFromManual(false);
     setExpHelp(null);
-    setStoryLeadsToSolo(true);
     setCrownPrologue(true);
   };
   const closeAcademy = () => {
@@ -1506,13 +1504,12 @@ export default function BobozanOnline() {
   </>;
 
   // The original comic belongs to the solo entry; multiplayer and the optional tutorial open directly.
-  // Independent replays return to the menu, while a solo entry continues to campaign preparation.
   if (crownPrologue) return <div className="pixel-app crown-opening-screen">
     <CrownTitleScene />
     <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang}
-      completeLabel={storyLeadsToSolo ? (lang === 'zh' ? '继续单人模式' : 'Continue to solo') : undefined}
-      skipLabel={storyLeadsToSolo ? (lang === 'zh' ? '跳过漫画' : 'Skip comic') : undefined}
-      onComplete={() => { setCrownPrologue(false); if (storyLeadsToSolo) setExpHelp('intro'); }}
+      completeLabel={lang === 'zh' ? '继续单人模式' : 'Continue to solo'}
+      skipLabel={lang === 'zh' ? '跳过漫画' : 'Skip comic'}
+      onComplete={() => { setCrownPrologue(false); setExpHelp('intro'); }}
       onClose={() => setCrownPrologue(false)} />
   </div>;
 
@@ -1642,7 +1639,6 @@ export default function BobozanOnline() {
             <div className="crown-title-links">
               <button type="button" className="reference-entry-link" onClick={() => setLearningMode('practice')}><Target size={16} />{lang === 'zh' ? '自由对练' : 'Free sparring'}</button>
               <button type="button" className="reference-entry-link" onClick={() => setMoveManualOpen(true)}><Scroll size={16} />{lang === 'zh' ? '招式手册' : 'Move manual'}</button>
-              <button type="button" onClick={() => { setStoryLeadsToSolo(false); setCrownPrologue(true); }}>{lang === 'zh' ? '重看开场漫画' : 'Replay the opening comic'}</button>
             </div>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">

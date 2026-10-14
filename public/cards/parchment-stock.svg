@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <defs>
+    <radialGradient id="paper"><stop stop-color="#ffe6ad"/><stop offset=".65" stop-color="#f4d392"/><stop offset="1" stop-color="#d9ac6a"/></radialGradient>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency=".32" numOctaves="3" seed="18" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope=".16"/></feComponentTransfer><feBlend in="SourceGraphic" mode="multiply"/></filter>
+    <pattern id="fibres" width="43" height="57" patternUnits="userSpaceOnUse"><path d="m5 11 7-3 4 5m8 19 6 2-2 7M8 48l3 3m26-38 3 7M14 24l2-3" fill="none" stroke="#9a6c35" stroke-width=".7" opacity=".14"/></pattern>
+  </defs>
+  <rect width="400" height="600" fill="url(#paper)" filter="url(#grain)"/>
+  <rect width="400" height="600" fill="url(#fibres)"/>
+  <path d="M0 6h21l-7 8 5 14L4 35v116l6 4-6 9v173l7 13-7 12v124l7 11-9 23v80H0ZM400 0h-7v78l-6 12 8 22v178l-7 19 7 13v132l-5 15 5 13v118h5Z" fill="#a87942" opacity=".19"/>
+  <path d="m17 74 3 14m-6 310 5 11m367-207-3 24m-14 320 7-5M49 584l13 3m249-572 18 3" stroke="#9b6d36" opacity=".28" stroke-width="2"/>
+</svg>

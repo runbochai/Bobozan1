@@ -1,6 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import './index.css'
+import './components/ParchmentSkillArt.css'
 import App from './App.tsx'
 import WorldThemeProvider from './components/WorldThemeProvider'
 import './components/WorldThemes.css'
