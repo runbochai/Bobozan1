@@ -1,0 +1,16 @@
+.card-hover-tooltip { box-sizing: border-box; position: fixed; z-index: 1100; left: 0; top: 0; visibility: hidden; width: 320px; padding: 15px 16px; overflow: auto; overscroll-behavior: contain; touch-action: pan-y; scrollbar-width: thin; border: 1px solid #bc925c; border-radius: 3px; color: #f3e4c9; background: #152432fa; box-shadow: 0 10px 32px #020617b3, inset 0 1px #f7d99b26; font: 13px/1.55 system-ui, sans-serif; text-align: left; white-space: normal; overflow-wrap: anywhere; }
+.card-hover-tooltip[data-appearance="retro"] { border-radius: 12px; background: #111b2dfc; border-color: #cf8857; }
+.card-hover-tooltip header { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.card-hover-tooltip header strong { color: #ffdc9d; font-size: 18px; font-weight: 850; }
+.card-hover-tooltip header span { color: #b4c4cb; font-size: 11px; }
+.card-hover-tooltip dl { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 10px 0; padding: 8px 0; border-block: 1px solid #f8deb31f; }
+.card-hover-tooltip dl > div { display: flex; align-items: baseline; gap: 6px; }
+.card-hover-tooltip dt { color: #adbdc7; font-size: 11px; }
+.card-hover-tooltip dd { margin: 0; font-weight: 750; color: #ffe3af; }
+.card-hover-tooltip p { margin: 8px 0 0; }
+.card-hover-tooltip .card-hover-description { font-size: 14px; }
+.card-hover-tooltip .card-hover-note { color: #8de6bc; font-size: 12px; }
+.card-hover-tooltip .card-hover-blocked { color: #fcae91; font-size: 12px; }
+.card-hover-tooltip footer { margin-top: 11px; padding-top: 9px; border-top: 1px solid #f8deb31f; color: #aebdc9; font-size: 11px; }
+.card-hover-tooltip footer p { margin: 3px 0; }
+@media (max-width: 420px) { .card-hover-tooltip { width: 300px; padding: 12px 13px; } }

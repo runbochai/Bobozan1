@@ -19,9 +19,9 @@
   color: #f5e7cc; background: #32271f; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer;
   transition: background .15s, border-color .15s, transform .15s;
 }
-.local-practice button:hover:not(:disabled) { background: #4b3726; border-color: #e8bc71; }
-.local-practice button:active:not(:disabled) { transform: translateY(1px); }
-.local-practice button:disabled { cursor: not-allowed; }
+.local-practice button:hover:not(:disabled):not([aria-disabled='true']) { background: #4b3726; border-color: #e8bc71; }
+.local-practice button:active:not(:disabled):not([aria-disabled='true']) { transform: translateY(1px); }
+.local-practice button:disabled, .local-practice button[aria-disabled='true'] { cursor: not-allowed; }
 .local-practice :focus-visible { outline: 3px solid #f2cc81; outline-offset: 4px; }
 .local-practice h1, .local-practice h2, .local-practice p { margin: 0; }
 .local-practice h1:focus, .local-practice h2:focus, .local-practice-result:focus { outline: none !important; }
@@ -117,12 +117,12 @@
 .local-practice-cards::-webkit-scrollbar-track { background: #251a12; }
 .local-practice-cards::-webkit-scrollbar-thumb { background: #b58b4d; border-radius: 3px; }
 .local-practice button.local-practice-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 8px; min-width: 0; min-height: 0; padding: 0 0 5px; border: 0; border-radius: 3px; color: #d8c49e; background: transparent; box-shadow: none; transition: transform .18s; }
-.local-practice button.local-practice-card:hover:not(:disabled) { transform: translateY(-5px); background: transparent; border-color: transparent; box-shadow: none; }
-.local-practice button.local-practice-card:active:not(:disabled) { transform: translateY(-1px); }
-.local-practice button.local-practice-card:disabled { color: #c4b598; background: transparent; box-shadow: none; }
+.local-practice button.local-practice-card:hover:not([aria-disabled='true']) { transform: translateY(-5px); background: transparent; border-color: transparent; box-shadow: none; }
+.local-practice button.local-practice-card:active:not([aria-disabled='true']) { transform: translateY(-1px); }
+.local-practice button.local-practice-card[aria-disabled='true'] { color: #c4b598; background: transparent; box-shadow: none; }
 .local-practice-card-face { display: block; flex-shrink: 0; width: 100%; max-width: 154px; aspect-ratio: 2 / 3; border-radius: 3px; box-shadow: 2px 3px #9f8251, 4px 6px #0007; transition: filter .18s, box-shadow .18s; }
-.local-practice-card:hover:not(:disabled) .local-practice-card-face { filter: brightness(1.06); box-shadow: 2px 3px #c4a56c, 4px 8px #0008; }
-.local-practice-card:disabled .local-practice-card-face { filter: saturate(.4) brightness(.75); }
+.local-practice-card:hover:not([aria-disabled='true']) .local-practice-card-face { filter: brightness(1.06); box-shadow: 2px 3px #c4a56c, 4px 8px #0008; }
+.local-practice-card[aria-disabled='true'] .local-practice-card-face { filter: saturate(.4) brightness(.75); }
 .local-practice-card-description { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; height: 4.5em; font-size: 11px; line-height: 1.5; text-align: center; font-weight: 500; }
 .local-practice-card-description kbd { display: inline-block; margin-right: 5px; color: #cbb38b; border: 1px solid #8e7956; padding: 0 4px; font: inherit; font-size: 10px; line-height: 1.3; border-radius: 2px; }
 .local-practice-card-locked { min-height: 19px; font-size: 10px; color: #efd7b2; padding: 2px 4px; background: #65483055; border-radius: 2px; }
