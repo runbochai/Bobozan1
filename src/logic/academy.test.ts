@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACADEMY_LESSONS, RULE_TOPICS, type AcademyLesson } from '../data/academy';
+import { ACADEMY_LESSONS, MULTIPLAYER_ACADEMY_LESSONS, RULE_TOPICS, type AcademyLesson } from '../data/academy';
+import { FINAL_LEVEL } from '../data/constants';
 import { SKILL_DB } from '../data/skills';
 import { EXPEDITION_STAGES } from '../data/expedition';
 import type { Player } from '../types';
@@ -8,6 +9,7 @@ import { calculateTurnOutcome, doesCard1Overpower, getEffectiveLevel, getPlayerC
 import {
   ACADEMY_STORAGE_KEY, PRACTICE_HERO_ID, PRACTICE_ENEMY_ID,
   getPracticePlayers, readCompletedAcademyLessons, resolvePracticeRound, writeCompletedAcademyLessons,
+  getMultiplayerPractice, resolveMultiplayerPractice,
   type AcademyStorage,
 } from './academy';
 
@@ -36,6 +38,63 @@ test('lesson and rule IDs are unique, bilingual, and small enough for focused pr
   for (const topic of RULE_TOPICS) {
     for (const value of [topic.title, ...topic.items]) assert.ok(value.zh.trim() && value.en.trim());
   }
+});
+
+test('multiplayer situations each require a real decision and use unchanged engine output', () => {
+  assert.equal(new Set(MULTIPLAYER_ACADEMY_LESSONS.map(item => item.id)).size, MULTIPLAYER_ACADEMY_LESSONS.length);
+  for (const item of MULTIPLAYER_ACADEMY_LESSONS) {
+    for (const value of [item.title, item.intro, item.prompt, ...item.choices.map(choice => choice.label)]) {
+      assert.ok(value.zh.trim() && value.en.trim());
+    }
+    const practice = getMultiplayerPractice(item.id);
+    const actual = calculateTurnOutcome(practice.beforePlayers, practice.game.turn, practice.game.matchCount, 'zh');
+    assert.deepEqual(practice.game.players, actual.players);
+    assert.equal(practice.game.status, actual.isGameOver ? 'GAMEOVER' : 'PLAYING');
+    assert.equal(practice.survivorReset, actual.survivorReset);
+    assert.equal(item.choices.filter(choice => resolveMultiplayerPractice(item.id, choice.id).passed).length, 1);
+    assert.throws(() => resolveMultiplayerPractice(item.id, 'unknown-choice'), /Unknown/);
+  }
+});
+
+test('multiplayer teaching separates a turn, a match winner, and the final kill ranking', () => {
+  const ongoing = getMultiplayerPractice('turn-and-match');
+  assert.equal(ongoing.game.status, 'PLAYING');
+  assert.ok(ongoing.game.players.every(player => player.energy === 2 && !player.isDead));
+  assert.equal(ongoing.summary.roundWinner, null);
+  assert.equal(resolveMultiplayerPractice('turn-and-match', 'next-turn').passed, true);
+
+  const match = getMultiplayerPractice('winner-and-leader');
+  assert.equal(match.summary.roundWinner?.id, PRACTICE_HERO_ID);
+  assert.equal(match.summary.leaders[0].id, PRACTICE_ENEMY_ID, 'The eliminated player can still lead total kills');
+  assert.ok(hero(match.game.players).inventory.includes(match.game.matchCount), 'The survivor receives the real engine reward');
+  assert.equal(match.summary.isSeriesOver, false);
+  assert.deepEqual(match.summary.champions, []);
+  assert.equal(resolveMultiplayerPractice('winner-and-leader', 'survivor-reward').passed, true);
+
+  const final = getMultiplayerPractice('final-standings');
+  assert.equal(final.game.matchCount, FINAL_LEVEL);
+  assert.equal(final.summary.isSeriesOver, true);
+  assert.equal(final.summary.remainingMatches, 0);
+  assert.deepEqual(final.summary.champions.map(player => player.id).sort(), [PRACTICE_HERO_ID, PRACTICE_ENEMY_ID].sort());
+  assert.ok(final.summary.champions.every(player => player.kills === 5));
+  assert.equal(hero(final.game.players).inventory.includes(FINAL_LEVEL), false, 'Final match does not award a new skill');
+  assert.equal(resolveMultiplayerPractice('final-standings', 'joint-champions').passed, true);
+});
+
+test('three-player teaching keeps eliminated players out and preserves survivors’ earned skills', () => {
+  const practice = getMultiplayerPractice('elimination-reset');
+  assert.equal(practice.game.status, 'PLAYING');
+  assert.equal(practice.survivorReset, true);
+  assert.equal(enemy(practice.game.players).isDead, true);
+  assert.equal(practice.summary.roundWinner, null);
+  const survivor = hero(practice.game.players);
+  assert.equal(survivor.hp, 1);
+  assert.equal(survivor.energy, 0);
+  assert.equal(survivor.layer, 0);
+  assert.deepEqual(survivor.inventory, [0, 1]);
+  assert.deepEqual(survivor.disabledSkills, []);
+  assert.deepEqual(survivor.freeSkills, []);
+  assert.equal(resolveMultiplayerPractice('elimination-reset', 'survivors-continue').passed, true);
 });
 
 for (const item of ACADEMY_LESSONS) {

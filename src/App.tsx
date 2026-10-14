@@ -14,9 +14,10 @@ import BattleFighter from './components/BattleFighter';
 import BattleLevelBadge from './components/BattleLevelBadge';
 import BattleStats from './components/BattleStats';
 import BattleAcademy from './components/BattleAcademy';
-import QuickStart from './components/QuickStart';
 import LocalPractice from './components/LocalPractice';
 import MultiplayerHelp from './components/MultiplayerHelp';
+import MultiplayerResults from './components/MultiplayerResults';
+import { getMultiplayerMatchSummary } from './logic/multiplayerMatch';
 import ExpeditionBriefing, { type ExpeditionRecap } from './components/ExpeditionBriefing';
 import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
 import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
@@ -27,6 +28,7 @@ import { AVATAR_OPTIONS } from './data/avatars';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
   Music,
+  Swords,
   Skull,
   Smile,
   X,
@@ -81,7 +83,6 @@ import {
   type ShopItem,
 } from './logic/expedition';
 import {
-  FINAL_LEVEL,
   APP_ID,
   MAX_HP,
   MAX_PLAYERS,
@@ -334,8 +335,9 @@ export default function BobozanOnline() {
   const [expRelics, setExpRelics] = useState<string[]>([]);
   const [expPhase, setExpPhase] = useState<'battle' | 'journey' | 'reward' | 'shop' | 'runover' | 'clear'>('battle');
   const [expNextStage, setExpNextStage] = useState(0);
-  const [crownPrologue, setCrownPrologue] = useState(false);
-  const [learningMode, setLearningMode] = useState<'quick' | 'practice' | null>(null);
+  const [crownPrologue, setCrownPrologue] = useState(() => !readInvitedRoom(window.location.search));
+  const [storyLeadsToPractice, setStoryLeadsToPractice] = useState(true);
+  const [learningMode, setLearningMode] = useState<'tutorial' | 'practice' | null>(null);
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
   const [expGold, setExpGold] = useState(0);
@@ -1297,6 +1299,7 @@ export default function BobozanOnline() {
       const expectedMatch = gameState.matchCount;
       await mutateRoom(roomCode, room => {
         if (room.hostId !== user.uid || room.status !== 'GAMEOVER' || room.matchCount !== expectedMatch) return null;
+        if (getMultiplayerMatchSummary(room).isSeriesOver) return null;
         const preparedPlayers = room.players.map(p => p.isBot ? autoSelectSkillLoadout(p) : normalizeSkillLoadout(p));
         if (preparedPlayers.some(hasSkillOverflow)) throw new Error('Please finish choosing reward skills first');
     // 3. Reset Players Logic (with UNDEFINED protection)
@@ -1447,11 +1450,16 @@ export default function BobozanOnline() {
   // --- RENDER LOGIC ---
 
   const inMatch = view === 'GAME' || view === 'LOBBY';
+  const openSoloMode = () => {
+    setLearningMode(null);
+    setAcademyTab(null);
+    setExpHelp('intro');
+  };
   const learningOverlay = <>
-    {learningMode === 'quick' && <QuickStart lang={lang} avatar={playerAvatar}
-      onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
-      onPractice={() => setLearningMode('practice')}
-      onOpenAcademy={() => { setLearningMode(null); setAcademyTab('lessons'); }} />}
+    {learningMode === 'tutorial' && <BattleAcademy intro lang={lang} avatar={playerAvatar}
+      onClose={() => setLearningMode(null)} onContinue={handleEnterName}
+      onSolo={openSoloMode}
+      startLabel={lang === 'zh' ? '多人模式' : 'Multiplayer'} />}
     {learningMode === 'practice' && <LocalPractice lang={lang} avatar={playerAvatar}
       onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
       onOpenRules={() => setAcademyTab('rules')} />}
@@ -1466,15 +1474,20 @@ export default function BobozanOnline() {
     {expHelp && <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
       difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty} best={expBest}
       onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
-      onStory={expHelp === 'intro' && !inMatch ? () => { setExpHelp(null); setCrownPrologue(true); } : undefined}
+      onStory={expHelp === 'intro' && !inMatch ? () => { setExpHelp(null); setStoryLeadsToPractice(false); setCrownPrologue(true); } : undefined}
       onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} />}
   </>;
 
-  // The campaign story is optional; friends and invitees land on the play menu.
+  // Preserve the original comic and the complete optional tutorial before choosing a mode.
+  // Invitations can go straight to their room without replaying the introduction.
   // Keep the menu unmounted until dismissal so it cannot flash or receive focus behind the comic.
   if (crownPrologue) return <div className="pixel-app crown-opening-screen">
     <CrownTitleScene />
-    <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang} onComplete={() => setCrownPrologue(false)} onClose={() => setCrownPrologue(false)} />
+    <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang}
+      completeLabel={storyLeadsToPractice ? (lang === 'zh' ? '先坐下试试' : 'Take a seat') : undefined}
+      skipLabel={storyLeadsToPractice ? (lang === 'zh' ? '跳到实战' : 'Skip to practice') : undefined}
+      onComplete={() => { setCrownPrologue(false); if (storyLeadsToPractice) setLearningMode('tutorial'); }}
+      onClose={() => setCrownPrologue(false)} />
   </div>;
 
   if (view === 'NAME_INPUT') return (
@@ -1582,30 +1595,28 @@ export default function BobozanOnline() {
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.8)] scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500 origin-center" />
                </div>
             </div>
-            <p className="friends-entry-note">{lang === 'zh' ? '2–8 人 · 同时出牌 · 猜中朋友的下一招' : '2–8 players · Choose together · Read your friends'}</p>
+            <p className="friends-entry-note">{lang === 'zh' ? '独自踏上远征，或与朋友同桌猜招。' : 'Set out on a solo journey, or read your friends across the table.'}</p>
             {invitedRoom && <p className="friends-invitation" role="status">{lang === 'zh' ? `朋友邀请你加入房间 ${invitedRoom}` : `You’re invited to room ${invitedRoom}`}</p>}
             <div className="friends-title-actions w-full">
+              <button type="button" onClick={openSoloMode} className="btn-primary friends-play-button mode-choice-button p-4">
+                <Swords size={24} /><span>{lang === 'zh' ? '单人模式' : 'Solo mode'}<small>{lang === 'zh' ? '王冠远征 · 继续故事' : 'Campaign · Continue the story'}</small></span>
+              </button>
               <button
                 onClick={handleEnterName}
                 disabled={loading}
-                className="btn-primary friends-play-button group relative overflow-hidden p-4"
+                className="btn-secondary friends-learn-button mode-choice-button group relative overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
                   <Users size={24} />
-                  <span className="text-2xl font-black uppercase tracking-wider">{invitedRoom ? (lang === 'zh' ? '加入朋友房间' : 'Join your friends') : (lang === 'zh' ? '和朋友玩' : 'Play with friends')}</span>
+                  <span>{invitedRoom ? (lang === 'zh' ? '加入朋友房间' : 'Join your friends') : (lang === 'zh' ? '多人模式' : 'Multiplayer')}<small>{lang === 'zh' ? '2–8 人 · 和朋友同桌' : '2–8 players · Play with friends'}</small></span>
                 </div>
               </button>
-              <button
-                onClick={() => setLearningMode('quick')}
-                className="btn-secondary friends-learn-button p-3"
-              >
-                <Play size={19} /><span>{lang === 'zh' ? '快速上手' : 'Quick start'}<small>{lang === 'zh' ? '4 次交锋，约 3 分钟' : '4 short clashes · about 3 min'}</small></span>
-              </button>
             </div>
+            <button type="button" className="story-practice-link" onClick={() => setLearningMode('tutorial')}><Play size={16} />{lang === 'zh' ? '新手教程' : 'How to play'}</button>
             <div className="crown-title-links">
               <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '机器人练习' : 'Bot practice'}</button>
               <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
-              <button type="button" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
+              <button type="button" onClick={() => { setStoryLeadsToPractice(true); setCrownPrologue(true); }}>{lang === 'zh' ? '重看开场漫画' : 'Replay the opening comic'}</button>
             </div>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
@@ -1702,7 +1713,7 @@ export default function BobozanOnline() {
               )}
             </div>
             <div className="friends-menu-extras">
-              <button type="button" onClick={() => setLearningMode('quick')}>{lang === 'zh' ? '快速上手' : 'Quick start'}</button>
+              <button type="button" onClick={() => setLearningMode('tutorial')}>{lang === 'zh' ? '新手教程' : 'How to play'}</button>
               <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '先和机器人练一局' : 'Practice with a bot'}</button>
               <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
               <button type="button" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
@@ -1897,14 +1908,6 @@ export default function BobozanOnline() {
       aliveCount: gameState.players.filter(fighter => !fighter.isDead).length, seed: expDialogueSeedRef.current,
     }, lang)] as const];
   }));
-  
-  // 计算当前局获胜者 & 获得的技能
-  const livingPlayers = gameState.players.filter((p) => !p.isDead);
-  const winnerPlayer =
-    gameState.status === 'GAMEOVER' && livingPlayers.length === 1
-      ? livingPlayers[0]
-      : null;
-
   
   // --- EMOJI ANIMATION STYLE ---
   // 包含：弹出(Pop In) -> 悬浮(Float) -> 消失(Pop Out)
@@ -2273,151 +2276,13 @@ export default function BobozanOnline() {
              </button>
            )}
 
-           {/* GAME OVER OVERLAY */}
-           {gameState.status === 'GAMEOVER' && winnerPlayer && showBattleResult && (
-            <div className="multiplayer-result-screen fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-500 overflow-hidden">
-               <div className="relative w-full max-w-md md:max-w-lg mx-4 animate-in zoom-in-95 duration-300 z-10">
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-b from-yellow-500/20 via-purple-500/10 to-transparent blur-3xl rounded-full pointer-events-none" />
-                  <div className="multiplayer-result-card relative bg-slate-900/95 border border-slate-700/50 p-6 md:p-10 rounded-[2rem] shadow-2xl flex flex-col items-center gap-6 overflow-hidden">
-                     <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50" />
-
-                     {/* 1. TITLE & WINNER CALCULATION */}
-                     {(() => {
-                        // Check if this is the Grand Finale
-                        const isFinal = gameState.matchCount >= FINAL_LEVEL;
-                        
-                        // If final, winner is player with most kills. Else, it's the round survivor.
-                        const displayWinner = isFinal 
-                          ? gameState.players.reduce((prev, curr) => 
-                              ((curr.kills || 0) > (prev.kills || 0) ? curr : prev), 
-                            gameState.players[0]) 
-                          : winnerPlayer;
-
-                        return (
-                          <>
-                             <div className="text-center space-y-1 z-10">
-                                 <h2 className="text-4xl md:text-6xl font-black italic tracking-wider text-transparent bg-clip-text bg-gradient-to-b from-yellow-300 to-yellow-600 drop-shadow-sm">
-                                   {isFinal 
-                                      ? (lang === 'zh' ? '王冠归属已定!' : 'THE CROWN IS CLAIMED!')
-                                      : (lang === 'zh' ? '守住席位!' : 'SEAT SECURED!')}
-                                 </h2>
-                                 <div className="flex items-center justify-center gap-2 text-yellow-500/80 font-bold text-base tracking-[0.2em] uppercase">
-                                   <Crown size={18} />
-                                   <span>{isFinal ? (lang === 'zh' ? '击杀王' : 'KILL LEADER') : (lang === 'zh' ? '胜者' : 'WINNER')}</span>
-                                   <Crown size={18} />
-                                 </div>
-                             </div>
-
-                             <div className="flex flex-col items-center gap-5 w-full">
-                                
-                                {/* 🟢 UPDATED: Bigger Avatar (w-32) + Full Circle Fill */}
-                                <div className="relative group">
-                                   <div className="absolute inset-0 bg-yellow-400 blur-xl opacity-40 animate-pulse rounded-full" />
-                                   
-                                   <div className="relative w-32 h-32 bg-slate-800 rounded-full border-4 border-yellow-400 flex items-center justify-center shadow-lg z-10 overflow-hidden">
-                                      {getPlayerAvatar(displayWinner) ? (
-                                          <img 
-                                            src={avatarUrl(getPlayerAvatar(displayWinner)!)}
-                                            alt={displayWinner.name} 
-                                            className="w-full h-full object-cover" 
-                                          />
-                                      ) : (
-                                          <User size={64} className="text-yellow-100" />
-                                      )}
-                                   </div>
-                                   
-                                   <div className="absolute -bottom-3 left-1/2 -translate-x-1/2 bg-yellow-500 text-black text-xs font-black px-4 py-1 rounded-full whitespace-nowrap z-20 shadow-md transform scale-100">
-                                      {displayWinner.name}
-                                   </div>
-                                </div>
-                                
-                                {/* Reward Section (Kill Count or Card) */}
-                                {isFinal ? (
-                                   // Final Level: Show Kills
-                                   <div className="text-2xl font-black text-white flex items-center gap-2">
-                                      <Skull size={24} className="text-red-500" />
-                                      {displayWinner.kills || 0} {lang === 'zh' ? '击杀' : 'KILLS'}
-                                   </div>
-                                ) : (
-                                   // Normal Level: Show Unlocked Card
-                                   <div className="mt-2 flex flex-col items-center gap-3 w-full animate-in slide-in-from-bottom-4 duration-700">
-                                      <div className="text-slate-500 text-[10px] uppercase tracking-[0.2em] font-bold">
-                                         {lang === 'zh' ? '获得奖励' : 'REWARD'}
-                                      </div>
-
-                                      {(() => {
-                                         const unlockedSkill = SKILL_DB.find(c => c.levelRequired === gameState.matchCount);
-                                         if (!unlockedSkill) return <div className="text-slate-500 text-sm italic bg-black/20 px-6 py-3 rounded-xl border border-white/5">{lang === 'zh' ? '无新技能解锁' : 'No Skill Unlocked'}</div>;
-                                         return (
-                                            <div className="relative group perspective-500">
-                                               <div className="absolute inset-0 bg-yellow-400/30 blur-2xl rounded-2xl scale-95 group-hover:scale-110 transition-transform duration-500" />
-                                               <div className="
-                                                  relative w-40 h-60 bg-slate-900 rounded-xl border-[3px] border-yellow-400/60
-                                                  flex flex-col items-center p-3 shadow-2xl
-                                                  transform transition-transform duration-300 hover:scale-105 hover:rotate-1
-                                               ">
-                                                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-green-500 text-black text-[10px] font-black px-2 py-0.5 rounded shadow-lg animate-bounce z-30">NEW!</div>
-                                                  <div className="absolute inset-0 bg-gradient-to-b from-slate-800 to-black rounded-lg opacity-80" />
-                                                  <div className="relative z-10 flex flex-col items-center h-full gap-1">
-                                                     <div className="text-xs font-mono text-yellow-500 mb-1">Lv.{unlockedSkill.levelRequired}</div>
-                                                     <div className="flex-1 flex items-center justify-center"><div className="scale-[1.5] drop-shadow-xl">{getCardIcon(unlockedSkill.id)}</div></div>
-                                                     <div className="font-bold text-white text-base text-center leading-tight mb-1">{unlockedSkill.name[lang]}</div>
-                                                     <div className="text-[10px] text-slate-400 text-center leading-tight line-clamp-3 px-1">{unlockedSkill.description[lang]}</div>
-                                                  </div>
-                                                  <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-transparent rounded-lg pointer-events-none" />
-                                               </div>
-                                            </div>
-                                         );
-                                      })()}
-                                   </div>
-                                )}
-                             </div>
-
-                             {/* CONTROLS */}
-                             <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setAcademyTab('rules')} />
-                             <div className="w-full pt-4 border-t border-slate-800 flex flex-col gap-3 z-10">
-                                {isFinal ? (
-                                   <button onClick={() => leaveRoom()} className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-black text-lg rounded-xl shadow-lg transition-all active:scale-95">
-                                      {lang === 'zh' ? '结束游戏' : 'FINISH GAME'}
-                                   </button>
-                                ) : (
-                                   /* Normal Next Match Logic */
-                                   gameState.hostId === user?.uid ? (
-                                     <button
-                                        onClick={nextMatchHost}
-                                        // Wait if anyone is pending a swap
-                                        disabled={gameState.players.some(p => !p.isBot && hasSkillOverflow(p))}
-                                        className={`w-full py-3 rounded-xl font-black text-lg shadow-lg flex items-center justify-center gap-2 transition-all ${gameState.players.some(p => !p.isBot && hasSkillOverflow(p)) ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700' : 'bg-yellow-500 hover:bg-yellow-400 text-slate-900 active:scale-95'}`}
-                                     >
-                                        {gameState.players.some(p => !p.isBot && hasSkillOverflow(p)) ? (
-                                           <>
-                                             <Loader size={20} className="animate-spin text-slate-500" />
-                                             <span className="text-sm">{lang === 'zh' ? '等待选择技能…' : 'Waiting for skill choices…'}</span>
-                                           </>
-                                        ) : (
-                                           <>
-                                             <Play size={20} className="fill-slate-900 group-hover:scale-110 transition-transform" /> 
-                                             {t.nextMatch}
-                                           </>
-                                        )}
-                                     </button>
-                                   ) : (
-                                     <div className="text-center text-slate-500 text-xs animate-pulse flex items-center justify-center gap-2">
-                                        <Loader size={16} className="animate-spin" />
-                                        {gameState.players.some(p => !p.isBot && hasSkillOverflow(p))
-                                          ? (lang === 'zh' ? '等待选择技能…' : 'Waiting for skill choices…')
-                                          : (lang === 'zh' ? '等待下一局...' : 'Waiting for host...')}
-                                     </div>
-                                   )
-                                )}
-                             </div>
-                          </>
-                        );
-                     })()}
-                  </div>
-               </div>
-            </div>
-           )}
+           {/* A drawn final match also completes the series and needs a result screen. */}
+           {!isExpedition && !academyTab && gameState.status === 'GAMEOVER' && showBattleResult && <MultiplayerResults
+             lang={lang} game={gameState} playerId={user?.uid}
+             onNextMatch={nextMatchHost} onExit={() => { void leaveRoom(); }}
+             onOpenRules={() => setAcademyTab('rules')}
+             pendingSkills={!!myPlayer && hasSkillOverflow(myPlayer)}
+             nextDisabled={gameState.players.some(p => !p.isBot && hasSkillOverflow(p))} />}
 
           </div>
 

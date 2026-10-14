@@ -21,6 +21,14 @@
 .multiplayer-help-basics li::marker { color: #edc784; font-weight: 800; }
 .multiplayer-help-compact { flex: 0 0 auto; padding: 8px 12px; border-width: 0 0 1px; border-color: #53686c; background: #13232eef; font-size: 12px; }
 .multiplayer-help-status { min-width: 0; margin: 0; color: #ccdfd7; }
+.multiplayer-help-compact .multiplayer-help-status { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.multiplayer-series-progress { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 10px; margin: 8px 0 4px; font-size: 12px; }
+.multiplayer-series-progress strong { color: #ffe0a0; }
+.multiplayer-series-progress span { color: #c6d7cc; }
+.multiplayer-series-progress progress { width: 100%; height: 4px; border: 0; accent-color: #d6b06b; }
+.multiplayer-help-explain-actions { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 7px; }
+.multiplayer-help-explain-actions button { color: #f0d29a; min-height: 32px; border-bottom: 1px solid #baa57880; padding: 3px 2px; background: none; font: inherit; cursor: pointer; }
+.multiplayer-help-compact .multiplayer-series-progress { font-size: 11px; margin-top: 3px; }
 .multiplayer-help-compact .multiplayer-help-rules { min-height: 32px; padding: 3px 9px; }
 .multiplayer-help-details { margin-top: 2px; }
 .multiplayer-help-details > summary { width: fit-content; padding: 5px 2px; color: #ebcf97; cursor: pointer; touch-action: manipulation; }

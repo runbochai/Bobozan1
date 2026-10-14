@@ -1,6 +1,8 @@
-import type { Lang, LocalizedText, LogEntry, Player } from '../types';
-import { ACADEMY_LESSONS, type AcademyFighter, type AcademyLesson } from '../data/academy';
+import type { GameState, Lang, LocalizedText, LogEntry, Player } from '../types';
+import { ACADEMY_LESSONS, MULTIPLAYER_ACADEMY_LESSONS, type AcademyFighter, type AcademyLesson, type MultiplayerAcademyLesson } from '../data/academy';
 import { calculateTurnOutcome, getPlayerCards, isOffensiveCard } from './combat';
+import { getMultiplayerMatchSummary, type MultiplayerMatchSummary } from './multiplayerMatch';
+import { FINAL_LEVEL } from '../data/constants';
 
 export const PRACTICE_HERO_ID = 'academy-hero';
 export const PRACTICE_ENEMY_ID = 'academy-enemy';
@@ -167,6 +169,102 @@ export function resolvePracticeRound(lesson: AcademyLesson, roundIndex: number, 
       en: `${summary.en} ${passed ? 'Goal reached.' : `${goalReminder.en} You can retry.`} ${round.explanation.en}`,
     },
   };
+}
+
+export interface MultiplayerPracticeState {
+  game: Pick<GameState, 'status' | 'matchCount' | 'players' | 'turn'>;
+  beforePlayers: Player[];
+  summary: MultiplayerMatchSummary;
+  survivorReset: boolean;
+  correctChoice: string;
+  explanation: LocalizedText;
+}
+
+/** Fixed local examples settled by the same engine and ranking helper as an online room. */
+export function getMultiplayerPractice(id: MultiplayerAcademyLesson['id'], lang: Lang = 'zh'): MultiplayerPracticeState {
+  const player = (playerId: string, name: LocalizedText, patch: Partial<Player> = {}): Player => ({
+    ...makePlayer(playerId, { hp: 1, energy: 0, inventory: [0] }, lang),
+    name: name[lang], isBot: true, ...patch,
+  });
+  const names = {
+    you: { zh: '你', en: 'You' },
+    blue: { zh: '蓝衣玩家', en: 'Player in blue' },
+    red: { zh: '红衣玩家', en: 'Player in red' },
+  };
+  let beforePlayers: Player[];
+  let matchCount = 1;
+  switch (id) {
+    case 'turn-and-match':
+      beforePlayers = [
+        player(PRACTICE_HERO_ID, names.you, { selectedCardId: 'charge' }),
+        player(PRACTICE_ENEMY_ID, names.blue, { selectedCardId: 'charge' }),
+      ];
+      break;
+    case 'winner-and-leader':
+    case 'final-standings':
+      matchCount = id === 'final-standings' ? FINAL_LEVEL : 7;
+      beforePlayers = [
+        player(PRACTICE_HERO_ID, names.you, { energy: 1, kills: id === 'final-standings' ? 4 : 1, selectedCardId: 'hong' }),
+        player(PRACTICE_ENEMY_ID, names.blue, { kills: id === 'final-standings' ? 5 : 4, selectedCardId: 'charge' }),
+      ];
+      break;
+    case 'elimination-reset':
+      matchCount = 3;
+      beforePlayers = [
+        player(PRACTICE_HERO_ID, names.you, {
+          hp: 0.5, energy: 4, inventory: [0, 1], selectedCardId: 'defend',
+          disabledSkills: ['pegasus'], freeSkills: ['hong2'],
+        }),
+        player(PRACTICE_ENEMY_ID, names.blue, { selectedCardId: 'charge' }),
+        player('academy-third', names.red, { hp: 0.5, energy: 1, inventory: [0, 2], selectedCardId: 'hong' }),
+      ];
+      break;
+  }
+  const outcome = calculateTurnOutcome(beforePlayers, 1, matchCount, lang);
+  const game: MultiplayerPracticeState['game'] = {
+    status: outcome.isGameOver ? 'GAMEOVER' : 'PLAYING', matchCount, players: outcome.players, turn: 1,
+  };
+  const summary = getMultiplayerMatchSummary(game);
+  let correctChoice: string;
+  let explanation: LocalizedText;
+  switch (id) {
+    case 'turn-and-match':
+      correctChoice = !outcome.isGameOver ? 'next-turn' : 'next-match';
+      explanation = {
+        zh: '两人都还活着，这一局就继续。一次出牌叫一回合；能量和出牌历史会带到下一回合，不会因为出过一次牌就清零。',
+        en: 'Both players are alive, so this match continues. One card choice is a turn; energy and move history carry into the next turn rather than resetting after each choice.',
+      };
+      break;
+    case 'winner-and-leader':
+      correctChoice = summary.roundWinner?.id === PRACTICE_HERO_ID ? 'survivor-reward' : 'leader-reward';
+      explanation = {
+        zh: `你是第 ${summary.matchNumber} 局的最后幸存者，获得本局新技能。击杀榜领先不等于赢下这一局；本局胜利也不等于总冠军。还剩 ${summary.remainingMatches} 局，由房主开始下一局，累计击杀继续记录。`,
+        en: `You are the last survivor of match ${summary.matchNumber} and earn its skill. Leading total kills does not win a match, and winning a match does not yet win the series. ${summary.remainingMatches} matches remain; the host starts the next one and cumulative kills carry on.`,
+      };
+      break;
+    case 'final-standings':
+      correctChoice = summary.isSeriesOver && summary.champions.length > 1 ? 'joint-champions' : 'survivor-champion';
+      explanation = {
+        zh: `${summary.totalMatches} 局赛程结束。你赢下最后一局，但双方累计都是 ${summary.champions[0]?.kills ?? 0} 次击杀，因此并列总冠军。此处直接公布总成绩，没有下一局，也不再发升级奖励。`,
+        en: `The ${summary.totalMatches}-match series is complete. You won the last match, but both players finished with ${summary.champions[0]?.kills ?? 0} kills and are joint champions. Show the final result now, with no further match or skill reward.`,
+      };
+      break;
+    case 'elimination-reset':
+      correctChoice = outcome.survivorReset && !outcome.isGameOver ? 'survivors-continue' : 'everyone-respawns';
+      explanation = {
+        zh: '还有两人存活，所以这一局没结束。幸存者恢复到 1 生命、能量和层数归零，封印及吸收的免费牌清除；你已获得的 Lv.1 技能仍保留。淘汰者暂时观战，下一局才恢复生命、能量归零重新加入，技能和累计击杀保留。',
+        en: 'Two players remain, so this match is still running. Survivors reset to 1 HP, zero energy and layer 0, and clear disables and absorbed free cards; your earned Lv.1 skill stays. The eliminated player watches until the next match, then returns with restored HP and zero energy, keeping skills and total kills.',
+      };
+      break;
+  }
+  return { game, beforePlayers, summary, survivorReset: outcome.survivorReset, correctChoice, explanation };
+}
+
+export function resolveMultiplayerPractice(id: MultiplayerAcademyLesson['id'], choice: string, lang: Lang = 'zh') {
+  const lesson = MULTIPLAYER_ACADEMY_LESSONS.find(item => item.id === id);
+  if (!lesson?.choices.some(item => item.id === choice)) throw new Error('Unknown multiplayer practice choice');
+  const practice = getMultiplayerPractice(id, lang);
+  return { passed: choice === practice.correctChoice, explanation: practice.explanation };
 }
 
 function browserStorage(): AcademyStorage | undefined {
