@@ -1,7 +1,7 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
 import type { Lang, Player } from '../types';
-import { directionToward, getBattleFigure, getBattleFigureAnchor, getBattleStatusOffset, type BattleBounds, type BattleSeat } from '../logic/battleLayout';
+import { directionToward, getBattleFigure, getBattleStatusOffset, type BattleBounds, type BattleSeat } from '../logic/battleLayout';
 import { playerAvatar } from '../logic/bots';
 import BattleSprite from './BattleSprite';
 import BattleStats from './BattleStats';
@@ -45,7 +45,7 @@ export default function BattleFighter({ player, seat, bounds, self, maxHp, level
   return <div className={`battle-fighter ${self ? 'battle-fighter-self' : 'battle-fighter-enemy'} ${!self && seat.y > 65 ? 'battle-fighter-near' : ''} ${player.isDead ? 'battle-fighter-dead' : ''}`}
     data-player-id={player.id} data-facing={direction} data-edge={seat.edge} data-depth={foreground ? 'front' : 'back'} data-hit={hit}
     data-seat-x={seat.x} data-seat-y={seat.y}
-    style={{ '--model-size':`${seat.size}px`, '--seat-anchor': getBattleFigureAnchor(seat, self), left: `${figure.x}%`, top: `${figure.y}%` } as CSSProperties}>
+    style={{ '--model-size':`${seat.size}px`, '--seat-anchor': self ? .5 : .55, left: `${figure.x}%`, top: `${figure.y}%` } as CSSProperties}>
     <div className={`battle-character-motion battle-character-${motion}`}
       style={{ '--idle-delay': `${-(seed % 20) / 10}s` } as CSSProperties}>
       <BattleSprite avatar={playerAvatar(player)} name={player.name} direction={direction}

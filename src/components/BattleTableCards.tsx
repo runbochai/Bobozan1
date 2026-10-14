@@ -5,7 +5,7 @@ import { getEffectiveLevel, getPlayerCard } from '../logic/cardLevels';
 import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS, CARD_FLIGHT_MS,
   CARD_LAND_MS, CARD_LANDING_MS, CARD_RELEASE_MS } from '../data/battleTiming';
 import { battleReleaseHand } from '../data/battleActions';
-import { getBattleFigure, getBattleFigureAnchor, SELF_SEAT, type BattleBounds, type BattleSeat } from '../logic/battleLayout';
+import { getBattleFigure, SELF_SEAT, type BattleBounds, type BattleSeat } from '../logic/battleLayout';
 import { playerAvatar } from '../logic/bots';
 import { tableCardPositions } from '../logic/tableCardLayout';
 import { tableCardClash } from '../logic/tableCardMotion';
@@ -62,7 +62,7 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
       const hand = battleReleaseHand(playerAvatar(player), start.facing ?? 's');
       const size = start.size ?? width, spriteHeight = size * 4 / 3;
       const fromX = (figure.x - x) * bounds.width / 100 + (hand.x - .5) * size;
-      const fromY = (figure.y - y) * bounds.height / 100 + (hand.y - getBattleFigureAnchor(start, self)) * spriteHeight
+      const fromY = (figure.y - y) * bounds.height / 100 + (hand.y - (self ? .5 : .55)) * spriteHeight
         + (ownerHeight + ownerGap) * .32 / 2;
       const inward = clash.offsets[index] ?? { x: 0, y: 0 };
       const cost = player.freeSkills?.includes(card.id) ? 0 : card.cost;

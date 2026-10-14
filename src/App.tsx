@@ -115,7 +115,6 @@ import { themeForStage } from './data/crownCampaign';
 import { findTheme } from './data/gameThemes';
 import './components/CrownIntegration.css';
 import './components/MultiplayerEntry.css';
-import './components/UnifiedTableViewport.css';
 import { readInvitedRoom, readPlayerName, savePlayerName } from './logic/playerEntry';
 import { getExpeditionLine } from './data/expeditionDialogue';
 import { createExpeditionRun, setupExpeditionStage, settleExpeditionRound, recordExpeditionHistory,
@@ -148,7 +147,6 @@ const TopControls = ({
   reduceMotion,
   toggleReduceMotion,
   campaignScene = false,
-  tableScene = false,
 }: {
   muted: boolean;
   toggleMute: () => void;
@@ -164,14 +162,13 @@ const TopControls = ({
   reduceMotion: boolean;
   toggleReduceMotion: () => void;
   campaignScene?: boolean;
-  tableScene?: boolean;
 }) => {
   // Local state for the slider toggle
   const [isVolumeOpen, setIsVolumeOpen] = useState(false);
 
   return (
     <div className="pixel-controls absolute top-4 right-4 z-50 flex items-center gap-3">
-      {!tableScene && (campaignScene ? <span className="crown-scene-mark" title={lang === 'zh' ? '王冠主线场景' : 'Crown War story setting'} aria-label={lang === 'zh' ? '主线场景' : 'Story scene'}><Crown size={18} /></span> : <ThemePicker lang={lang} />)}
+      {campaignScene ? <span className="crown-scene-mark" title={lang === 'zh' ? '王冠主线场景' : 'Crown War story setting'} aria-label={lang === 'zh' ? '主线场景' : 'Story scene'}><Crown size={18} /></span> : <ThemePicker lang={lang} />}
 
       {/* Back Button */}
       {onBack && (
@@ -1975,7 +1972,7 @@ export default function BobozanOnline() {
   const campaignStyle = campaignTheme ? Object.fromEntries(Object.entries(campaignTheme.palette).map(([key, value]) => [`--world-${key}`, value])) as React.CSSProperties : undefined;
 
   return (
-    <div style={campaignStyle} className={`pixel-app pixel-screen-battle unified-table-battle ${!isExpedition ? 'pixel-screen-multiplayer' : ''} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
+    <div style={campaignStyle} className={`pixel-app pixel-screen-battle ${!isExpedition ? 'pixel-screen-multiplayer' : ''} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
       {learningOverlay}
       {skillSelectionOverlay}
       {isExpedition && expPhase === 'journey' && <CrownJourney lang={lang} stageIdx={expNextStage} cleared={expRunRef.current.crownCleared ?? []}
@@ -2019,6 +2016,8 @@ export default function BobozanOnline() {
           
       `}</style>
 
+      <PixelBackdrop scene="battle" themeId={campaignTheme?.id} />
+
       <TopControls 
        muted={muted} 
        toggleMute={toggleMute} 
@@ -2028,7 +2027,6 @@ export default function BobozanOnline() {
        toggleLog={() => setLogOpen(o => !o)}
        showLogToggle={true}
        campaignScene={!!campaignTheme}
-       tableScene
        musicVolume={musicVolume}
       setMusicVolume={setMusicVolume}
       reduceMotion={reduceMotion}
@@ -2183,7 +2181,7 @@ export default function BobozanOnline() {
       </div>
 
       {/* CENTER ARENA */}
-      <div className="pixel-battle-layout unified-table-layout flex-1 flex flex-col relative z-10">
+      <div className="pixel-battle-layout flex-1 flex flex-col relative z-10">
 
         {!isExpedition && <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setMoveManualOpen(true)} />}
 
@@ -2256,10 +2254,10 @@ export default function BobozanOnline() {
         </div>
 
         {/* ROUND TABLE LAYER */}
-        <div ref={tableRef} data-player-count={totalPlayers} className={`pixel-battle-board center-table-board unified-table-stage ${totalPlayers > 4 ? 'battle-board-crowded' : ''} relative flex-1 w-full overflow-hidden bg-transparent`}>
+        <div ref={tableRef} data-player-count={totalPlayers} className={`pixel-battle-board center-table-board ${totalPlayers > 4 ? 'battle-board-crowded' : ''} relative flex-1 w-full overflow-hidden bg-transparent`}>
            
            {/* Background Table Outline */}
-           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} compact={isSmallScreen} playerCount={totalPlayers} />
+           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} compact={isSmallScreen} />
 
            {/* Player positions also drive card origins and facing directions. */}
            {gameState.players.map((p, i) => {

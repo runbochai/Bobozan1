@@ -3,12 +3,9 @@ import type { CSSProperties } from 'react';
 import type { Card, Lang } from '../types';
 import { SKILL_DB } from '../data/skills';
 import { MAX_HP } from '../data/constants';
+import { assetUrl } from '../assets';
 import { initAudio, playSound } from '../audio/sound';
 import BattleSprite from './BattleSprite';
-import BattleArena from './BattleArena';
-import { useBattleBounds } from './useBattleBounds';
-import { getBattleFigure, getBattleFigureAnchor, getBattleFormation } from '../logic/battleLayout';
-import { tableCardPositions } from '../logic/tableCardLayout';
 import PixelCardArt from './PixelCardArt';
 import { Volume2, VolumeX } from './PixelIcons';
 import { useSystemReducedMotion } from './useSystemReducedMotion';
@@ -50,10 +47,6 @@ export default function LocalPractice({
   const tipsToggleRef = useRef<HTMLButtonElement>(null);
   const resultRef = useRef<HTMLElement>(null);
   const handRef = useRef<HTMLHeadingElement>(null);
-  const { bounds, ref: stageRef } = useBattleBounds();
-  const compact = bounds.width < 768;
-  const seats = getBattleFormation(2, 0, compact, bounds);
-  const revealedPositions = tableCardPositions(seats, bounds);
   const systemReducedMotion = useSystemReducedMotion();
   const reducedMotion = reduceMotion || systemReducedMotion;
   const say = (zh: string, en: string) => lang === 'zh' ? zh : en;
@@ -185,7 +178,8 @@ export default function LocalPractice({
       const index = ['1', '2', '3'].indexOf(event.key);
       if (index >= 0 && basicCards[index]) { event.preventDefault(); play(basicCards[index]); }
     }}>
-    <div className="local-practice" lang={lang === 'zh' ? 'zh-CN' : 'en'} data-phase={phase} data-reduced-motion={reducedMotion}>
+    <div className="local-practice" lang={lang === 'zh' ? 'zh-CN' : 'en'} data-phase={phase} data-reduced-motion={reducedMotion}
+      style={{ '--local-arena-image': `url("${assetUrl('themes/woodcut-v1/woodcut-tavern.webp')}")` } as CSSProperties}>
       <div className="local-practice-shell">
         <header className="local-practice-header">
           <div><span className="local-practice-eyebrow">{say('随时开打 · 无需联网', 'Jump in · Play offline')}</span>
@@ -215,37 +209,23 @@ export default function LocalPractice({
             <span className="local-practice-turn">{say('回合', 'TURN')}<strong>{phase === 'choose' ? duel.turn : round?.turn}</strong></span>
           </div>
 
-          <div ref={stageRef} className="local-practice-stage" data-player-count="2" aria-hidden="true">
-            <BattleArena turn={phase === 'choose' ? duel.turn : round?.turn ?? duel.turn}
-              showdown={phase === 'reveal'} lang={lang} compact={compact} playerCount={2} />
-            {[hero, opponent].map((player, index) => {
-              const seat = seats[index];
-              const self = player.id === LOCAL_HERO_ID;
-              const figure = getBattleFigure(seat, self, bounds);
-              const size = seat.size ?? 64;
-              return <div key={player.id}
-                className={`local-practice-figure${self ? ' is-hero' : ' is-opponent'}${player.isDead ? ' is-out' : ''}`}
-                data-player-id={player.id} data-depth={figure.foreground ? 'front' : 'back'} data-seat-x={seat.x} data-seat-y={seat.y}
-                style={{ left: `${figure.x}%`, top: `${figure.y}%`, width: size, height: size * 4 / 3,
-                  marginLeft: -size / 2, marginTop: -size * 4 / 3 * getBattleFigureAnchor(seat, self) } as CSSProperties}>
-                <BattleSprite avatar={player.isBot ? 'avatars/robot.webp' : avatar || 'avatars/bdrag.png'} name={player.name}
-                  direction={seat.facing!} reduced={reducedMotion} handPerspective={self}
-                  actionKey={phase === 'reveal' ? `local-${round?.turn}-${player.id}` : undefined} />
-              </div>;
-            })}
-            {phase !== 'choose' && round && <div className={`local-practice-revealed${phase === 'reveal' ? ' is-revealing' : ''}`}>
-              {[LOCAL_HERO_ID, LOCAL_BOT_ID].map((id, index) => {
-                const card = SKILL_DB.find(candidate => candidate.id === round.moves[id])!;
-                const position = revealedPositions[index];
-                if (!position) return null;
-                return <div key={id} className={`local-practice-reveal-card local-practice-reveal-${card.type.toLowerCase()}`}
-                  data-owner={id} style={{ left: `${position.x}%`, top: `${position.y}%`, width: position.width,
-                    height: position.cardHeight + position.ownerHeight + position.ownerGap } as CSSProperties}>
-                  <span className="local-practice-reveal-label">{id === LOCAL_HERO_ID ? say('你', 'YOU') : say('对手', 'BOT')}</span>
-                  <span className="local-practice-reveal-art"><PixelCardArt id={card.id} /></span><strong>{card.name[lang]}</strong>
-                </div>;
-              })}
-            </div>}
+          <div className="local-practice-stage" aria-hidden="true">
+            {[hero, opponent].map(player => <div key={player.id} className={`local-practice-figure${player.isBot ? ' is-opponent' : ' is-hero'}${player.isDead ? ' is-out' : ''}${phase === 'reveal' ? ' is-acting' : ''}`}>
+              <span className="local-practice-figure-shadow" />
+              <BattleSprite avatar={player.isBot ? 'avatars/robot.webp' : avatar || 'avatars/bdrag.png'} name={player.name}
+                direction={player.isBot ? 'sw' : 'ne'} reduced={reducedMotion}
+                actionKey={phase === 'reveal' ? `local-${round?.turn}-${player.id}` : undefined} />
+            </div>)}
+            {phase === 'choose' ? <div className="local-practice-versus"><span>VS</span><small>{say('出牌见分晓', 'Make it count')}</small></div>
+              : <div className={`local-practice-revealed${phase === 'reveal' ? ' is-revealing' : ''}`}>
+                {[LOCAL_HERO_ID, LOCAL_BOT_ID].map(id => {
+                  const card = SKILL_DB.find(candidate => candidate.id === round?.moves[id])!;
+                  return <div key={id} className={`local-practice-reveal-card local-practice-reveal-${card.type.toLowerCase()}`}>
+                    <span className="local-practice-reveal-label">{id === LOCAL_HERO_ID ? say('你', 'YOU') : say('对手', 'BOT')}</span>
+                    <span className="local-practice-reveal-art"><PixelCardArt id={card.id} /></span><strong>{card.name[lang]}</strong>
+                  </div>;
+                })}
+              </div>}
           </div>
           <div className="local-practice-arena-caption" role="status" aria-live="polite">
             {phase === 'choose' ? say('同时出牌 · 命中即可淘汰', 'Simultaneous moves · One hit wins')

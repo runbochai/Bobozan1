@@ -26,11 +26,11 @@ test('two to eight cards contract and return without crossing or covering anothe
         boxes.forEach((a, i) => {
           for (const b of boxes.slice(i + 1)) assert.ok(a.right <= b.left + .001 || a.left >= b.right - .001
             || a.bottom <= b.top + .001 || a.top >= b.bottom - .001, context);
-          const corners = getTableGeometry(width < 768, total).vertices.map(p => ({ x: p.x * width / 100, y: p.y * height / 100 }));
+          const corners = getTableGeometry(width < 768).corners.map(p => ({ x: p.x * width / 100, y: p.y * height / 100 }));
           for (const point of [{ x: a.left, y: a.top }, { x: a.right, y: a.top }, { x: a.left, y: a.bottom }, { x: a.right, y: a.bottom }]) {
             for (let edge = 0; edge < corners.length; edge++) {
               const from = corners[edge], to = corners[(edge + 1) % corners.length];
-              assert.ok((to.x - from.x) * (point.y - from.y) - (to.y - from.y) * (point.x - from.x) <= .01, 'Inside tabletop: ' + context);
+              assert.ok((to.x - from.x) * (point.y - from.y) - (to.y - from.y) * (point.x - from.x) >= -.01, 'Inside tabletop: ' + context);
             }
           }
         });
