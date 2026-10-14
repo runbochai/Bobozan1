@@ -64,8 +64,8 @@
 .local-practice-figure .battle-sprite-fallback > img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 .local-practice-figure-shadow { position: absolute; left: 20%; bottom: 2%; width: 60%; height: 12%; border-radius: 50%; background: #0a0607a8; filter: blur(5px); }
 .local-practice-figure.is-out .battle-sprite { opacity: .4; filter: grayscale(1) drop-shadow(0 7px 3px #0009); transform: rotate(-8deg) translateY(5px); }
-.local-practice-figure.is-acting.is-hero { animation: local-practice-lunge .65s ease-out both; }
-.local-practice-figure.is-acting.is-opponent { animation: local-practice-lunge-back .65s ease-out both; }
+.local-practice-figure.is-acting.is-hero { animation: local-practice-lunge var(--local-lunge-duration) ease-out both; }
+.local-practice-figure.is-acting.is-opponent { animation: local-practice-lunge-back var(--local-lunge-duration) ease-out both; }
 .local-practice-revealed {
   --local-reveal-card-size: 88px; --local-reveal-gap: 9px; --local-reveal-top: .45;
   --local-face-gap: 5px; --local-label-height: 10px;
@@ -85,7 +85,7 @@
 .local-practice-reveal-label { display: flex; align-items: center; justify-content: center; width: 100%; height: var(--local-label-height); min-height: var(--local-label-height); white-space: nowrap; font-size: 9px; line-height: 10px; color: #ecd5a7; background: #30251bde; }
 .local-practice-reveal-art { position: relative; display: block; width: 100%; aspect-ratio: 2 / 3; box-shadow: 0 9px 22px #0009; }
 .local-practice-revealed.is-revealing .local-practice-reveal-card { animation: local-practice-reveal var(--local-reveal-duration) cubic-bezier(.2,.7,.3,1) both; }
-.local-practice-revealed.is-revealing .local-practice-reveal-card:last-child { animation-delay: .04s; }
+.local-practice-revealed.is-revealing .local-practice-reveal-card:last-child { animation-delay: var(--local-second-reveal-delay); }
 .local-practice-slam-flash {
   position: absolute; inset: -15%; z-index: -1; border: 2px solid #fff1ab; border-radius: 50%;
   background: radial-gradient(ellipse, #ffe39a99, #e8b4583b 55%, transparent 72%);
@@ -95,9 +95,9 @@
 .local-practice-slam-edge {
   position: absolute; inset: -1px; z-index: 3; border: 2px solid #ffe89a; border-radius: 4px;
   box-shadow: 0 0 0 1px #7c5626, 0 0 8px #f8c8658a; opacity: 1;
-  animation: local-practice-slam-mark 1ms linear var(--local-impact-delay) both;
+  animation: local-practice-slam-mark var(--local-mark-duration) linear var(--local-impact-delay) both;
 }
-.local-practice-slam-mark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font: inherit; color: #ffe8a1; opacity: 1; animation: local-practice-slam-mark 1ms linear var(--local-impact-delay) both; }
+.local-practice-slam-mark { min-width: 0; overflow: hidden; text-overflow: ellipsis; font: inherit; color: #ffe8a1; opacity: 1; animation: local-practice-slam-mark var(--local-mark-duration) linear var(--local-impact-delay) both; }
 .local-practice-hand { min-width: 0; padding: 20px 0 0; }
 .local-practice-hand-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 28px; margin: 0 auto 8px; }
 .local-practice-hand-guide { color: #bda580; font-size: 11px; }

@@ -1,3 +1,6 @@
+import type { BattleSpeed } from '../types';
+import { battleTimeMs } from '../logic/battleSpeed';
+
 /** One timeline for the drawn frames, card flight, comparison and ultimate cut-in. */
 export const CARD_RAISE_MS = 140;
 export const CARD_RELEASE_MS = 360;
@@ -32,7 +35,8 @@ export function remainingBattleTime(startedAt: number, milestone: number, now: n
 }
 
 /** A reduced-motion host must still leave time for everyone else's presentation. */
-export function showdownDurationMs(hasCutin: boolean, mode: 'room' | 'expedition', reduced = false): number {
-  if (mode === 'expedition' && reduced) return SOLO_REDUCED_SHOWDOWN_MS;
-  return hasCutin ? SOLO_ULT_SHOWDOWN_MS : SOLO_SHOWDOWN_MS;
+export function showdownDurationMs(hasCutin: boolean, mode: 'room' | 'expedition', reduced = false, speed: BattleSpeed = 1): number {
+  const duration = mode === 'expedition' && reduced ? SOLO_REDUCED_SHOWDOWN_MS
+    : hasCutin ? SOLO_ULT_SHOWDOWN_MS : SOLO_SHOWDOWN_MS;
+  return battleTimeMs(duration, speed);
 }

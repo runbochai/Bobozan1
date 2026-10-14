@@ -1,6 +1,7 @@
 // --- 1. TYPE DEFINITIONS ---
 export type Lang = 'zh' | 'en';
 export type MultiplayerMode = 'kills' | 'survival';
+export type BattleSpeed = 0.75 | 1 | 1.5 | 2;
 export type CardType = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE' | 'ABSORB' | 'SPECIAL';
 export type HandCategory = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE';
 export type HandViewMode = 'CATEGORIES' | 'CARDS';
@@ -76,6 +77,10 @@ export interface GameState {
   skillCatalogVersion?: number;
   /** Older rooms omit this field and use the cumulative-kill series. */
   multiplayerMode?: MultiplayerMode;
+  /** Host-selected speed for the next round; omitted legacy values use 1x. */
+  battleSpeed?: BattleSpeed;
+  /** Frozen at the start of a turn so preference updates cannot retime a reveal. */
+  roundBattleSpeed?: BattleSpeed;
   revengeMode?: boolean;
   /** 幸存者重置计数：有人被淘汰导致阶段重置时 +1，UI 据此播放过场动画 */
   resetSeq?: number;

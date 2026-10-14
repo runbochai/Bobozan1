@@ -29,6 +29,7 @@ export const Play = icon('M3 1h2v2h3v2h3v2h3v2h-3v2H8v2H5v2H3z');
 export const X = icon('M2 1h2v2h2v2h4V3h2V1h2v3h-2v2h-2v4h2v2h2v3h-2v-2h-2v-2H6v2H4v2H2v-3h2v-2h2V6H4V4H2z');
 export const CheckCircle = icon('M1 7h3v3h3V7h2V5h2V3h3v3h-2v2h-2v2H9v2H7v2H4v-2H2v-2H1z');
 export const Target = icon('M5 0h6v2h3v3h2v6h-2v3h-3v2H5v-2H2v-3H0V5h2V2h3z M5 3H3v10h10V3z M6 6h4v4H6z');
+export const Settings = icon('M6 0h4v3h2V2h2v2h-1v2h3v4h-3v2h1v2h-2v-1h-2v3H6v-3H4v1H2v-2h1v-2H0V6h3V4H2V2h2v1h2z M6 5H5v6h6V5z M7 7h2v2H7z');
 export const Copy = icon('M1 1h10v2H3v8H1z M5 5h10v10H5z M7 7v6h6V7z');
 export const LogOut = icon('M1 1h7v2H3v10h5v2H1z M10 4h2v2h2v1h2v2h-2v1h-2v2h-2V9H5V7h5z');
 export const Edit = icon('M11 1h3v2h2v2h-2v2h-2v2h-2v2H8v2H6v2H1v-5h2V8h2V6h2V4h2V2h2z');

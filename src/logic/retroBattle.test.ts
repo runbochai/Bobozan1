@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { retroRoundTiming, retroSeat, retroSlamTargets, retroSlamTilt } from './retroBattle';
 import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS,
   CARD_LAND_MS, CARD_RELEASE_MS, SOLO_MOTION_SCALE, showdownDurationMs } from '../data/battleTiming';
+import { BATTLE_SPEEDS } from './battleSpeed';
 
 test('retro seats rotate around the viewer and all eight avatars stay in the board', () => {
   for (const count of [2, 3, 4, 5, 6, 7, 8]) {
@@ -61,6 +62,21 @@ test('retro flight and the full winning slam finish on the shared fast multiplay
     assert.equal(now + late.flightDelay + late.flightDuration, 1252);
     assert.equal(now + late.slamDelay + late.slamDuration, 1588);
     assert.equal(now + late.impactDelay + late.impactDuration, 1588);
+  }
+});
+
+test('retro scaled and late-mounted animation keeps the original round deadline at every speed', () => {
+  for (const speed of BATTLE_SPEEDS) {
+    const first = retroRoundTiming(1000, 1000, speed);
+    assert.ok(Math.abs(first.flightDelay + first.flightDuration - 252 / speed) < 1e-6);
+    assert.ok(Math.abs(first.slamDelay + first.slamDuration - 588 / speed) < 1e-6);
+    assert.ok(first.slamDelay + first.slamDuration < showdownDurationMs(false, 'room', false, speed));
+    const now = 1000 + showdownDurationMs(false, 'room', false, speed) + 50;
+    const late = retroRoundTiming(1000, now, speed);
+    for (const [delay, duration] of [[late.flightDelay, late.flightDuration], [late.slamDelay, late.slamDuration], [late.impactDelay, late.impactDuration]]) {
+      assert.ok(delay + duration < 0, 'a completed animation does not replay after remounting');
+    }
+    assert.ok(Math.abs(now + late.slamDelay + late.slamDuration - 1000 - 588 / speed) < 1e-6);
   }
 });
 

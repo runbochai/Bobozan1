@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { assetUrl } from '../assets';
 import { CARD_RAISE_MS, CARD_RELEASE_MS, CARD_LAND_MS, CARD_RECOVER_MS, SOLO_MOTION_SCALE } from '../data/battleTiming';
+import type { BattleSpeed } from '../types';
+import { battleTimeMs, normalizeBattleSpeed } from '../logic/battleSpeed';
 import BattleHandPerspective from './BattleHandPerspective';
 
 /** One mounted clock per round. Late images wait until the next round. */
-export default function BattleActionFrames({ source, directionIndex, ready, onError, handPerspective = false, quick = false }: {
-  source: string; directionIndex: number; ready: boolean; onError: () => void; handPerspective?: boolean; quick?: boolean;
+export default function BattleActionFrames({ source, directionIndex, ready, onError, handPerspective = false, quick = false, speed = 1 }: {
+  source: string; directionIndex: number; ready: boolean; onError: () => void; handPerspective?: boolean; quick?: boolean; speed?: BattleSpeed;
 }) {
-  const [start] = useState(() => ({ at: performance.now(), source, directionIndex, ready, handPerspective, scale: quick ? SOLO_MOTION_SCALE : 1 }));
+  const [start] = useState(() => ({ at: performance.now(), source, directionIndex, ready, handPerspective,
+    speed: normalizeBattleSpeed(speed), scale: battleTimeMs(quick ? SOLO_MOTION_SCALE : 1, speed) }));
   const [frame, setFrame] = useState<number | null>(start.ready ? 0 : null);
   const [stopped, setStopped] = useState(!ready);
   const image = useRef<HTMLImageElement>(null);
@@ -24,7 +27,7 @@ export default function BattleActionFrames({ source, directionIndex, ready, onEr
   }, [start]);
   // A changed character or seat cannot restart or substitute poses halfway through a deal.
   if (stopped || frame === null || start.source !== source || start.directionIndex !== directionIndex) return null;
-  return <span className="battle-action-frame" data-action-frame={frame} aria-hidden="true">
+  return <span className="battle-action-frame" data-action-frame={frame} data-battle-speed={start.speed} aria-hidden="true">
     <img ref={image} src={assetUrl(start.source)} alt="" draggable={false} onError={onError}
       style={{ left: `${-start.directionIndex * 100}%`, top: `${-frame * 100}%` }} />
     <BattleHandPerspective source={start.source} directionIndex={start.directionIndex} frame={frame}

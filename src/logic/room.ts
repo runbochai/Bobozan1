@@ -1,9 +1,10 @@
-import type { GameState, Lang, MultiplayerMode, Player } from '../types';
+import type { BattleSpeed, GameState, Lang, MultiplayerMode, Player } from '../types';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../data/constants';
 import { calculateTurnOutcome, getPlayerCards } from './combat';
 import { getBotMove } from './botAI';
 import { autoSelectSkillLoadout, hasSkillOverflow, normalizeSkillLoadout, resolveSkillLoadout, type SkillSelections } from './skillLoadout';
 import { getMultiplayerMode } from './multiplayerMatch';
+import { getRoomBattleSpeed, getRoomRoundBattleSpeed, isBattleSpeed } from './battleSpeed';
 
 export type RoomPatch = Partial<GameState> | null;
 export type RoundId = Pick<GameState, 'turn' | 'matchCount'>;
@@ -14,6 +15,13 @@ export function setRoomMode(room: GameState, uid: string, mode: MultiplayerMode)
   if (room.hostId !== uid || room.status !== 'LOBBY') return null;
   if (mode !== 'kills' && mode !== 'survival') throw new Error('Invalid multiplayer mode');
   return room.multiplayerMode === mode ? null : { multiplayerMode: mode };
+}
+
+export function setRoomBattleSpeed(room: GameState, uid: string, speed: BattleSpeed): RoomPatch {
+  if (room.hostId !== uid) return null;
+  if (!isBattleSpeed(speed)) throw new Error('Invalid battle speed');
+  if (getRoomBattleSpeed(room) === speed) return null;
+  return { battleSpeed: speed, ...(room.status === 'LOBBY' ? { roundBattleSpeed: speed } : {}) };
 }
 
 export function joinPlayer(room: GameState, player: Player): RoomPatch {
@@ -63,7 +71,8 @@ export function startRoom(room: GameState, uid: string, lang: Lang): RoomPatch {
   if (room.players.length < MIN_PLAYERS) throw new Error('needPlayers');
   const players = room.players.map(player => player.isBot ? autoSelectSkillLoadout(player) : normalizeSkillLoadout(player));
   if (players.some(player => !player.isBot && hasSkillOverflow(player))) throw new Error('Choose retained skills first');
-  return { players, status: 'PLAYING', logs: [{ turn: 1, text: lang === 'zh' ? '游戏开始!' : 'Game Started!', type: 'info' }, ...room.logs] };
+  return { players, status: 'PLAYING', roundBattleSpeed: getRoomBattleSpeed(room),
+    logs: [{ turn: 1, text: lang === 'zh' ? '游戏开始!' : 'Game Started!', type: 'info' }, ...room.logs] };
 }
 
 export function advanceRoom(room: GameState, uid: string): RoomPatch {
@@ -78,7 +87,7 @@ export function advanceRoom(room: GameState, uid: string): RoomPatch {
   const players = prepared.map(p => !p.isDead && !p.selectedCardId
     ? { ...p, selectedCardId: active.length <= 1 ? 'charge' : getBotMove(p, prepared, room) }
     : p);
-  return { players, status: 'SHOWDOWN' };
+  return { players, status: 'SHOWDOWN', roundBattleSpeed: getRoomRoundBattleSpeed(room) };
 }
 
 export function settleRoom(room: GameState, uid: string, round: RoundId, lang: Lang): RoomPatch {
@@ -89,6 +98,7 @@ export function settleRoom(room: GameState, uid: string, round: RoundId, lang: L
     logs: [...result.logs, ...room.logs].slice(0, 300),
     status: result.isGameOver ? 'GAMEOVER' : 'PLAYING',
     turn: result.isGameOver ? room.turn : room.turn + 1,
+    roundBattleSpeed: getRoomBattleSpeed(room),
     // 有人被淘汰且游戏继续：幸存者重置计数 +1，客户端据此播放“阶段重置”过场
     ...(result.survivorReset ? { resetSeq: (room.resetSeq ?? 0) + 1 } : {}),
   };

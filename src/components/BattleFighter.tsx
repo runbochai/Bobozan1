@@ -1,8 +1,9 @@
 import type { CSSProperties, ReactNode } from 'react';
 import { useEffect, useState } from 'react';
-import type { Lang, Player } from '../types';
+import type { BattleSpeed, Lang, Player } from '../types';
 import { directionToward, getBattleFigure, getBattleStatusOffset, type BattleBounds, type BattleSeat } from '../logic/battleLayout';
 import { playerAvatar } from '../logic/bots';
+import { battleTimeMs, normalizeBattleSpeed } from '../logic/battleSpeed';
 import BattleSprite from './BattleSprite';
 import BattleStats from './BattleStats';
 import { CheckCircle, Skull } from './PixelIcons';
@@ -25,6 +26,9 @@ interface Props {
   hit: boolean;
   reduceMotion: boolean;
   quick?: boolean;
+  speed?: BattleSpeed;
+  /** The speed of the hit's original round, even after the next turn starts. */
+  damageSpeed?: BattleSpeed;
   intent?: ReactNode;
 }
 
@@ -37,7 +41,9 @@ function BattleEmoji({ emoji, at }: { emoji: string; at: number }) {
   return visible ? <span className="battle-emoji">{emoji}</span> : null;
 }
 
-export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, roundKey, showdown, damage, damageKey, hit, reduceMotion, quick = false, intent }: Props) {
+export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, roundKey, showdown, damage, damageKey, hit, reduceMotion, quick = false, speed = 1, damageSpeed = speed, intent }: Props) {
+  const [damageClock, setDamageClock] = useState(() => ({ key: damageKey, speed: normalizeBattleSpeed(damageSpeed) }));
+  if (damageClock.key !== damageKey) setDamageClock({ key: damageKey, speed: normalizeBattleSpeed(damageSpeed) });
   const seed = player.id.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
   const direction = seat.facing ?? directionToward(seat);
   const dealing = showdown && !player.isDead && !!player.selectedCardId;
@@ -49,12 +55,15 @@ export default function BattleFighter({ player, seat, bounds, self, maxHp, level
     data-seat-x={seat.x} data-seat-y={seat.y}
     style={{ '--model-size':`${seat.size}px`, '--seat-anchor': self ? .5 : .55, left: `${figure.x}%`, top: `${figure.y}%` } as CSSProperties}>
     <div className={`battle-character-motion battle-character-${motion}`}
-      style={{ '--idle-delay': `${-(seed % 20) / 10}s` } as CSSProperties}>
+      style={{ '--idle-delay': `${-(seed % 20) / 10}s`,
+        animationDuration: motion === 'hit' ? `${battleTimeMs(400, damageClock.speed)}ms` : undefined } as CSSProperties}>
       <BattleSprite avatar={playerAvatar(player)} name={player.name} direction={direction}
-        actionKey={dealing ? `${roundKey}:${player.id}` : undefined} reduced={reduceMotion} handPerspective={self} quick={quick} />
+        actionKey={dealing ? `${roundKey}:${player.id}` : undefined} reduced={reduceMotion} handPerspective={self} quick={quick} speed={speed} />
     </div>
-    {!reduceMotion && !!damage && <div key={`hit-${damageKey}`} className="battle-hit-burst" aria-hidden="true" />}
-    {!!damage && <span key={`damage-${damageKey}`} className={`battle-damage ${reduceMotion ? 'battle-damage-still' : ''}`}>−{damage}</span>}
+    {!reduceMotion && !!damage && <div key={`hit-${damageKey}`} className="battle-hit-burst" aria-hidden="true"
+      data-battle-speed={damageClock.speed} style={{ animationDuration: `${battleTimeMs(500, damageClock.speed)}ms` }} />}
+    {!!damage && <span key={`damage-${damageKey}`} className={`battle-damage ${reduceMotion ? 'battle-damage-still' : ''}`}
+      data-battle-speed={damageClock.speed} style={{ animationDuration: `${battleTimeMs(800, damageClock.speed)}ms` }}>−{damage}</span>}
     {player.emoji && player.emojiAt && <BattleEmoji key={player.emojiAt} emoji={player.emoji} at={player.emojiAt} />}
     {player.isDead && <Skull size={26} className="battle-dead-mark" />}
     {!self && <div className="table-seat-status" style={{ left: `calc(50% + ${getBattleStatusOffset(seat, self, bounds)}px)` }}>

@@ -3,12 +3,13 @@ import { assetUrl, avatarUrl } from '../assets';
 import { battleCharacterAtlas, MIRRORED_BATTLE_VIEWS } from '../data/battleCharacters';
 import { battleActionAtlas } from '../data/battleActions';
 import { BATTLE_DIRECTIONS, type BattleDirection } from '../logic/battleLayout';
+import type { BattleSpeed } from '../types';
 import { User } from './PixelIcons';
 import BattleActionFrames from './BattleActionFrames';
 import './BattleSprite.css';
 
-export default function BattleSprite({ avatar, name, direction, actionKey, reduced = false, handPerspective = false, quick = false }: {
-  avatar?: string; name: string; direction: BattleDirection; actionKey?: string; reduced?: boolean; handPerspective?: boolean; quick?: boolean;
+export default function BattleSprite({ avatar, name, direction, actionKey, reduced = false, handPerspective = false, quick = false, speed = 1 }: {
+  avatar?: string; name: string; direction: BattleDirection; actionKey?: string; reduced?: boolean; handPerspective?: boolean; quick?: boolean; speed?: BattleSpeed;
 }) {
   const atlas = battleCharacterAtlas(avatar);
   const actionAtlas = battleActionAtlas(avatar);
@@ -30,7 +31,7 @@ export default function BattleSprite({ avatar, name, direction, actionKey, reduc
           void decoded.then(() => setDecodedSources(previous => previous.includes(actionAtlas) ? previous : [...previous, actionAtlas]), () => fail(actionAtlas));
         }} onError={() => fail(actionAtlas)} />
       {actionKey && <BattleActionFrames key={actionKey} source={actionAtlas} directionIndex={index}
-        handPerspective={handPerspective} quick={quick}
+        handPerspective={handPerspective} quick={quick} speed={speed}
         ready={decodedSources.includes(actionAtlas) && !reduced && !window.matchMedia('(prefers-reduced-motion: reduce)').matches}
         onError={() => fail(actionAtlas)} />}
     </>}

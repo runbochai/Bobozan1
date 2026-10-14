@@ -1,5 +1,5 @@
 import { useEffect, useState, type CSSProperties } from 'react';
-import type { Lang, Player } from '../types';
+import type { BattleSpeed, Lang, Player } from '../types';
 import { isHoloCard } from '../data/cardFinish';
 import { getEffectiveLevel, getPlayerCard } from '../logic/cardLevels';
 import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS, CARD_FLIGHT_MS,
@@ -11,18 +11,20 @@ import { tableCardPositions } from '../logic/tableCardLayout';
 import { tableCardClash } from '../logic/tableCardMotion';
 import { battleCardSlamPositions } from '../logic/battleCardSlam';
 import { getShowdownWinner } from '../logic/combat';
+import { battleTimeMs, normalizeBattleSpeed } from '../logic/battleSpeed';
 import WoodcutCardFace from './WoodcutCardFace';
 import CardHolo from './CardHolo';
 import './BattleCardSlam.css';
 
 /** Compare the committed plays, highlighting only the engine's card advantage. */
-export default function BattleTableCards({ players, lang, seatFor, reduced, bounds, quick = false }: {
-  players: Player[]; lang: Lang; seatFor: (index: number) => BattleSeat; reduced: boolean; bounds: BattleBounds; quick?: boolean;
+export default function BattleTableCards({ players, lang, seatFor, reduced, bounds, quick = false, speed = 1 }: {
+  players: Player[]; lang: Lang; seatFor: (index: number) => BattleSeat; reduced: boolean; bounds: BattleBounds; quick?: boolean; speed?: BattleSpeed;
 }) {
   // This component is keyed by the round. Once stopped, presentation remains
   // still for this round even if the preference is switched back off.
   const [motionStopped, setMotionStopped] = useState(() => reduced
     || (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches));
+  const [roundSpeed] = useState(() => normalizeBattleSpeed(speed));
   if (reduced && !motionStopped) setMotionStopped(true);
   useEffect(() => {
     const preference = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -42,9 +44,10 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
     const position = positions[index];
     return winners.has(player.id) && position ? [{ index, width: position.width, cardHeight: position.cardHeight }] : [];
   }), bounds);
-  const scale = quick ? SOLO_MOTION_SCALE : 1;
+  const scale = battleTimeMs(quick ? SOLO_MOTION_SCALE : 1, roundSpeed);
   return <div className={`table-cards ${reduced || motionStopped ? 'table-cards-still' : ''}`} data-comparing={comparing}
     data-slam-active={slamPositions.length > 0}
+    data-battle-speed={roundSpeed}
     aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'} style={{
       '--card-release-delay': `${CARD_RELEASE_MS * scale}ms`, '--card-flight-duration': `${CARD_FLIGHT_MS * scale}ms`,
       '--card-land-delay': `${CARD_LAND_MS * scale}ms`, '--card-land-duration': `${CARD_LANDING_MS * scale}ms`,

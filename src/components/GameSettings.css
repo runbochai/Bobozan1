@@ -1,0 +1,46 @@
+.game-settings-dialog {
+  width: min(480px, calc(100vw - 28px)); max-height: calc(100svh - 28px); overflow: auto;
+  margin: auto; padding: 0; border: 1px solid #c4a775; border-radius: 0;
+  background: linear-gradient(145deg, #25383f, #101f29 75%); color: #f2e5c8;
+  box-shadow: inset 0 0 0 5px #e4ca8c0c, 0 20px 80px #000b;
+  font: 400 14px/1.5 system-ui, -apple-system, 'PingFang SC', sans-serif;
+}
+.game-settings-dialog::backdrop { background: #030b13bd; }
+.pixel-app .pixel-controls .settings-opener, .retro-controls .settings-opener { min-width: 44px; width: 44px; min-height: 44px; height: 44px; }
+.settings-heading { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 24px; border-bottom: 1px solid #c4a77542; }
+.settings-heading h2 { margin: 0; color: #f4deb5; font-size: 23px; font-weight: 800; }
+.game-settings-dialog .settings-close, .game-settings-dialog .settings-done, .game-settings-dialog .settings-speed-options button {
+  display: inline-flex; align-items: center; justify-content: center; min-height: 44px;
+  padding: 9px 15px; border: 1px solid #bba071; border-radius: 0; background: linear-gradient(#3c5057, #20333e 16%, #172b36);
+  color: #f5dfb4; box-shadow: inset 0 1px #ffe5ad3b, inset 0 -2px #030d1699, 0 2px #020911;
+  font: inherit; cursor: pointer;
+}
+.game-settings-dialog .settings-close { width: 44px; padding: 10px; }
+.settings-content { display: grid; gap: 16px; padding: 12px 24px 20px; }
+.settings-row { display: flex; align-items: center; justify-content: space-between; min-height: 54px; gap: 16px; cursor: pointer; }
+.settings-row > span { min-width: 0; }
+.settings-row strong { display: block; font-size: 14px; font-weight: 600; }
+.settings-row small { display: block; margin-top: 3px; color: #abbab9; font-size: 11px; line-height: 1.5; }
+.game-settings-dialog select { max-width: 56%; min-height: 44px; padding: 8px 12px; border: 1px solid #87968a; border-radius: 0; background: #10232e; color: #f3e4c4; font: inherit; }
+.game-settings-dialog .settings-check input[type='checkbox'] { appearance: auto; flex: 0 0 auto; width: 22px; height: 22px; margin: 0 4px; padding: 0; accent-color: #dfb978; box-shadow: none; cursor: pointer; }
+.game-settings-dialog .settings-check input:disabled { cursor: default; }
+.settings-section { display: grid; gap: 10px; margin: 0; padding: 17px 0 0; min-width: 0; border: 0; border-top: 1px solid #c4a77533; }
+.settings-section h3, .settings-section legend { margin: 0; padding: 0; color: #f0d7a9; font-size: 13px; font-weight: 700; }
+.settings-section .settings-row { min-height: 40px; }
+.settings-range-label { display: flex; justify-content: space-between; gap: 16px; color: #bdcac6; font-size: 12px; }
+.settings-range-label output { color: #f2d7a1; font-variant-numeric: tabular-nums; }
+.game-settings-dialog .settings-volume { width: 100%; height: 28px; margin: 0; padding: 0; accent-color: #dfb978; cursor: pointer; }
+.settings-speed { padding-top: 13px; }
+.settings-speed legend { padding-top: 5px; }
+.settings-speed-options { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.game-settings-dialog .settings-speed-options button { padding-inline: 5px; font-variant-numeric: tabular-nums; }
+.game-settings-dialog .settings-speed-options button[aria-pressed='true'] { color: #13232c; background: linear-gradient(#f2dba6, #d2ac6e 22%, #b38b4f); border-color: #fae0a4; box-shadow: inset 0 1px #fff3cf, inset 0 -2px #735526, 0 2px #020911; font-weight: 800; }
+.game-settings-dialog button:hover:not(:disabled) { border-color: #ffe4a4; filter: brightness(1.08); }
+.game-settings-dialog button:active:not(:disabled) { box-shadow: inset 0 3px 5px #030c16bb, 0 1px #020911; }
+.game-settings-dialog button:disabled { opacity: .55; cursor: not-allowed; }
+.settings-note, .settings-error { margin: -6px 0 0; color: #abbab9; font-size: 11px; line-height: 1.6; }
+.settings-error { color: #f0b29d; }
+.settings-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-top: 1px solid #c4a77533; padding: 16px 24px 20px; }
+.settings-footer > span { color: #97aaa9; font-size: 11px; }
+.game-settings-dialog :is(button,input,select):focus-visible { outline: 3px solid #ffe3a3; outline-offset: 3px; }
+@media(max-width: 360px) { .settings-heading, .settings-content, .settings-footer { padding-left: 18px; padding-right: 18px; } .settings-speed-options { gap: 6px; } }
