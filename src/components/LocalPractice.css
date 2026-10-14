@@ -1,121 +1,263 @@
 .local-practice-dialog {
-  position: fixed;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  max-width: none;
-  max-height: none;
-  margin: 0;
-  border: 0;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  padding: 24px 16px;
-  background: transparent;
-  color: #263c39;
+  position: fixed; inset: 0; width: 100%; height: 100%; max-width: none; max-height: none;
+  margin: 0; padding: 0; border: 0; overflow-y: auto; overscroll-behavior: contain;
+  background: #130e0b; color: #f9edcf; color-scheme: dark;
 }
-.local-practice-dialog::backdrop { background: rgba(14, 19, 18, .92); }
+.local-practice-dialog::backdrop { background: #130e0b; }
 .local-practice {
-  width: min(100%, 820px);
-  margin: 0 auto;
-  padding: clamp(16px, 4vw, 30px);
-  border: 2px solid #bd9c65;
-  border-radius: 18px;
-  background: #f6eddb;
-  box-shadow: 0 20px 70px #0007;
+  --local-gold: #e8bc71; --local-ink: #291d13;
+  position: relative; isolation: isolate; min-height: 100%; min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
+  background: linear-gradient(180deg, #110c09d6, #17100cd9 50%, #110c09fa), var(--local-arena-image) center top / cover;
   font-family: inherit;
 }
-.local-practice button, .local-practice summary { touch-action: manipulation; }
+.local-practice *, .local-practice *::before, .local-practice *::after { box-sizing: border-box; }
+.local-practice-shell { width: min(100%, 1040px); margin: 0 auto; }
+.local-practice button, .local-practice summary { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 .local-practice button {
-  min-height: 42px;
-  padding: 9px 14px;
-  border: 1px solid #8e9c88;
-  border-radius: 9px;
-  background: #fffaf0;
-  color: #254b43;
-  cursor: pointer;
-  font: inherit;
-  font-size: 14px;
-  font-weight: 650;
+  min-height: 44px; padding: 11px 19px; border: 1px solid #bd945868; border-radius: 5px;
+  color: #f5e7cc; background: #32271f; font: inherit; font-size: 14px; font-weight: 650; cursor: pointer;
+  transition: background .15s, border-color .15s, transform .15s;
 }
+.local-practice button:hover:not(:disabled) { background: #4b3726; border-color: #e8bc71; }
+.local-practice button:active:not(:disabled) { transform: translateY(1px); }
 .local-practice button:disabled { cursor: not-allowed; }
-.local-practice button:hover:not(:disabled) { background: #e6eddd; }
-.local-practice :focus-visible { outline: 3px solid #176d79; outline-offset: 4px; }
+.local-practice :focus-visible { outline: 3px solid #f2cc81; outline-offset: 4px; }
 .local-practice h1, .local-practice h2, .local-practice p { margin: 0; }
-.local-practice h1 { font-size: clamp(21px, 4.5vw, 30px); line-height: 1.4; }
-.local-practice h2 { font-size: 18px; line-height: 1.5; }
-.local-practice-header { display: flex; align-items: flex-start; gap: 12px; justify-content: space-between; }
-.local-practice-eyebrow { display: block; margin-bottom: 7px; color: #63766a; font-size: 12px; letter-spacing: .06em; }
-.local-practice button.local-practice-close { flex: 0 0 42px; padding: 0; width: 42px; height: 42px; font-size: 28px; line-height: 1; }
-.local-practice-intro { margin-top: 14px !important; color: #59675b; font-size: 14px; line-height: 1.8; }
-.local-practice-toolbar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin: 20px 0 12px; }
-.local-practice-toolbar strong { color: #8c582e; }
-.local-practice-fighters { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.local-practice-fighter { min-width: 0; padding: 14px; border: 1px solid #afbca9; border-radius: 12px; background: #eef0df; }
-.local-practice-fighter:nth-child(2) { background: #f2e3cf; border-color: #c6ab8c; }
-.local-practice-fighter.is-out { background: #e9dbd0; }
-.local-practice-fighter h2 { overflow-wrap: anywhere; }
-.local-practice-stats { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-top: 9px; font-size: 13px; }
-.local-practice-stats strong { margin-left: 4px; font-size: 20px; }
-.local-practice-fighter p { margin-top: 10px; color: #657062; font-size: 12px; line-height: 1.6; }
-.local-practice-hand, .local-practice-resolution { margin-top: 22px; }
-.local-practice-hand:focus, .local-practice-result:focus { outline: none; }
-.local-practice-hint { margin: 8px 0 14px !important; color: #5b6b5c; font-size: 14px; line-height: 1.8; }
-.local-practice-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.local-practice button.local-practice-card {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  min-width: 0;
-  min-height: 112px;
-  padding: 12px;
-  border: 1px solid #b8a785;
-  text-align: left;
-  background: #fffaf0;
-  color: #304b3c;
+.local-practice h1:focus, .local-practice h2:focus, .local-practice-result:focus { outline: none !important; }
+.local-practice-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 22px; }
+.local-practice-eyebrow { display: block; margin-bottom: 5px; color: #c6aa83; font-size: 11px; letter-spacing: .13em; }
+.local-practice h1 { font-size: clamp(24px, 3.2vw, 34px); font-weight: 800; letter-spacing: .08em; line-height: 1.35; }
+.local-practice-header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.local-practice button.local-practice-text-button { border-color: transparent; background: transparent; color: #d9c4a4; padding: 10px 8px; font-size: 12px; }
+.local-practice button.local-practice-text-button:hover { background: #e9b46c10; color: #ffe6b5; border-color: #bd945845; }
+.local-practice button.local-practice-close { width: 44px; height: 44px; padding: 0; border-radius: 50%; background: #1b1510b8; color: #d9c4a4; font-size: 27px; font-weight: 400; }
+.local-practice button.local-practice-sound { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border-radius: 50%; background: #1b1510b8; color: #d9c4a4; }
+.local-practice-arena {
+  position: relative; overflow: hidden; border: 1px solid #c49a5d6b; border-radius: 8px;
+  background: linear-gradient(180deg, #1b140cca, #26180f32 40%, #1d110b8c), var(--local-arena-image) center 47% / cover;
+  box-shadow: 0 18px 50px #0006, inset 0 0 70px #130a05a1;
 }
-.local-practice button.local-practice-card:disabled { background: #e9e4d6; color: #667064; }
-.local-practice-card-art { flex: 0 0 54px; width: 54px; height: 68px; display: grid; place-items: center; }
-.local-practice-card-art .pixel-card-art { width: 54px; height: 68px; border-radius: 5px; }
-.local-practice-card-copy { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
-.local-practice-card-heading { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 9px; }
-.local-practice-card-heading strong { font-size: 17px; }
-.local-practice-card-heading > span { font-size: 12px; white-space: nowrap; color: #785128; }
-.local-practice-card-description { font-size: 12px; line-height: 1.6; font-weight: 450; }
-.local-practice-card-locked { color: #7d5e4d; font-size: 11px; }
-.local-practice-more { margin-top: 14px; }
-.local-practice summary { padding: 12px 2px; color: #476455; font-size: 14px; cursor: pointer; line-height: 1.5; }
-.local-practice-revealed { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
-.local-practice-reveal-card { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 10px; border: 1px solid #bd9c65; border-radius: 12px; background: #fff7e7; }
-.local-practice-reveal-card > span { font-size: 12px; color: #63705f; }
-.local-practice-reveal-card strong { font-size: 20px; }
-.local-practice-reveal-art { display: grid; place-items: center; width: 80px; height: 100px; }
-.local-practice-reveal-art .pixel-card-art { width: 80px; height: 100px; border-radius: 6px; }
-.local-practice-revealed.is-revealing .local-practice-reveal-card { animation: local-practice-reveal .4s ease-out both; }
-@keyframes local-practice-reveal { from { opacity: .35; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.local-practice-result { margin-top: 16px; padding: 18px; background: #e8edde; border: 1px solid #b6c3a8; border-radius: 12px; }
-.local-practice-result > p { margin-top: 8px; font-size: 14px; line-height: 1.9; }
-.local-practice-log { margin-top: 8px; }
-.local-practice-log ul { margin: 0; padding-left: 22px; font-size: 13px; line-height: 1.9; }
-.local-practice-progress-note { color: #66745f; font-size: 12px !important; }
-.local-practice-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 16px; }
-.local-practice button.local-practice-primary { border-color: #345e4b; background: #345e4b; color: #fff9e9; }
-.local-practice button.local-practice-primary:hover { background: #244735; }
-.local-practice-footer { display: flex; flex-wrap: wrap; gap: 10px; justify-content: space-between; align-items: center; margin-top: 22px; padding-top: 16px; border-top: 1px solid #cfbfa0; }
-.local-practice-footer > span { flex: 1 1 240px; color: #6a7566; font-size: 12px; line-height: 1.8; }
-@media (max-width: 540px) {
-  .local-practice-dialog { padding: 10px 8px; }
-  .local-practice { padding: 16px 12px; border-radius: 12px; }
-  .local-practice-fighters { gap: 8px; }
-  .local-practice-fighter { padding: 10px; }
-  .local-practice-fighter h2 { font-size: 15px; }
-  .local-practice-stats { gap: 4px 10px; }
-  .local-practice-stats strong { font-size: 18px; }
-  .local-practice-cards { grid-template-columns: 1fr; }
-  .local-practice button.local-practice-card { min-height: 94px; }
-  .local-practice-result { padding: 14px 12px; }
+.local-practice-arena::after { content: ''; position: absolute; inset: 5px; border: 1px solid #dfbb741b; border-radius: 4px; pointer-events: none; }
+.local-practice-matchbar { position: relative; display: flex; justify-content: space-between; align-items: start; gap: 60px; padding: 20px 28px 0; z-index: 2; }
+.local-practice-fighter-stats { min-width: 0; width: 36%; max-width: 275px; padding: 10px 12px; border: 1px solid #b6935761; border-radius: 4px; background: #161411df; box-shadow: 0 3px 15px #0005; }
+.local-practice-fighter-stats.is-opponent { border-color: #aa6e4e6b; }
+.local-practice-fighter-name { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 14px; }
+.local-practice-life { color: #f49c70; font-size: 20px; line-height: 1; text-shadow: 0 0 12px #ff73465e; }
+.local-practice-life.is-empty { color: #6c6054; text-shadow: none; }
+.local-practice-energy { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+.local-practice-energy > span:first-child { color: #c5b18e; font-size: 11px; }
+.local-practice-energy strong { min-width: 15px; font-size: 24px; color: #f3d18b; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.local-practice-energy-pips { display: flex; gap: 4px; margin-left: 2px; }
+.local-practice-energy-pips i { width: 7px; height: 7px; border: 1px solid #b99c5e61; transform: rotate(45deg); background: #564c372e; }
+.local-practice-energy-pips i.is-filled { background: #f3cd74; border-color: #ffe3a2; box-shadow: 0 0 5px #ffc05a55; }
+.local-practice-layer { display: block; color: #ae9b7f; font-size: 10px; margin-top: 4px; }
+.local-practice-public-state { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: end; gap: 2px 8px; color: #c9b18b; font-size: 10px; }
+.local-practice-turn { display: flex; flex-direction: column; align-items: center; gap: 3px; position: absolute; top: 23px; left: 50%; transform: translateX(-50%); font-size: 9px; letter-spacing: .13em; color: #cfb184; }
+.local-practice-turn strong { font-size: 30px; line-height: 1.15; color: #ffe5b1; font-variant-numeric: tabular-nums; }
+.local-practice-stage { position: relative; height: 218px; margin-top: -12px; }
+.local-practice-stage::before { content: ''; position: absolute; left: 50%; bottom: 4%; width: 78%; height: 38%; border: 1px solid #f0be6833; border-radius: 50%; transform: translateX(-50%); background: radial-gradient(ellipse, #e8b45d14, #3825160a 60%); box-shadow: 0 0 15px #d0871e0d; }
+.local-practice-figure { position: absolute; left: 19%; bottom: 8%; width: 180px; height: 180px; transform: translateX(-50%); z-index: 1; }
+.local-practice-figure.is-opponent { left: 81%; }
+.local-practice-figure .battle-sprite { display: block; position: relative; width: 100%; height: 100%; filter: drop-shadow(0 8px 5px #0009); }
+.local-practice-figure .battle-sprite-fallback > img { width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.local-practice-figure-shadow { position: absolute; left: 20%; bottom: 2%; width: 60%; height: 12%; border-radius: 50%; background: #0a0607a8; filter: blur(5px); }
+.local-practice-figure.is-out .battle-sprite { opacity: .4; filter: grayscale(1) drop-shadow(0 7px 3px #0009); transform: rotate(-8deg) translateY(5px); }
+.local-practice-figure.is-acting.is-hero { animation: local-practice-lunge .65s ease-out both; }
+.local-practice-figure.is-acting.is-opponent { animation: local-practice-lunge-back .65s ease-out both; }
+.local-practice-versus { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 8px; padding-bottom: 4px; color: #f1cb83; text-shadow: 0 2px 10px #000; }
+.local-practice-versus > span { font-family: Georgia, serif; font-size: 36px; font-weight: 800; font-style: italic; letter-spacing: -.04em; opacity: .8; }
+.local-practice-versus small { font-size: 11px; color: #e8d0a3; }
+.local-practice-arena-caption { position: relative; z-index: 2; padding: 12px 10px; border-top: 1px solid #e9b66a30; background: #150f0de0; text-align: center; color: #e9d1a9; font-size: 12px; letter-spacing: .08em; }
+.local-practice-arena.is-finished .local-practice-arena-caption { color: #ffe3a4; }
+.local-practice-revealed { position: absolute; left: 50%; top: 45%; transform: translate(-50%, -50%); display: grid; grid-template-columns: repeat(2, 88px); gap: 9px; z-index: 3; }
+.local-practice-reveal-card { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; padding: 8px 7px 9px; color: #3c2a19; border: 1px solid #e1b868; border-radius: 4px; background: linear-gradient(#f5e5ba, #d6bb83); box-shadow: 0 9px 22px #0009; }
+.local-practice-reveal-label { font-size: 9px; color: #766047; }
+.local-practice-reveal-art { display: grid; place-items: center; width: 56px; height: 65px; }
+.local-practice-reveal-art .pixel-card-art { width: 56px; height: 65px; border-radius: 3px; }
+.local-practice-reveal-card strong { font-size: 15px; }
+.local-practice-revealed.is-revealing .local-practice-reveal-card { animation: local-practice-reveal .55s cubic-bezier(.2,.7,.3,1) both; }
+.local-practice-revealed.is-revealing .local-practice-reveal-card:last-child { animation-delay: .04s; }
+.local-practice-hand { padding: 20px 0 0; }
+.local-practice-hand-heading { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 auto 8px; width: min(100%, 650px); }
+.local-practice h2 { font-size: 18px; line-height: 1.4; }
+.local-practice-more-toggle { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.local-practice-new-count { display: inline-grid; place-items: center; min-width: 22px; min-height: 19px; padding: 0 4px; border-radius: 3px; background: #e9bf77; color: #302312; font-size: 10px; }
+.local-practice-hint { display: flex; align-items: center; gap: 9px; width: min(100%, 650px); min-height: 39px; margin: 0 auto 12px; padding: 0 0 0 3px; color: #c8b493; font-size: 12px; line-height: 1.6; }
+.local-practice-hint > span { color: #dfba78; }
+.local-practice-hint > p { flex: 1; }
+.local-practice-hint button { flex-shrink: 0; align-self: center; width: 44px; min-height: 44px; padding: 0; border-color: transparent; background: transparent; color: #aa967a; font-size: 19px; }
+.local-practice-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 13px; width: min(100%, 650px); margin: 0 auto; align-items: stretch; }
+.local-practice button.local-practice-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; min-height: 202px; padding: 11px 13px 13px; border: 1px solid #d3aa66; border-radius: 6px; color: #322618; background: linear-gradient(155deg, #f5e8c7, #d9c198); box-shadow: 0 6px 18px #0007, inset 0 0 0 3px #f6e0aa80; transition: transform .18s, filter .18s; }
+.local-practice button.local-practice-card:hover:not(:disabled) { transform: translateY(-5px); background: linear-gradient(155deg, #fff4d7, #efd7a8); border-color: #ffe1a2; box-shadow: 0 9px 25px #0008, 0 0 15px #e5af4c26; }
+.local-practice button.local-practice-card:active:not(:disabled) { transform: translateY(-1px); }
+.local-practice button.local-practice-card:disabled { background: linear-gradient(155deg, #b8b0a0, #9f9581); border-color: #b3a58b; color: #494236; box-shadow: 0 4px 13px #0004, inset 0 0 0 3px #aaa08b55; }
+.local-practice-card-top { display: flex; justify-content: space-between; align-items: center; width: 100%; }
+.local-practice-cost { display: inline-grid; place-items: center; width: 24px; height: 24px; color: #f9dfa8; background: #433325; border: 1px solid #846238; border-radius: 50%; font-size: 13px; }
+.local-practice-card-top kbd { color: #806b4f; border: 1px solid #ad956f; padding: 1px 4px; font: inherit; font-size: 10px; line-height: 1.3; border-radius: 2px; }
+.local-practice-card-art { display: grid; place-items: center; width: 75px; height: 80px; margin-top: -2px; }
+.local-practice-card-art .pixel-card-art { width: 75px; height: 80px; border-radius: 4px; }
+.local-practice-card-name { font-size: 24px; line-height: 1.2; }
+.local-practice-card-description { font-size: 11px; line-height: 1.5; text-align: center; font-weight: 500; }
+.local-practice-card-locked { font-size: 10px; color: #5a4a35; padding: 2px 4px; background: #ece0c233; border-radius: 2px; }
+.local-practice-extra-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin: 18px auto 0; padding-top: 18px; max-width: 900px; border-top: 1px solid #bd945845; }
+.local-practice-extra-cards button.local-practice-card { min-height: 192px; }
+.local-practice-extra-cards .local-practice-card-name { font-size: 18px; }
+.local-practice-result { width: min(100%, 760px); margin: 24px auto 0; border: 1px solid #bd945845; border-radius: 6px; padding: 20px 24px; background: linear-gradient(135deg, #392b1cdb, #201811ef); box-shadow: 0 12px 30px #0004; }
+.local-practice-result.is-final { text-align: center; padding-top: 24px; border-color: #d3aa6678; }
+.local-practice-result.is-victory { background: radial-gradient(ellipse at top, #a17c2f28, transparent 75%), linear-gradient(135deg, #392b1cdb, #201811ef); }
+.local-practice-result-eyebrow { display: block; margin-bottom: 5px; color: #e1b96f; font-size: 10px; letter-spacing: .18em; }
+.local-practice-result h2 { font-size: 24px; font-weight: 800; color: #f7e1b2; }
+.local-practice-result.is-final h2 { font-size: clamp(25px, 4vw, 32px); }
+.local-practice-result-copy > p { margin-top: 10px; font-size: 13px; line-height: 1.8; color: #c9b79c; }
+.local-practice-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; align-items: center; }
+.local-practice-result.is-final .local-practice-actions { justify-content: center; }
+.local-practice button.local-practice-primary { min-height: 46px; border-color: #e9c58b; color: #302214; background: linear-gradient(#f4d79b, #ddb572); box-shadow: 0 4px 16px #0003; }
+.local-practice button.local-practice-primary:hover { background: linear-gradient(#ffe8b4, #f3ca82); color: #24180e; border-color: #ffe4b4; }
+.local-practice-primary > span { margin-left: 14px; }
+.local-practice-log { margin-top: 12px; border-top: 1px solid #bd945826; padding-top: 4px; color: #bfa88a; text-align: left; }
+.local-practice summary { min-height: 44px; padding: 13px 0 8px; cursor: pointer; font-size: 11px; }
+.local-practice-log ul { margin: 0; padding: 0 0 8px 20px; font-size: 12px; line-height: 1.8; }
+.local-practice-resolving { padding: 35px 0; text-align: center; color: #d1b589; font-size: 13px; }
+.local-practice-footer { display: flex; justify-content: space-between; gap: 10px; width: min(100%, 760px); margin: 16px auto 0; }
+.local-practice-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+@keyframes local-practice-reveal { from { opacity: 0; transform: rotateY(80deg) translateY(15px); } to { opacity: 1; transform: rotateY(0) translateY(0); } }
+@keyframes local-practice-lunge { 0%, 100% { transform: translateX(-50%); } 45% { transform: translateX(-42%); } }
+@keyframes local-practice-lunge-back { 0%, 100% { transform: translateX(-50%); } 45% { transform: translateX(-58%); } }
+@media (min-width: 1400px) and (min-height: 900px) {
+  .local-practice { padding-top: 40px; }
+  .local-practice-header { margin-bottom: 28px; }
+  .local-practice-stage { height: 260px; }
+  .local-practice-figure { width: 210px; height: 210px; }
 }
+@media (max-width: 600px) {
+  .local-practice { padding: max(14px, env(safe-area-inset-top)) 12px max(12px, env(safe-area-inset-bottom)); }
+  .local-practice-header { margin-bottom: 14px; gap: 8px; }
+  .local-practice h1 { font-size: 24px; }
+  .local-practice-eyebrow { font-size: 9px; letter-spacing: .06em; }
+  .local-practice-header-actions { gap: 3px; }
+  .local-practice button.local-practice-close { width: 44px; height: 44px; min-height: 44px; }
+  .local-practice-header .local-practice-text-button { font-size: 11px; padding-inline: 5px; }
+  .local-practice-matchbar { padding: 13px 10px 0; gap: 42px; }
+  .local-practice-fighter-stats { width: calc(50% - 21px); padding: 8px; }
+  .local-practice-fighter-name { gap: 5px; font-size: 11px; }
+  .local-practice-life { font-size: 16px; }
+  .local-practice-energy { gap: 6px; }
+  .local-practice-energy strong { font-size: 22px; }
+  .local-practice-energy-pips { gap: 3px; margin-left: 0; }
+  .local-practice-energy-pips i { width: 5px; height: 5px; }
+  .local-practice-energy > span:first-child { font-size: 10px; }
+  .local-practice-layer { font-size: 9px; }
+  .local-practice-turn { top: 23px; font-size: 8px; }
+  .local-practice-turn strong { font-size: 26px; }
+  .local-practice-stage { height: 170px; margin-top: 1px; }
+  .local-practice-figure { left: 17%; width: 120px; height: 120px; bottom: 7%; }
+  .local-practice-figure.is-opponent { left: 83%; }
+  .local-practice-versus { padding-bottom: 5px; gap: 5px; }
+  .local-practice-versus > span { font-size: 26px; }
+  .local-practice-versus small { font-size: 9px; }
+  .local-practice-revealed { top: 43%; grid-template-columns: repeat(2, 61px); gap: 5px; }
+  .local-practice-reveal-card { padding: 6px 4px; gap: 4px; }
+  .local-practice-reveal-art, .local-practice-reveal-art .pixel-card-art { width: 41px; height: 48px; }
+  .local-practice-reveal-label { font-size: 8px; }
+  .local-practice-reveal-card strong { font-size: 12px; }
+  .local-practice-arena-caption { padding: 10px 6px; font-size: 10px; }
+  .local-practice-hand { padding-top: 14px; }
+  .local-practice-hand-heading { margin-bottom: 2px; }
+  .local-practice h2 { font-size: 16px; }
+  .local-practice-hint { gap: 6px; font-size: 11px; margin-bottom: 8px; }
+  .local-practice-cards { gap: 7px; }
+  .local-practice button.local-practice-card { min-height: 175px; padding: 8px 7px 9px; gap: 5px; }
+  .local-practice-cost { width: 20px; height: 20px; }
+  .local-practice-card-top kbd { display: none; }
+  .local-practice-card-art, .local-practice-card-art .pixel-card-art { width: 60px; height: 65px; }
+  .local-practice-card-name { font-size: 24px; }
+  .local-practice-card-description { font-size: 10px; }
+  .local-practice-card-locked { font-size: 9px; }
+  .local-practice-extra-cards { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
+  .local-practice-extra-cards button.local-practice-card { min-height: 190px; }
+  .local-practice-extra-cards .local-practice-card-art, .local-practice-extra-cards .local-practice-card-art .pixel-card-art { width: 52px; height: 56px; }
+  .local-practice-extra-cards .local-practice-card-name { font-size: 16px; }
+  .local-practice-result { margin-top: 16px; padding: 18px 15px; }
+  .local-practice-result-copy > p { font-size: 12px; line-height: 1.8; }
+  .local-practice-result h2 { font-size: 21px; }
+  .local-practice-actions { gap: 8px; }
+  .local-practice-actions button { padding-inline: 12px; font-size: 12px; }
+  .local-practice-primary > span { margin-left: 6px; }
+  .local-practice-footer { margin-top: 10px; }
+}
+@media (max-width: 355px) {
+  .local-practice { padding-inline: 9px; }
+  .local-practice h1 { font-size: 22px; }
+  .local-practice:lang(en) .local-practice-header h1 { font-size: 14px; letter-spacing: 0; white-space: nowrap; }
+  .local-practice:lang(en) .local-practice-eyebrow { font-size: 7px; letter-spacing: 0; white-space: nowrap; }
+  .local-practice-matchbar { gap: 36px; padding-inline: 8px; }
+  .local-practice-fighter-stats { width: calc(50% - 18px); padding-inline: 6px; }
+  .local-practice-energy-pips { gap: 2px; }
+  .local-practice-energy-pips i { width: 4px; height: 4px; }
+  .local-practice-stage { height: 150px; }
+  .local-practice-figure { width: 105px; height: 105px; }
+  .local-practice-figure.is-hero { left: 16%; }
+  .local-practice-figure.is-opponent { left: 84%; }
+  .local-practice button.local-practice-card { padding-inline: 5px; }
+  .local-practice-card-art, .local-practice-card-art .pixel-card-art { width: 54px; height: 60px; }
+}
+@media (max-width: 600px) and (max-height: 700px) {
+  .local-practice { padding-top: max(10px, env(safe-area-inset-top)); }
+  .local-practice-header { margin-bottom: 9px; }
+  .local-practice h1 { font-size: 21px; }
+  .local-practice-eyebrow { margin-bottom: 3px; font-size: 8px; }
+  .local-practice-matchbar { padding-top: 10px; }
+  .local-practice-fighter-stats { padding-block: 6px; }
+  .local-practice-energy { margin-top: 4px; }
+  .local-practice-energy strong { font-size: 20px; }
+  .local-practice-stage { height: 108px; }
+  .local-practice-figure { width: 90px; height: 90px; bottom: 5%; }
+  .local-practice-turn { top: 18px; }
+  .local-practice-arena-caption { padding-block: 9px; }
+  .local-practice-hand { padding-top: 8px; }
+  .local-practice-hand-heading { margin-bottom: 0; }
+  .local-practice-hint { margin-bottom: 4px; }
+  .local-practice button.local-practice-card { min-height: 151px; padding-top: 7px; gap: 3px; }
+  .local-practice-card-art, .local-practice-card-art .pixel-card-art { width: 48px; height: 48px; }
+  .local-practice-card-name { font-size: 22px; }
+  .local-practice-footer { margin-top: 4px; }
+  .local-practice-revealed { top: 50%; }
+  .local-practice-reveal-card { gap: 2px; padding-block: 4px; }
+  .local-practice-reveal-art, .local-practice-reveal-art .pixel-card-art { width: 34px; height: 39px; }
+}
+@media (min-width: 601px) and (max-height: 620px) {
+  .local-practice { padding-top: 12px; }
+  .local-practice-shell { max-width: 1000px; display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 0 22px; align-items: start; }
+  .local-practice-header { grid-column: 1 / -1; margin-bottom: 12px; }
+  .local-practice-arena { grid-column: 1; grid-row: 2; }
+  .local-practice-matchbar { padding: 12px 12px 0; gap: 45px; }
+  .local-practice-fighter-stats { width: calc(50% - 22px); padding: 8px; }
+  .local-practice-fighter-name { font-size: 11px; }
+  .local-practice-energy-pips { gap: 3px; }
+  .local-practice-energy-pips i { width: 5px; height: 5px; }
+  .local-practice-turn { top: 19px; }
+  .local-practice-stage { height: 148px; margin-top: 0; }
+  .local-practice-figure { width: 112px; height: 112px; }
+  .local-practice-revealed { grid-template-columns: repeat(2, 60px); }
+  .local-practice-reveal-art, .local-practice-reveal-art .pixel-card-art { width: 36px; height: 45px; }
+  .local-practice-reveal-card { padding: 5px; }
+  .local-practice-reveal-card strong { font-size: 12px; }
+  .local-practice-hand, .local-practice-result, .local-practice-resolving { grid-column: 2; grid-row: 2; padding-top: 0; margin-top: 0; }
+  .local-practice h2 { font-size: 17px; }
+  .local-practice-hint { font-size: 11px; margin-bottom: 4px; }
+  .local-practice-cards { gap: 7px; }
+  .local-practice button.local-practice-card { min-height: 180px; padding: 8px 5px; }
+  .local-practice-card-art, .local-practice-card-art .pixel-card-art { width: 51px; height: 61px; }
+  .local-practice-card-name { font-size: 20px; }
+  .local-practice-card-description { font-size: 10px; }
+  .local-practice-footer { grid-column: 1 / -1; width: 100%; margin-top: 5px; }
+  .local-practice-result { padding: 16px; }
+  .local-practice-actions { margin-top: 12px; }
+}
+.local-practice[data-reduced-motion='true'] *, .reduce-motion .local-practice * { animation: none !important; transition: none !important; }
+.local-practice[data-reduced-motion='true'] button.local-practice-card:hover, .reduce-motion .local-practice button.local-practice-card:hover { transform: none; }
 @media (prefers-reduced-motion: reduce) {
-  .local-practice-revealed.is-revealing .local-practice-reveal-card { animation: none; }
+  .local-practice *, .local-practice *::before, .local-practice *::after { animation: none !important; transition: none !important; }
+  .local-practice button.local-practice-card:hover { transform: none; }
 }
-
-.reduce-motion .local-practice-revealed.is-revealing .local-practice-reveal-card { animation: none; }

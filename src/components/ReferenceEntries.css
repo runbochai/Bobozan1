@@ -1,0 +1,18 @@
+/* Small optional game tools beneath the primary mode choices. */
+:root[data-world-theme] .pixel-app .reference-entry-link {
+  display:inline-flex; align-items:center; justify-content:center; gap:7px;
+  min-height:42px; padding:8px 12px; border:1px solid #ae9d754f; border-radius:6px !important;
+  background:#142b346e; color:#ead9b9; box-shadow:none; text-shadow:none;
+  font:500 13px/1.4 system-ui,-apple-system,'PingFang SC',sans-serif;
+  cursor:pointer; transition:background-color .15s,border-color .15s;
+}
+:root[data-world-theme] .pixel-app .reference-entry-link .pixel-icon { flex-shrink:0; color:#c8b183; }
+:root[data-world-theme] .pixel-app .reference-entry-link:hover { background:#29454cba; border-color:#d3bc89; color:#fff0d3; }
+:root[data-world-theme] .pixel-app .reference-entry-link:focus-visible { outline:2px solid #e9ce96 !important; outline-offset:2px; }
+@media (max-width:700px) {
+  :root[data-world-theme] .pixel-app .reference-entry-link { min-height:44px; padding:8px 11px; }
+}
+@media (prefers-reduced-motion:reduce) {
+  :root[data-world-theme] .pixel-app .reference-entry-link { transition:none; }
+}
+.reduce-motion .reference-entry-link { transition:none; }

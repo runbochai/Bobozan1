@@ -15,6 +15,8 @@ import BattleLevelBadge from './components/BattleLevelBadge';
 import BattleStats from './components/BattleStats';
 import BattleAcademy from './components/BattleAcademy';
 import LocalPractice from './components/LocalPractice';
+import MoveManual from './components/MoveManual';
+import './components/ReferenceEntries.css';
 import MultiplayerHelp from './components/MultiplayerHelp';
 import MultiplayerResults from './components/MultiplayerResults';
 import { getMultiplayerMatchSummary } from './logic/multiplayerMatch';
@@ -54,7 +56,8 @@ import {
   Undo2,
   HandHeart,
   House,
-  Film
+  Film,
+  Scroll
 } from './components/PixelIcons';
 import {
   signInAnonymously,
@@ -342,6 +345,8 @@ export default function BobozanOnline() {
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
   const [expGold, setExpGold] = useState(0);
   const [academyTab, setAcademyTab] = useState<'lessons' | 'rules' | null>(null);
+  const [moveManualOpen, setMoveManualOpen] = useState(false);
+  const [academyFromManual, setAcademyFromManual] = useState(false);
   const [expHelp, setExpHelp] = useState<'intro' | 'recap' | null>(null);
   const [expRecap, setExpRecap] = useState<ExpeditionRecap>();
   const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
@@ -431,6 +436,8 @@ export default function BobozanOnline() {
     setExpShop([]);
     setExpHelp(null);
     setAcademyTab(null);
+    setMoveManualOpen(false);
+    setAcademyFromManual(false);
     setGoldFly(null);
     setIsExpedition(true);
     if (difficulty === 'endless') {
@@ -941,6 +948,8 @@ export default function BobozanOnline() {
     setExpRecap(undefined);
     setExpHelp(null);
     setAcademyTab(null);
+    setMoveManualOpen(false);
+    setAcademyFromManual(false);
     setLearningMode(null);
     setCrownPrologue(false);
     setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, players: [], logs: [], hostId: '' });
@@ -1065,9 +1074,12 @@ export default function BobozanOnline() {
   const handleEnterName = () => {
     initAudio();
     playSound('confirm', muted);
+    if (isExpedition) resetRoom();
     setPlayerName(playerName.trim() || (lang === 'zh' ? '玩家' : 'Player'));
     setLearningMode(null);
     setAcademyTab(null);
+    setMoveManualOpen(false);
+    setAcademyFromManual(false);
     setExpHelp(null);
     setView('HOME');
     if (invitedRoom && roomCode === invitedRoom && user && firebaseConfigured) void joinRoom();
@@ -1453,9 +1465,18 @@ export default function BobozanOnline() {
   const openSoloMode = () => {
     setLearningMode(null);
     setAcademyTab(null);
+    setMoveManualOpen(false);
+    setAcademyFromManual(false);
     setExpHelp(null);
     setStoryLeadsToSolo(true);
     setCrownPrologue(true);
+  };
+  const closeAcademy = () => {
+    setAcademyTab(null);
+    if (academyFromManual) {
+      setAcademyFromManual(false);
+      setMoveManualOpen(true);
+    }
   };
   const learningOverlay = <>
     {learningMode === 'tutorial' && <BattleAcademy intro lang={lang} avatar={playerAvatar}
@@ -1463,15 +1484,19 @@ export default function BobozanOnline() {
       onSolo={openSoloMode}
       startLabel={lang === 'zh' ? '多人模式' : 'Multiplayer'} />}
     {learningMode === 'practice' && <LocalPractice lang={lang} avatar={playerAvatar}
+      muted={muted} reduceMotion={reduceMotion} onToggleMute={toggleMute} onSolo={openSoloMode}
       onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
-      onOpenRules={() => setAcademyTab('rules')} />}
+      onOpenRules={() => setMoveManualOpen(true)} />}
+    {moveManualOpen && <MoveManual lang={lang} onClose={() => setMoveManualOpen(false)}
+      onExercises={() => { setMoveManualOpen(false); setAcademyFromManual(true); setAcademyTab('lessons'); }} />}
     {academyTab && <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
-      startLabel={inMatch ? (lang === 'zh' ? '返回对局' : 'Return to game')
+      startLabel={academyFromManual ? (lang === 'zh' ? '返回招式手册' : 'Back to move manual')
+        : inMatch ? (lang === 'zh' ? '返回对局' : 'Return to game')
         : learningMode === 'practice' ? (lang === 'zh' ? '返回练习局' : 'Return to practice')
         : (lang === 'zh' ? '和朋友玩' : 'Play with friends')}
-      onClose={() => setAcademyTab(null)} onContinue={() => {
-        setAcademyTab(null);
-        if (!inMatch && learningMode !== 'practice') handleEnterName();
+      onClose={closeAcademy} onContinue={() => {
+        closeAcademy();
+        if (!academyFromManual && !inMatch && learningMode !== 'practice') handleEnterName();
       }} />}
     {expHelp && <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
       difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty} best={expBest}
@@ -1615,8 +1640,8 @@ export default function BobozanOnline() {
             </div>
             <button type="button" className="story-practice-link" onClick={() => setLearningMode('tutorial')}><Play size={16} />{lang === 'zh' ? '新手教程' : 'How to play'}</button>
             <div className="crown-title-links">
-              <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '机器人练习' : 'Bot practice'}</button>
-              <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
+              <button type="button" className="reference-entry-link" onClick={() => setLearningMode('practice')}><Target size={16} />{lang === 'zh' ? '自由对练' : 'Free sparring'}</button>
+              <button type="button" className="reference-entry-link" onClick={() => setMoveManualOpen(true)}><Scroll size={16} />{lang === 'zh' ? '招式手册' : 'Move manual'}</button>
               <button type="button" onClick={() => { setStoryLeadsToSolo(false); setCrownPrologue(true); }}>{lang === 'zh' ? '重看开场漫画' : 'Replay the opening comic'}</button>
             </div>
             {expBest > 0 && (
@@ -1715,8 +1740,8 @@ export default function BobozanOnline() {
             </div>
             <div className="friends-menu-extras">
               <button type="button" onClick={() => setLearningMode('tutorial')}>{lang === 'zh' ? '新手教程' : 'How to play'}</button>
-              <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '先和机器人练一局' : 'Practice with a bot'}</button>
-              <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
+              <button type="button" className="reference-entry-link" onClick={() => setLearningMode('practice')}><Target size={16} />{lang === 'zh' ? '自由对练' : 'Free sparring'}</button>
+              <button type="button" className="reference-entry-link" onClick={() => setMoveManualOpen(true)}><Scroll size={16} />{lang === 'zh' ? '招式手册' : 'Move manual'}</button>
               <button type="button" onClick={openSoloMode}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
             </div>
         </div>
@@ -1781,7 +1806,7 @@ export default function BobozanOnline() {
         {/* Body Section */}
         <div className="p-8 md:p-10 space-y-8">
 
-            <MultiplayerHelp lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setAcademyTab('rules')} />
+            <MultiplayerHelp lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setMoveManualOpen(true)} />
             
             {/* Settings Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-2xl border border-white/5">
@@ -2158,14 +2183,14 @@ export default function BobozanOnline() {
       {/* CENTER ARENA */}
       <div className="pixel-battle-layout flex-1 flex flex-col relative z-10">
 
-        {!isExpedition && <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setAcademyTab('rules')} />}
+        {!isExpedition && <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setMoveManualOpen(true)} />}
 
         {isExpedition && expPhase === 'battle' && (
           <div className="pixel-exp-hud expedition-learning-hud absolute top-3 left-3 z-50 pointer-events-none">
             <div className="expedition-learning-heading">
               <div><strong>{getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}</strong><small><span className={`exp-difficulty-badge exp-difficulty-badge--${expDifficulty}`}>{expDifficultyConfig.label[lang]}</span> · {lang === 'zh' ? '第 ' + gameState.turn + ' 回合' : 'Turn ' + gameState.turn}{expRunRef.current.route === 'risk' ? (lang === 'zh' ? ' · 挑战' : ' · Challenge') : ''}</small></div>
               <div className="exp-help-actions">
-                <button type="button" disabled={submittingMove} onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则' : 'Rules'}</button>
+                <button type="button" disabled={submittingMove} onClick={() => setMoveManualOpen(true)}>{lang === 'zh' ? '招式手册' : 'Move manual'}</button>
                 <button type="button" disabled={!expRecap || submittingMove} onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '复盘' : 'Review'}</button>
               </div>
             </div>
@@ -2278,10 +2303,10 @@ export default function BobozanOnline() {
            )}
 
            {/* A drawn final match also completes the series and needs a result screen. */}
-           {!isExpedition && !academyTab && gameState.status === 'GAMEOVER' && showBattleResult && <MultiplayerResults
+           {!isExpedition && !academyTab && !moveManualOpen && gameState.status === 'GAMEOVER' && showBattleResult && <MultiplayerResults
              lang={lang} game={gameState} playerId={user?.uid}
              onNextMatch={nextMatchHost} onExit={() => { void leaveRoom(); }}
-             onOpenRules={() => setAcademyTab('rules')}
+             onOpenRules={() => setMoveManualOpen(true)}
              pendingSkills={!!myPlayer && hasSkillOverflow(myPlayer)}
              nextDisabled={gameState.players.some(p => !p.isBot && hasSkillOverflow(p))} />}
 
