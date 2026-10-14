@@ -42,7 +42,6 @@ export interface RetroMenuProps {
   onToggleRevenge: () => void;
   onCopyInvite: () => void;
   onCopyCode: () => void;
-  onTutorial: () => void;
   onModern: () => void;
   onEditProfile?: () => void;
 }
@@ -58,7 +57,7 @@ export default function RetroMenu(props: RetroMenuProps) {
   const { view, lang, game, playerId, name, avatar, roomCode, loading, onlineReady, connectionMessage, error,
     invited, modePending, reduceMotion, controls, overlays, toast, onNameChange, onChooseCharacter,
     onRoomCodeChange, onEnter, onCreate, onJoin, onLeave, onStart, onAddBot, onRemoveBot,
-    onModeChange, onToggleRevenge, onCopyInvite, onCopyCode, onTutorial, onModern, onEditProfile } = props;
+    onModeChange, onToggleRevenge, onCopyInvite, onCopyCode, onModern, onEditProfile } = props;
   const zh = lang === 'zh';
   const host = game.hostId === playerId;
   const mode = getMultiplayerMode(game);
@@ -92,7 +91,6 @@ export default function RetroMenu(props: RetroMenuProps) {
           {loading ? <LoaderCircle className="retro-menu-spinner" size={24} /> : <Users size={24} />}
           {invited ? (zh ? '加入朋友房间' : 'Join your friends') : (zh ? '多人模式' : 'Multiplayer')}
         </button>
-        <button className="retro-menu-secondary" type="button" onClick={onTutorial}><Play size={18} />{zh ? '新手教程' : 'How to play'}</button>
       </div>
     </main> : view === 'HOME' ? <main className="retro-menu-panel retro-friends-panel">
       <header className="retro-menu-heading"><span className="retro-edition-label">{zh ? '怀旧版' : 'CLASSIC EDITION'}</span><h1>{zh ? '和朋友玩' : 'Play with friends'}</h1></header>
