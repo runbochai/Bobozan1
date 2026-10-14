@@ -1,4 +1,5 @@
 import BattleArena from './components/BattleArena';
+import FriendsRoomEntry from './components/FriendsRoomEntry';
 import ThemePicker from './components/ThemePicker';
 import { useBattleBounds } from './components/useBattleBounds';
 import { useSystemReducedMotion } from './components/useSystemReducedMotion';
@@ -60,9 +61,7 @@ import {
   Loader,
   ArrowLeft,
   User,
-  Edit,
   CheckCircle,
-  AlertTriangle,
   Globe,
   Volume2,
   VolumeX,
@@ -1721,74 +1720,10 @@ export default function BobozanOnline() {
         </div>
       )}
 
-      {/* UI Container */}
-      <div className="pixel-home-content w-full max-w-lg relative z-10">
-        
-        {/* 🎨 CHANGED: Glow Behind Box (Orange) */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-orange-500/20 blur-[100px] rounded-full pointer-events-none" />
-
-        <div className="pixel-panel relative backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden p-8 md:p-10 flex flex-col gap-8 animate-in fade-in zoom-in duration-300">
-            
-            <header className="pixel-section-heading crown-arena-heading"><h1>{lang === 'zh' ? '和朋友玩' : 'Play with friends'}</h1><small>{lang === 'zh' ? '建个房间发给朋友，或输入房间码加入。' : 'Create a room to invite friends, or join with their room code.'}</small></header>
-            {/* User Profile */}
-            <div className="flex flex-col items-center gap-3">
-              <div className="relative group">
-                  {/* 🎨 CHANGED: Profile Circle Gradient (Orange -> Red) */}
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-xl shadow-orange-500/30 overflow-hidden">
-                    {playerAvatar ? (
-                      <img src={avatarUrl(playerAvatar)} className="w-full h-full object-cover" alt="Me" />
-                    ) : (
-                      <User size={48} className="text-white drop-shadow-md" />
-                    )}
-                  </div>
-                  <button onClick={() => setView('NAME_INPUT')} className="absolute bottom-0 right-0 bg-slate-800 text-slate-300 p-2 rounded-full border border-slate-600 hover:bg-white hover:text-slate-900 transition-all shadow-lg hover:scale-110" title="Edit Name">
-                    <Edit size={14} />
-                  </button>
-              </div>
-              <div className="text-center">
-                  <div className="text-3xl font-black text-white tracking-tight mb-1">{playerName}</div>
-              </div>
-            </div>
-
-            <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
-
-            {invitedRoom && roomCode === invitedRoom && <p className="friends-invitation" role="status">{lang === 'zh' ? `已收到房间 ${invitedRoom} 的邀请，点击下方「加入房间」。` : `Invitation to room ${invitedRoom}. Choose “Join Room” below.`}</p>}
-            {/* Actions */}
-            <div className="space-y-6">
-              {/* 🎨 CHANGED: Create Button (Orange/Red Theme) */}
-              <button onClick={createRoom} disabled={loading || !user || !firebaseConfigured} className="w-full group relative overflow-hidden rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 p-[1px] transition-all hover:scale-[1.02] active:scale-[0.98] shadow-xl hover:shadow-orange-500/25 disabled:opacity-50 disabled:pointer-events-none">
-                  <div className="absolute inset-0 bg-white/20 group-hover:translate-x-full transition-transform duration-700 ease-in-out -skew-x-12 origin-left" />
-                  <div className="relative bg-slate-900/60 h-full rounded-2xl p-5 flex items-center justify-center gap-4 backdrop-blur-sm group-hover:bg-transparent transition-colors">
-                    {loading ? <Loader className="animate-spin text-white" /> : <div className="p-3 bg-white/10 rounded-xl group-hover:bg-white/20 transition-colors"><Users size={28} className="text-orange-100" /></div>}
-                    <div className="flex flex-col items-start">
-                        <span className="text-xl font-black text-white tracking-wide">{t.createRoom}</span>
-                    </div>
-                  </div>
-              </button>
-
-              <div className="flex gap-3">
-                  <div className="relative flex-1 group">
-                    {/* 🎨 CHANGED: Input Focus Color (Orange) */}
-                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Target className="text-slate-500 group-focus-within:text-orange-400 transition-colors" size={20} /></div>
-                    <input type="text" inputMode="numeric" aria-label={lang === 'zh' ? '房间码' : 'Room code'} placeholder={lang === 'zh' ? '输入6位房间码' : 'Enter 6-digit room code'} maxLength={6} className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-800/50 border border-slate-600 focus:border-orange-500 focus:bg-slate-800/80 text-center font-mono text-xl font-bold tracking-[0.3em] uppercase outline-none transition-all placeholder:text-slate-600 placeholder:tracking-normal text-white"
-                      value={roomCode} onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                    />
-                  </div>
-                  {/* 🎨 CHANGED: Join Button Hover (Orange) */}
-                  <button onClick={joinRoom} disabled={loading || !user || !firebaseConfigured || roomCode.length < 6} className="crown-arena-join h-auto bg-slate-700 hover:bg-orange-600 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-2xl font-bold transition-all shadow-lg flex items-center justify-center group">
-                    {loading ? <Loader className="animate-spin" size={24} /> : (lang === 'zh' ? '加入房间' : 'Join Room')}
-                  </button>
-              </div>
-              
-              {(connectionMessage || errorMsg) && (
-                <div className="flex items-center gap-3 text-red-300 text-xs font-bold bg-red-950/40 p-3 rounded-xl border border-red-900/50 animate-in slide-in-from-top-2">
-                    <AlertTriangle size={16} className="text-red-500 shrink-0" />
-                    {connectionMessage || errorMsg}
-                </div>
-              )}
-            </div>
-        </div>
-      </div>
+      <FriendsRoomEntry lang={lang} name={playerName} avatar={playerAvatar} roomCode={roomCode}
+        invitedRoom={invitedRoom} loading={loading} onlineReady={!!user && firebaseConfigured}
+        connectionMessage={connectionMessage} error={errorMsg} onEditProfile={() => setView('NAME_INPUT')}
+        onRoomCodeChange={setRoomCode} onCreate={() => { void createRoom(); }} onJoin={() => { void joinRoom(); }} />
     </div>
   );
 
