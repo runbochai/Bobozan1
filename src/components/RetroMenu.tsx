@@ -1,7 +1,7 @@
-import { useState, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import { ArrowLeft, Check, Copy, Crown, Edit3, Flame, LoaderCircle, Minus, Play, Plus, Share2, User, Users } from 'lucide-react';
 import { assetUrl, avatarUrl } from '../assets';
-import { AVATAR_OPTIONS } from '../data/avatars';
+import CharacterChoice from './CharacterChoice';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../data/constants';
 import { getBotStyle, playerAvatar } from '../logic/bots';
 import { getMultiplayerMode } from '../logic/multiplayerMatch';
@@ -28,7 +28,7 @@ export interface RetroMenuProps {
   overlays?: ReactNode;
   toast?: string;
   onNameChange: (name: string) => void;
-  onAvatarChange: (avatar: string) => void;
+  onChooseCharacter: () => void;
   onRoomCodeChange: (code: string) => void;
   onEnter: () => void;
   onCreate: () => void;
@@ -55,10 +55,9 @@ function Portrait({ avatar, name, className = '' }: { avatar?: string; name: str
 /** A second presentation of the same room, actions, catalogue and rules. */
 export default function RetroMenu(props: RetroMenuProps) {
   const { view, lang, game, playerId, name, avatar, roomCode, loading, onlineReady, connectionMessage, error,
-    invited, modePending, reduceMotion, controls, overlays, toast, onNameChange, onAvatarChange,
+    invited, modePending, reduceMotion, controls, overlays, toast, onNameChange, onChooseCharacter,
     onRoomCodeChange, onEnter, onCreate, onJoin, onLeave, onStart, onAddBot, onRemoveBot,
     onModeChange, onToggleRevenge, onCopyInvite, onCopyCode, onTutorial, onModern, onEditProfile } = props;
-  const [avatarOpen, setAvatarOpen] = useState(false);
   const zh = lang === 'zh';
   const host = game.hostId === playerId;
   const mode = getMultiplayerMode(game);
@@ -82,20 +81,8 @@ export default function RetroMenu(props: RetroMenuProps) {
         <span className="retro-edition-label">{zh ? '怀旧版' : 'CLASSIC EDITION'}</span>
       </header>
       <div className="retro-title-setup">
-        <div className="retro-avatar-picker">
-          <button className="retro-avatar-button" type="button" aria-label={zh ? '更换头像' : 'Change avatar'} aria-expanded={avatarOpen}
-            aria-controls="retro-avatar-options" onClick={() => setAvatarOpen(value => !value)}>
-            <Portrait avatar={avatar} name={name || (zh ? '玩家' : 'Player')} />
-            <span className="retro-avatar-edit"><Edit3 size={14} /></span>
-          </button>
-          {avatarOpen && <div className="retro-avatar-options" id="retro-avatar-options" role="group" aria-label={zh ? '选择头像' : 'Choose avatar'}>
-            {AVATAR_OPTIONS.map(option => <button type="button" key={option.path} title={option.name[lang]}
-              aria-label={option.name[lang]} aria-pressed={avatarUrl(avatar || '') === assetUrl(option.path)}
-              onClick={() => { onAvatarChange(option.path); setAvatarOpen(false); }}>
-              <img src={assetUrl(option.path)} alt="" draggable={false} />
-            </button>)}
-            <button type="button" aria-label={zh ? '默认头像' : 'Default avatar'} onClick={() => { onAvatarChange(''); setAvatarOpen(false); }}><User size={24} /></button>
-          </div>}
+        <div className="retro-character-picker">
+          <CharacterChoice avatar={avatar} lang={lang} appearance="retro" onChoose={onChooseCharacter} />
         </div>
         <input type="text" className="retro-name-input" aria-label={zh ? '你的昵称' : 'Your nickname'} value={name} maxLength={10}
           onChange={event => onNameChange(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') onEnter(); }}
@@ -113,7 +100,7 @@ export default function RetroMenu(props: RetroMenuProps) {
     </main> : view === 'HOME' ? <main className="retro-menu-panel retro-friends-panel">
       <header className="retro-menu-heading"><span className="retro-edition-label">{zh ? '怀旧版' : 'CLASSIC EDITION'}</span><h1>{zh ? '和朋友玩' : 'Play with friends'}</h1></header>
       <div className="retro-friends-profile">
-        <button type="button" className="retro-profile-edit" aria-label={zh ? '修改昵称与头像' : 'Edit name and avatar'} onClick={onEditProfile} disabled={!onEditProfile}>
+        <button type="button" className="retro-profile-edit" aria-label={zh ? '修改昵称与人物' : 'Edit name and character'} onClick={onEditProfile} disabled={!onEditProfile}>
           <Portrait avatar={avatar} name={name} /><span className="retro-avatar-edit"><Edit3 size={14} /></span>
         </button>
         <strong>{name}</strong>

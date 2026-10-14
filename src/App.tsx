@@ -36,7 +36,9 @@ import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic
 import { getBattleSeat } from './logic/battleLayout';
 import CrownTitleScene, { CrownTitleCrest } from './components/CrownTitleScene';
 import PixelBackdrop from './components/PixelBackdrop';
-import { AVATAR_OPTIONS } from './data/avatars';
+import CharacterChoice from './components/CharacterChoice';
+import CharacterPicker from './components/CharacterPicker';
+import { playerCharacterOption, readPlayerCharacter, savePlayerCharacter } from './logic/playerCharacter';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
   Music,
@@ -317,9 +319,9 @@ export default function BobozanOnline() {
 
   const [leaderboardMode, setLeaderboardMode] = useState<'MINIMIZED' | 'TOP3' | 'EXPANDED'>('MINIMIZED');
 
-  // Avatar State
-  const [playerAvatar, setPlayerAvatar] = useState(assetUrl('avatars/bdrag.png')); // Default to first image
-  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  const [playerAvatar, setPlayerAvatar] = useState(readPlayerCharacter);
+  const [characterPickerOpen, setCharacterPickerOpen] = useState(false);
+  useEffect(() => { savePlayerCharacter(playerAvatar); }, [playerAvatar]);
   
   const renderProfileAvatar = (avatar: string | undefined, size: number = 32) => {
     // Fallback if avatar is missing or empty
@@ -1509,6 +1511,9 @@ export default function BobozanOnline() {
     }
   };
   const learningOverlay = <>
+    {characterPickerOpen && <CharacterPicker avatar={playerAvatar} lang={lang} appearance={appearance} reduceMotion={reduceMotion}
+      onSelect={path => { setPlayerAvatar(playerCharacterOption(path).path); playSound('confirm', muted); }}
+      onClose={() => setCharacterPickerOpen(false)} />}
     {learningMode === 'tutorial' && <BattleAcademy intro lang={lang} avatar={playerAvatar} appearance={appearance}
       onClose={() => setLearningMode(null)} onContinue={handleEnterName}
       onSolo={retro ? undefined : openSoloMode}
@@ -1538,7 +1543,7 @@ export default function BobozanOnline() {
   const changeAppearance = (next: Appearance) => {
     playSound('click', muted);
     setAppearance(next);
-    setIsAvatarMenuOpen(false);
+    setCharacterPickerOpen(false);
     setLearningMode(null);
     setAcademyTab(null);
     setMoveManualOpen(false);
@@ -1556,7 +1561,7 @@ export default function BobozanOnline() {
       name={playerName} avatar={playerAvatar} roomCode={roomCode} loading={loading} onlineReady={!!user && firebaseConfigured}
       connectionMessage={connectionMessage || undefined} error={errorMsg || undefined} invited={!!invitedRoom} modePending={modePending}
       reduceMotion={reduceMotion} controls={retroControls} overlays={overlays} toast={toastMsg}
-      onNameChange={setPlayerName} onAvatarChange={setPlayerAvatar} onRoomCodeChange={setRoomCode}
+      onNameChange={setPlayerName} onChooseCharacter={() => { playSound('click', muted); setCharacterPickerOpen(true); }} onRoomCodeChange={setRoomCode}
       onEnter={handleEnterName} onCreate={createRoom} onJoin={joinRoom} onLeave={leaveRoom} onStart={startGameHost}
       onAddBot={addBot} onRemoveBot={removeBot} onModeChange={chooseMultiplayerMode} onToggleRevenge={toggleRevengeMode}
       onCopyInvite={copyGameInvite} onCopyCode={() => copyToClipboard(roomCode, t.codeCopied)}
@@ -1622,62 +1627,9 @@ export default function BobozanOnline() {
         {/* --- INPUT AREA --- */}
         <div className="pixel-panel pixel-start-panel brawl-start-panel w-full flex flex-col items-center gap-5">
             <div className="pixel-player-setup flex items-center gap-5 w-full">
-               <div className="crown-avatar-setup relative z-50 flex flex-col items-center gap-2">
-            <button
-              onClick={() => { playSound('click', muted); setIsAvatarMenuOpen(!isAvatarMenuOpen); }}
-              aria-label={lang === 'zh' ? '更换头像' : 'Change avatar'}
-              aria-expanded={isAvatarMenuOpen}
-              aria-controls="title-avatar-options"
-              className={`
-                w-28 h-28 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(234,88,12,0.3)] 
-                transition-all duration-300 relative border-4 border-white/10 overflow-hidden group
-                ${playerName.trim() ? 'bg-gradient-to-br from-orange-500 to-red-600 scale-110 ring-4 ring-orange-400/50' : 'bg-slate-800/80 ring-2 ring-slate-700'}
-                hover:scale-110 hover:shadow-[0_0_40px_rgba(234,88,12,0.6)]
-              `}
-            >
-              {/* 1. Show Selected Avatar using the helper */}
-              {renderProfileAvatar(playerAvatar, 112)} 
-
-              {/* 2. Edit Pencil Badge */}
-              <div className="absolute bottom-2 right-2 bg-slate-900 rounded-full p-2 border border-slate-600 text-white shadow-lg z-20">
-                <Edit size={14} />
-              </div>
-            </button>
-
-            {/* --- POPUP MENU --- */}
-            {isAvatarMenuOpen && (
-              <div id="title-avatar-options" className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-w-[calc(100vw-24px)] max-h-[50vh] overflow-y-auto bg-slate-900/95 border border-slate-700 p-4 rounded-2xl shadow-2xl grid grid-cols-4 gap-3 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 z-[100]">
-                {AVATAR_OPTIONS.map(({ path, name }) => (
-                  <button
-                    key={path}
-                    onClick={() => {
-                      playSound('confirm', muted);
-                      setPlayerAvatar(path);
-                      setIsAvatarMenuOpen(false);
-                    }}
-                    className={`
-                      aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-110
-                      ${avatarUrl(playerAvatar) === assetUrl(path) ? 'border-orange-500 ring-2 ring-orange-500/50' : 'border-slate-600 hover:border-white'}
-                    `}
-                  >
-                    <img src={assetUrl(path)} className="w-full h-full object-cover [image-rendering:pixelated]" alt={name[lang]} title={name[lang]} />
-                  </button>
-                ))}
-                
-                {/* Option to Reset to Default */}
-                <button
-                  onClick={() => {
-                      playSound('confirm', muted);
-                      setPlayerAvatar(''); // Empty string = Default User Icon
-                      setIsAvatarMenuOpen(false);
-                  }}
-                  className="aspect-square rounded-xl bg-slate-800 border-2 border-slate-600 hover:border-white flex items-center justify-center"
-                >
-                  <User size={24} className="text-slate-400" />
-                </button>
-              </div>
-            )}
-          </div>
+               <div className="crown-character-setup">
+                 <CharacterChoice avatar={playerAvatar} lang={lang} onChoose={() => { playSound('click', muted); setCharacterPickerOpen(true); }} />
+               </div>
                <div className="relative w-full max-w-xs group">
                   <input 
                     type="text" 
