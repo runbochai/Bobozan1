@@ -16,7 +16,7 @@ interface Props {
   lang: Lang;
   avatar?: string;
   onClose: () => void;
-  onStartExpedition: () => void;
+  onContinue: () => void;
   initialTab?: 'lessons' | 'rules';
   startLabel?: string;
 }
@@ -58,7 +58,7 @@ function PracticeActor({ player, before, avatar, lang, hero }: {
 }
 
 /** An isolated practice room: only completed lesson IDs are kept between visits. */
-export default function BattleAcademy({ lang, avatar, onClose, onStartExpedition, initialTab = 'lessons', startLabel }: Props) {
+export default function BattleAcademy({ lang, avatar, onClose, onContinue, initialTab = 'lessons', startLabel }: Props) {
   const [tab, setTab] = useState<'lessons' | 'rules'>(initialTab);
   const [completed, setCompleted] = useState<string[]>(readCompletedAcademyLessons);
   const [lessonId, setLessonId] = useState<string | null>(null);
@@ -78,7 +78,7 @@ export default function BattleAcademy({ lang, avatar, onClose, onStartExpedition
   const round = lesson?.rounds[roundIndex];
   const completedCount = ACADEMY_LESSONS.filter(item => completed.includes(item.id)).length;
   const nextLesson = ACADEMY_LESSONS.find(item => !completed.includes(item.id));
-  const startText = startLabel ?? (zh ? '进入远征' : 'Start expedition');
+  const startText = startLabel ?? (zh ? '和朋友玩' : 'Play with friends');
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -148,8 +148,8 @@ export default function BattleAcademy({ lang, avatar, onClose, onStartExpedition
   return createPortal(<dialog ref={dialogRef} className="battle-academy" aria-labelledby={`${id}-heading`}
     onCancel={event => { event.preventDefault(); onClose(); }}>
     <header className="academy-heading">
-      <div><h2 id={`${id}-heading`} ref={headingRef} tabIndex={-1}>{zh ? '新手练习' : 'Battle academy'}</h2>
-        <p>{zh ? '试着出牌，看懂每一次交锋。' : 'Play a card. See how the clash works.'}</p></div>
+      <div><h2 id={`${id}-heading`} ref={headingRef} tabIndex={-1}>{zh ? '规则与进阶练习' : 'Rules & more practice'}</h2>
+        <p>{zh ? '遇到不懂的招式再来练，随时可以去对战。' : 'Practice a move when you need it. Play with friends whenever you like.'}</p></div>
       <button type="button" className="academy-close" aria-label={zh ? '关闭练习与规则' : 'Close practice and rules'} onClick={onClose}><X size={22} /></button>
     </header>
     <div className="academy-tabs" role="tablist" aria-label={zh ? '练习与规则' : 'Practice and rules'}>
@@ -184,8 +184,8 @@ export default function BattleAcademy({ lang, avatar, onClose, onStartExpedition
               <small>{done ? (zh ? '已完成 · 再练一次' : 'Complete · Practice again') : (zh ? `${item.rounds.length} 个小练习` : `${item.rounds.length} short challenges`)}</small></span>
           </button>;
         })}</div>
-        <footer className="academy-footer"><p>{zh ? '独立练习，不影响远征进度。' : 'Practice is separate from your expedition.'}</p>
-          <button type="button" className="academy-button academy-button-primary" onClick={onStartExpedition}><Swords size={18} />{startText}</button></footer>
+        <footer className="academy-footer"><p>{zh ? '可选练习，无需全部完成即可联机。' : 'Optional practice. No lessons are required for online play.'}</p>
+          <button type="button" className="academy-button academy-button-primary" onClick={onContinue}><Swords size={18} />{startText}</button></footer>
       </> : <>
         <div className="academy-practice-heading">
           <div><h3 ref={practiceRef} tabIndex={-1}>{lesson.title[lang]}</h3><span className="academy-round-number">{zh ? `练习 ${roundIndex + 1} / ${lesson.rounds.length}` : `Challenge ${roundIndex + 1} / ${lesson.rounds.length}`}</span></div>
@@ -237,7 +237,7 @@ export default function BattleAcademy({ lang, avatar, onClose, onStartExpedition
               {zh ? '下一练习' : 'Next challenge'}<Play size={17} /></button>}
             {result.passed && lastRound && nextLesson && <button type="button" className="academy-button academy-button-primary" onClick={() => openLesson(nextLesson)}>
               {zh ? '下一课' : 'Next lesson'}<Play size={17} /></button>}
-            {result.passed && lastRound && <button type="button" className={`academy-button ${nextLesson ? '' : 'academy-button-primary'}`} onClick={onStartExpedition}>
+            {result.passed && lastRound && <button type="button" className={`academy-button ${nextLesson ? '' : 'academy-button-primary'}`} onClick={onContinue}>
               <Swords size={18} />{startText}</button>}
           </div>
         </div>}

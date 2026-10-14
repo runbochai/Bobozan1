@@ -20,9 +20,10 @@ export interface ExpeditionRecap {
   logs: LogEntry[];
 }
 
-export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, onStart, difficulty = 'beginner', onDifficultyChange, best = 0 }: {
+export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, onStart, onStory, difficulty = 'beginner', onDifficultyChange, best = 0 }: {
   lang: Lang; recap?: ExpeditionRecap; onClose: () => void; onPractice: () => void; onStart?: () => void;
   difficulty?: ExpeditionDifficulty; onDifficultyChange?: (difficulty: ExpeditionDifficulty) => void; best?: number;
+  onStory?: () => void;
 }) {
   const dialog = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -64,7 +65,7 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
     return () => { element.close(); document.body.style.overflow = overflow; if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, []);
   return createPortal(<dialog ref={dialog} className={`exp-briefing${choosingDifficulty ? ' exp-difficulty-dialog' : ''}`} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }}>
-    <header><h2 id={titleId}>{recap ? (zh ? `第 ${recap.turn} 回合` : `Turn ${recap.turn}`) : choosingDifficulty ? (zh ? '选择难度' : 'Choose difficulty') : (zh ? '远征速览' : 'Expedition at a glance')}</h2>
+    <header><h2 id={titleId}>{recap ? (zh ? `第 ${recap.turn} 回合` : `Turn ${recap.turn}`) : choosingDifficulty ? (zh ? '单人挑战 · 远征' : 'Solo challenges · Campaign') : (zh ? '远征速览' : 'Expedition at a glance')}</h2>
       <button type="button" onClick={onClose} aria-label={zh ? '关闭' : 'Close'}>×</button></header>
     {recap ? <>
       <p className="exp-recap-stats">♥ {recap.hpBefore} → {recap.hpAfter} <span>⚡ {recap.energyBefore} → {recap.energyAfter}</span></p>
@@ -77,6 +78,8 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
       </details>
     </> : <>
       {choosingDifficulty ? <>
+        <p className="exp-briefing-note">{zh ? '独立的单人冒险，包含成长、商店和剧情。联机无需先通关。' : 'A separate solo adventure with upgrades, shops and story. Online play needs no campaign progress.'}</p>
+        {onStory && <button type="button" className="exp-briefing-story" onClick={onStory}>{zh ? '阅读远征序章' : 'Read the campaign prologue'}</button>}
         <fieldset className="exp-difficulty-options" aria-label={zh ? '远征难度' : 'Expedition difficulty'}>
           {Object.values(EXPEDITION_DIFFICULTIES).map(option => <label key={option.id} className="exp-difficulty-option" data-difficulty={option.id} data-selected={option.id === mode.id}>
             <span className="exp-difficulty-heading"><strong>{option.label[lang]}</strong><input type="radio" name={`${titleId}-difficulty`} value={option.id} checked={option.id === mode.id} onChange={() => onDifficultyChange?.(option.id)} /></span>

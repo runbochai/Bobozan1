@@ -14,6 +14,9 @@ import BattleFighter from './components/BattleFighter';
 import BattleLevelBadge from './components/BattleLevelBadge';
 import BattleStats from './components/BattleStats';
 import BattleAcademy from './components/BattleAcademy';
+import QuickStart from './components/QuickStart';
+import LocalPractice from './components/LocalPractice';
+import MultiplayerHelp from './components/MultiplayerHelp';
 import ExpeditionBriefing, { type ExpeditionRecap } from './components/ExpeditionBriefing';
 import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
 import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
@@ -24,7 +27,6 @@ import { AVATAR_OPTIONS } from './data/avatars';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
   Music,
-  Swords,
   Skull,
   Smile,
   X,
@@ -108,6 +110,8 @@ import { CrownPrologue, CrownJourney, CrownEnding, CrownQuestStrip } from './com
 import { themeForStage } from './data/crownCampaign';
 import { findTheme } from './data/gameThemes';
 import './components/CrownIntegration.css';
+import './components/MultiplayerEntry.css';
+import { readInvitedRoom, readPlayerName, savePlayerName } from './logic/playerEntry';
 import { getExpeditionLine } from './data/expeditionDialogue';
 import { createExpeditionRun, setupExpeditionStage, settleExpeditionRound, recordExpeditionHistory,
   takeExpeditionReward, buyExpeditionItem, takeExpeditionRoute,
@@ -272,7 +276,8 @@ export default function BobozanOnline() {
     // Short screens can scroll on the home page; enter battle at its visible top edge.
     if (view === 'GAME') window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
   }, [view]);
-  const [playerName, setPlayerName] = useState('');
+  const [playerName, setPlayerName] = useState(readPlayerName);
+  useEffect(() => { savePlayerName(playerName); }, [playerName]);
   const [lang, setLang] = useState<Lang>('zh'); 
   const [muted, setMuted] = useState(false);
   const [reduceMotionPreference, setReduceMotion] = useState(() => {
@@ -329,7 +334,8 @@ export default function BobozanOnline() {
   const [expRelics, setExpRelics] = useState<string[]>([]);
   const [expPhase, setExpPhase] = useState<'battle' | 'journey' | 'reward' | 'shop' | 'runover' | 'clear'>('battle');
   const [expNextStage, setExpNextStage] = useState(0);
-  const [crownPrologue, setCrownPrologue] = useState(true);
+  const [crownPrologue, setCrownPrologue] = useState(false);
+  const [learningMode, setLearningMode] = useState<'quick' | 'practice' | null>(null);
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
   const [expGold, setExpGold] = useState(0);
@@ -647,7 +653,8 @@ export default function BobozanOnline() {
   const prevLogRef = useRef<string | null>(null);
 
   const [isOnline, setIsOnline] = useState(false);
-  const [roomCode, setRoomCode] = useState('');
+  const [invitedRoom, setInvitedRoom] = useState(() => readInvitedRoom(window.location.search));
+  const [roomCode, setRoomCode] = useState(() => readInvitedRoom(window.location.search) ?? '');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [toastMsg, setToastMsg] = useState('');
@@ -783,9 +790,6 @@ export default function BobozanOnline() {
     const unsub = onAuthStateChanged(firebaseAuth, (u) => {
       setUser(u);
       if (u) { setAuthError(null); setAuthLoading(false); }
-      const params = new URLSearchParams(window.location.search);
-      const urlRoom = params.get('room');
-      if (urlRoom && urlRoom.length === 6) setRoomCode(urlRoom);
     });
     return () => { cancelled = true; unsub(); };
   }, []);
@@ -935,6 +939,7 @@ export default function BobozanOnline() {
     setExpRecap(undefined);
     setExpHelp(null);
     setAcademyTab(null);
+    setLearningMode(null);
     setCrownPrologue(false);
     setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, players: [], logs: [], hostId: '' });
     setView('HOME');
@@ -1055,7 +1060,23 @@ export default function BobozanOnline() {
 }, [gameState.turn]);
 
 
-  const handleEnterName = () => { if (!playerName.trim()) return; initAudio(); playSound('confirm', muted); setView('HOME'); };
+  const handleEnterName = () => {
+    initAudio();
+    playSound('confirm', muted);
+    setPlayerName(playerName.trim() || (lang === 'zh' ? '玩家' : 'Player'));
+    setLearningMode(null);
+    setAcademyTab(null);
+    setExpHelp(null);
+    setView('HOME');
+    if (invitedRoom && roomCode === invitedRoom && user && firebaseConfigured) void joinRoom();
+  };
+
+  const clearInvitation = () => {
+    setInvitedRoom(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete('room');
+    window.history.replaceState(null, '', `${url.pathname}${url.search}${url.hash}`);
+  };
 
   const createRoom = async () => {
     if (!user || !db) return;
@@ -1098,6 +1119,7 @@ export default function BobozanOnline() {
       const code = await createUniqueRoom(newRoom);
       setRoomCode(code);
       setIsOnline(true);
+      clearInvitation();
       setView('LOBBY');
     } catch (err) {
       console.error(err);
@@ -1116,7 +1138,7 @@ export default function BobozanOnline() {
     try {
           const newPlayer: Player = {
             id: user.uid,
-            name: playerName || `Player ${user.uid.slice(-4)}`,
+            name: playerName.trim() || (lang === 'zh' ? '玩家' : 'Player'),
             avatar: playerAvatar,
             isBot: false,
             hp: MAX_HP,
@@ -1139,6 +1161,7 @@ export default function BobozanOnline() {
       await mutateRoom(safeCode, room => joinPlayer(room, newPlayer));
       setErrorMsg('');
       setIsOnline(true);
+      clearInvitation();
       setView('LOBBY');
     } catch (error) {
       const key = error instanceof Error ? error.message : '';
@@ -1423,17 +1446,31 @@ export default function BobozanOnline() {
 
   // --- RENDER LOGIC ---
 
-  const learningOverlay = academyTab ? <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
-    startLabel={isExpedition && view === 'GAME' ? (lang === 'zh' ? '返回远征' : 'Return to expedition') : undefined}
-    onClose={() => setAcademyTab(null)} onStartExpedition={() => {
-      setAcademyTab(null);
-      if (!(isExpedition && view === 'GAME')) setExpHelp('intro');
-    }} /> : expHelp ? <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
+  const inMatch = view === 'GAME' || view === 'LOBBY';
+  const learningOverlay = <>
+    {learningMode === 'quick' && <QuickStart lang={lang} avatar={playerAvatar}
+      onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
+      onPractice={() => setLearningMode('practice')}
+      onOpenAcademy={() => { setLearningMode(null); setAcademyTab('lessons'); }} />}
+    {learningMode === 'practice' && <LocalPractice lang={lang} avatar={playerAvatar}
+      onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
+      onOpenRules={() => setAcademyTab('rules')} />}
+    {academyTab && <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
+      startLabel={inMatch ? (lang === 'zh' ? '返回对局' : 'Return to game')
+        : learningMode === 'practice' ? (lang === 'zh' ? '返回练习局' : 'Return to practice')
+        : (lang === 'zh' ? '和朋友玩' : 'Play with friends')}
+      onClose={() => setAcademyTab(null)} onContinue={() => {
+        setAcademyTab(null);
+        if (!inMatch && learningMode !== 'practice') handleEnterName();
+      }} />}
+    {expHelp && <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
       difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty} best={expBest}
       onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
-      onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} /> : null;
+      onStory={expHelp === 'intro' && !inMatch ? () => { setExpHelp(null); setCrownPrologue(true); } : undefined}
+      onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} />}
+  </>;
 
-  // An opening belongs to this page visit, not to starting or restarting a run.
+  // The campaign story is optional; friends and invitees land on the play menu.
   // Keep the menu unmounted until dismissal so it cannot flash or receive focus behind the comic.
   if (crownPrologue) return <div className="pixel-app crown-opening-screen">
     <CrownTitleScene />
@@ -1534,7 +1571,8 @@ export default function BobozanOnline() {
                <div className="relative w-full max-w-xs group">
                   <input 
                     type="text" 
-                    placeholder={t.enterName} 
+                    aria-label={lang === 'zh' ? '你的昵称' : 'Your nickname'}
+                    placeholder={lang === 'zh' ? '昵称（可稍后更改）' : 'Nickname (optional)'}
                     className="w-full bg-transparent border-b-4 border-slate-700 py-3 text-center text-3xl font-black text-white placeholder:text-slate-700 placeholder:font-bold focus:border-orange-500 focus:outline-none transition-colors duration-300 uppercase tracking-wider"
                     value={playerName} 
                     onChange={(e) => setPlayerName(e.target.value)} 
@@ -1544,30 +1582,31 @@ export default function BobozanOnline() {
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.8)] scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500 origin-center" />
                </div>
             </div>
-            <div className="flex gap-4 w-full max-w-md justify-center">
-              <button
-                onClick={() => setExpHelp('intro')}
-                className="btn-expedition group relative flex-1 overflow-hidden p-4"
-              >
-                <div className="relative w-full flex items-center justify-center gap-2">
-                  <Swords size={24} />
-                  <span className="text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">{lang === 'zh' ? '王冠远征' : 'Crown Campaign'}</span>
-                </div>
-                <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
-              </button>
+            <p className="friends-entry-note">{lang === 'zh' ? '2–8 人 · 同时出牌 · 猜中朋友的下一招' : '2–8 players · Choose together · Read your friends'}</p>
+            {invitedRoom && <p className="friends-invitation" role="status">{lang === 'zh' ? `朋友邀请你加入房间 ${invitedRoom}` : `You’re invited to room ${invitedRoom}`}</p>}
+            <div className="friends-title-actions w-full">
               <button
                 onClick={handleEnterName}
-                disabled={!playerName.trim()}
-                className="btn-primary group relative flex-1 overflow-hidden p-4"
+                disabled={loading}
+                className="btn-primary friends-play-button group relative overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
                   <Users size={24} />
-                  <span className="text-2xl font-black text-white uppercase tracking-wider drop-shadow-md">{lang === 'zh' ? '王冠竞技场' : 'Crown Arena'}</span>
+                  <span className="text-2xl font-black uppercase tracking-wider">{invitedRoom ? (lang === 'zh' ? '加入朋友房间' : 'Join your friends') : (lang === 'zh' ? '和朋友玩' : 'Play with friends')}</span>
                 </div>
-                <div className="absolute inset-0 bg-white/30 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 skew-x-12" />
+              </button>
+              <button
+                onClick={() => setLearningMode('quick')}
+                className="btn-secondary friends-learn-button p-3"
+              >
+                <Play size={19} /><span>{lang === 'zh' ? '快速上手' : 'Quick start'}<small>{lang === 'zh' ? '4 次交锋，约 3 分钟' : '4 short clashes · about 3 min'}</small></span>
               </button>
             </div>
-            <div className="crown-title-links"><button type="button" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '规则 / 练习' : 'Rules / Practice'}</button></div>
+            <div className="crown-title-links">
+              <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '机器人练习' : 'Bot practice'}</button>
+              <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
+              <button type="button" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
+            </div>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
                 {lang === 'zh' ? `🏆 ${expDifficultyConfig.label[lang]}最佳：第 ${expBest} 关` : `🏆 ${expDifficultyConfig.label[lang]} best: Stage ${expBest}`}
@@ -1604,7 +1643,7 @@ export default function BobozanOnline() {
 
         <div className="pixel-panel relative backdrop-blur-xl rounded-[2.5rem] border border-white/10 shadow-2xl overflow-hidden p-8 md:p-10 flex flex-col gap-8 animate-in fade-in zoom-in duration-300">
             
-            <header className="pixel-section-heading crown-arena-heading"><h1>{lang === 'zh' ? '王冠竞技场' : 'Crown Arena'}</h1></header>
+            <header className="pixel-section-heading crown-arena-heading"><h1>{lang === 'zh' ? '和朋友玩' : 'Play with friends'}</h1><small>{lang === 'zh' ? '建个房间发给朋友，或输入房间码加入。' : 'Create a room to invite friends, or join with their room code.'}</small></header>
             {/* User Profile */}
             <div className="flex flex-col items-center gap-3">
               <div className="relative group">
@@ -1627,7 +1666,7 @@ export default function BobozanOnline() {
 
             <div className="h-px w-full bg-gradient-to-r from-transparent via-white/10 to-transparent" />
 
-            <div className="crown-arena-links"><button type="button" className="btn-secondary px-4 py-3" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '远征模式' : 'Campaign'}</button><button type="button" className="btn-secondary px-4 py-3" onClick={() => setAcademyTab('lessons')}>{lang === 'zh' ? '练习 / 规则' : 'Practice / Rules'}</button></div>
+            {invitedRoom && roomCode === invitedRoom && <p className="friends-invitation" role="status">{lang === 'zh' ? `已收到房间 ${invitedRoom} 的邀请，点击下方「加入房间」。` : `Invitation to room ${invitedRoom}. Choose “Join Room” below.`}</p>}
             {/* Actions */}
             <div className="space-y-6">
               {/* 🎨 CHANGED: Create Button (Orange/Red Theme) */}
@@ -1645,7 +1684,7 @@ export default function BobozanOnline() {
                   <div className="relative flex-1 group">
                     {/* 🎨 CHANGED: Input Focus Color (Orange) */}
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none"><Target className="text-slate-500 group-focus-within:text-orange-400 transition-colors" size={20} /></div>
-                    <input type="text" placeholder={lang === 'zh' ? '输入6位房间码' : 'Enter 6-character room code'} maxLength={6} className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-800/50 border border-slate-600 focus:border-orange-500 focus:bg-slate-800/80 text-center font-mono text-xl font-bold tracking-[0.3em] uppercase outline-none transition-all placeholder:text-slate-600 placeholder:tracking-normal text-white"
+                    <input type="text" inputMode="numeric" aria-label={lang === 'zh' ? '房间码' : 'Room code'} placeholder={lang === 'zh' ? '输入6位房间码' : 'Enter 6-digit room code'} maxLength={6} className="w-full pl-12 pr-4 py-4 rounded-2xl bg-slate-800/50 border border-slate-600 focus:border-orange-500 focus:bg-slate-800/80 text-center font-mono text-xl font-bold tracking-[0.3em] uppercase outline-none transition-all placeholder:text-slate-600 placeholder:tracking-normal text-white"
                       value={roomCode} onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
                     />
                   </div>
@@ -1662,6 +1701,12 @@ export default function BobozanOnline() {
                 </div>
               )}
             </div>
+            <div className="friends-menu-extras">
+              <button type="button" onClick={() => setLearningMode('quick')}>{lang === 'zh' ? '快速上手' : 'Quick start'}</button>
+              <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '先和机器人练一局' : 'Practice with a bot'}</button>
+              <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
+              <button type="button" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
+            </div>
         </div>
       </div>
     </div>
@@ -1671,6 +1716,7 @@ export default function BobozanOnline() {
   if (view === 'LOBBY') return (
     <div className="pixel-app pixel-screen-lobby min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       {skillSelectionOverlay}
+      {learningOverlay}
       
       <PixelBackdrop scene="lobby" />
 
@@ -1722,6 +1768,8 @@ export default function BobozanOnline() {
 
         {/* Body Section */}
         <div className="p-8 md:p-10 space-y-8">
+
+            <MultiplayerHelp lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setAcademyTab('rules')} />
             
             {/* Settings Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-2xl border border-white/5">
@@ -2106,6 +2154,8 @@ export default function BobozanOnline() {
       {/* CENTER ARENA */}
       <div className="pixel-battle-layout flex-1 flex flex-col relative z-10">
 
+        {!isExpedition && <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setAcademyTab('rules')} />}
+
         {isExpedition && expPhase === 'battle' && (
           <div className="pixel-exp-hud expedition-learning-hud absolute top-3 left-3 z-50 pointer-events-none">
             <div className="expedition-learning-heading">
@@ -2225,10 +2275,10 @@ export default function BobozanOnline() {
 
            {/* GAME OVER OVERLAY */}
            {gameState.status === 'GAMEOVER' && winnerPlayer && showBattleResult && (
-            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-500 overflow-hidden">
+            <div className="multiplayer-result-screen fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md animate-in fade-in duration-500 overflow-hidden">
                <div className="relative w-full max-w-md md:max-w-lg mx-4 animate-in zoom-in-95 duration-300 z-10">
                   <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-b from-yellow-500/20 via-purple-500/10 to-transparent blur-3xl rounded-full pointer-events-none" />
-                  <div className="relative bg-slate-900/95 border border-slate-700/50 p-6 md:p-10 rounded-[2rem] shadow-2xl flex flex-col items-center gap-6 overflow-hidden">
+                  <div className="multiplayer-result-card relative bg-slate-900/95 border border-slate-700/50 p-6 md:p-10 rounded-[2rem] shadow-2xl flex flex-col items-center gap-6 overflow-hidden">
                      <div className="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50" />
 
                      {/* 1. TITLE & WINNER CALCULATION */}
@@ -2324,6 +2374,7 @@ export default function BobozanOnline() {
                              </div>
 
                              {/* CONTROLS */}
+                             <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setAcademyTab('rules')} />
                              <div className="w-full pt-4 border-t border-slate-800 flex flex-col gap-3 z-10">
                                 {isFinal ? (
                                    <button onClick={() => leaveRoom()} className="w-full py-3 bg-red-600 hover:bg-red-500 text-white font-black text-lg rounded-xl shadow-lg transition-all active:scale-95">
