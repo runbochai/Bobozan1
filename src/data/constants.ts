@@ -2,7 +2,7 @@
 import { SKILL_DB } from './skills';
 import type { Card } from '../types';
 
-export const LAST_SKILL_LEVEL = 19;
+export const LAST_SKILL_LEVEL = 17;
 /** One final crown battle follows the last skill award. */
 export const FINAL_LEVEL = LAST_SKILL_LEVEL + 1;
 

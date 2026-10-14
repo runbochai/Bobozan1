@@ -38,8 +38,6 @@ export const WOODCUT_CARDS: Record<string, string> = {
   "triplekick": "cards/woodcut-v1/triplekick.webp",
   "footdef": "cards/woodcut-v1/footdef.webp",
   "aoxi": "cards/woodcut-v1/aoxi.webp",
-  "bang": "cards/woodcut-v1/bang.webp",
-  "stab": "cards/woodcut-v1/stab.webp",
   "wave": "cards/woodcut-v1/wave.webp",
   "superwave": "cards/woodcut-v1/superwave.webp",
   "hongtian": "cards/woodcut-v1/hongtian.webp",

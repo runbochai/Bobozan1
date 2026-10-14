@@ -97,8 +97,8 @@ test('discarded skill history cannot retain training through a temporary borrowe
 
 test('ordinary modes retain original skill ranks and the shared catalog is never mutated', () => {
   const catalog = structuredClone(SKILL_DB);
-  const ordinary = player('hero', { inventory: [0, 1, 19] });
-  assert.equal(getPlayerLevel(ordinary), 19);
+  const ordinary = player('hero', { inventory: [0, 1, 17] });
+  assert.equal(getPlayerLevel(ordinary), 17);
   assert.equal(getEffectiveLevel(getPlayerCard(ordinary, 'pegasus')!), 1);
   const advanced = player('enemy', { inventory: [0, 2], skillLoadout: ['icesword'], selectedCardId: 'icesword' });
   assert.equal(settle(ordinary, advanced).damageTaken.hero, 1);
@@ -109,11 +109,11 @@ test('ordinary modes retain original skill ranks and the shared catalog is never
 });
 
 test('endless training never lowers a retained skill below its actual unlock level', () => {
-  const hero = player('hero', { endlessLevel: 5, inventory: [0, 19], skillLoadout: ['poison'] });
-  assert.equal(getEffectiveLevel(getPlayerCard(hero, 'poison')!), 19);
+  const hero = player('hero', { endlessLevel: 5, inventory: [0, 17], skillLoadout: ['poison'] });
+  assert.equal(getEffectiveLevel(getPlayerCard(hero, 'poison')!), 17);
   for (const invalid of [NaN, Infinity, -1, 2.5]) {
     const invalidHero = { ...hero, endlessLevel: invalid };
-    assert.equal(getPlayerLevel(invalidHero), 19);
+    assert.equal(getPlayerLevel(invalidHero), 17);
     assert.equal(getPlayerCard(invalidHero, 'poison')!.combatLevel, undefined);
   }
 });
@@ -137,10 +137,10 @@ test('public AI forecasts use endless ranks and never inspect locked selections'
 });
 
 test('joint skills derive their effective level from current component unlocks', () => {
-  for (const [id, expected] of [['skydragon', 3], ['doublewing', 5], ['vajra', 11], ['allbomb', 17], ['heartpoison', 17]] as const) {
+  for (const [id, expected] of [['skydragon', 3], ['doublewing', 5], ['vajra', 11], ['allbomb', 15], ['heartpoison', 15]] as const) {
     assert.equal(getEffectiveLevel(card(id)), expected, id);
   }
-  const later = player('hero', { inventory: [0, 16, 17], skillLoadout: ['hongtian', 'hongdi'] });
+  const later = player('hero', { inventory: [0, 14, 15], skillLoadout: ['hongtian', 'hongdi'] });
   assert.ok(getPlayerCards(later).some(move => move.id === 'allbomb'));
-  assert.equal(getEffectiveLevel(getPlayerCard(later, 'heartpoison')!), 17);
+  assert.equal(getEffectiveLevel(getPlayerCard(later, 'heartpoison')!), 15);
 });

@@ -53,7 +53,7 @@ test('discarded unlock history does not alter public opponent forecasts or mutat
 });
 
 test('both AIs ignore retired skills in legacy retained, free and temporary copies', () => {
-  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap'];
+  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap', 'bang', 'stab'];
   const enemy = player('enemy', { energy: 10, inventory: [0, 13, 14, 15, 16, 17, 18],
     skillLoadout: [...retired], freeSkills: [...retired], tempSkills: [...retired] });
   const hero = player('hero');

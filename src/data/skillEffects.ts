@@ -41,8 +41,6 @@ export const SKILL_EFFECTS: Record<string, SkillEffect> = {
   triplekick: effect('wave', '#86d6b8', '#e0fff1', 3, 1.4),
   footdef: effect('shield', '#a9d3a5', '#e4f9d8', 5),
   aoxi: effect('absorb', '#91a3f2', '#d7f8ff', 6, 1.4),
-  bang: effect('orb', '#edb67c', '#fff2ca', 4, 1.15),
-  stab: effect('slash', '#bfafea', '#eee5ff', 2),
   wave: effect('wave', '#80d1da', '#d8fffa', 2),
   superwave: effect('wave', '#8baee9', '#d9f5ff', 6, 1.5),
   hongtian: effect('orb', '#f1cc88', '#fff1cc', 3),

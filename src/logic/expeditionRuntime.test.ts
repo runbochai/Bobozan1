@@ -9,7 +9,7 @@ import {
   type ExpeditionRun,
 } from './expeditionRuntime';
 import type { Player } from '../types';
-import { getSkillOverflow, grantSkillLevel, hasSkillOverflow, resolveSkillLoadout } from './skillLoadout';
+import { getSkillOverflow, grantSkillLevel, hasSkillOverflow, resolveSkillLoadout, SKILL_CATALOG_VERSION } from './skillLoadout';
 
 const identity = { name: 'Tester', avatar: 'avatars/dragon.webp', lang: 'zh' as const };
 const seeded = () => .25;
@@ -223,7 +223,7 @@ test('legacy expedition saves expose overflow without pruning fixed enemy roster
 });
 
 test('legacy temporary cards are retired when entering a stage or claiming a reward', () => {
-  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap'];
+  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap', 'bang', 'stab'];
   const valid = { cardId: 'pegasus', usesLeft: 2 };
   const previous = { ...createExpeditionRun(), tempCards: [valid, ...retired.map(cardId => ({ cardId, usesLeft: 3 }))] };
   const before = structuredClone(previous);
@@ -243,11 +243,11 @@ test('an old expedition run compacts unlocks once without turning deleted reward
     tempCards: [{ cardId: 'pointdiff', usesLeft: 3 }, { cardId: 'pegasus', usesLeft: 2 }] };
   const before = structuredClone(old);
   const battle = setupExpeditionStage(old, 0, identity, seeded);
-  assert.equal(battle.run.skillCatalogVersion, 2);
-  assert.deepEqual(battle.run.inventory, [0, 12, 13, 16, 17, 19]);
-  assert.deepEqual(battle.run.skillLoadout, ['aoxi', 'bang', 'hongtian', 'poison']);
+  assert.equal(battle.run.skillCatalogVersion, SKILL_CATALOG_VERSION);
+  assert.deepEqual(battle.run.inventory, [0, 12, 14, 15, 17]);
+  assert.deepEqual(battle.run.skillLoadout, ['aoxi', 'hongtian', 'poison']);
   assert.deepEqual(battle.run.tempCards, [{ cardId: 'pegasus', usesLeft: 2 }]);
-  assert.equal(hero(battle).skillCatalogVersion, 2);
+  assert.equal(hero(battle).skillCatalogVersion, SKILL_CATALOG_VERSION);
   const replay = setupExpeditionStage(battle.run, 0, identity, seeded);
   assert.deepEqual(replay.run.inventory, battle.run.inventory);
   assert.deepEqual(replay.run.skillLoadout, battle.run.skillLoadout);
@@ -256,5 +256,25 @@ test('an old expedition run compacts unlocks once without turning deleted reward
     inventory: [0, 13], skillLoadout: ['pointdiff'] }, 0, identity, seeded);
   assert.deepEqual(deletedOnly.run.inventory, [0]);
   assert.deepEqual(deletedOnly.run.skillLoadout, []);
-  assert.ok(!getPlayerCards(hero(deletedOnly), deletedOnly.players).some(card => card.id === 'bang'));
+  assert.ok(!getPlayerCards(hero(deletedOnly), deletedOnly.players).some(card => card.id === 'wave'));
+});
+
+test('the previous catalog retires Bang and Stab without awarding their replacement level in expedition storage', () => {
+  const old: ExpeditionRun = { ...createExpeditionRun(), skillCatalogVersion: 2,
+    inventory: [0, 12, 13, 14, 15, 19], skillLoadout: ['aoxi', 'bang', 'stab', 'wave', 'poison'],
+    tempCards: [{ cardId: 'bang', usesLeft: 3 }, { cardId: 'stab', usesLeft: 2 }, { cardId: 'pegasus', usesLeft: 1 }] };
+  const before = structuredClone(old);
+  const battle = setupExpeditionStage(old, 0, identity, seeded);
+  assert.equal(battle.run.skillCatalogVersion, SKILL_CATALOG_VERSION);
+  assert.deepEqual(battle.run.inventory, [0, 12, 13, 17]);
+  assert.deepEqual(battle.run.skillLoadout, ['aoxi', 'wave', 'poison']);
+  assert.deepEqual(battle.run.tempCards, [{ cardId: 'pegasus', usesLeft: 1 }]);
+  assert.ok(getPlayerCards(hero(battle), battle.players).every(card => !['bang', 'stab'].includes(card.id)));
+  const deletedOnly = setupExpeditionStage({ ...createExpeditionRun(), skillCatalogVersion: 2,
+    inventory: [0, 13, 14], skillLoadout: ['bang', 'stab'] }, 0, identity, seeded);
+  assert.deepEqual(deletedOnly.run.inventory, [0]);
+  assert.deepEqual(deletedOnly.run.skillLoadout, []);
+  assert.ok(!getPlayerCards(hero(deletedOnly), deletedOnly.players).some(card => card.id === 'wave'));
+  assert.deepEqual(setupExpeditionStage(battle.run, 0, identity, seeded).run.inventory, battle.run.inventory);
+  assert.deepEqual(old, before);
 });

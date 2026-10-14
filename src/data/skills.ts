@@ -69,26 +69,20 @@ export const SKILL_DB: Card[] = [
   { id: 'aoxi', name: { zh: '奥吸', en: 'Ultra Absorb' }, cost: 1, type: 'ABSORB', levelRequired: 12, tier: 0, description: { zh: '吸收2倍其他玩家打出的技能 (若被轰击中则被淘汰)', en: 'Absorb 2x (Countered by Blast)' }, tags: ['ao_absorb'] },
 
   // Lvl 13
-  { id: 'bang', name: { zh: '崩!', en: 'Bang!' }, cost: 1, type: 'ATTACK', levelRequired: 13, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
+  { id: 'wave', name: { zh: '天下第一波', en: 'World Wave' }, cost: 1, type: 'ATTACK', levelRequired: 13, tier: 2, description: { zh: '击破普通防、龙爪防和头盔防；飞行、手盔防、脚盔防仍能抵挡', en: 'Breaks Defend, Claw Def and Helm Def; Fly, Hand Def and Foot Def still block it' }, tags: ['break_mid_def'] },
+  { id: 'superwave', name: { zh: '超级第一波', en: 'Super Wave' }, cost: 3, type: 'ULTIMATE', levelRequired: 13, tier: 4, description: { zh: '终极技能', en: 'Ultimate Skill' } },
 
   // Lvl 14
-  { id: 'stab', name: { zh: '捅', en: 'Stab' }, cost: 1, type: 'ATTACK', levelRequired: 14, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
+  { id: 'hongtian', name: { zh: '轰天', en: 'Sky Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 14, tier: 2, description: { zh: '攻击上层玩家', en: 'Attack Player Above' }, tags: ['hit_up'] },
 
   // Lvl 15
-  { id: 'wave', name: { zh: '天下第一波', en: 'World Wave' }, cost: 1, type: 'ATTACK', levelRequired: 15, tier: 2, description: { zh: '击破普通防、龙爪防和头盔防；飞行、手盔防、脚盔防仍能抵挡', en: 'Breaks Defend, Claw Def and Helm Def; Fly, Hand Def and Foot Def still block it' }, tags: ['break_mid_def'] },
-  { id: 'superwave', name: { zh: '超级第一波', en: 'Super Wave' }, cost: 3, type: 'ULTIMATE', levelRequired: 15, tier: 4, description: { zh: '终极技能', en: 'Ultimate Skill' } },
+  { id: 'hongdi', name: { zh: '轰地', en: 'Land Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 15, tier: 2, description: { zh: '攻击下层玩家', en: 'Attack Player Below' }, tags: ['hit_down'] },
 
   // Lvl 16
-  { id: 'hongtian', name: { zh: '轰天', en: 'Sky Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 16, tier: 2, description: { zh: '攻击上层玩家', en: 'Attack Player Above' }, tags: ['hit_up'] },
+  { id: 'hearteye', name: { zh: '诛心诛眼', en: 'Heart & Eye' }, cost: 1, type: 'ATTACK', levelRequired: 16, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
 
   // Lvl 17
-  { id: 'hongdi', name: { zh: '轰地', en: 'Land Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 17, tier: 2, description: { zh: '攻击下层玩家', en: 'Attack Player Below' }, tags: ['hit_down'] },
-
-  // Lvl 18
-  { id: 'hearteye', name: { zh: '诛心诛眼', en: 'Heart & Eye' }, cost: 1, type: 'ATTACK', levelRequired: 18, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
-
-  // Lvl 19
-  { id: 'poison', name: { zh: '散发毒气', en: 'Poison' }, cost: 1, type: 'ATTACK', levelRequired: 19, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
+  { id: 'poison', name: { zh: '散发毒气', en: 'Poison' }, cost: 1, type: 'ATTACK', levelRequired: 17, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
 
   // Combos
   { id: 'skydragon', name: { zh: '天龙剑', en: 'Sky Dragon' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 压制普通终极，与咔叽粉相抵；射程上下各3层', en: 'Combo: beats ordinary Ults; ties KaJi; reaches ±3 layers' }, tags: ['combo'] },

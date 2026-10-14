@@ -15,7 +15,7 @@ const after = (result: ReturnType<typeof calculateTurnOutcome>, id: string) =>
 
 test('movement unlocks for the table when the renumbered Sky Bomb skill is earned', () => {
   const skyLevel = SKILL_DB.find(card => card.id === 'hongtian')!.levelRequired;
-  assert.equal(skyLevel, 16);
+  assert.equal(skyLevel, 14);
   const me = player('me', 'charge');
   const beforeUnlock = player('other', 'charge', { inventory: [0, skyLevel - 1] });
   const afterUnlock = { ...beforeUnlock, inventory: [...beforeUnlock.inventory, skyLevel] };

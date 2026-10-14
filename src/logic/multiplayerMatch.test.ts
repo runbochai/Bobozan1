@@ -31,7 +31,7 @@ for (const multiplayerMode of ['kills', 'survival'] as const) {
       player('victim', { selectedCardId: 'charge' }),
       player('past-leader', { kills: 100, isDead: true, hp: 0 }),
     ], 1, LAST_SKILL_LEVEL, 'zh', { multiplayerMode });
-    assert.equal(LAST_SKILL_LEVEL, 19);
+    assert.equal(LAST_SKILL_LEVEL, 17);
     assert.equal(FINAL_LEVEL, LAST_SKILL_LEVEL + 1);
     assert.equal(result.isGameOver, true);
     assert.equal(result.winner?.id, 'survivor');

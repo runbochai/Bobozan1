@@ -125,7 +125,7 @@ test('reachable bot decisions remain legal across repeated real duels', () => {
 
 test('retired moves cannot return through copied free or temporary practice hands', () => {
   const state = createLocalPractice();
-  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap'];
+  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap', 'bang', 'stab'];
   state.players.forEach(participant => {
     participant.energy = 10;
     participant.freeSkills = [...retired];

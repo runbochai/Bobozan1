@@ -8,8 +8,8 @@ const symbols: Record<string, typeof Star> = {
   ji: Star, kajifen: Star, kajisuper: Star, ascend: ArrowUp, descend: ArrowDown,
   smallfly: ArrowUp, bigfly: ArrowUp, absorb: Ghost, aoxi: Ghost,
   helmetatk: Shield, helmetdef: Shield, handatk: Sword, handdef: Shield,
-  shatter: Skull, stab: Sword,
-  bang: Flame, hongtian: Flame, hongdi: Flame, skydragon: Star,
+  shatter: Skull,
+  hongtian: Flame, hongdi: Flame, skydragon: Star,
   doublewing: Layers, vajra: Shield, allbomb: Flame, heartpoison: Heart, hearteye: Target, poison: Skull,
 };
 

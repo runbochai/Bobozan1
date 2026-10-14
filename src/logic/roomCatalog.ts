@@ -1,15 +1,16 @@
 import { FINAL_LEVEL } from '../data/constants';
 import { SKILL_DB } from '../data/skills';
 import type { GameState } from '../types';
-import { migrateLegacySkillCatalog, normalizeSkillLoadout, SKILL_CATALOG_VERSION } from './skillLoadout';
+import { migrateLegacySkillCatalog, SKILL_CATALOG_VERSION } from './skillLoadout';
 
 const availableSkills = new Set(SKILL_DB.map(card => card.id));
 
 /** Read old persisted rooms once; current room rounds and unlocks are already compact. */
 export function migrateRoomSkillCatalog(room: GameState): GameState {
-  const legacy = (room.skillCatalogVersion ?? 0) < SKILL_CATALOG_VERSION;
+  const version = room.skillCatalogVersion ?? 0;
+  const legacy = version < SKILL_CATALOG_VERSION;
   const players = room.players.map(player => {
-    const next = legacy ? migrateLegacySkillCatalog(player) : normalizeSkillLoadout(player);
+    const next = migrateLegacySkillCatalog({ ...player, skillCatalogVersion: player.skillCatalogVersion ?? version });
     return { ...next,
       // An already revealed retired move resolves as Charge so a legacy showdown can finish.
       selectedCardId: next.selectedCardId && availableSkills.has(next.selectedCardId) ? next.selectedCardId
@@ -19,7 +20,8 @@ export function migrateRoomSkillCatalog(room: GameState): GameState {
     };
   });
   const matchCount = !legacy || room.matchCount <= 12 ? room.matchCount
-    : room.status === 'GAMEOVER' && room.matchCount >= 23 ? FINAL_LEVEL
-    : room.matchCount <= 16 ? 13 : Math.min(FINAL_LEVEL, room.matchCount - 4);
+    : version < 2 && room.status === 'GAMEOVER' && room.matchCount >= 23 ? FINAL_LEVEL
+    : version < 2 ? (room.matchCount <= 18 ? 13 : Math.min(FINAL_LEVEL, room.matchCount - 6))
+    : room.matchCount <= 14 ? 13 : Math.min(FINAL_LEVEL, room.matchCount - 2);
   return { ...room, players, matchCount, skillCatalogVersion: SKILL_CATALOG_VERSION };
 }

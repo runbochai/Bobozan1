@@ -56,7 +56,7 @@ test('endless starts at one HP and zero Energy, and every NPC retains a genuine 
       const ordinary = getPlayerCards(enemy, battle.players).filter(card => card.type === 'ATTACK' && card.tier === 2
         && card.levelRequired > 0 && !card.tags?.some(tag => ['combo', 'pierce_basic', 'break_basic', 'break_mid_def', 'hit_up', 'hit_down'].includes(tag)));
       assert.ok(ordinary.length > 0, `Lv.${level} floor ${floor} has a same-layer regular attack`);
-      assert.ok(enemy.inventory.every(unlock => unlock <= 19));
+      assert.ok(enemy.inventory.every(unlock => unlock <= 17));
     }
   }
   assert.deepEqual(createExpeditionRun('normal').inventory, [0]);
@@ -203,7 +203,7 @@ test('endless rewards remain useful without a second level-up, and endless shops
     assert.ok(shop.some(item => item.kind === 'equipment' && item.equipment.id === onlyAvailable));
     assert.ok(!shop.some(item => item.kind === 'equipment' && item.equipment.id === 'levelbadge'));
   }
-  const saturated = { ...run, ...autoSelectSkillLoadout({ inventory: Array.from({ length: 20 }, (_, i) => i) }),
+  const saturated = { ...run, ...autoSelectSkillLoadout({ inventory: Array.from({ length: 18 }, (_, i) => i) }),
     hp: 5, maxHp: 5, relics: EXPEDITION_RELICS.map(relic => relic.id), endlessLevel: 200 };
   const late = genExpeditionRewards(saturated, rng);
   assert.equal(late.length, 4);
@@ -213,7 +213,7 @@ test('endless rewards remain useful without a second level-up, and endless shops
 test('saturated endless rewards always fill three choices or four with the map, preferring distinct cards before copies', () => {
   for (let level = 0; level <= 25; level++) for (const withMap of [false, true]) for (const injured of [false, true]) {
     const run: ExpeditionRun = { ...createExpeditionRun('endless'), endlessLevel: level,
-      inventory: Array.from({ length: Math.min(level, 19) + 1 }, (_, i) => i),
+      inventory: Array.from({ length: Math.min(level, 17) + 1 }, (_, i) => i),
       stageIdx: Math.max(0, level - 1), hp: injured ? 4 : 5, maxHp: 5,
       relics: EXPEDITION_RELICS.filter(relic => withMap || relic.id !== 'cbt').map(relic => relic.id) };
     // Constant and boundary rolls are valid seeded sources, not just an average sample.

@@ -1,14 +1,14 @@
 import type { Card, HandCategory } from '../types';
 import { SKILL_DB } from '../data/skills';
 
-export const SKILL_CATALOG_VERSION = 2;
+export const SKILL_CATALOG_VERSION = 3;
 export const SKILL_SLOT_LIMIT = 3;
 export const SKILL_CATEGORIES = ['ATTACK', 'DEFEND', 'ULTIMATE'] as const;
 export type SkillCategory = typeof SKILL_CATEGORIES[number];
 export type SkillSelections = Partial<Record<SkillCategory, readonly string[]>>;
 export interface SkillLoadoutState {
   inventory: number[];
-  /** Version 2 removes the old Lv.13–16 skill groups and compacts later unlocks. */
+  /** Version 3 also retires Bang/Stab and compacts the remaining unlocks. */
   skillCatalogVersion?: number;
   skillLoadout?: string[];
   tempSkills?: string[];
@@ -62,11 +62,16 @@ export function normalizeSkillLoadout<T extends SkillLoadoutState>(holder: T): T
 
 /** Only storage/network boundaries use this: unversioned data uses the original catalog levels. */
 export function migrateLegacySkillCatalog<T extends SkillLoadoutState>(holder: T): T & { skillLoadout: string[]; skillCatalogVersion: number } {
-  if ((holder.skillCatalogVersion ?? 0) >= SKILL_CATALOG_VERSION) return normalizeSkillLoadout(holder);
+  const version = holder.skillCatalogVersion ?? 0;
+  if (version >= SKILL_CATALOG_VERSION) return normalizeSkillLoadout(holder);
   const migrateLevel = (level: number): number | null => {
-    if (!Number.isSafeInteger(level) || level < 0 || level > 23) return null;
-    if (level <= 12) return level;
-    return level >= 17 ? level - 4 : null;
+    if (!Number.isSafeInteger(level) || level < 0 || level > (version < 2 ? 23 : 19)) return null;
+    if (version < 2) {
+      if (level >= 13 && level <= 16) return null;
+      if (level >= 17) level -= 4;
+    }
+    if (level === 13 || level === 14) return null;
+    return level >= 15 ? level - 2 : level;
   };
   const inventory = holder.inventory.flatMap(level => {
     const mapped = migrateLevel(level);

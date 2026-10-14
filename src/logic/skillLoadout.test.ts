@@ -100,8 +100,8 @@ test('derived combos need their retained parts and cost no additional permanent 
   assert.ok(ids(missing).includes('doublewing'), 'Another category’s combination survives');
   for (const [combo, parts, levels] of [
     ['vajra', ['helmetdef', 'handdef', 'footdef'], [8, 10, 11]],
-    ['allbomb', ['hongtian', 'hongdi'], [16, 17]],
-    ['heartpoison', ['hongtian', 'hongdi'], [16, 17]],
+    ['allbomb', ['hongtian', 'hongdi'], [14, 15]],
+    ['heartpoison', ['hongtian', 'hongdi'], [14, 15]],
   ] as const) {
     assert.ok(ids(player({ inventory: [0, ...levels], skillLoadout: [...parts] })).includes(combo));
     assert.ok(!ids(player({ inventory: [0, ...levels], skillLoadout: parts.slice(1) })).includes(combo));
@@ -141,10 +141,10 @@ test('new acquisitions sort before old ones regardless of level and basics stay 
 });
 
 test('retired skills stay absent from old inventories, retained decks, free copies and shared hands', () => {
-  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap'];
+  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap', 'bang', 'stab'];
   assert.ok(retired.every(id => !SKILL_DB.some(card => card.id === id)));
   const legacy = player({ inventory: [0, 6, 12, 13, 14, 15, 16, 17, 18],
-    skillLoadout: [...retired, 'aoxi', 'bang', 'stab', 'superwave'],
+    skillLoadout: [...retired, 'aoxi', 'superwave'],
     freeSkills: ['hong2', ...retired], tempSkills: ['pegasus', ...retired], isShared: true });
   const migrated = normalizeSkillLoadout(legacy);
   assert.ok(migrated.skillLoadout.every(id => !retired.includes(id)));
@@ -152,12 +152,12 @@ test('retired skills stay absent from old inventories, retained decks, free copi
   assert.deepEqual(migrated.freeSkills, ['hong2']);
   assert.deepEqual(migrated.tempSkills, ['pegasus']);
   assert.deepEqual(legacy.freeSkills, ['hong2', ...retired], 'Migration leaves the old save untouched');
-  for (const id of ['bang', 'stab', 'superwave']) assert.ok(migrated.skillLoadout.includes(id), id);
+  assert.ok(migrated.skillLoadout.includes('superwave'));
   const receiver = player();
   for (const hand of [ids(legacy), ids(migrated), ids(receiver, [receiver, legacy])]) {
     assert.ok(hand.every(id => !retired.includes(id)));
   }
-  for (const level of [13, 14, 15, 16, 17, 18]) {
+  for (const level of [13, 14, 15, 16, 17]) {
     assert.ok(grantSkillLevel(player(), level).skillLoadout.every(id => !retired.includes(id)));
   }
 });
@@ -169,8 +169,8 @@ test('stored legacy skill groups migrate by original unlock and stable retained 
   const before = structuredClone(old);
   const migrated = migrateLegacySkillCatalog(old);
   assert.equal(migrated.skillCatalogVersion, SKILL_CATALOG_VERSION);
-  assert.deepEqual(migrated.inventory, [0, 12, 13, 14, 16, 17, 18, 19]);
-  assert.deepEqual(migrated.skillLoadout, ['aoxi', 'bang', 'stab', 'hongtian', 'poison']);
+  assert.deepEqual(migrated.inventory, [0, 12, 14, 15, 16, 17]);
+  assert.deepEqual(migrated.skillLoadout, ['aoxi', 'hongtian', 'poison']);
   assert.deepEqual(migrated.freeSkills, ['hong2']);
   assert.deepEqual(migrated.tempSkills, ['pegasus']);
   assert.deepEqual(migrateLegacySkillCatalog(migrated), migrated);
@@ -181,22 +181,46 @@ test('stored legacy skill groups migrate by original unlock and stable retained 
 });
 
 test('legacy pending rewards cannot turn deleted groups into different new skills', () => {
-  for (const pendingLevel of [13, 14, 15, 16]) {
+  for (const pendingLevel of [13, 14, 15, 16, 17, 18]) {
     const migrated = migrateLegacySkillCatalog(player({ pendingLevel }));
     assert.deepEqual(migrated.inventory, [0]);
     assert.deepEqual(migrated.skillLoadout, []);
     assert.equal(migrated.pendingLevel, null);
   }
-  const pending = migrateLegacySkillCatalog(player({ pendingLevel: 17 }));
+  const pending = migrateLegacySkillCatalog(player({ pendingLevel: 19 }));
   assert.deepEqual(pending.inventory, [0, 13]);
-  assert.deepEqual(pending.skillLoadout, ['bang']);
-  const discarded = migrateLegacySkillCatalog(player({ inventory: [0, 17], skillLoadout: [], pendingLevel: 17 }));
+  assert.deepEqual(pending.skillLoadout, ['wave', 'superwave']);
+  const discarded = migrateLegacySkillCatalog(player({ inventory: [0, 19], skillLoadout: [], pendingLevel: 19 }));
   assert.deepEqual(discarded.skillLoadout, []);
 });
 
 test('new unversioned in-memory loadouts normalize as current data and versioned boundary reads stay current', () => {
-  const current = normalizeSkillLoadout(player({ inventory: [0, 13], skillLoadout: ['bang'] }));
+  const current = normalizeSkillLoadout(player({ inventory: [0, 13], skillLoadout: ['wave'] }));
   assert.equal(current.skillCatalogVersion, SKILL_CATALOG_VERSION);
-  assert.deepEqual(current.skillLoadout, ['bang']);
+  assert.deepEqual(current.skillLoadout, ['wave']);
   assert.deepEqual(migrateLegacySkillCatalog(current), current);
+});
+
+test('version two saves remove Bang and Stab without replacing discarded skills or remapping twice', () => {
+  const old = player({ skillCatalogVersion: 2, inventory: [0, 12, 13, 14, 15, 16, 17, 18, 19],
+    skillLoadout: ['bang', 'stab', 'superwave', 'hongtian', 'hongdi', 'hearteye', 'poison'],
+    freeSkills: ['bang', 'stab', 'hong'], tempSkills: ['stab', 'wave'], pendingLevel: 14 });
+  const before = structuredClone(old), migrated = migrateLegacySkillCatalog(old);
+  assert.equal(migrated.skillCatalogVersion, SKILL_CATALOG_VERSION);
+  assert.deepEqual(migrated.inventory, [0, 12, 13, 14, 15, 16, 17]);
+  assert.deepEqual(migrated.skillLoadout, ['superwave', 'hongtian', 'hongdi', 'hearteye', 'poison']);
+  assert.deepEqual(migrated.freeSkills, ['hong']);
+  assert.deepEqual(migrated.tempSkills, ['wave']);
+  assert.equal(migrated.pendingLevel, null);
+  assert.deepEqual(migrateLegacySkillCatalog(migrated), migrated);
+  assert.deepEqual(old, before);
+  for (const pendingLevel of [13, 14]) {
+    const retired = migrateLegacySkillCatalog(player({ skillCatalogVersion: 2, inventory: [0, 13, 14], pendingLevel }));
+    assert.deepEqual(retired.inventory, [0]);
+    assert.deepEqual(retired.skillLoadout, []);
+    assert.equal(retired.pendingLevel, null);
+  }
+  const pending = migrateLegacySkillCatalog(player({ skillCatalogVersion: 2, pendingLevel: 15 }));
+  assert.deepEqual(pending.inventory, [0, 13]);
+  assert.deepEqual(pending.skillLoadout, ['wave', 'superwave']);
 });

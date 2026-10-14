@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react';
-import { ArrowDown, ArrowUp, Axe, Biohazard, Bomb, Cloud, Coffee, Crosshair, Eye, Feather, Footprints, Ghost, Hammer, Hand, HardHat, Heart, Magnet, Mountain, Shield, Snowflake, Sparkles, Swords, Wind, Zap } from 'lucide-react';
+import { ArrowDown, ArrowUp, Axe, Biohazard, Bomb, Cloud, Coffee, Crosshair, Eye, Feather, Footprints, Ghost, Hand, HardHat, Heart, Magnet, Mountain, Shield, Snowflake, Sparkles, Swords, Wind, Zap } from 'lucide-react';
 import type { Card, Lang } from '../types';
 import { getEffectiveLevel } from '../logic/cardLevels';
 import './RetroCard.css';
@@ -35,7 +35,6 @@ export function RetroSkillIcon({ id, size = 48 }: { id: string; size?: number })
     case 'handatk': case 'handdef': case 'shatter': icon = <Hand {...props} />; break;
     case 'footatk': case 'footdef': case 'triplekick': icon = <Footprints {...props} />; break;
     case 'aoxi': icon = '🌪️'; break;
-    case 'bang': case 'stab': icon = <Hammer {...props} />; break;
     case 'wave': case 'superwave': icon = '🌊'; break;
     case 'hongtian': icon = <Cloud {...props} />; break;
     case 'hongdi': icon = <Mountain {...props} />; break;
