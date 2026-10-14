@@ -17,7 +17,7 @@ export default function RetroControls({ lang, muted, reduceMotion, volume, onTog
     <div className="retro-controls-volume">
       <button type="button" onClick={() => setVolumeOpen(open => !open)} aria-expanded={volumeOpen} aria-label={zh ? '音乐音量' : 'Music volume'}><Music2 size={18} /></button>
       {volumeOpen && <div className="retro-volume-slider"><label>{zh ? '音乐音量' : 'Music volume'}
-        <input type="range" min={0} max={1} step={0.05} value={volume} onChange={event => onVolumeChange(Number(event.target.value))} /></label></div>}
+        <input type="range" min={0} max={1} step={0.005} value={volume} onChange={event => onVolumeChange(Number(event.target.value))} /></label></div>}
     </div>
     <button type="button" onClick={onToggleMute} aria-pressed={muted} aria-label={zh ? '静音' : 'Mute'}>{muted ? <VolumeX size={18} /> : <Volume2 size={18} />}</button>
     <button type="button" onClick={onToggleMotion} aria-pressed={reduceMotion} aria-label={zh ? '减弱动效' : 'Reduce motion'}><Sparkles size={18} /></button>
