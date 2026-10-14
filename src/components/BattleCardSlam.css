@@ -1,0 +1,81 @@
+/* The same comparison clock drives flight, local impact and the owner marker.
+   Keep every card in its seat-owned slot, including crowded eight-player tables. */
+.table-card-slam { position: relative; }
+.table-card-flight[data-slam-winner="true"] { z-index: 2; }
+.table-cards[data-comparing="true"] .table-card-flight[data-slam-winner="true"] .table-card-slam {
+  animation: table-winner-slam var(--card-compare-duration) linear var(--card-compare-delay) both;
+}
+.table-slam-outline {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  border: 2px solid #ffe8a1;
+  box-shadow: 0 0 0 1px #64471c, inset 0 0 0 1px #bd8c31;
+  pointer-events: none;
+  transform: rotate(var(--card-tilt));
+  opacity: 0;
+  animation: table-slam-mark 1ms steps(1,end) var(--card-impact-delay) forwards;
+}
+.table-slam-flash {
+  position: absolute;
+  inset: -8%;
+  z-index: -1;
+  border: 2px solid #ffe4a0;
+  background: #ffd76a44;
+  opacity: 0;
+  pointer-events: none;
+  animation: table-winner-flash var(--card-impact-duration) steps(5) var(--card-impact-delay) both;
+}
+.table-slam-flash i { position: absolute; width: 4px; height: 4px; background: #fff0ad; box-shadow: 0 0 0 1px #a8782d; }
+.table-slam-flash i:nth-child(1) { top: -4px; left: 20%; }
+.table-slam-flash i:nth-child(2) { top: 20%; right: -4px; }
+.table-slam-flash i:nth-child(3) { bottom: -4px; right: 20%; }
+.table-slam-flash i:nth-child(4) { bottom: 20%; left: -4px; }
+.table-card-owner-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.table-card-flight[data-slam-winner="true"] .table-card-owner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  animation: table-owner-reveal 1ms linear var(--card-land-delay) both,
+    table-slam-owner 1ms steps(1,end) var(--card-impact-delay) forwards;
+}
+.table-card-flight[data-slam-winner="true"] .table-card-owner-name { min-width: 0; }
+.table-slam-owner-mark {
+  flex: none;
+  color: #fff1b9;
+  font-size: 9px;
+  line-height: 1;
+  opacity: 0;
+  animation: table-slam-mark 1ms steps(1,end) var(--card-impact-delay) forwards;
+}
+.table-card-flight[data-small="true"] .table-slam-owner-mark { font-size: 0; }
+.table-card-flight[data-small="true"] .table-slam-owner-mark::before { content: '◆'; font-size: 7px; }
+@keyframes table-winner-slam {
+  0%, 100% { transform: perspective(350px) translateY(0) rotateX(0) scale(1); }
+  30%, 39% { transform: perspective(350px) translateY(calc(var(--card-slam-lift) * -1)) rotateX(-32deg) scale(.98); }
+  40% { transform: perspective(350px) translateY(0) rotateX(0) scale(.99,.92); }
+  60% { transform: perspective(350px) translateY(0) rotateX(0) scale(.98,.99); }
+}
+@keyframes table-winner-flash {
+  0% { opacity: .9; transform: scale(.92); }
+  100% { opacity: 0; transform: scale(1.12); }
+}
+@keyframes table-slam-mark { to { opacity: 1; } }
+@keyframes table-slam-owner { to { color: #fff0bd; background: #624619; box-shadow: inset 0 0 0 1px #d9b666; } }
+
+/* Static gold and the named owner remain visible when animation is disabled. */
+.table-cards-still .table-slam-flash, .reduce-motion .table-slam-flash { display: none; }
+.table-cards-still :is(.table-slam-outline, .table-slam-owner-mark),
+.reduce-motion :is(.table-slam-outline, .table-slam-owner-mark) { opacity: 1; }
+.table-cards-still .table-card-flight[data-slam-winner="true"] .table-card-owner,
+.reduce-motion .table-card-flight[data-slam-winner="true"] .table-card-owner {
+  color: #fff0bd; background: #624619; box-shadow: inset 0 0 0 1px #d9b666;
+}
+@media (prefers-reduced-motion: reduce) {
+  .table-slam-flash { display: none; }
+  .table-slam-outline, .table-slam-owner-mark { opacity: 1; }
+  .table-card-flight[data-slam-winner="true"] .table-card-owner {
+    color: #fff0bd; background: #624619; box-shadow: inset 0 0 0 1px #d9b666;
+  }
+}
