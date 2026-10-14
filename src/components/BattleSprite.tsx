@@ -7,8 +7,8 @@ import { User } from './PixelIcons';
 import BattleActionFrames from './BattleActionFrames';
 import './BattleSprite.css';
 
-export default function BattleSprite({ avatar, name, direction, actionKey, reduced = false, handPerspective = false }: {
-  avatar?: string; name: string; direction: BattleDirection; actionKey?: string; reduced?: boolean; handPerspective?: boolean;
+export default function BattleSprite({ avatar, name, direction, actionKey, reduced = false, handPerspective = false, quick = false }: {
+  avatar?: string; name: string; direction: BattleDirection; actionKey?: string; reduced?: boolean; handPerspective?: boolean; quick?: boolean;
 }) {
   const atlas = battleCharacterAtlas(avatar);
   const actionAtlas = battleActionAtlas(avatar);
@@ -30,7 +30,7 @@ export default function BattleSprite({ avatar, name, direction, actionKey, reduc
           void decoded.then(() => setDecodedSources(previous => previous.includes(actionAtlas) ? previous : [...previous, actionAtlas]), () => fail(actionAtlas));
         }} onError={() => fail(actionAtlas)} />
       {actionKey && <BattleActionFrames key={actionKey} source={actionAtlas} directionIndex={index}
-        handPerspective={handPerspective}
+        handPerspective={handPerspective} quick={quick}
         ready={decodedSources.includes(actionAtlas) && !reduced && !window.matchMedia('(prefers-reduced-motion: reduce)').matches}
         onError={() => fail(actionAtlas)} />}
     </>}

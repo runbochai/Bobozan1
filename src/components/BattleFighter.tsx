@@ -23,6 +23,7 @@ interface Props {
   damage?: number;
   hit: boolean;
   reduceMotion: boolean;
+  quick?: boolean;
   intent?: ReactNode;
 }
 
@@ -35,7 +36,7 @@ function BattleEmoji({ emoji, at }: { emoji: string; at: number }) {
   return visible ? <span className="battle-emoji">{emoji}</span> : null;
 }
 
-export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, roundKey, showdown, damage, hit, reduceMotion, intent }: Props) {
+export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, roundKey, showdown, damage, hit, reduceMotion, quick = false, intent }: Props) {
   const seed = player.id.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
   const direction = seat.facing ?? directionToward(seat);
   const dealing = showdown && !player.isDead && !!player.selectedCardId;
@@ -49,7 +50,7 @@ export default function BattleFighter({ player, seat, bounds, self, maxHp, level
     <div className={`battle-character-motion battle-character-${motion}`}
       style={{ '--idle-delay': `${-(seed % 20) / 10}s` } as CSSProperties}>
       <BattleSprite avatar={playerAvatar(player)} name={player.name} direction={direction}
-        actionKey={dealing ? `${roundKey}:${player.id}` : undefined} reduced={reduceMotion} handPerspective={self} />
+        actionKey={dealing ? `${roundKey}:${player.id}` : undefined} reduced={reduceMotion} handPerspective={self} quick={quick} />
     </div>
     {!reduceMotion && !!damage && <div className="battle-hit-burst" aria-hidden="true" />}
     {!!damage && <span className={`battle-damage ${reduceMotion ? 'battle-damage-still' : ''}`}>−{damage}</span>}

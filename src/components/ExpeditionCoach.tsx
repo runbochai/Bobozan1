@@ -45,7 +45,7 @@ export interface ExpeditionCoachProps extends ExpeditionLessonContext { lang: La
 
 /** Compact and optional; no legal move is disabled or preselected by this hint. */
 export default function ExpeditionCoach({ lang, ...context }: ExpeditionCoachProps) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(true);
   const [details, setDetails] = useState(false);
   const hint = getExpeditionLesson(context);
   const zh = lang === 'zh';

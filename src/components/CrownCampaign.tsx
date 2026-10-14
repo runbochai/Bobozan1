@@ -177,8 +177,8 @@ function CrownSeals({ lang, cleared, compact = false }: { lang: Lang; cleared: n
   </div>;
 }
 
-export function CrownJourney({ lang, stageIdx, cleared, onEnter, onSkipTowers, onExit }: {
-  lang: Lang; stageIdx: number; cleared: number[]; onEnter: () => void; onSkipTowers?: () => void; onExit: () => void;
+export function CrownJourney({ lang, stageIdx, cleared, onEnter, onSkipTowers, onExit, review = false }: {
+  lang: Lang; stageIdx: number; cleared: number[]; onEnter: () => void; onSkipTowers?: () => void; onExit: () => void; review?: boolean;
 }) {
   const titleId = useId();
   const zh = lang === 'zh';
@@ -187,12 +187,12 @@ export function CrownJourney({ lang, stageIdx, cleared, onEnter, onSkipTowers, o
   const progress = crownProgress(cleared);
   const supply = getCrownSupplyBonus({ difficulty: 'beginner', crownCleared: cleared });
   const finalRoute = stageIdx >= 13;
-  return <CrownDialog className="crown-journey" titleId={titleId} onClose={() => { /* Ending a run requires its labelled button. */ }}>
+  return <CrownDialog className="crown-journey" titleId={titleId} onClose={() => { if (review) onEnter(); /* Ending a run requires its labelled button. */ }}>
     <div className="crown-journey-background" aria-hidden="true" style={{ backgroundImage: `url("${asset(themeImagePath(chapter.theme))}")` }} />
     <div className="crown-journey-content" style={{ '--chapter-color': chapter.color } as CSSProperties}>
       <header className="crown-dialog-header">
-        <div className="crown-wordmark"><CrownMark /><div><span>{zh ? '王冠战争 · 主线' : 'CROWN WAR · CAMPAIGN'}</span><h1 id={titleId}>{chapter.title[lang]}</h1></div></div>
-        <div className="crown-exit-run"><button type="button" className="crown-text-button" onClick={onExit}>{zh ? '结束本轮' : 'End run'} <span aria-hidden="true">↗</span></button><small>{zh ? '成长不保留；最佳记录保留' : 'Run growth resets; your best stays'}</small></div>
+        <div className="crown-wordmark"><CrownMark /><div><span>{review ? (zh ? '王冠战争 · 剧情回顾' : 'CROWN WAR · STORY REVIEW') : (zh ? '王冠战争 · 主线' : 'CROWN WAR · CAMPAIGN')}</span><h1 id={titleId}>{chapter.title[lang]}{review && (zh ? ' · 本关剧情' : ' · Stage story')}</h1></div></div>
+        <div className="crown-exit-run"><button type="button" className="crown-text-button" onClick={review ? onEnter : onExit}>{review ? (zh ? '返回战斗' : 'Back to battle') : (zh ? '结束本轮' : 'End run')} <span aria-hidden="true">↗</span></button>{!review && <small>{zh ? '成长不保留；最佳记录保留' : 'Run growth resets; your best stays'}</small>}</div>
       </header>
       <ol className="crown-chapter-route" aria-label={zh ? '主线路线' : 'Campaign route'}>
         {CROWN_CHAPTERS.map((item, index) => {
@@ -223,7 +223,7 @@ export function CrownJourney({ lang, stageIdx, cleared, onEnter, onSkipTowers, o
           </div>
         </section>
         <section className="crown-quest-card" aria-label={zh ? '当前任务' : 'Current quest'}>
-          <div className="crown-quest-kicker"><span>{zh ? '下一步' : 'NEXT STEP'}</span><b>{String(stageIdx + 1).padStart(2, '0')} <span>/ 18</span></b></div>
+          <div className="crown-quest-kicker"><span>{review ? (zh ? '本关' : 'CURRENT STAGE') : (zh ? '下一步' : 'NEXT STEP')}</span><b>{String(stageIdx + 1).padStart(2, '0')} <span>/ 18</span></b></div>
           <h2>{beat.title[lang]}</h2>
           <p className="crown-quest-objective">{beat.objective[lang]}</p>
           <div className="crown-local-route" aria-label={zh ? '本章进度' : 'Chapter progress'}>{Array.from({ length: chapter.to - chapter.from + 1 }, (_, offset) => chapter.from + offset).map(index => <span key={index} data-current={stageIdx === index} data-cleared={cleared.includes(index)}
@@ -231,8 +231,8 @@ export function CrownJourney({ lang, stageIdx, cleared, onEnter, onSkipTowers, o
           {stageIdx >= 16 && <p className="crown-supply-note">{supply.activeTowers.length === 0
             ? (zh ? '三塔已断。执冠者失去了全部额外供能。' : 'All three towers are cut. The Crownkeeper has lost every supply bonus.')
             : (zh ? `${supply.activeTowers.length} 座塔仍在供能：冠主生命 +${supply.hp} · 开局能量 +${supply.energy}。` : `${supply.activeTowers.length} active towers: Crownkeeper HP +${supply.hp} · starting energy +${supply.energy}.`)}</p>}
-          <button type="button" data-crown-initial-focus className="crown-primary-button crown-enter-button" onClick={onEnter}>{beat.enter[lang]} <span aria-hidden="true">→</span></button>
-          {onSkipTowers && <div className="crown-route-choice"><button type="button" className="crown-text-button" onClick={onSkipTowers}>{zh ? '直接前往王冠城' : 'Go straight to Crown City'} <span aria-hidden="true">↗</span></button><small>{zh ? `跳过三塔及奖励；冠主生命 +${supply.hp} · 开局能量 +${supply.energy}。` : `Skip the towers and rewards. Crownkeeper HP +${supply.hp} · starting energy +${supply.energy}.`}</small></div>}
+          <button type="button" data-crown-initial-focus className="crown-primary-button crown-enter-button" onClick={onEnter}>{review ? (zh ? '继续战斗' : 'Continue battle') : beat.enter[lang]} <span aria-hidden="true">→</span></button>
+          {!review && onSkipTowers && <div className="crown-route-choice"><button type="button" className="crown-text-button" onClick={onSkipTowers}>{zh ? '直接前往王冠城' : 'Go straight to Crown City'} <span aria-hidden="true">↗</span></button><small>{zh ? `跳过三塔及奖励；冠主生命 +${supply.hp} · 开局能量 +${supply.energy}。` : `Skip the towers and rewards. Crownkeeper HP +${supply.hp} · starting energy +${supply.energy}.`}</small></div>}
           <small className="crown-journey-motto">{zh ? '同一张桌。不同的心思。' : 'One table. Many intentions.'}</small>
         </section>
       </main>

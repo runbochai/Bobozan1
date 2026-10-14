@@ -3,7 +3,7 @@ import type { Lang, Player } from '../types';
 import { isHoloCard } from '../data/cardFinish';
 import { getEffectiveLevel, getPlayerCard } from '../logic/cardLevels';
 import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS, CARD_FLIGHT_MS,
-  CARD_LAND_MS, CARD_LANDING_MS, CARD_RELEASE_MS } from '../data/battleTiming';
+  CARD_LAND_MS, CARD_LANDING_MS, CARD_RELEASE_MS, SOLO_MOTION_SCALE } from '../data/battleTiming';
 import { battleReleaseHand } from '../data/battleActions';
 import { getBattleFigure, SELF_SEAT, type BattleBounds, type BattleSeat } from '../logic/battleLayout';
 import { playerAvatar } from '../logic/bots';
@@ -13,8 +13,8 @@ import WoodcutCardFace from './WoodcutCardFace';
 import CardHolo from './CardHolo';
 
 /** Present every revealed play, then compare them together without predicting a winner. */
-export default function BattleTableCards({ players, lang, seatFor, reduced, bounds }: {
-  players: Player[]; lang: Lang; seatFor: (index: number) => BattleSeat; reduced: boolean; bounds: BattleBounds;
+export default function BattleTableCards({ players, lang, seatFor, reduced, bounds, quick = false }: {
+  players: Player[]; lang: Lang; seatFor: (index: number) => BattleSeat; reduced: boolean; bounds: BattleBounds; quick?: boolean;
 }) {
   // This component is keyed by the round. Once stopped, presentation remains
   // still for this round even if the preference is switched back off.
@@ -34,15 +34,16 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
   const positions = tableCardPositions(players.map((_, index) => seatFor(index)), bounds);
   const clash = tableCardClash(positions, bounds);
   const comparing = played.length > 1;
+  const scale = quick ? SOLO_MOTION_SCALE : 1;
   return <div className={`table-cards ${reduced || motionStopped ? 'table-cards-still' : ''}`} data-comparing={comparing}
     aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'} style={{
-      '--card-release-delay': `${CARD_RELEASE_MS}ms`, '--card-flight-duration': `${CARD_FLIGHT_MS}ms`,
-      '--card-land-delay': `${CARD_LAND_MS}ms`, '--card-land-duration': `${CARD_LANDING_MS}ms`,
-      '--card-compare-delay': `${CARD_COMPARE_START_MS}ms`,
-      '--card-compare-duration': `${CARD_COMPARE_END_MS - CARD_COMPARE_START_MS}ms`,
-      '--card-approach-duration': `${CARD_COMPARE_IMPACT_MS - CARD_COMPARE_START_MS}ms`,
-      '--card-impact-delay': `${CARD_COMPARE_IMPACT_MS}ms`,
-      '--card-impact-duration': `${CARD_COMPARE_END_MS - CARD_COMPARE_IMPACT_MS}ms`,
+      '--card-release-delay': `${CARD_RELEASE_MS * scale}ms`, '--card-flight-duration': `${CARD_FLIGHT_MS * scale}ms`,
+      '--card-land-delay': `${CARD_LAND_MS * scale}ms`, '--card-land-duration': `${CARD_LANDING_MS * scale}ms`,
+      '--card-compare-delay': `${CARD_COMPARE_START_MS * scale}ms`,
+      '--card-compare-duration': `${(CARD_COMPARE_END_MS - CARD_COMPARE_START_MS) * scale}ms`,
+      '--card-approach-duration': `${(CARD_COMPARE_IMPACT_MS - CARD_COMPARE_START_MS) * scale}ms`,
+      '--card-impact-delay': `${CARD_COMPARE_IMPACT_MS * scale}ms`,
+      '--card-impact-duration': `${(CARD_COMPARE_END_MS - CARD_COMPARE_IMPACT_MS) * scale}ms`,
     } as CSSProperties}>
     {comparing && <svg className="table-clash-links" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
       {played.map(({ player, index }) => positions[index] && <line key={player.id}
