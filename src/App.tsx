@@ -115,6 +115,7 @@ import { themeForStage } from './data/crownCampaign';
 import { findTheme } from './data/gameThemes';
 import './components/CrownIntegration.css';
 import './components/MultiplayerEntry.css';
+import './components/TitleMenuButtons.css';
 import { readInvitedRoom, readPlayerName, savePlayerName } from './logic/playerEntry';
 import { getExpeditionLine } from './data/expeditionDialogue';
 import { createExpeditionRun, setupExpeditionStage, settleExpeditionRound, recordExpeditionHistory,
@@ -1620,25 +1621,23 @@ export default function BobozanOnline() {
             </div>
             <p className="friends-entry-note">{lang === 'zh' ? '独自踏上远征，或与朋友同桌猜招。' : 'Set out on a solo journey, or read your friends across the table.'}</p>
             {invitedRoom && <p className="friends-invitation" role="status">{lang === 'zh' ? `朋友邀请你加入房间 ${invitedRoom}` : `You’re invited to room ${invitedRoom}`}</p>}
-            <div className="friends-title-actions w-full">
-              <button type="button" onClick={openSoloMode} className="btn-primary friends-play-button mode-choice-button p-4">
-                <Swords size={24} /><span>{lang === 'zh' ? '单人模式' : 'Solo mode'}<small>{lang === 'zh' ? '王冠远征 · 继续故事' : 'Campaign · Continue the story'}</small></span>
+            <div className="title-menu-primary">
+              <button type="button" onClick={openSoloMode} className="title-menu-button title-menu-button--mode">
+                <Swords size={22} /><span className="title-menu-label"><strong>{lang === 'zh' ? '单人模式' : 'Solo mode'}</strong><small>{lang === 'zh' ? '王冠远征 · 继续故事' : 'Campaign · Continue the story'}</small></span>
               </button>
               <button
                 onClick={handleEnterName}
                 disabled={loading}
-                className="btn-secondary friends-learn-button mode-choice-button group relative overflow-hidden p-4"
+                className="title-menu-button title-menu-button--mode"
               >
-                <div className="relative w-full flex items-center justify-center gap-2">
-                  <Users size={24} />
-                  <span>{invitedRoom ? (lang === 'zh' ? '加入朋友房间' : 'Join your friends') : (lang === 'zh' ? '多人模式' : 'Multiplayer')}<small>{lang === 'zh' ? '2–8 人 · 和朋友同桌' : '2–8 players · Play with friends'}</small></span>
-                </div>
+                <Users size={22} />
+                <span className="title-menu-label"><strong>{invitedRoom ? (lang === 'zh' ? '加入朋友房间' : 'Join your friends') : (lang === 'zh' ? '多人模式' : 'Multiplayer')}</strong><small>{lang === 'zh' ? '2–8 人 · 和朋友同桌' : '2–8 players · Play with friends'}</small></span>
               </button>
             </div>
-            <button type="button" className="story-practice-link" onClick={() => setLearningMode('tutorial')}><Play size={16} />{lang === 'zh' ? '新手教程' : 'How to play'}</button>
-            <div className="crown-title-links">
-              <button type="button" className="reference-entry-link" onClick={() => setLearningMode('practice')}><Target size={16} />{lang === 'zh' ? '自由对练' : 'Free sparring'}</button>
-              <button type="button" className="reference-entry-link" onClick={() => setMoveManualOpen(true)}><Scroll size={16} />{lang === 'zh' ? '招式手册' : 'Move manual'}</button>
+            <div className="title-menu-secondary">
+              <button type="button" className="title-menu-button" onClick={() => setLearningMode('tutorial')}><Play size={18} /><span className="title-menu-label">{lang === 'zh' ? '新手教程' : 'How to play'}</span></button>
+              <button type="button" className="title-menu-button" onClick={() => setLearningMode('practice')}><Target size={18} /><span className="title-menu-label">{lang === 'zh' ? '自由对练' : 'Free sparring'}</span></button>
+              <button type="button" className="title-menu-button" onClick={() => setMoveManualOpen(true)}><Scroll size={18} /><span className="title-menu-label">{lang === 'zh' ? '招式手册' : 'Move manual'}</span></button>
             </div>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
