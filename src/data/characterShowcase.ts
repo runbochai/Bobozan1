@@ -33,6 +33,29 @@ export function characterShowcase(avatar?: string): CharacterShowcase {
 
 export interface ShowcaseStep { pose: number | null; duration: number }
 
+/** Eye-local catchlights follow the four front-facing poses in the 192 × 256 action cells.
+ * Keeping them in the preview preserves the original sprites and their battle animation. */
+export const SHOWCASE_EYE_CATCHLIGHTS: Readonly<Record<string, readonly (readonly (readonly [number, number])[])[]>> = {
+  'characters/actions/boy.webp': [
+    [[82, 88], [119, 88]],
+    [[83, 91], [120, 91]],
+    [[82, 92], [120, 92]],
+    [[84, 100], [121, 100]],
+  ],
+  'characters/actions/pegasus-swordsman.webp': [
+    [[79, 112], [111, 112]],
+    [[80, 107], [112, 108]],
+    [[81, 111], [113, 111]],
+    [[79, 107], [112, 107]],
+  ],
+  'characters/actions/pega.webp': [
+    [[82, 109], [119, 110]],
+    [[81, 103], [118, 103]],
+    [[81, 101], [118, 102]],
+    [[85, 103], [122, 103]],
+  ],
+};
+
 /** Four drawn poses held across ten beats, at a fixed front-facing angle. */
 export const SHOWCASE_ACTION_STEPS: readonly ShowcaseStep[] = [
   { pose: 0, duration: 120 }, { pose: 0, duration: 100 },

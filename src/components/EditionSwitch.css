@@ -1,0 +1,41 @@
+.pixel-app .edition-switch, .retro-app .edition-switch {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: max(16px, env(safe-area-inset-left));
+  z-index: 70;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  border: 2px solid #bda778;
+  color: #f2ddb1;
+  background: #142b37eb;
+  box-shadow: 3px 3px 0 #080f1c;
+  cursor: pointer;
+}
+.retro-app .edition-switch {
+  border: 1px solid #ffffff40;
+  border-radius: 12px;
+  background: #1e293be6;
+  color: #fed7aa;
+  box-shadow: 0 4px 10px #0003;
+}
+.pixel-app .edition-switch:hover, .retro-app .edition-switch:hover {
+  border-color: #ffdf95;
+  background: #28414e;
+}
+.pixel-app .edition-switch:focus-visible, .retro-app .edition-switch:focus-visible {
+  outline: 3px solid #ffdf95;
+  outline-offset: 4px;
+}
+@media (max-width: 420px) {
+  .pixel-app .edition-switch, .retro-app .edition-switch {
+    top: max(12px, env(safe-area-inset-top));
+    left: max(12px, env(safe-area-inset-left));
+    width: 36px;
+    height: 36px;
+  }
+  .retro-app .edition-switch { top: max(10px, env(safe-area-inset-top)); left: max(10px, env(safe-area-inset-left)); }
+  .edition-switch svg { width: 21px; height: 21px; }
+}

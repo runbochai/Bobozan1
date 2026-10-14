@@ -24,6 +24,7 @@ import { migrateRoomSkillCatalog } from './logic/roomCatalog';
 import { SKILL_CATALOG_VERSION } from './logic/skillLoadout';
 import MultiplayerOpening from './components/MultiplayerOpening';
 import RetroMenu from './components/RetroMenu';
+import EditionSwitch from './components/EditionSwitch';
 import RetroBattle from './components/RetroBattle';
 import RetroControls from './components/RetroControls';
 import RetroRewardReveal from './components/RetroRewardReveal';
@@ -1595,6 +1596,7 @@ export default function BobozanOnline() {
   if (view === 'NAME_INPUT') return (
     <div className="pixel-app pixel-screen-title brawl-title-screen brawl-menu-screen crown-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
       {learningOverlay}
+      <EditionSwitch appearance="current" lang={lang} onSwitch={() => changeAppearance('retro')} />
       
 
       <TopControls 
@@ -1664,7 +1666,6 @@ export default function BobozanOnline() {
               <button type="button" className="title-menu-button" onClick={() => setLearningMode('practice')}><Target size={18} /><span className="title-menu-label">{lang === 'zh' ? '自由对练' : 'Free sparring'}</span></button>
               <button type="button" className="title-menu-button" onClick={() => setMoveManualOpen(true)}><Scroll size={18} /><span className="title-menu-label">{lang === 'zh' ? '招式手册' : 'Move manual'}</span></button>
             </div>
-            <button type="button" className="retro-edition-switch" onClick={() => changeAppearance('retro')}>{lang === 'zh' ? '怀旧版' : 'Classic edition'}</button>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
                 {lang === 'zh' ? `🏆 ${expDifficultyConfig.label[lang]}最佳：第 ${expBest} 关` : `🏆 ${expDifficultyConfig.label[lang]} best: Stage ${expBest}`}

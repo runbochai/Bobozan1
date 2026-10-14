@@ -33,7 +33,6 @@
 .retro-menu .retro-menu-text-button:hover { color: #fb923c; }
 .retro-menu .retro-menu-icon-button { width: 42px; height: 42px; padding: 0; color: #cbd5e1; background: #1e293b; border: 1px solid #475569; border-radius: 12px; }
 .retro-menu .retro-menu-icon-button:hover:not(:disabled) { border-color: #fb923c; color: #fff; }
-.retro-menu .retro-modern-switch { align-self: center; margin-top: 15px; }
 .retro-edition-label { color: #fb923c; letter-spacing: .2em; font-size: 11px; font-weight: 800; }
 .retro-title-main { position: relative; z-index: 1; width: min(100%, 460px); display: flex; flex-direction: column; align-items: stretch; padding-bottom: 12px; }
 .retro-title-art { display: flex; flex-direction: column; align-items: center; position: relative; height: 235px; margin-bottom: 28px; }
@@ -67,7 +66,6 @@
 .retro-menu .retro-join-form input { min-width: 0; width: 100%; min-height: 55px; padding: 10px 12px; border: 1px solid #475569; border-radius: 14px; color: #fff; background: #1e293b8c; text-align: center; font-size: 20px; font-weight: 800; letter-spacing: .15em; }
 .retro-menu .retro-join-form input::placeholder { color: #64748b; font-size: 13px; letter-spacing: 0; font-weight: 500; }
 .retro-menu .retro-join-form button { min-width: 88px; }
-.retro-friends-panel > .retro-modern-switch { display: flex; margin: 22px auto 0; }
 .retro-menu-invitation { color: #fed7aa; background: #7c2d1233; border: 1px solid #ea580c55; border-radius: 12px; padding: 12px; font-size: 12px; text-align: center; margin: 0 0 18px; }
 .retro-menu-error { margin: 18px 0 0; padding: 12px 14px; border: 1px solid #b91c1c70; border-radius: 12px; background: #7f1d1d30; color: #fca5a5; font-size: 12px; line-height: 1.6; }
 .retro-menu-toast { position: fixed; top: 70px; left: 50%; z-index: 110; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); display: flex; align-items: center; gap: 9px; padding: 12px 20px; border: 1px solid #34d399; border-radius: 999px; color: #fff; background: #047857ed; box-shadow: 0 12px 30px #0004; font-size: 13px; }

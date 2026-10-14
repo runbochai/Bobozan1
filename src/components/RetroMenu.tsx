@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { ArrowLeft, Check, Copy, Crown, Edit3, Flame, LoaderCircle, Minus, Play, Plus, Share2, User, Users } from 'lucide-react';
 import { assetUrl, avatarUrl } from '../assets';
 import CharacterChoice from './CharacterChoice';
+import EditionSwitch from './EditionSwitch';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../data/constants';
 import { getBotStyle, playerAvatar } from '../logic/bots';
 import { getMultiplayerMode } from '../logic/multiplayerMatch';
@@ -64,12 +65,9 @@ export default function RetroMenu(props: RetroMenuProps) {
   const busy = loading || modePending;
   const ready = onlineReady && !loading;
   const notice = connectionMessage || error;
-  const versionButton = <button className="retro-menu-text-button retro-modern-switch" type="button" onClick={onModern}>
-    <ArrowLeft size={15} />{zh ? '切回当前版' : 'Current edition'}
-  </button>;
-
   return <div className={`retro-app retro-menu retro-menu-${view.toLowerCase()}`} data-retro-view={view}>
     <RetroBackdrop reduced={reduceMotion} />
+    {view === 'NAME_INPUT' && <EditionSwitch appearance="retro" lang={lang} onSwitch={onModern} />}
     {controls}
     {overlays}
     {toast && <div className="retro-menu-toast" role="status"><Check size={18} />{toast}</div>}
@@ -96,7 +94,6 @@ export default function RetroMenu(props: RetroMenuProps) {
         </button>
         <button className="retro-menu-secondary" type="button" onClick={onTutorial}><Play size={18} />{zh ? '新手教程' : 'How to play'}</button>
       </div>
-      {versionButton}
     </main> : view === 'HOME' ? <main className="retro-menu-panel retro-friends-panel">
       <header className="retro-menu-heading"><span className="retro-edition-label">{zh ? '怀旧版' : 'CLASSIC EDITION'}</span><h1>{zh ? '和朋友玩' : 'Play with friends'}</h1></header>
       <div className="retro-friends-profile">
@@ -117,7 +114,6 @@ export default function RetroMenu(props: RetroMenuProps) {
         </form>
       </div>
       {notice && <p className="retro-menu-error" role="alert">{notice}</p>}
-      {versionButton}
     </main> : <main className="retro-menu-panel retro-lobby-panel">
       <header className="retro-lobby-heading">
         <div className="retro-room-info">

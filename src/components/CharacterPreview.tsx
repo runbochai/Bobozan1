@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, useSyncExternalStore, type CSSProperties }
 import { assetUrl, avatarUrl } from '../assets';
 import { battleCharacterAtlas } from '../data/battleCharacters';
 import { battleActionAtlas } from '../data/battleActions';
-import { characterShowcase, SHOWCASE_ACTION_STEPS, SHOWCASE_IDLE_STEPS } from '../data/characterShowcase';
+import { characterShowcase, SHOWCASE_ACTION_STEPS, SHOWCASE_EYE_CATCHLIGHTS, SHOWCASE_IDLE_STEPS } from '../data/characterShowcase';
 import type { Lang } from '../types';
 import { User } from './PixelIcons';
 import { useSystemReducedMotion } from './useSystemReducedMotion';
@@ -48,6 +48,9 @@ function ShowcaseFrames({ source, running, actionToken, onError }: { source: str
     {pose !== null && <span className="character-preview-action-cell" data-preview-pose={pose}>
       <img src={assetUrl(source)} alt="" draggable={false} onError={onError}
         style={{ top: `${-pose * 100}%` }} />
+      {SHOWCASE_EYE_CATCHLIGHTS[source]?.[pose] && <svg className="character-preview-catchlights" viewBox="0 0 192 256" preserveAspectRatio="none" shapeRendering="crispEdges">
+        {SHOWCASE_EYE_CATCHLIGHTS[source][pose].map(([x, y], index) => <rect key={index} x={x} y={y} width="3" height="4" fill="#fffdf4" />)}
+      </svg>}
     </span>}
     {performing && <span className="character-preview-action-effects" key={actionToken}>
       <i /><i /><i /><i /><i /><i />
