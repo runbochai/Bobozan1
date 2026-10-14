@@ -45,8 +45,9 @@ function CrownDialog({ className, titleId, onClose, children, onKeyDown, onClick
     onKeyDown={onKeyDown} onClick={onClick} onCancel={event => { event.preventDefault(); onClose(); }}>{children}</dialog>, document.body);
 }
 
-export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false, onToggleLang }: {
+export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false, onToggleLang, completeLabel, skipLabel }: {
   lang: Lang; onComplete: () => void; onClose: () => void; reduceMotion?: boolean; onToggleLang?: () => void;
+  completeLabel?: string; skipLabel?: string;
 }) {
   const zh = lang === 'zh';
   const titleId = useId();
@@ -129,7 +130,7 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
   }}>
     <header className="crown-opening-header">
       <div className="crown-wordmark"><CrownMark /><div><span>啵啵仔</span><h1 id={titleId}>{zh ? '王冠战争' : 'Crown War'}</h1></div></div>
-      <div className="crown-opening-header-actions">{onToggleLang && <button type="button" className="crown-text-button crown-opening-lang" onClick={onToggleLang} aria-label={zh ? 'Switch language to English' : '切换为中文'} lang={zh ? 'en' : 'zh'}>{zh ? 'EN' : '中文'}</button>}<button type="button" className="crown-text-button" onClick={onComplete}>{zh ? '跳过' : 'Skip'} <span aria-hidden="true">↗</span></button><button type="button" className="crown-text-button crown-prologue-exit" onClick={onClose} aria-label={zh ? '关闭漫画，进入主页面' : 'Close the comic and open the menu'}>×</button></div>
+      <div className="crown-opening-header-actions">{onToggleLang && <button type="button" className="crown-text-button crown-opening-lang" onClick={onToggleLang} aria-label={zh ? 'Switch language to English' : '切换为中文'} lang={zh ? 'en' : 'zh'}>{zh ? 'EN' : '中文'}</button>}<button type="button" className="crown-text-button" onClick={onComplete}>{skipLabel ?? (zh ? '跳过' : 'Skip')} <span aria-hidden="true">↗</span></button><button type="button" className="crown-text-button crown-prologue-exit" onClick={onClose} aria-label={zh ? '关闭漫画，选择模式' : 'Close the comic and choose a mode'}>×</button></div>
     </header>
     <div className="crown-opening-book" aria-label={zh ? '开场漫画' : 'Opening comic'}>
       {CROWN_PROLOGUE_PAGE_TITLES.map((pageTitle, pageIndex) => <section key={pageIndex} hidden={pageIndex !== page}
@@ -157,7 +158,7 @@ export function CrownPrologue({ lang, onComplete, onClose, reduceMotion = false,
       <div className="crown-opening-controls">
         <button type="button" className="crown-text-button crown-opening-back" onClick={previousPage} disabled={page === 0} aria-label={zh ? '上一页' : 'Previous page'}>←</button>
         <div className="crown-opening-page-count"><span aria-label={zh ? `第 ${page + 1} 页，共 ${CROWN_PROLOGUE_PAGE_TITLES.length} 页` : `Page ${page + 1} of ${CROWN_PROLOGUE_PAGE_TITLES.length}`}>{String(page + 1).padStart(2, '0')} <b>/ {String(CROWN_PROLOGUE_PAGE_TITLES.length).padStart(2, '0')}</b></span><span className="crown-opening-progress" aria-hidden="true">{Array.from({ length: CROWN_PROLOGUE_PAGE_SIZE }, (_, index) => <i key={index} data-revealed={pageStart + index < revealed} />)}</span></div>
-        <button type="button" ref={nextButton} data-crown-initial-focus className="crown-primary-button" onClick={advance}>{finished ? (zh ? '走吧' : 'Let’s go') : pageComplete ? (zh ? '下一页' : 'Turn the page') : waiting ? (zh ? '继续阅读' : 'Keep reading') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
+        <button type="button" ref={nextButton} data-crown-initial-focus className="crown-primary-button" onClick={advance}>{finished ? (completeLabel ?? (zh ? '走吧' : 'Let’s go')) : pageComplete ? (zh ? '下一页' : 'Turn the page') : waiting ? (zh ? '继续阅读' : 'Keep reading') : (zh ? '下一格' : 'Next panel')} <span aria-hidden="true">→</span></button>
       </div>
     </footer>
   </CrownDialog>;

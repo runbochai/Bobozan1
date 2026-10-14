@@ -27,6 +27,7 @@ import { AVATAR_OPTIONS } from './data/avatars';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
   Music,
+  Swords,
   Skull,
   Smile,
   X,
@@ -334,7 +335,8 @@ export default function BobozanOnline() {
   const [expRelics, setExpRelics] = useState<string[]>([]);
   const [expPhase, setExpPhase] = useState<'battle' | 'journey' | 'reward' | 'shop' | 'runover' | 'clear'>('battle');
   const [expNextStage, setExpNextStage] = useState(0);
-  const [crownPrologue, setCrownPrologue] = useState(false);
+  const [crownPrologue, setCrownPrologue] = useState(() => !readInvitedRoom(window.location.search));
+  const [storyLeadsToPractice, setStoryLeadsToPractice] = useState(true);
   const [learningMode, setLearningMode] = useState<'quick' | 'practice' | null>(null);
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
@@ -1447,9 +1449,15 @@ export default function BobozanOnline() {
   // --- RENDER LOGIC ---
 
   const inMatch = view === 'GAME' || view === 'LOBBY';
+  const openSoloMode = () => {
+    setLearningMode(null);
+    setAcademyTab(null);
+    setExpHelp('intro');
+  };
   const learningOverlay = <>
     {learningMode === 'quick' && <QuickStart lang={lang} avatar={playerAvatar}
       onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
+      onSolo={openSoloMode}
       onPractice={() => setLearningMode('practice')}
       onOpenAcademy={() => { setLearningMode(null); setAcademyTab('lessons'); }} />}
     {learningMode === 'practice' && <LocalPractice lang={lang} avatar={playerAvatar}
@@ -1466,15 +1474,20 @@ export default function BobozanOnline() {
     {expHelp && <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
       difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty} best={expBest}
       onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
-      onStory={expHelp === 'intro' && !inMatch ? () => { setExpHelp(null); setCrownPrologue(true); } : undefined}
+      onStory={expHelp === 'intro' && !inMatch ? () => { setExpHelp(null); setStoryLeadsToPractice(false); setCrownPrologue(true); } : undefined}
       onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} />}
   </>;
 
-  // The campaign story is optional; friends and invitees land on the play menu.
+  // Keep the original comic opening, then let Axle teach a short first hand.
+  // Invitations can go straight to their room without replaying the introduction.
   // Keep the menu unmounted until dismissal so it cannot flash or receive focus behind the comic.
   if (crownPrologue) return <div className="pixel-app crown-opening-screen">
     <CrownTitleScene />
-    <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang} onComplete={() => setCrownPrologue(false)} onClose={() => setCrownPrologue(false)} />
+    <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang}
+      completeLabel={storyLeadsToPractice ? (lang === 'zh' ? '跟阿栓试一手' : 'Try a hand with Axle') : undefined}
+      skipLabel={storyLeadsToPractice ? (lang === 'zh' ? '跳到实战' : 'Skip to practice') : undefined}
+      onComplete={() => { setCrownPrologue(false); if (storyLeadsToPractice) setLearningMode('quick'); }}
+      onClose={() => setCrownPrologue(false)} />
   </div>;
 
   if (view === 'NAME_INPUT') return (
@@ -1582,30 +1595,28 @@ export default function BobozanOnline() {
                   <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.8)] scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500 origin-center" />
                </div>
             </div>
-            <p className="friends-entry-note">{lang === 'zh' ? '2–8 人 · 同时出牌 · 猜中朋友的下一招' : '2–8 players · Choose together · Read your friends'}</p>
+            <p className="friends-entry-note">{lang === 'zh' ? '独自踏上远征，或与朋友同桌猜招。' : 'Set out on a solo journey, or read your friends across the table.'}</p>
             {invitedRoom && <p className="friends-invitation" role="status">{lang === 'zh' ? `朋友邀请你加入房间 ${invitedRoom}` : `You’re invited to room ${invitedRoom}`}</p>}
             <div className="friends-title-actions w-full">
+              <button type="button" onClick={openSoloMode} className="btn-primary friends-play-button mode-choice-button p-4">
+                <Swords size={24} /><span>{lang === 'zh' ? '单人模式' : 'Solo mode'}<small>{lang === 'zh' ? '王冠远征 · 继续故事' : 'Campaign · Continue the story'}</small></span>
+              </button>
               <button
                 onClick={handleEnterName}
                 disabled={loading}
-                className="btn-primary friends-play-button group relative overflow-hidden p-4"
+                className="btn-secondary friends-learn-button mode-choice-button group relative overflow-hidden p-4"
               >
                 <div className="relative w-full flex items-center justify-center gap-2">
                   <Users size={24} />
-                  <span className="text-2xl font-black uppercase tracking-wider">{invitedRoom ? (lang === 'zh' ? '加入朋友房间' : 'Join your friends') : (lang === 'zh' ? '和朋友玩' : 'Play with friends')}</span>
+                  <span>{invitedRoom ? (lang === 'zh' ? '加入朋友房间' : 'Join your friends') : (lang === 'zh' ? '多人模式' : 'Multiplayer')}<small>{lang === 'zh' ? '2–8 人 · 和朋友同桌' : '2–8 players · Play with friends'}</small></span>
                 </div>
               </button>
-              <button
-                onClick={() => setLearningMode('quick')}
-                className="btn-secondary friends-learn-button p-3"
-              >
-                <Play size={19} /><span>{lang === 'zh' ? '快速上手' : 'Quick start'}<small>{lang === 'zh' ? '4 次交锋，约 3 分钟' : '4 short clashes · about 3 min'}</small></span>
-              </button>
             </div>
+            <button type="button" className="story-practice-link" onClick={() => setLearningMode('quick')}><Play size={16} />{lang === 'zh' ? '阿栓带你上手 · 约 3 分钟' : 'Learn with Axle · about 3 minutes'}</button>
             <div className="crown-title-links">
               <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '机器人练习' : 'Bot practice'}</button>
               <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
-              <button type="button" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
+              <button type="button" onClick={() => { setStoryLeadsToPractice(true); setCrownPrologue(true); }}>{lang === 'zh' ? '重看开场漫画' : 'Replay the opening comic'}</button>
             </div>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
