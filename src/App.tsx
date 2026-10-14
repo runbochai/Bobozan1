@@ -30,6 +30,10 @@ import EditionSwitch from './components/EditionSwitch';
 import RetroBattle from './components/RetroBattle';
 import RetroControls from './components/RetroControls';
 import RetroRewardReveal from './components/RetroRewardReveal';
+import RevengeModeSetting from './components/RevengeModeSetting';
+import RevengeAnnouncement from './components/RevengeAnnouncement';
+import { useRevengePresentation } from './components/useRevengePresentation';
+import { isRevengeModeEnabled, prepareRevengeReward } from './logic/revenge';
 import { readAppearance, saveAppearance, type Appearance } from './logic/appearance';
 import './components/RetroBase.css';
 import './components/MultiplayerModes.css';
@@ -48,7 +52,6 @@ import {
   Skull,
   Smile,
   X,
-  Flame,
   ArrowUp,
   ArrowDown,
   Target,
@@ -102,7 +105,6 @@ import {
   MIN_PLAYERS,
 } from './data/constants';
 import {
-  getCardIcon,
   getPlayerCards,
   getEffectiveLevel,
   getPlayerCard,
@@ -579,6 +581,8 @@ export default function BobozanOnline() {
   const [roomCode, setRoomCode] = useState(() => readInvitedRoom(window.location.search) ?? '');
   const [loading, setLoading] = useState(false);
   const [modePending, setModePending] = useState(false);
+  const [revengePending, setRevengePending] = useState(false);
+  const revengePendingRef = useRef(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [toastMsg, setToastMsg] = useState('');
 
@@ -645,46 +649,11 @@ export default function BobozanOnline() {
     }
   }, [gameState.players, view, reduceMotion]);
 
-  const [revengeCardId, setRevengeCardId] = useState<string | null>(null);
-  const prevMatchCountRef = useRef(gameState.matchCount);
-
-  // 2. Watch for New Match & Temp Skills
-  useEffect(() => {
-    // Detect if match count increased (New Game Started)
-    if (!isExpedition && gameState.matchCount > prevMatchCountRef.current) {
-       const me = gameState.players.find(p => p.id === myPlayerId);
-       // If I have a temp skill at the start of the round, it's a Revenge Card
-       if (me && me.tempSkills && me.tempSkills.length > 0) {
-          setRevengeCardId(me.tempSkills[0]); // Show the first one
-          playSound('win', muted); // Play a sound!
-       }
-    }
-    // Update ref
-    prevMatchCountRef.current = gameState.matchCount;
-  }, [gameState.matchCount, gameState.players, myPlayerId, muted, isExpedition]);
-
-  // 3. Animation Style (Spin & Flip)
-  const revengeStyle = `
-    @keyframes spin-reveal {
-      0% { transform: scale(0) rotateY(0deg); opacity: 0; }
-      20% { transform: scale(0.8) rotateY(0deg); opacity: 1; }
-      /* Spin fast */
-      50% { transform: scale(1.1) rotateY(720deg); } 
-      /* Slow down and flip to front (ending at 900deg or similar that maps to back face hidden) */
-      /* Let's say Back is 0deg, Front is 180deg. We want to end at 180 + 720 = 900 */
-      100% { transform: scale(1) rotateY(1080deg); }
-    }
-    .animate-card-reveal {
-      animation: spin-reveal 2.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-      transform-style: preserve-3d;
-    }
-    .backface-hidden {
-      backface-visibility: hidden;
-    }
-    .rotate-y-180 {
-      transform: rotateY(180deg);
-    }
-  `;
+  const { reward: revengeReward, announcement: revengeAnnouncement, dismissReward: dismissRevengeReward } = useRevengePresentation({
+    roomKey: inMultiplayerRoom ? roomCode : null, inBattle: view === 'GAME', matchCount: gameState.matchCount,
+    players: gameState.players, playerId: myPlayerId, enabled: isRevengeModeEnabled(gameState.revengeMode),
+    speed: activeBattleSpeed, muted,
+  });
 
   // Auto-redirect players to GAME view when the game starts
   useEffect(() => {
@@ -1119,7 +1088,7 @@ export default function BobozanOnline() {
 
   const copyGameInvite = () => { playSound('click', muted); const currentUrl = window.location.href.split('?')[0]; const inviteUrl = `${currentUrl}?room=${roomCode}`; const text = `bobozan · ${lang === 'zh' ? '王冠竞技场' : 'Crown Arena'} ${t.roomCode}: ${roomCode}\n${inviteUrl}`; copyToClipboard(text, t.inviteCopied); };
   const startGameHost = async () => {
-    if (!isOnline || !user) return;
+    if (!isOnline || !user || revengePendingRef.current) return;
     try {
       await mutateRoom(roomCode, room => startRoom(room, user.uid, lang));
       playSound('confirm', muted);
@@ -1231,11 +1200,14 @@ export default function BobozanOnline() {
   };
 
   const toggleRevengeMode = async () => {
-    if (!isOnline || !user) return;
+    if (!isOnline || !user || revengePendingRef.current) return;
+    revengePendingRef.current = true;
+    setRevengePending(true);
     try {
       await mutateRoom(roomCode, room => room.hostId === user.uid && room.status === 'LOBBY'
-        ? { revengeMode: !(room.revengeMode ?? true) } : null);
+        ? { revengeMode: !isRevengeModeEnabled(room.revengeMode) } : null);
     } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
+    finally { revengePendingRef.current = false; setRevengePending(false); }
   };
 
   const nextMatchHost = async () => {
@@ -1243,13 +1215,7 @@ export default function BobozanOnline() {
     // 1. Play Sound
     playSound('confirm', muted);
 
-    // 2. Define Helper for Bonus Card
-    const getRandomBonusCard = () => {
-      // Ensure we filter correctly. SKILL_DB must be accessible.
-      const pool = SKILL_DB.filter(c => c.cost === 1 && (c.type === 'ATTACK' || c.type === 'SPECIAL'));
-      if (pool.length === 0) return null;
-      return pool[Math.floor(Math.random() * pool.length)];
-    };
+    const obtainedAt = Date.now();
 
     try {
       const expectedMatch = gameState.matchCount;
@@ -1260,20 +1226,6 @@ export default function BobozanOnline() {
         if (preparedPlayers.some(hasSkillOverflow)) throw new Error('Please finish choosing reward skills first');
     // 3. Reset Players Logic (with UNDEFINED protection)
     const resetPlayers = preparedPlayers.map((p) => {
-      const isSurvivor = !p.isDead;
-      const newLoseStreak = isSurvivor ? 0 : (p.loseStreak || 0) + 1;
-
-      const newTempSkills: string[] = [];
-      
-      const newRevengeTime = null; // 准备时间戳变量
-
-      const isRevengeOn = room.revengeMode ?? true; // 默认为开
-
-      if (isRevengeOn && newLoseStreak >= 5) {
-         const bonus = getRandomBonusCard();
-         if (bonus) newTempSkills.push(bonus.id);
-      }
-
       return {
         ...p,
         hp: MAX_HP,
@@ -1292,10 +1244,8 @@ export default function BobozanOnline() {
         disabledSkills: [],  
         isShared: p.isShared ?? false, // If undefined, set to false
         
-        loseStreak: newLoseStreak,
-        tempSkills: newTempSkills, // Always an array (empty or populated)
+        ...prepareRevengeReward(p, room.revengeMode, obtainedAt),
         pendingLevel: null,
-        revengeObtainedAt: newRevengeTime,
       };
     });
 
@@ -1321,11 +1271,6 @@ export default function BobozanOnline() {
       setToastMsg(lang === 'zh' ? '请先完成奖励技能选择；如仍失败，请检查网络后重试' : 'Finish choosing reward skills, then retry. Check your connection if the problem persists.');
     }
   };
-
-  // Find player who just got revenge card (within last 5 seconds)
-  const recentRevengePlayer = gameState.players.find(p =>
-    p.revengeObtainedAt && Date.now() - p.revengeObtainedAt < 5000
-  );
 
   const toggleLang = () => { playSound('click', muted); setLang(prev => prev === 'zh' ? 'en' : 'zh'); }
   const toggleMute = () => { setMuted(!muted); }
@@ -1433,7 +1378,16 @@ export default function BobozanOnline() {
       setMoveManualOpen(true);
     }
   };
+  const revengeCard = revengeReward && SKILL_DB.find(card => card.id === revengeReward.cardId);
+  const revengeEffects = <>
+    {revengeAnnouncement && <RevengeAnnouncement key={revengeAnnouncement.key} names={revengeAnnouncement.names}
+      lang={lang} reduceMotion={reduceMotion} speed={revengeAnnouncement.speed} />}
+    {revengeReward && revengeCard && <RetroRewardReveal key={revengeReward.key} card={revengeCard} lang={lang}
+      reduceMotion={reduceMotion} speed={revengeReward.speed} appearance={appearance}
+      onClose={() => { dismissRevengeReward(); playSound('confirm', muted); }} />}
+  </>;
   const learningOverlay = <>
+    {revengeEffects}
     {characterPickerOpen && <CharacterPicker avatar={playerAvatar} lang={lang} appearance={appearance} reduceMotion={reduceMotion}
       onSelect={path => { setPlayerAvatar(playerCharacterOption(path).path); playSound('confirm', muted); }}
       onClose={() => setCharacterPickerOpen(false)} />}
@@ -1487,7 +1441,7 @@ export default function BobozanOnline() {
     const overlays = <>{learningOverlay}{skillSelectionOverlay}</>;
     if (view !== 'GAME') return <RetroMenu view={view} lang={lang} game={gameState} playerId={user?.uid}
       name={playerName} avatar={playerAvatar} roomCode={roomCode} loading={loading} onlineReady={!!user && firebaseConfigured}
-      connectionMessage={connectionMessage || undefined} error={errorMsg || undefined} invited={!!invitedRoom} modePending={modePending}
+      connectionMessage={connectionMessage || undefined} error={errorMsg || undefined} invited={!!invitedRoom} modePending={modePending} revengePending={revengePending}
       reduceMotion={reduceMotion} controls={retroControls} overlays={overlays} toast={toastMsg}
       onNameChange={setPlayerName} onChooseCharacter={() => { playSound('click', muted); setCharacterPickerOpen(true); }} onRoomCodeChange={setRoomCode}
       onEnter={handleEnterName} onPractice={() => setLearningMode('practice')} onCreate={createRoom} onJoin={joinRoom} onLeave={leaveRoom} onStart={startGameHost}
@@ -1498,9 +1452,7 @@ export default function BobozanOnline() {
       knownCards={knownCards} cards={orderedHand} category={handCategory} viewMode={handViewMode}
       submitting={submittingMove || skillOverflow.length > 0} reduceMotion={reduceMotion} speed={presentedBattleSpeed} roundKey={battleRoundKey}
       roundStartedAt={battleRoundRef.current?.startedAt} revealPlayers={battleRoundRef.current?.snapshot.players ?? gameState.players}
-      controls={retroControls} overlays={<>{overlays}{multiplayerOpening}{ultCutinOverlay}{revengeCardId && SKILL_DB.find(card => card.id === revengeCardId) && <RetroRewardReveal
-        card={SKILL_DB.find(card => card.id === revengeCardId)!} lang={lang} reduceMotion={reduceMotion}
-        onClose={() => { setRevengeCardId(null); playSound('confirm', muted); }} />}</>} toast={toastMsg}
+      controls={retroControls} overlays={<>{overlays}{multiplayerOpening}{ultCutinOverlay}</>} toast={toastMsg}
       results={!academyTab && !moveManualOpen && gameState.status === 'GAMEOVER' && showBattleResult ? <MultiplayerResults
         lang={lang} game={gameState} playerId={user?.uid} appearance="retro"
         onNextMatch={nextMatchHost} onExit={() => { void leaveRoom(); }} onOpenRules={() => setMoveManualOpen(true)}
@@ -1685,27 +1637,9 @@ export default function BobozanOnline() {
               </div>
             </fieldset>
             
-            {/* Settings Bar */}
-            <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-2xl border border-white/5">
-                <div className="flex items-center gap-4">
-                  <div className={`p-3 rounded-xl ${gameState.revengeMode ? 'bg-red-500/20 text-red-400' : 'bg-slate-700/50 text-slate-500'}`}>
-                      <Flame size={24} fill={gameState.revengeMode ? "currentColor" : "none"} />
-                  </div>
-                  <div>
-                      <div className="text-sm font-bold text-white flex items-center gap-2">
-                        {lang === 'zh' ? '复仇模式' : 'REVENGE MODE'}
-                        {gameState.revengeMode && <span className="text-[10px] bg-red-500 text-white px-1.5 py-0.5 rounded">ON</span>}
-                      </div>
-                      <div className="text-xs text-slate-500">{lang === 'zh' ? '连败者获得随机强力卡牌' : 'Losers get bonus cards'}</div>
-                  </div>
-                </div>
-
-                {gameState.hostId === user?.uid && (
-                  <button onClick={toggleRevengeMode} className={`px-4 py-2 rounded-lg text-xs font-bold border transition-all ${gameState.revengeMode ? 'bg-red-500 text-white border-red-400' : 'bg-slate-700 text-slate-400 border-slate-600 hover:bg-slate-600'}`}>
-                      {gameState.revengeMode ? 'ENABLED' : 'DISABLED'}
-                  </button>
-                )}
-            </div>
+            <RevengeModeSetting enabled={isRevengeModeEnabled(gameState.revengeMode)} lang={lang}
+              appearance="current" reduceMotion={reduceMotion} pending={revengePending}
+              disabled={gameState.hostId !== user?.uid || gameState.status !== 'LOBBY'} onToggle={toggleRevengeMode} />
 
             {/* Player Grid */}
             <div className="pixel-lobby-players grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1766,7 +1700,7 @@ export default function BobozanOnline() {
                 <div className="flex-1 flex justify-end">
                   {gameState.players.length > 0 && gameState.hostId === user?.uid ? (
                       /* 🎨 CHANGED: Start Button to Red/Orange Gradient */
-                      <button onClick={startGameHost} disabled={modePending} className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white px-12 py-4 rounded-2xl font-black text-xl shadow-xl shadow-orange-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3">
+                      <button onClick={startGameHost} disabled={modePending || revengePending} className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white px-12 py-4 rounded-2xl font-black text-xl shadow-xl shadow-orange-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3">
                         <Play fill="currentColor" /> {t.startGame}
                       </button>
                   ) : (
@@ -2306,120 +2240,6 @@ export default function BobozanOnline() {
           }} />
         </div>
       </div>
-
-      {/* --- REVENGE / BOUNTY CARD REVEAL ANIMATION --- */}
-      {!isExpedition && revengeCardId && (
-        <div 
-           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/90 backdrop-blur-md cursor-pointer"
-           onClick={() => {
-             playSound('click', muted);
-             setRevengeCardId(null); // Click to close
-           }}
-        >
-           <style>{revengeStyle}</style>
-
-           <div className="relative w-full max-w-md md:max-w-lg mx-4 flex flex-col items-center gap-8 animate-in fade-in duration-500">
-              
-              {/* Title */}
-              <div className="text-center space-y-2 z-10 animate-pulse">
-                 <h2 className="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 italic tracking-widest uppercase drop-shadow-lg">
-                    {lang === 'zh' ? '复仇时刻' : 'REVENGE TIME'}
-                 </h2>
-                 <p className="text-slate-400 text-sm font-mono uppercase tracking-widest">
-                    {lang === 'zh' ? '获得临时强力技能' : 'Temporary Skill Acquired'}
-                 </p>
-              </div>
-
-              {/* The Spinning Card Container */}
-              <div className="relative w-64 h-96 animate-card-reveal">
-                 
-                 {/* 1. CARD BACK (The Mystery Side) - Visible at 0deg, 360deg... */}
-                 <div className="absolute inset-0 w-full h-full rounded-2xl bg-slate-800 border-4 border-slate-600 shadow-2xl flex items-center justify-center backface-hidden">
-                    <div className="absolute inset-2 border-2 border-dashed border-slate-600/50 rounded-xl" />
-                    <div className="text-8xl font-black text-slate-700 select-none">?</div>
-                 </div>
-
-                 {/* 2. CARD FRONT (The Reveal Side) - Visible at 180deg, 540deg... 
-                    The container rotates 1080. 
-                    Render the CARD directly and let it spin! 
-                 */}
-                 
-                 {(() => {
-                    const card = SKILL_DB.find(c => c.id === revengeCardId);
-                    if (!card) return null;
-                    
-                    // Using your existing card style logic
-                    let bgGradient = 'bg-slate-800';
-                    let borderClass = 'border-slate-600';
-                    if (card.type === 'ATTACK') { bgGradient = 'bg-gradient-to-b from-red-900 to-slate-900'; borderClass = 'border-red-500'; }
-                    if (card.type === 'SPECIAL') { bgGradient = 'bg-gradient-to-b from-emerald-900 to-slate-900'; borderClass = 'border-emerald-500'; }
-                    
-                    return (
-                       <div className={`
-                          absolute inset-0 w-full h-full rounded-2xl border-4 ${borderClass} 
-                          shadow-[0_0_50px_rgba(220,38,38,0.5)] 
-                          flex flex-col items-center justify-center
-                          bg-[#1a1a1a] overflow-hidden
-                       `}>
-                          <div className={`absolute inset-0 ${bgGradient} opacity-90`} />
-                          
-                          {/* Header Badge */}
-                          <div className="absolute top-4 left-1/2 -translate-x-1/2 bg-red-600 text-white text-xs font-black px-3 py-1 rounded-full shadow-lg animate-bounce z-20 whitespace-nowrap">
-                             {lang === 'zh' ? '本局可用' : 'ONE USE ONLY'}
-                          </div>
-
-                          {/* Level & Icon */}
-                          <div className="relative z-10 flex flex-col items-center gap-4">
-                             <div className="text-lg font-mono text-yellow-500">Lv.{getEffectiveLevel(card)}</div>
-                             <div className="scale-[2.0] drop-shadow-xl">{getCardIcon(card.id)}</div>
-                          </div>
-
-                          {/* Name & Desc */}
-                          <div className="absolute bottom-0 w-full bg-black/80 p-4 text-center border-t border-white/10 z-10">
-                             <div className="text-xl font-bold text-white mb-1">{card.name[lang]}</div>
-                             <div className="text-xs text-slate-400 leading-tight">{card.description[lang]}</div>
-                          </div>
-                       </div>
-                    );
-                 })()}
-
-              </div>
-
-              {/* Click to continue hint */}
-              <div className="text-slate-500 text-xs animate-pulse mt-8">
-                 {lang === 'zh' ? '点击任意处领取' : 'Click anywhere to claim'}
-              </div>
-
-           </div>
-        </div>
-      )}
-
-      {/* 屏幕中心复仇公告 (GLOBAL REVENGE ANNOUNCEMENT) */}
-      {recentRevengePlayer && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center pointer-events-none">
-           {/* 动画容器 (带背景模糊和边框的横幅) */}
-           <div className="animate-in zoom-in slide-in-from-bottom-10 duration-500 flex flex-col items-center gap-3 p-8 bg-gradient-to-b from-red-900/90 to-black/90 backdrop-blur-md rounded-3xl border-y-4 border-red-500/50 shadow-[0_0_80px_rgba(220,38,38,0.6)] transform scale-110">
-              
-              {/* 恶魔图标动画 */}
-              <div className="text-7xl animate-bounce filter drop-shadow-[0_0_20px_red]">
-                 👿
-              </div>
-              
-              {/* 玩家名字和标题 */}
-              <div className="text-3xl md:text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-red-200 via-red-500 to-orange-500 tracking-wider uppercase text-center drop-shadow-lg">
-                 {lang === 'zh'
-                    ? `${recentRevengePlayer.name} 获得了复仇卡!`
-                    : `${recentRevengePlayer.name} OBTAINED A REVENGE CARD!`}
-              </div>
-
-              {/* 副标题提示 */}
-              <div className="text-sm md:text-base text-red-300 font-mono uppercase tracking-[0.2em] bg-red-950/50 px-4 py-1 rounded-full">
-                 {lang === 'zh' ? '>>> 复仇时刻已到 <<<' : '>>> REVENGE TIME <<<'}
-              </div>
-
-           </div>
-        </div>
-      )}
 
       {/* --- 阶段重置过场：两条横线从左右闪入 → 中央减速会合 → 快速闪回两边（约1.2秒，不拦截操作） --- */}
       {resetFlash && (
