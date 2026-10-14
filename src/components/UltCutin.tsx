@@ -2,12 +2,14 @@ import './UltCutin.css';
 import './SoloUltCutin.css';
 // src/components/UltCutin.tsx
 // 必杀技演出 overlay：左侧闪入巨型像素立绘 → 压暗全屏 → 漫画对话框喊话 → 像素风技能特效
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { BattleSpeed } from '../types';
 import type { UltCutinDef } from '../data/ultCutins';
 import { pickShout } from '../data/ultCutins';
 import { assetUrl } from '../assets';
 import { playSound } from '../audio/sound';
-import { SOLO_CUTIN_SCALE } from '../data/battleTiming';
+import { remainingBattleTime, SOLO_CUTIN_SCALE } from '../data/battleTiming';
+import { battleTimeMs, normalizeBattleSpeed } from '../logic/battleSpeed';
 import ComboCutinArt from './ComboCutinArt';
 
 interface Props {
@@ -23,33 +25,51 @@ interface Props {
   total?: number;
   /** Keeps the full cut-in on the shared quick animation and sound clock. */
   quick?: boolean;
+  speed?: BattleSpeed;
 }
 
 const METEORS = [0, 1, 2, 3, 4, 5, 6, 7];
 const SPARKS = Array.from({ length: 18 }, (_, i) => i);
 
-export default function UltCutin({ def, playerName, skillName, level, lang, muted, index = 0, total = 1, quick = false }: Props) {
+export default function UltCutin({ def, playerName, skillName, level, lang, muted, index = 0, total = 1, quick = false, speed = 1 }: Props) {
   const shout = useMemo(() => pickShout(def, lang), [def, lang]);
+  // The parent keys each performance. Settings changed during it apply to the
+  // next mount, so artwork, inline effects, CSS layers, and audio stay together.
+  const [clock] = useState(() => ({ startedAt: Date.now(), speed: normalizeBattleSpeed(speed), quick }));
+  const mutedRef = useRef(muted);
+  const impactPlayedRef = useRef(false);
   // 立绘缺失时降级为像素徽章，保证演出不断
   const [imgOk, setImgOk] = useState(true);
   // 多个同屏：立绘横向排开、横幅纵向错开，避免完全重叠
   const multi = total > 1;
   const columns = total > 1 ? 2 : 1;
   const rows = Math.ceil(total / columns);
-  const motionScale = quick ? SOLO_CUTIN_SCALE : 1;
+  const motionScale = (clock.quick ? SOLO_CUTIN_SCALE : 1) / clock.speed;
   const seconds = (value: number) => `${value * motionScale}s`;
 
   // 冲击音效（流星落地 / 特效爆发时）
   useEffect(() => {
-    if (index > 0) return;
-    const t = setTimeout(() => playSound('combat', muted), 1150 * motionScale);
+    mutedRef.current = muted;
+  }, [muted]);
+  useEffect(() => {
+    if (index > 0 || impactPlayedRef.current) return;
+    const impactAt = battleTimeMs(1150 * (clock.quick ? SOLO_CUTIN_SCALE : 1), clock.speed);
+    const wait = remainingBattleTime(clock.startedAt, impactAt, Date.now());
+    // An already-passed beat must not be replayed after a delayed effect or a
+    // change in the simultaneous cut-in order.
+    if (wait <= 0) { impactPlayedRef.current = true; return; }
+    const t = setTimeout(() => {
+      if (impactPlayedRef.current) return;
+      impactPlayedRef.current = true;
+      playSound('combat', mutedRef.current);
+    }, wait);
     return () => clearTimeout(t);
-  }, [muted, index, motionScale]);
+  }, [index, clock]);
 
   return (
     <div
-      className={`ultcutin fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim ${quick ? 'ultcutin-quick' : ''} ${multi ? 'ultcutin-multi' : ''} ${total > 4 ? 'ultcutin-dense' : ''}`}
-      data-skill={def.skillId} data-combo={!!def.combo}
+      className={`ultcutin ultcutin-scaled fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim ${clock.quick ? 'ultcutin-quick' : ''} ${multi ? 'ultcutin-multi' : ''} ${total > 4 ? 'ultcutin-dense' : ''}`}
+      data-skill={def.skillId} data-combo={!!def.combo} data-battle-speed={clock.speed}
       style={{ ['--ultdim' as string]: index === 0 ? 0.68 : 0, ['--ult-quick-scale' as string]: motionScale }}
     >
       {/* 速度线 + 震动容器 */}

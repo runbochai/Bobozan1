@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { GameState, MultiplayerMode, Player } from '../types';
-import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, setRoomMode, settleRoom, startRoom, submitPlayerMove } from './room';
+import type { BattleSpeed, GameState, MultiplayerMode, Player } from '../types';
+import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, setRoomBattleSpeed, setRoomMode, settleRoom, startRoom, submitPlayerMove } from './room';
 import { calculateTurnOutcome } from './combat';
 import { FINAL_LEVEL, LAST_SKILL_LEVEL, MAX_PLAYERS } from '../data/constants';
 import { hasSkillOverflow } from './skillLoadout';
+import { getRoomRoundBattleSpeed } from './battleSpeed';
 
 const player = (id: string, patch: Partial<Player> = {}): Player => ({
   id, name: id, isBot: false, hp: 2, energy: 4, isDead: false,
@@ -31,6 +32,55 @@ test('only the host can change a lobby mode, and the shared patch preserves all 
   assert.deepEqual(setRoomMode(shared, 'a', 'kills'), { multiplayerMode: 'kills' });
   assert.throws(() => setRoomMode(state, 'a', 'invalid' as MultiplayerMode), /Invalid multiplayer mode/);
   assert.deepEqual(state, before);
+});
+
+test('only the room host may select a supported shared battle speed', () => {
+  const state = room({ status: 'LOBBY' }), before = structuredClone(state);
+  assert.equal(setRoomBattleSpeed(state, 'b', 2), null);
+  assert.equal(setRoomBattleSpeed(state, 'unknown', .75), null);
+  assert.equal(setRoomBattleSpeed(state, 'a', 1), null);
+  assert.throws(() => setRoomBattleSpeed(state, 'a', 3 as BattleSpeed), /Invalid battle speed/);
+  assert.deepEqual(setRoomBattleSpeed(state, 'a', 1.5), { battleSpeed: 1.5, roundBattleSpeed: 1.5 });
+  assert.deepEqual(state, before);
+});
+
+test('a host speed change during move selection or showdown waits for the next turn', () => {
+  for (const status of ['PLAYING', 'SHOWDOWN'] as const) {
+    const state = room({ status, battleSpeed: .75, roundBattleSpeed: .75 });
+    const queued = { ...state, ...setRoomBattleSpeed(state, 'a', 2) };
+    assert.equal(queued.battleSpeed, 2);
+    assert.equal(getRoomRoundBattleSpeed(queued), .75);
+    assert.equal(setRoomBattleSpeed(queued, 'a', 2), null);
+    const prepared = { ...queued, status: 'PLAYING' as const,
+      players: queued.players.map(player => ({ ...player, selectedCardId: 'charge' })) };
+    const shown = { ...prepared, ...advanceRoom(prepared, 'a') };
+    assert.equal(shown.roundBattleSpeed, .75);
+    const next = { ...shown, ...settleRoom(shown, 'a', shown, 'zh') };
+    assert.equal(next.turn, 2);
+    assert.equal(next.roundBattleSpeed, 2);
+    assert.equal(next.battleSpeed, 2);
+  }
+});
+
+test('new matches freeze the lobby speed, while legacy turns remain at 1x until settlement', () => {
+  const lobby = room({ status: 'LOBBY', battleSpeed: 1.5 });
+  assert.equal(startRoom(lobby, 'a', 'zh')?.roundBattleSpeed, 1.5);
+  const legacy = room({ players: [player('a', { selectedCardId: 'charge' }), player('b', { selectedCardId: 'charge' })] });
+  const queued = { ...legacy, ...setRoomBattleSpeed(legacy, 'a', 2) };
+  assert.equal(getRoomRoundBattleSpeed(queued), 1);
+  const shown = { ...queued, ...advanceRoom(queued, 'a') };
+  assert.equal(shown.roundBattleSpeed, 1);
+  assert.equal(settleRoom(shown, 'a', shown, 'zh')?.roundBattleSpeed, 2);
+});
+
+test('host transfer preserves both the active speed and the queued next-round speed', () => {
+  const state = room({ roundBattleSpeed: .75, battleSpeed: 2 });
+  const transferred = { ...state, ...leavePlayer(state, 'a') };
+  assert.equal(transferred.hostId, 'b');
+  assert.equal(transferred.roundBattleSpeed, .75);
+  assert.equal(transferred.battleSpeed, 2);
+  assert.equal(setRoomBattleSpeed(transferred, 'a', 1), null);
+  assert.deepEqual(setRoomBattleSpeed(transferred, 'b', 1.5), { battleSpeed: 1.5 });
 });
 
 for (const status of ['PLAYING', 'SHOWDOWN', 'GAMEOVER'] as const) {

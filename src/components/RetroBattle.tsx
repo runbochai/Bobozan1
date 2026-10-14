@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { ArrowLeft, ArrowUp, CheckCircle, Crown, Ghost, Heart, Loader, LogOut, Scroll, Share2, Shield, Skull, Smile, User, X, Zap } from 'lucide-react';
-import type { Card, GameState, HandCategory, HandViewMode, Lang, Player } from '../types';
+import type { BattleSpeed, Card, GameState, HandCategory, HandViewMode, Lang, Player } from '../types';
 import { avatarUrl } from '../assets';
 import { MAX_HP } from '../data/constants';
 import { TEXT } from '../data/translations';
@@ -10,6 +10,7 @@ import { getEffectiveLevel, getPlayerCard, getPlayerLevel } from '../logic/cardL
 import { getHandCategory } from '../logic/skillLoadout';
 import { getMultiplayerMatchSummary } from '../logic/multiplayerMatch';
 import { retroRoundTiming, retroSeat, retroSlamTargets, retroSlamTilt } from '../logic/retroBattle';
+import { normalizeBattleSpeed } from '../logic/battleSpeed';
 import RetroBackdrop from './RetroBackdrop';
 import RetroCard, { RetroSkillIcon } from './RetroCard';
 import './RetroBattle.css';
@@ -28,6 +29,7 @@ export interface RetroBattleProps {
   roundKey: string;
   roundStartedAt?: number;
   revealPlayers: Player[];
+  speed?: BattleSpeed;
   controls?: ReactNode;
   overlays?: ReactNode;
   results?: ReactNode;
@@ -103,12 +105,13 @@ function AvatarPlayer({ player, index, total, viewer, self, highest, lang, statu
 }
 
 /** The parent freezes these revealed selections and supplies the original round clock. */
-function RevealedRound({ players, playerId, turn, lang, startedAt, reduced }: {
-  players: Player[]; playerId?: string; turn: number; lang: Lang; startedAt?: number; reduced: boolean;
+function RevealedRound({ players, playerId, turn, lang, startedAt, reduced, speed = 1 }: {
+  players: Player[]; playerId?: string; turn: number; lang: Lang; startedAt?: number; reduced: boolean; speed?: BattleSpeed;
 }) {
   const [clock] = useState(() => {
     const now = Date.now();
-    return { startedAt: startedAt ?? now, timing: retroRoundTiming(startedAt ?? now, now) };
+    const roundSpeed = normalizeBattleSpeed(speed);
+    return { startedAt: startedAt ?? now, speed: roundSpeed, timing: retroRoundTiming(startedAt ?? now, now, roundSpeed) };
   });
   const [stopped, setStopped] = useState(() => reduced || window.matchMedia('(prefers-reduced-motion: reduce)').matches);
   if (reduced && !stopped) setStopped(true);
@@ -138,7 +141,7 @@ function RevealedRound({ players, playerId, turn, lang, startedAt, reduced }: {
   const winnerOrder = players.filter(player => winners.has(player.id)).map(player => player.id);
   const viewer = players.findIndex(player => player.id === playerId);
   return <div ref={layer} className={`retro-revealed-layer ${reduced || stopped ? 'retro-reveal-still' : ''}`}
-    data-multi-slam={winners.size > 1} aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'}>
+    data-multi-slam={winners.size > 1} data-battle-speed={clock.speed} aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'}>
     {players.map((player, index) => {
       const card = getPlayerCard(player, player.selectedCardId);
       if (!card || player.isDead) return null;
@@ -215,7 +218,7 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
   </section>;
 }
 
-export default function RetroBattle({ lang, game, playerId, roomCode, knownCards, cards, category, viewMode, submitting, reduceMotion, roundKey, roundStartedAt, revealPlayers, controls, overlays, results, toast, onPlay, onCategory, onBack, onExit, onOpenRules, onEmoji, onShare, canShare }: RetroBattleProps) {
+export default function RetroBattle({ lang, game, playerId, roomCode, knownCards, cards, category, viewMode, submitting, reduceMotion, roundKey, roundStartedAt, revealPlayers, speed = 1, controls, overlays, results, toast, onPlay, onCategory, onBack, onExit, onOpenRules, onEmoji, onShare, canShare }: RetroBattleProps) {
   const [logsOpen, setLogsOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const player = game.players.find(item => item.id === playerId);
@@ -243,7 +246,7 @@ export default function RetroBattle({ lang, game, playerId, roomCode, knownCards
       <div className="retro-ellipse-table" aria-hidden="true" />
       {game.players.map((fighter, index) => <AvatarPlayer key={fighter.id} player={fighter} index={index} total={game.players.length} viewer={viewer}
         self={fighter.id === playerId} highest={highest} lang={lang} status={game.status} />)}
-      {game.status === 'SHOWDOWN' && <RevealedRound key={roundKey} players={revealPlayers} playerId={playerId} turn={game.turn} lang={lang} startedAt={roundStartedAt} reduced={reduceMotion} />}
+      {game.status === 'SHOWDOWN' && <RevealedRound key={roundKey} players={revealPlayers} playerId={playerId} turn={game.turn} lang={lang} startedAt={roundStartedAt} reduced={reduceMotion} speed={speed} />}
     </div>
     <RetroHand player={player} knownCards={knownCards} cards={cards} lang={lang} category={category} viewMode={viewMode} status={game.status} submitting={submitting}
       onPlay={onPlay} onCategory={onCategory} onBack={onBack} />

@@ -5,6 +5,7 @@ import { CARD_RAISE_MS, CARD_RELEASE_MS, CARD_LAND_MS, CARD_RECOVER_MS,
   ULT_CUTIN_MS, SOLO_MOTION_SCALE, SOLO_SHOWDOWN_MS, SOLO_REDUCED_SHOWDOWN_MS,
   SOLO_CUTIN_START_MS, SOLO_CUTIN_MS, SOLO_CUTIN_SCALE, SOLO_ULT_SHOWDOWN_MS,
   captureBattleRound, remainingBattleTime, showdownDurationMs } from '../data/battleTiming';
+import { BATTLE_SPEEDS, battleTimeMs } from './battleSpeed';
 
 test('cards leave after the raised pose and land before comparison on the source clock', () => {
   const milestones = [0, CARD_RAISE_MS, CARD_RELEASE_MS, CARD_LAND_MS, CARD_RECOVER_MS,
@@ -59,4 +60,22 @@ test('an emoji or language update cannot replace moves or extend a showdown dead
   const next = captureBattleRound(round, 'room:1:5', { move: 'charge', lang: 'en' }, 5000);
   assert.notEqual(next, round);
   assert.equal(next.startedAt, 5000);
+});
+
+test('all presentation beats and settlement deadlines follow the inverse speed ratio', () => {
+  for (const speed of BATTLE_SPEEDS) {
+    for (const mode of ['room', 'expedition'] as const) {
+      assert.equal(showdownDurationMs(false, mode, false, speed), 700 / speed);
+      assert.equal(showdownDurationMs(true, mode, false, speed), 1450 / speed);
+      assert.ok(battleTimeMs(CARD_COMPARE_END_MS * SOLO_MOTION_SCALE, speed) < showdownDurationMs(false, mode, false, speed));
+      assert.ok(battleTimeMs(SOLO_CUTIN_START_MS + SOLO_CUTIN_MS, speed) < showdownDurationMs(true, mode, false, speed));
+    }
+    assert.equal(showdownDurationMs(false, 'room', true, speed), 700 / speed);
+    assert.equal(showdownDurationMs(true, 'room', true, speed), 1450 / speed);
+    assert.equal(showdownDurationMs(false, 'expedition', true, speed), 450 / speed);
+  }
+  const round = captureBattleRound(null, 'room:1:4', { speed: .75 }, 1000);
+  const changed = captureBattleRound(round, 'room:1:4', { speed: 2 }, 1200);
+  assert.equal(changed.snapshot.speed, .75);
+  assert.equal(changed.startedAt, 1000);
 });

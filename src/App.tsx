@@ -1,4 +1,5 @@
 import BattleArena from './components/BattleArena';
+import GameSettings from './components/GameSettings';
 import FriendsRoomEntry from './components/FriendsRoomEntry';
 import ThemePicker from './components/ThemePicker';
 import { useBattleBounds } from './components/useBattleBounds';
@@ -43,7 +44,6 @@ import CharacterPicker from './components/CharacterPicker';
 import { playerCharacterOption, readPlayerCharacter, savePlayerCharacter } from './logic/playerCharacter';
 import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
-  Music,
   Swords,
   Skull,
   Smile,
@@ -62,14 +62,11 @@ import {
   ArrowLeft,
   User,
   CheckCircle,
-  Globe,
-  Volume2,
-  VolumeX,
   Undo2,
   HandHeart,
   House,
-  Film,
-  Scroll
+  Scroll,
+  Settings
 } from './components/PixelIcons';
 import {
   signInAnonymously,
@@ -80,7 +77,7 @@ import {
   doc,
   onSnapshot,
 } from 'firebase/firestore';
-import type { Lang, HandCategory, HandViewMode, Player, GameState, MultiplayerMode } from './types';
+import type { BattleSpeed, Lang, HandCategory, HandViewMode, Player, GameState, MultiplayerMode } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
 import { pickUltCutins, hasBattleCutin, ULT_CUTINS, type UltCutinPick } from './data/ultCutins';
@@ -118,7 +115,9 @@ import { firebaseErrorMessage } from './config/firebaseConfig';
 import { useBackgroundMusic } from './audio/useBackgroundMusic';
 import { assetUrl, avatarUrl } from './assets';
 import { mutateRoom, createUniqueRoom } from './services/rooms';
-import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, setRoomMode, settleRoom, startRoom, submitPlayerMove } from './logic/room';
+import { battleTimeMs, getRoomBattleSpeed, getRoomRoundBattleSpeed } from './logic/battleSpeed';
+import { readLanguage, saveLanguage, readMuted, saveMuted, readMusicVolume, saveMusicVolume, readReduceMotion, saveReduceMotion, readBattleSpeed, saveBattleSpeed } from './logic/userSettings';
+import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, setRoomMode, setRoomBattleSpeed, settleRoom, startRoom, submitPlayerMove } from './logic/room';
 import type { User as FirebaseUser } from 'firebase/auth';
 import './components/BattleViewport.css';
 import SoloOpeningHint from './components/SoloOpeningHint';
@@ -147,152 +146,22 @@ import { createExpeditionRun, setupExpeditionStage, settleExpeditionRound, recor
 
 
 
-const TopControls = ({
-  muted,
-  toggleMute,
-  lang,
-  toggleLang,
-  logOpen,
-  toggleLog,
-  showLogToggle = false,
-  musicVolume,
-  setMusicVolume,
-  onHome,
-  onBack,
-  reduceMotion,
-  toggleReduceMotion,
-  campaignScene = false,
-  onOpenBattleMenu,
-  battleMenuDisabled = false,
-}: {
-  muted: boolean;
-  toggleMute: () => void;
-  lang: Lang;
-  toggleLang: () => void;
-  logOpen: boolean;
-  toggleLog: () => void;
-  showLogToggle?: boolean;
-  musicVolume: number;
-  setMusicVolume: (v: number) => void;
-  onHome?: () => void;
-  onBack?: () => void;
-  reduceMotion: boolean;
-  toggleReduceMotion: () => void;
-  campaignScene?: boolean;
-  onOpenBattleMenu?: () => void;
-  battleMenuDisabled?: boolean;
-}) => {
-  // Local state for the slider toggle
-  const [isVolumeOpen, setIsVolumeOpen] = useState(false);
-
-  return (
-    <div className="pixel-controls absolute top-4 right-4 z-50 flex items-center gap-3">
-      {campaignScene ? <span className="crown-scene-mark" title={lang === 'zh' ? '王冠主线场景' : 'Crown War story setting'} aria-label={lang === 'zh' ? '主线场景' : 'Story scene'}><Crown size={18} /></span> : <ThemePicker lang={lang} />}
-
-      {/* Back Button */}
-      {onBack && (
-        <button
-          onClick={onBack}
-          title={lang === 'zh' ? '返回' : 'Back'}
-          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
-        >
-          <Undo2 size={20} />
-        </button>
-      )}
-
-      {/* Home Button */}
-      {onHome && (
-        <button
-          onClick={onHome}
-          title={lang === 'zh' ? '主页' : 'Home'}
-          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
-        >
-          <House size={20} />
-        </button>
-      )}
-      
-      {/* Music Volume Toggle (Round Button + Pop-out Slider) */}
-      <div className="relative flex items-center">
-          {/* The Slider Panel (Slides out to the left) */}
-          <div className={`
-              absolute right-full mr-3 
-              bg-slate-900/90 backdrop-blur-xl border border-slate-600 rounded-full 
-              flex items-center gap-3 shadow-xl transition-all duration-300 origin-right overflow-hidden
-              ${isVolumeOpen ? 'w-48 px-4 py-2 opacity-100' : 'w-0 p-0 opacity-0 pointer-events-none'}
-          `}>
-              <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">BGM</span>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.005"
-                value={musicVolume}
-                onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-orange-500 focus:outline-none"
-              />
-          </div>
-
-          {/* The Round Music Button */}
-          <button
-            onClick={() => setIsVolumeOpen(!isVolumeOpen)}
-            className={`
-              p-3 rounded-full text-white transition-all shadow-lg border relative z-10
-              ${isVolumeOpen 
-                ? 'bg-orange-500 border-orange-400 rotate-12 scale-110' 
-                : 'bg-white/10 hover:bg-white/20 border-white/20 backdrop-blur-md'}
-            `}
-          >
-            <Music size={20} />
-          </button>
-      </div>
-
-      {/* Log Toggle */}
-      {onOpenBattleMenu ? <button type="button" onClick={onOpenBattleMenu} disabled={battleMenuDisabled}
-        aria-label={lang === 'zh' ? '对局菜单' : 'Battle menu'} title={lang === 'zh' ? '对局菜单' : 'Battle menu'}
-        className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20">
-        <Scroll size={20} />
-      </button> : showLogToggle && (
-        <button
-          onClick={toggleLog}
-          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
-        >
-          {logOpen ? <ArrowLeft size={20} /> : <ArrowLeft size={20} className="rotate-180" />}
-        </button>
-      )}
-
-      {/* Mute Button */}
-      <button
-        onClick={toggleMute}
-        className={`p-3 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 ${muted ? 'bg-red-500/80 hover:bg-red-500' : 'bg-white/10 hover:bg-white/20'}`}
-      >
-        {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
-      </button>
-
-      {/* Reduce Motion Button */}
-      <button
-        onClick={toggleReduceMotion}
-        title={lang === 'zh' ? '减弱动效' : 'Reduce motion'}
-        className={`p-3 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 ${reduceMotion ? 'bg-cyan-500/80 hover:bg-cyan-500' : 'bg-white/10 hover:bg-white/20'}`}
-      >
-        <Film size={20} />
-      </button>
-
-      {/* Lang Button */}
-      <button
-        onClick={toggleLang}
-        aria-label={lang === 'zh' ? '切换语言' : 'Switch language'}
-        className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 group"
-      >
-        <div className="flex items-center gap-2">
-          <Globe size={20} />
-          <span className="font-bold text-sm hidden group-hover:inline-block animate-in slide-in-from-right-2">
-            {lang === 'zh' ? 'EN' : '中文'}
-          </span>
-        </div>
-      </button>
-    </div>
-  );
-};
+const TopControls = ({ lang, logOpen, toggleLog, showLogToggle = false, onHome, onBack,
+  campaignScene = false, onOpenBattleMenu, battleMenuDisabled = false, onOpenSettings }: {
+  lang: Lang; logOpen: boolean; toggleLog: () => void; showLogToggle?: boolean;
+  onHome?: () => void; onBack?: () => void; campaignScene?: boolean;
+  onOpenBattleMenu?: () => void; battleMenuDisabled?: boolean; onOpenSettings: () => void;
+}) => <nav className="pixel-controls absolute top-4 right-4 z-50 flex items-center gap-3"
+  aria-label={lang === 'zh' ? '游戏菜单' : 'Game menu'}>
+  {campaignScene ? <span className="crown-scene-mark" title={lang === 'zh' ? '王冠主线场景' : 'Crown War story setting'}><Crown size={18} /></span> : <ThemePicker lang={lang} />}
+  {onBack && <button type="button" onClick={onBack} aria-label={lang === 'zh' ? '返回' : 'Back'}><Undo2 size={20} /></button>}
+  {onHome && <button type="button" onClick={onHome} aria-label={lang === 'zh' ? '主页' : 'Home'}><House size={20} /></button>}
+  {onOpenBattleMenu ? <button type="button" onClick={onOpenBattleMenu} disabled={battleMenuDisabled}
+    aria-label={lang === 'zh' ? '对局菜单' : 'Battle menu'}><Scroll size={20} /></button>
+    : showLogToggle && <button type="button" onClick={toggleLog} aria-label={lang === 'zh' ? '战斗记录' : 'Battle log'} aria-pressed={logOpen}><ArrowLeft size={20} /></button>}
+  <button type="button" className="settings-opener" onClick={onOpenSettings} aria-haspopup="dialog"
+    aria-label={lang === 'zh' ? '设置' : 'Settings'} title={lang === 'zh' ? '设置' : 'Settings'}><Settings size={20} /></button>
+</nav>;
 
 // --- MAIN COMPONENT ---
 
@@ -308,16 +177,19 @@ export default function BobozanOnline() {
   }, [view]);
   const [playerName, setPlayerName] = useState(readPlayerName);
   useEffect(() => { savePlayerName(playerName); }, [playerName]);
-  const [lang, setLang] = useState<Lang>('zh'); 
-  const [muted, setMuted] = useState(false);
-  const [reduceMotionPreference, setReduceMotion] = useState(() => {
-    try { return localStorage.getItem('bobozan-reduce-motion') === '1'; } catch { return false; }
-  });
+  const [lang, setLang] = useState<Lang>(readLanguage);
+  const [muted, setMuted] = useState(readMuted);
+  const [reduceMotionPreference, setReduceMotion] = useState(readReduceMotion);
+  const [battleSpeed, setBattleSpeed] = useState<BattleSpeed>(readBattleSpeed);
+  const [settingsOpen, setSettingsOpen] = useState(false);
+  const [settingsSpeedPending, setSettingsSpeedPending] = useState(false);
+  const [settingsError, setSettingsError] = useState('');
+  useEffect(() => { saveLanguage(lang); }, [lang]);
+  useEffect(() => { saveMuted(muted); }, [muted]);
+  useEffect(() => { saveBattleSpeed(battleSpeed); }, [battleSpeed]);
   const systemReducedMotion = useSystemReducedMotion();
   const reduceMotion = reduceMotionPreference || systemReducedMotion;
-  useEffect(() => {
-    try { localStorage.setItem('bobozan-reduce-motion', reduceMotionPreference ? '1' : '0'); } catch { /* ignore */ }
-  }, [reduceMotionPreference]);
+  useEffect(() => { saveReduceMotion(reduceMotionPreference); }, [reduceMotionPreference]);
   useEffect(() => {
     document.documentElement.classList.toggle('reduce-motion', reduceMotion);
   }, [reduceMotion]);
@@ -527,7 +399,8 @@ export default function BobozanOnline() {
     });
     const speechLogs = [...expeditionDialogue].map(([id, line]) => ({ turn: gameState.turn, type: 'info' as const,
       text: `${gameState.players.find(player => player.id === id)?.name ?? ''}：“${line.text}”` }));
-    setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN' }));
+    const roundSpeed = battleSpeed;
+    setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN', roundBattleSpeed: roundSpeed }));
 
     // Keep quick card beats, with a brief full cut-in for ultimates and combos.
     const ultPlayed = playersWithMoves.some(p => {
@@ -535,7 +408,7 @@ export default function BobozanOnline() {
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
       return !!c && hasBattleCutin(c);
     });
-    const showdownMs = showdownDurationMs(ultPlayed, 'expedition', reduceMotion);
+    const showdownMs = showdownDurationMs(ultPlayed, 'expedition', reduceMotion, roundSpeed);
 
     const timer = setTimeout(() => {
       const result = settleExpeditionRound(expRunRef.current, expBattleRef.current, playersWithMoves, gameState.turn, lang);
@@ -642,7 +515,8 @@ export default function BobozanOnline() {
   };
 
   // --- Global Event Listeners ---
-  const [musicVolume, setMusicVolume] = useState(0.075); // Default 7.5%
+  const [musicVolume, setMusicVolume] = useState(readMusicVolume);
+  useEffect(() => { saveMusicVolume(musicVolume); }, [musicVolume]);
 
   const music = useBackgroundMusic(assetUrl('music/bgm.mp3'), view === 'GAME', muted, musicVolume);
 
@@ -679,17 +553,18 @@ export default function BobozanOnline() {
     }
   }, [view]);
 
-  const [damageNumbers, setDamageNumbers] = useState<Record<string, { amount: number; eventKey: number }>>({});
+  const [damageNumbers, setDamageNumbers] = useState<Record<string, { amount: number; eventKey: number; speed: BattleSpeed }>>({});
   const damageEventRef = useRef(0);
+  const lastBattleSpeedRef = useRef<BattleSpeed>(1);
   const [showBattleResult, setShowBattleResult] = useState(false);
   const prevPlayersRef = useRef<Player[]>([]);
   const prevShowdownRef = useRef(false);
   
 
   // 必杀及联合技过场。
-  const [ultCutins, setUltCutins] = useState<(UltCutinPick & { key: string })[]>([]);
+  const [ultCutins, setUltCutins] = useState<(UltCutinPick & { key: string; speed: BattleSpeed })[]>([]);
   const battleRoundRef = useRef<BattleRoundClock<{
-    players: Player[]; lang: Lang; cutinsPlayed: boolean; soundsPlayed: number[]; motionStopped: boolean;
+    players: Player[]; lang: Lang; speed: BattleSpeed; cutinsPlayed: boolean; soundsPlayed: number[]; motionStopped: boolean;
   }> | null>(null);
 
   
@@ -725,6 +600,8 @@ export default function BobozanOnline() {
     hostId: '',
   });
   const multiplayerMode = getMultiplayerMode(gameState);
+  const inMultiplayerRoom = isOnline && !isExpedition && (view === 'LOBBY' || view === 'GAME');
+  const activeBattleSpeed = isExpedition && gameState.status !== 'SHOWDOWN' ? battleSpeed : getRoomRoundBattleSpeed(gameState);
   const isCrownFinalBattle = gameState.matchCount >= FINAL_LEVEL;
 
   // 阶段重置过场：gameState.resetSeq 增加（有人被淘汰、幸存者状态重置）时闪一下提示
@@ -854,14 +731,17 @@ export default function BobozanOnline() {
   }, [toastMsg]);
 
   const battleRoundKey = `${isExpedition ? `expedition-${expStageIdx}` : roomCode}:${gameState.matchCount}:${gameState.turn}`;
+  const presentedBattleSpeed = gameState.status === 'SHOWDOWN' && battleRoundRef.current?.key === battleRoundKey
+    ? battleRoundRef.current.snapshot.speed : activeBattleSpeed;
   // Room chatter and language changes must not restart a committed turn.
   useEffect(() => {
     battleRoundRef.current = gameState.status === 'SHOWDOWN'
       ? captureBattleRound(battleRoundRef.current, battleRoundKey,
-        { players: gameState.players, lang, cutinsPlayed: false, soundsPlayed: [], motionStopped: reduceMotion }, Date.now())
+        { players: gameState.players, lang, speed: activeBattleSpeed, cutinsPlayed: false, soundsPlayed: [], motionStopped: reduceMotion }, Date.now())
       : null;
+    if (battleRoundRef.current) lastBattleSpeedRef.current = battleRoundRef.current.snapshot.speed;
     if (reduceMotion && battleRoundRef.current) battleRoundRef.current.snapshot.motionStopped = true;
-  }, [battleRoundKey, gameState.status, gameState.players, lang, reduceMotion]);
+  }, [battleRoundKey, gameState.status, gameState.players, lang, reduceMotion, activeBattleSpeed]);
 
   // Raise, release, land, compare, then play ultimate/combo cut-ins.
   useEffect(() => {
@@ -869,14 +749,14 @@ export default function BobozanOnline() {
     if (gameState.status === 'SHOWDOWN' && presentation?.key === battleRoundKey && !reduceMotion
       && !presentation.snapshot.motionStopped && !presentation.snapshot.cutinsPlayed) {
       const picks = pickUltCutins(presentation.snapshot.players, SKILL_DB, presentation.snapshot.lang);
-      const revealAt = SOLO_CUTIN_START_MS;
-      const cutinDuration = SOLO_CUTIN_MS;
+      const revealAt = battleTimeMs(SOLO_CUTIN_START_MS, presentation.snapshot.speed);
+      const cutinDuration = battleTimeMs(SOLO_CUTIN_MS, presentation.snapshot.speed);
       const finishIn = remainingBattleTime(presentation.startedAt, revealAt + cutinDuration, Date.now());
       if (picks.length > 0 && finishIn > 0) {
         setUltCutins([]);
         const reveal = setTimeout(() => {
           presentation.snapshot.cutinsPlayed = true;
-          setUltCutins(picks.map(pick => ({ ...pick, key: presentation.key })));
+          setUltCutins(picks.map(pick => ({ ...pick, key: presentation.key, speed: presentation.snapshot.speed })));
         }, remainingBattleTime(presentation.startedAt, revealAt, Date.now()));
         const finish = setTimeout(() => setUltCutins([]), finishIn);
         return () => { clearTimeout(reveal); clearTimeout(finish); };
@@ -890,7 +770,7 @@ export default function BobozanOnline() {
     if (muted || gameState.status !== 'SHOWDOWN' || presentation?.key !== battleRoundKey) return;
     const played = presentation.snapshot.players.filter(player => !player.isDead && player.selectedCardId);
     if (!played.length) return;
-    const motionScale = SOLO_MOTION_SCALE;
+    const motionScale = battleTimeMs(SOLO_MOTION_SCALE, presentation.snapshot.speed);
     const beats = [{ at: CARD_LAND_MS * motionScale, sound: 'card_slam' as const },
       ...(played.length > 1 ? [{ at: CARD_COMPARE_IMPACT_MS * motionScale, sound: 'card_clash' as const }] : [])];
     const timers = beats.flatMap(({ at, sound }) => {
@@ -914,14 +794,14 @@ export default function BobozanOnline() {
     const eventKey = ++damageEventRef.current;
     for (const player of gameState.players) {
       const before = previous.find(p => p.id === player.id);
-      if (before && player.hp < before.hp) damages[player.id] = { amount: before.hp - player.hp, eventKey };
+      if (before && player.hp < before.hp) damages[player.id] = { amount: before.hp - player.hp, eventKey, speed: lastBattleSpeedRef.current };
     }
     setDamageNumbers(damages);
   }, [gameState.players, gameState.status]);
 
   useEffect(() => {
     if (!Object.keys(damageNumbers).length) return;
-    const timer = setTimeout(() => setDamageNumbers({}), 900);
+    const timer = setTimeout(() => setDamageNumbers({}), Math.max(...Object.values(damageNumbers).map(event => battleTimeMs(900, event.speed))));
     return () => clearTimeout(timer);
   }, [damageNumbers]);
 
@@ -929,7 +809,7 @@ export default function BobozanOnline() {
     setShowBattleResult(false);
     if (gameState.status !== 'GAMEOVER') return;
     // Let the final impact finish before covering the battlefield.
-    const timer = setTimeout(() => setShowBattleResult(true), reduceMotion ? 0 : 700);
+    const timer = setTimeout(() => setShowBattleResult(true), reduceMotion ? 0 : battleTimeMs(700, lastBattleSpeedRef.current));
     return () => clearTimeout(timer);
   }, [gameState.status, reduceMotion]);
 
@@ -1083,7 +963,7 @@ export default function BobozanOnline() {
       return !!c && hasBattleCutin(c);
     });
     // Every client gets time to finish; the host's motion preference cannot shorten other clients' casts.
-    const settleMs = showdownDurationMs(ultPlayed, 'room');
+    const settleMs = showdownDurationMs(ultPlayed, 'room', false, presentation.snapshot.speed);
     const timer = setTimeout(() => {
       void mutateRoom(roomCode, room => settleRoom(room, battleHostUid, round, presentation.snapshot.lang)).catch(error => {
         console.error('Unable to settle round', error);
@@ -1154,6 +1034,8 @@ export default function BobozanOnline() {
         logs: [],
         revengeMode: false,
         multiplayerMode: 'kills',
+        battleSpeed,
+        roundBattleSpeed: battleSpeed,
         skillCatalogVersion: SKILL_CATALOG_VERSION,
         players: [
           {
@@ -1425,6 +1307,7 @@ export default function BobozanOnline() {
       return {
         status: 'PLAYING',
         matchCount: room.matchCount + 1,
+        roundBattleSpeed: getRoomBattleSpeed(room),
         turn: 1,
         players: resetPlayers,
         logs: [
@@ -1446,7 +1329,18 @@ export default function BobozanOnline() {
 
   const toggleLang = () => { playSound('click', muted); setLang(prev => prev === 'zh' ? 'en' : 'zh'); }
   const toggleMute = () => { setMuted(!muted); }
-  const toggleReduceMotion = () => { playSound('click', muted); setReduceMotion(v => !v); }
+  const chooseBattleSpeed = async (speed: BattleSpeed) => {
+    if (settingsSpeedPending) return;
+    setSettingsError('');
+    if (!inMultiplayerRoom) { setBattleSpeed(speed); return; }
+    if (!user || gameState.hostId !== user.uid) return;
+    setSettingsSpeedPending(true);
+    try {
+      await mutateRoom(roomCode, room => setRoomBattleSpeed(room, user.uid, speed));
+      setBattleSpeed(speed);
+    } catch (error) { setSettingsError(firebaseErrorMessage(error, lang)); }
+    finally { setSettingsSpeedPending(false); }
+  };
 
   const myFreeSkills = myPlayer?.freeSkills;
   useEffect(() => {
@@ -1544,7 +1438,8 @@ export default function BobozanOnline() {
       onSelect={path => { setPlayerAvatar(playerCharacterOption(path).path); playSound('confirm', muted); }}
       onClose={() => setCharacterPickerOpen(false)} />}
     {learningMode === 'practice' && <LocalPractice lang={lang} avatar={playerAvatar}
-      muted={muted} reduceMotion={reduceMotion} onToggleMute={toggleMute} onSolo={openSoloMode}
+      muted={muted} reduceMotion={reduceMotion} speed={battleSpeed} onToggleMute={toggleMute} onSolo={openSoloMode}
+      onOpenSettings={() => setSettingsOpen(true)}
       onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
       onOpenRules={() => setMoveManualOpen(true)} />}
     {moveManualOpen && <MoveManual lang={lang} appearance={appearance} onClose={() => setMoveManualOpen(false)}
@@ -1563,6 +1458,12 @@ export default function BobozanOnline() {
       onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
       onStory={expHelp === 'intro' && !inMatch ? openSoloMode : undefined}
       onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} />}
+    {settingsOpen && <GameSettings lang={lang} onLanguageChange={setLang} muted={muted} onMutedChange={setMuted}
+      volume={musicVolume} onVolumeChange={setMusicVolume} reduceMotion={reduceMotion} systemReducedMotion={systemReducedMotion}
+      onMotionChange={setReduceMotion} speed={inMultiplayerRoom ? getRoomBattleSpeed(gameState) : battleSpeed}
+      onSpeedChange={speed => { void chooseBattleSpeed(speed); }} speedPending={settingsSpeedPending}
+      speedLocked={inMultiplayerRoom && gameState.hostId !== user?.uid} roomSpeed={inMultiplayerRoom}
+      error={settingsError} onClose={() => { setSettingsOpen(false); setSettingsError(''); }} />}
   </>;
 
   const changeAppearance = (next: Appearance) => {
@@ -1573,14 +1474,13 @@ export default function BobozanOnline() {
     setAcademyTab(null);
     setMoveManualOpen(false);
   };
-  const retroControls = <RetroControls lang={lang} muted={muted} reduceMotion={reduceMotion} volume={musicVolume}
-    onToggleMute={toggleMute} onToggleMotion={toggleReduceMotion} onToggleLanguage={toggleLang} onVolumeChange={setMusicVolume}
+  const retroControls = <RetroControls lang={lang} onOpenSettings={() => setSettingsOpen(true)}
     onHome={view === 'NAME_INPUT' ? undefined : goNameInput} onBack={view === 'NAME_INPUT' ? undefined : goBackPage} />;
   const multiplayerOpening = <MultiplayerOpening key={`${roomCode}:${isCrownFinalBattle}`} gameKey={`${roomCode}:${multiplayerMode}:${isCrownFinalBattle ? 'final' : 'opening'}`} mode={multiplayerMode} lang={lang} reduceMotion={reduceMotion} finalBattle={isCrownFinalBattle}
     atStart={(gameState.matchCount === 1 || isCrownFinalBattle) && gameState.turn === 1 && (gameState.status === 'PLAYING' || gameState.status === 'SHOWDOWN')}
     finished={gameState.status === 'GAMEOVER' || (gameState.matchCount !== 1 && !isCrownFinalBattle)} />;
   const ultCutinOverlay = ultCutins.map((u, i) => <UltCutin key={`ultcutin-${u.key}-${i}`}
-    def={u.def} quick playerName={u.playerName} skillName={u.skillName} level={u.level}
+    def={u.def} quick speed={u.speed} playerName={u.playerName} skillName={u.skillName} level={u.level}
     lang={lang} muted={muted} index={i} total={ultCutins.length} />);
 
   if (retro && !isExpedition) {
@@ -1596,7 +1496,7 @@ export default function BobozanOnline() {
       onModern={() => changeAppearance('current')} onEditProfile={() => setView('NAME_INPUT')} />;
     return <RetroBattle lang={lang} game={gameState} playerId={user?.uid} roomCode={roomCode}
       knownCards={knownCards} cards={orderedHand} category={handCategory} viewMode={handViewMode}
-      submitting={submittingMove || skillOverflow.length > 0} reduceMotion={reduceMotion} roundKey={battleRoundKey}
+      submitting={submittingMove || skillOverflow.length > 0} reduceMotion={reduceMotion} speed={presentedBattleSpeed} roundKey={battleRoundKey}
       roundStartedAt={battleRoundRef.current?.startedAt} revealPlayers={battleRoundRef.current?.snapshot.players ?? gameState.players}
       controls={retroControls} overlays={<>{overlays}{multiplayerOpening}{ultCutinOverlay}{revengeCardId && SKILL_DB.find(card => card.id === revengeCardId) && <RetroRewardReveal
         card={SKILL_DB.find(card => card.id === revengeCardId)!} lang={lang} reduceMotion={reduceMotion}
@@ -1627,19 +1527,12 @@ export default function BobozanOnline() {
       
 
       <TopControls 
-        muted={muted} 
-        toggleMute={toggleMute} 
         lang={lang} 
-        toggleLang={toggleLang} 
         logOpen={logOpen} 
         toggleLog={() => setLogOpen(o => !o)} 
         showLogToggle={false} 
         campaignScene
-        musicVolume={musicVolume}
-        setMusicVolume={setMusicVolume}
-        reduceMotion={reduceMotion}
-        toggleReduceMotion={toggleReduceMotion}
-      />
+       onOpenSettings={() => setSettingsOpen(true)} />
 
       {/* ================= CONTENT ================= */}
       <div className="pixel-title-content relative z-10 flex flex-col items-center w-full max-w-2xl px-4">
@@ -1712,7 +1605,7 @@ export default function BobozanOnline() {
 
       {/* ================= MAIN CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage} campaignScene />
+      <TopControls lang={lang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} onHome={goNameInput} onBack={goBackPage} campaignScene  onOpenSettings={() => setSettingsOpen(true)} />
       
       {toastMsg && (
         <div className="pixel-toast fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 font-bold tracking-wide animate-in slide-in-from-top-4">
@@ -1737,7 +1630,7 @@ export default function BobozanOnline() {
 
       {/* ================= LOBBY CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage}/>
+      <TopControls lang={lang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} onHome={goNameInput} onBack={goBackPage} onOpenSettings={() => setSettingsOpen(true)} />
       
       {toastMsg && (
         <div className="pixel-toast fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 animate-in slide-in-from-top-4 font-bold tracking-wide">
@@ -2014,23 +1907,16 @@ export default function BobozanOnline() {
       {!isExpedition && multiplayerOpening}
 
       <TopControls 
-       muted={muted} 
-       toggleMute={toggleMute} 
        lang={lang} 
-       toggleLang={toggleLang} 
        logOpen={logOpen} 
        toggleLog={() => setLogOpen(o => !o)}
        showLogToggle={true}
        onOpenBattleMenu={isExpedition ? () => setExpMenuOpen(true) : undefined}
        battleMenuDisabled={isExpedition && (submittingMove || expPhase !== 'battle')}
        campaignScene={!!campaignTheme}
-       musicVolume={musicVolume}
-      setMusicVolume={setMusicVolume}
-      reduceMotion={reduceMotion}
-      toggleReduceMotion={toggleReduceMotion}
       onHome={goNameInput}
       onBack={goBackPage}
-    />
+     onOpenSettings={() => setSettingsOpen(true)} />
 
 
 
@@ -2250,13 +2136,13 @@ export default function BobozanOnline() {
              return <BattleFighter key={p.id} player={p} seat={pos} bounds={tableBounds} self={isMe}
                maxHp={isExpedition ? (expBattleRef.current.maxHp[p.id] ?? MAX_HP) : MAX_HP}
                level={pMaxLvl} viewerLevel={myPlayer ? getPlayerLevel(myPlayer) : undefined} endless={isExpedition && isEndless} lang={lang} roundKey={battleRoundKey}
-               showdown={gameState.status === 'SHOWDOWN'} quick
-               damage={damageNumbers[p.id]?.amount} damageKey={damageNumbers[p.id]?.eventKey}
+               showdown={gameState.status === 'SHOWDOWN'} quick speed={presentedBattleSpeed}
+               damage={damageNumbers[p.id]?.amount} damageKey={damageNumbers[p.id]?.eventKey} damageSpeed={damageNumbers[p.id]?.speed}
                hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
 
            {gameState.status === 'SHOWDOWN' && <BattleTableCards key={'cards-' + gameState.matchCount + '-' + gameState.turn}
-             players={gameState.players} lang={lang} reduced={reduceMotion} bounds={tableBounds} quick
+             players={gameState.players} lang={lang} reduced={reduceMotion} bounds={tableBounds} quick speed={presentedBattleSpeed}
              seatFor={i => getPlayerPosition(i, totalPlayers, myIndex)} />}
 
            {/* 必杀技演出 overlay：左侧闪入巨型立绘 + 压暗 + 喊话 + 像素特效 */}
