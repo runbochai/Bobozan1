@@ -76,14 +76,6 @@
 .retro-menu .retro-room-code { display: flex; align-items: center; gap: 12px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: #ffedd5; font-size: clamp(36px,5.5vw,65px); font-family: ui-monospace, monospace; font-weight: 900; line-height: 1.25; letter-spacing: -.03em; }
 .retro-room-code svg { color: #fb923c88; }
 .retro-menu .retro-invite-button { min-height: 46px; padding: 11px 18px; font-size: 13px; white-space: nowrap; }
-.retro-mode-picker { min-width: 0; margin: 0 0 18px; padding: 0; border: 0; }
-.retro-mode-picker legend { margin-bottom: 8px; padding: 0; color: #94a3b8; font-size: 11px; font-weight: 800; letter-spacing: .06em; }
-.retro-mode-picker > div { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: 10px; }
-.retro-mode-picker label { display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 46px; padding: 10px 14px; border: 1px solid #334155; border-radius: 12px; color: #cbd5e1; background: #1e293b80; font-size: 14px; font-weight: 800; cursor: pointer; }
-.retro-mode-picker label[data-selected="true"] { color: #ffedd5; border-color: #f97316; background: #9a341233; }
-.retro-mode-picker label:focus-within { outline: 2px solid #facc15; outline-offset: 3px; }
-.retro-mode-picker input { width: 15px; height: 15px; min-width: 15px; min-height: 15px; padding: 0; margin: 0; box-shadow: none; accent-color: #f97316; }
-.retro-mode-picker:disabled label { cursor: default; }
 .retro-lobby-players { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
 .retro-lobby-player { display: flex; align-items: center; min-width: 0; gap: 11px; padding: 13px; border: 1px solid #334155; border-radius: 16px; background: #1e293b; }
 .retro-lobby-player[data-self="true"] { border-color: #f9731666; }
@@ -144,3 +136,73 @@
 }
 .reduce-motion .retro-menu-spinner { animation: none; }
 @media (prefers-reduced-motion: reduce) { .retro-menu-spinner { animation: none; } .retro-menu :is(button, input) { transition: none; } }
+
+/* Warm metal, curved action plates and a lighter frame for the classic entry. */
+.retro-title-main.retro-home-main { width: min(100%, 460px); }
+.retro-home-edition-seal { display: inline-flex; align-items: center; gap: 9px; padding: 4px 13px; border: 1px solid #d79c5555; border-radius: 999px; background: #1c2028cc; color: #e8ba7c; font-size: 10px; line-height: 1.3; }
+.retro-home-edition-seal::before, .retro-home-edition-seal::after { content: ''; width: 4px; height: 4px; flex: none; background: #db9c55; transform: rotate(45deg); box-shadow: 0 0 6px #edac5c66; }
+.retro-home-main .retro-title-art .retro-edition-label { bottom: -7px; }
+.retro-title-setup.retro-home-profile { position: relative; gap: 20px; margin: 0 0 24px; padding: 10px 16px 10px 10px; border: 1px solid #ae88564f; border-radius: 34px 14px 34px 14px; background: linear-gradient(120deg,#1b2635e8,#0d1624cc 65%); box-shadow: inset 0 1px #f2cf8b20, 0 14px 35px #02061755; }
+.retro-home-profile::after { content: ''; position: absolute; right: 15px; bottom: 8px; left: 40%; height: 1px; background: linear-gradient(90deg,transparent,#d6a65d77,transparent); pointer-events: none; }
+.retro-menu .retro-home-profile .character-choice { border-radius: 25px 10px 25px 10px; border-color: #d6a26780; background: radial-gradient(ellipse at 50% 40%,#75442c44,transparent 75%),linear-gradient(160deg,#26354a,#0f172a); box-shadow: inset 0 1px #ffe2a929,0 5px 14px #0005; }
+.retro-home-nameplate { position: relative; flex: 1; min-width: 0; padding-top: 12px; }
+.retro-home-nameplate-crest { position: absolute; top: -11px; left: 50%; display: grid; place-items: center; width: 32px; height: 25px; transform: translateX(-50%); color: #e5b36c; }
+.retro-home-nameplate-crest::before, .retro-home-nameplate-crest::after { content: ''; position: absolute; top: 50%; width: 24px; height: 1px; background: linear-gradient(90deg,transparent,#d5a15b99); }
+.retro-home-nameplate-crest::before { right: calc(100% + 3px); }
+.retro-home-nameplate-crest::after { left: calc(100% + 3px); transform: rotate(180deg); }
+.retro-menu .retro-home-nameplate .retro-name-input { padding: 12px 5px; min-height: 54px; border: 0; border-bottom: 1px solid #d4a26080; border-radius: 12px 12px 35% 35%; color: #ffe5b9; background: linear-gradient(180deg,transparent,#bd874b0c); text-shadow: 0 2px #050c18; }
+.retro-menu .retro-home-nameplate .retro-name-input:focus { border-bottom-color: #ffd491; background-color: #ce9b4e09; }
+.retro-home-main .retro-title-actions { gap: 13px; padding: 0 6px; }
+.retro-menu .retro-home-action { position: relative; isolation: isolate; overflow: hidden; display: flex; justify-content: flex-start; gap: 15px; width: 100%; min-height: 72px; padding: 10px 24px 10px 14px; border: 1px solid #e7ae6e; border-radius: 32px 13px 32px 13px; color: #fff0d0; text-shadow: 0 1px #59301f; background: linear-gradient(180deg,#c58e4e 0,#a65c33 48%,#873c27 49%,#a85c30 100%); box-shadow: inset 0 1px #ffe6ab9c,inset 0 -3px #51271c,0 8px 0 #0b111b,0 14px 30px #be58252b; }
+.retro-menu .retro-home-action::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background: linear-gradient(110deg,transparent 40%,#ffe9b42b 50%,transparent 60%); background-size: 250% 100%; animation: retro-home-metal-sheen 7s ease-in-out infinite; }
+.retro-menu .retro-home-action::after { content: ''; position: absolute; right: 20px; top: calc(50% - 4px); width: 8px; height: 8px; border-top: 2px solid #ffe7b699; border-right: 2px solid #ffe7b699; transform: rotate(45deg); pointer-events: none; }
+.retro-menu .retro-home-action:hover:not(:disabled) { border-color: #ffe5a9; background: linear-gradient(180deg,#d49d5b,#b66d3c 48%,#93452d 49%,#bd7039); box-shadow: inset 0 1px #fff0c4,inset 0 -3px #6a3523,0 8px 0 #0b111b,0 15px 35px #ef8a3c40; transform: translateY(-2px); }
+.retro-menu .retro-home-action:active:not(:disabled) { transform: translateY(1px); box-shadow: inset 0 1px #ffe3a2,inset 0 -1px #64311f,0 5px 0 #0b111b,0 10px 20px #e87b332b; }
+.retro-home-action-emblem { display: grid; place-items: center; flex: none; width: 46px; height: 46px; border: 1px solid #ffe3ac70; border-radius: 50%; background: radial-gradient(circle at 35% 25%,#ffd68c33,#53291b80); color: #fff0c5; box-shadow: inset 0 1px #fff1bd44,0 2px 5px #47221766; }
+.retro-home-action-label { flex: 1; min-width: 0; padding-right: 10px; text-align: left; font-size: 20px; line-height: 1.2; letter-spacing: .025em; }
+.retro-menu .retro-home-action-secondary { min-height: 62px; border-color: #9e9d8299; border-radius: 13px 30px 13px 30px; color: #e6e2ca; background: linear-gradient(180deg,#394653,#202d3c 50%,#162130); box-shadow: inset 0 1px #d4d6bd3d,inset 0 -2px #080e18,0 6px 0 #080f19,0 10px 24px #0004; }
+.retro-home-action-secondary .retro-home-action-emblem { width: 38px; height: 38px; border-color: #d1bf9277; background: radial-gradient(circle at 35% 25%,#b79e5b22,#102033b3); color: #e6cb94; }
+.retro-home-action-secondary .retro-home-action-label { font-size: 16px; }
+.retro-menu .retro-home-action-secondary:hover:not(:disabled) { background: linear-gradient(180deg,#475769,#2a3b4f 50%,#1c2c3e); box-shadow: inset 0 1px #e8d8af66,inset 0 -2px #080e18,0 6px 0 #080f19,0 12px 28px #b78c3a24; }
+.retro-menu .retro-home-action:focus-visible { outline: 3px solid #ffe3a1; outline-offset: 5px; }
+.retro-friends-panel.retro-menu-panel { padding: 34px 36px; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; }
+.retro-friends-panel::before { content: ''; position: absolute; inset: 8px 0 0; z-index: -1; border: 1px solid #c4945655; border-radius: 48% 48% 32px 32px / 88px 88px 32px 32px; background: radial-gradient(ellipse at 50% 0,#c0843d12,transparent 50%),linear-gradient(180deg,#151e2bed,#0b1422ed); box-shadow: inset 0 1px #edca8b26,0 24px 70px #0008; }
+.retro-home-heading { position: relative; }
+.retro-home-heading-crest { display: grid; place-items: center; width: 58px; height: 58px; margin: -12px auto 12px; border: 1px solid #ddb37599; border-radius: 50%; color: #f6d69b; background: radial-gradient(circle at 35% 25%,#645039,#1d2735 70%); box-shadow: inset 0 1px #ffe7ae66,0 0 0 5px #0e1825,0 0 0 6px #d0a3632b; }
+.retro-home-heading h1 { margin-bottom: 24px; color: #ffe6bb; text-shadow: 0 2px #080e1a; }
+.retro-friends-panel .retro-friends-profile { flex-direction: row; justify-content: center; gap: 16px; width: max-content; max-width: 100%; margin: 0 auto 25px; padding: 9px 24px 9px 10px; border: 1px solid #a582554d; border-radius: 52px 18px 52px 18px; background: linear-gradient(100deg,#263341a6,#111c2b66); box-shadow: inset 0 1px #e8c58c20; }
+.retro-friends-panel .retro-profile-edit .retro-portrait { width: 68px; height: 68px; border-width: 2px; border-color: #d9a96b; box-shadow: 0 0 0 4px #b9893f15,0 7px 14px #0006; }
+.retro-friends-panel .retro-profile-edit .retro-avatar-edit { width: 25px; height: 25px; color: #ffe0a7; border-color: #b78c59; background: #263444; }
+.retro-friends-panel .retro-friends-profile > strong { min-width: 0; font-size: 23px; color: #ecd5ac; white-space: nowrap; }
+.retro-friends-panel .retro-friends-actions { gap: 22px; padding-top: 0; border-top: 0; }
+.retro-menu .retro-home-join { padding-top: 2px; }
+.retro-menu .retro-home-join input { min-height: 52px; padding-inline: 10px; border-color: #8e795577; border-radius: 28px 10px 10px 28px; background: linear-gradient(180deg,#152130,#0b1422); color: #f0ddba; font-size: 19px; box-shadow: inset 0 2px 8px #0006; }
+.retro-menu .retro-home-join input:focus-visible { outline-offset: 2px; }
+.retro-menu .retro-home-join button { min-height: 52px; border: 1px solid #bc965d; border-radius: 10px 26px 26px 10px; background: linear-gradient(180deg,#6a5940,#3b342c); color: #f9e7c7; box-shadow: inset 0 1px #e1c19044,inset 0 -2px #201b17; }
+.retro-menu .retro-home-join button:hover:not(:disabled) { border-color: #f2ca82; background: linear-gradient(180deg,#806b47,#51432e); }
+@keyframes retro-home-metal-sheen { 0%,65%,100% { background-position: 160% 0; } 88% { background-position: -60% 0; } }
+@media (max-width: 420px) {
+  .retro-title-setup.retro-home-profile { gap: 13px; padding: 9px 12px 9px 8px; border-radius: 28px 12px 28px 12px; }
+  .retro-home-main .retro-title-actions { padding-inline: 2px; gap: 13px; }
+  .retro-menu .retro-home-action { gap: 12px; padding-left: 11px; padding-right: 18px; min-height: 68px; }
+  .retro-home-action-emblem { width: 42px; height: 42px; }
+  .retro-home-action-label { font-size: 18px; }
+  .retro-menu .retro-home-action-secondary { min-height: 60px; }
+  .retro-home-action-secondary .retro-home-action-emblem { width: 36px; height: 36px; }
+  .retro-menu .retro-home-action::after { right: 15px; width: 6px; height: 6px; }
+  .retro-friends-panel.retro-menu-panel { padding: 26px 20px; }
+  .retro-friends-panel .retro-friends-profile { gap: 12px; padding-right: 18px; }
+  .retro-friends-panel .retro-friends-profile > strong { font-size: 21px; }
+  .retro-friends-panel .retro-profile-edit .retro-portrait { width: 60px; height: 60px; }
+  .retro-friends-panel::before { border-radius: 48% 48% 26px 26px / 65px 65px 26px 26px; }
+}
+.retro-home-main[data-reduced-motion="true"] *, .retro-friends-panel[data-reduced-motion="true"] *,
+.retro-home-main[data-reduced-motion="true"] *::before, .retro-friends-panel[data-reduced-motion="true"] *::before { animation: none !important; transition: none !important; }
+.reduce-motion :is(.retro-home-main,.retro-friends-panel) *, .reduce-motion :is(.retro-home-main,.retro-friends-panel) *::before { animation: none !important; transition: none !important; }
+.retro-home-main[data-reduced-motion="true"] .retro-home-action:is(:hover,:active),
+.retro-friends-panel[data-reduced-motion="true"] .retro-home-action:is(:hover,:active),
+.reduce-motion :is(.retro-home-main,.retro-friends-panel) .retro-home-action:is(:hover,:active) { transform: none !important; }
+@media (prefers-reduced-motion: reduce) {
+  :is(.retro-home-main,.retro-friends-panel) *, :is(.retro-home-main,.retro-friends-panel) *::before { animation: none !important; transition: none !important; }
+  :is(.retro-home-main,.retro-friends-panel) .retro-home-action:is(:hover,:active) { transform: none !important; }
+}

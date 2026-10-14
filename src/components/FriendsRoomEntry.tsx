@@ -45,7 +45,7 @@ export default function FriendsRoomEntry({ lang, name, avatar, roomCode, invited
 
       <button type="button" className="friends-entry-button friends-entry-create" disabled={unavailable}
         onClick={() => { if (!unavailable) onCreate(); }}>
-        {loading ? <Loader className="friends-entry-spinner" size={20} /> : <Users size={20} />}
+        <span className="friends-entry-seal" aria-hidden="true">{loading ? <Loader className="friends-entry-spinner" size={20} /> : <Users size={20} />}</span>
         <span>{zh ? '创建房间' : 'Create room'}</span>
       </button>
 
@@ -60,7 +60,7 @@ export default function FriendsRoomEntry({ lang, name, avatar, roomCode, invited
               onChange={event => onRoomCodeChange(event.target.value.replace(/\D/g, '').slice(0, 6))} />
           </div>
           <button type="submit" className="friends-entry-button friends-entry-join-button" disabled={!canJoin}>
-            {loading ? <Loader className="friends-entry-spinner" size={18} /> : <Play size={16} />}
+            <span className="friends-entry-seal" aria-hidden="true">{loading ? <Loader className="friends-entry-spinner" size={18} /> : <Play size={16} />}</span>
             <span>{zh ? '加入房间' : 'Join room'}</span>
           </button>
         </div>

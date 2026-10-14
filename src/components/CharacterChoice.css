@@ -15,3 +15,5 @@
 .retro-character-picker { flex:none; }
 @media(max-width:420px) { .character-choice, .pixel-app.crown-title-screen .pixel-player-setup > .crown-character-setup > .character-choice { width:86px; min-width:80px; height:130px; } .character-choice-model { width:78px; height:102px; } .character-choice-name { margin-top:92px; font-size:9px; } .character-choice-label, .pixel-app.crown-title-screen .pixel-start-panel .character-choice .character-choice-label { font-size:9px; } }
 @media(max-width:540px) { .pixel-app.crown-title-screen:has(.character-choice) { min-height:max(100svh,625px); } }
+.character-choice[data-lang="en"],
+.pixel-app.crown-title-screen .pixel-player-setup > .crown-character-setup > .character-choice[data-lang="en"] { width:112px; min-width:112px; }
