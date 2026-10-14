@@ -2,7 +2,7 @@ import './BattleTable.css';
 import { getTableGeometry } from '../logic/battleLayout';
 
 /** Only decoration changes with the theme; shared seat/table geometry stays fixed. */
-export default function BattleArena({ turn, showdown, lang, compact = false }: { turn: number; showdown: boolean; lang: 'zh' | 'en'; compact?: boolean }) {
+export default function BattleArena({ turn, showdown, lang, compact = false, quick = false }: { turn: number; showdown: boolean; lang: 'zh' | 'en'; compact?: boolean; quick?: boolean }) {
   const { frame } = getTableGeometry(compact);
   const style = { inset: 'auto', left: `${frame.x}%`, top: `${frame.y}%`, width: `${frame.width}%`, height: `${frame.height}%` };
   return <div className={`battle-scenery battle-scenery-table ${showdown ? 'battle-scenery-clash' : ''}`} aria-hidden="true" style={style}>
@@ -26,6 +26,6 @@ export default function BattleArena({ turn, showdown, lang, compact = false }: {
       </g>
       <path d="M82 554h836M133 563h44M801 563h47M227 84h67M710 84h48" fill="none" stroke="var(--world-line)" opacity=".25" strokeWidth="2" />
     </svg>
-    <div className="arena-round"><span>ROUND {String(turn).padStart(2, '0')}</span><strong>{showdown ? 'CLASH!' : 'VS'}</strong><small>{lang === 'zh' ? '攒 · 攻 · 防' : 'CHARGE · STRIKE · GUARD'}</small></div>
+    {!quick && <div className="arena-round"><span>ROUND {String(turn).padStart(2, '0')}</span><strong>{showdown ? 'CLASH!' : 'VS'}</strong><small>{lang === 'zh' ? '攒 · 攻 · 防' : 'CHARGE · STRIKE · GUARD'}</small></div>}
   </div>;
 }

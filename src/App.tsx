@@ -8,7 +8,7 @@ import SkillLoadoutPicker from './components/SkillLoadoutPicker';
 import { SKILL_SLOT_LIMIT, getHandCategory, getSkillOverflow, hasSkillOverflow, normalizeSkillLoadout,
   autoSelectSkillLoadout, isAcquiredSkill, resolveSkillLoadout, sortHandCards, type SkillSelections } from './logic/skillLoadout';
 import BattleTableCards from './components/BattleTableCards';
-import { CARD_LAND_MS, CARD_COMPARE_IMPACT_MS, CARD_REVEAL_MS, ULT_CUTIN_MS,
+import { CARD_LAND_MS, CARD_COMPARE_IMPACT_MS, CARD_REVEAL_MS, ULT_CUTIN_MS, SOLO_MOTION_SCALE,
   captureBattleRound, remainingBattleTime, showdownDurationMs, type BattleRoundClock } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
 import BattleLevelBadge from './components/BattleLevelBadge';
@@ -125,7 +125,7 @@ import './components/BattleViewport.css';
 import ExpeditionCoach from './components/ExpeditionCoach';
 import ExpeditionSpeech from './components/ExpeditionSpeech';
 import { CrownPrologue, CrownJourney, CrownEnding, CrownQuestStrip } from './components/CrownCampaign';
-import { themeForStage } from './data/crownCampaign';
+import { chapterForStage, themeForStage } from './data/crownCampaign';
 import { findTheme } from './data/gameThemes';
 import './components/CrownIntegration.css';
 import './components/MultiplayerEntry.css';
@@ -365,6 +365,7 @@ export default function BobozanOnline() {
   const [moveManualOpen, setMoveManualOpen] = useState(false);
   const [academyFromManual, setAcademyFromManual] = useState(false);
   const [expHelp, setExpHelp] = useState<'intro' | 'recap' | null>(null);
+  const [expStoryOpen, setExpStoryOpen] = useState(false);
   const [expRecap, setExpRecap] = useState<ExpeditionRecap>();
   const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
@@ -395,6 +396,9 @@ export default function BobozanOnline() {
     expeditionTimersRef.current = [];
     expeditionBusyRef.current = false;
   };
+  useEffect(() => () => {
+    expeditionTimersRef.current.forEach(clearTimeout);
+  }, []);
 
   // Local expedition identity must survive delayed Firebase sign-in.
   const expMyId = () => 'exp_me';
@@ -428,6 +432,8 @@ export default function BobozanOnline() {
     setExpEquipment([...battle.run.equipment]);
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
+    setExpStoryOpen(false);
+    setSubmittingMove(false);
     setHandViewMode('CATEGORIES');
     setHandCategory('CHARGE');
     setGameState({ status: 'PLAYING', turn: 1, matchCount: stageIdx + 1, hostId: expMyId(), players: battle.players, logs: battle.logs });
@@ -452,6 +458,7 @@ export default function BobozanOnline() {
     setExpEquipment([]);
     setExpShop([]);
     setExpHelp(null);
+    setExpStoryOpen(false);
     setAcademyTab(null);
     setMoveManualOpen(false);
     setAcademyFromManual(false);
@@ -479,7 +486,7 @@ export default function BobozanOnline() {
   };
 
   const handleExpeditionMove = (cardId: string) => {
-    if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle') return;
+    if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle' || expStoryOpen) return;
     if (hasSkillOverflow(expRunRef.current)) return;
     if (gameState.status !== 'PLAYING') return;
     const myId = expMyId();
@@ -511,7 +518,7 @@ export default function BobozanOnline() {
       text: `${gameState.players.find(player => player.id === id)?.name ?? ''}：“${line.text}”` }));
     setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN' }));
 
-    // 等级必杀或联合技：为亮牌、过场和场上特效留足时间。
+    // Every solo move uses the same short exchange, including ultimates and combos.
     const ultPlayed = playersWithMoves.some(p => {
       if (p.isDead || !p.selectedCardId) return false;
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
@@ -540,8 +547,11 @@ export default function BobozanOnline() {
       if (lost) {
         saveExpeditionBest(run.stageIdx, run.difficulty);
         setExpBest(loadExpeditionBest(run.difficulty));
-        // Let the settled hit read before the defeat panel covers the table.
-        expeditionTimersRef.current.push(setTimeout(() => setExpPhase('runover'), reduceMotion ? 0 : 700));
+        expeditionTimersRef.current.push(setTimeout(() => {
+          setExpPhase('runover');
+          setSubmittingMove(false);
+          expeditionBusyRef.current = false;
+        }, reduceMotion ? 0 : 220));
       } else if (won) {
         saveExpeditionBest(run.stageIdx + 1, run.difficulty);
         setExpBest(loadExpeditionBest(run.difficulty));
@@ -553,11 +563,11 @@ export default function BobozanOnline() {
           playSound('win', muted);
           setSubmittingMove(false);
           expeditionBusyRef.current = false;
-        }, 900));
+        }, reduceMotion ? 0 : 220));
       }
       setGameState(prev => ({ ...prev, players, logs: [...speechLogs, ...logs, ...prev.logs].slice(0, 300), status: 'PLAYING', turn: prev.turn + 1 }));
       setExpIntents(won || lost ? {} : computeExpIntents(players, run.stageIdx));
-      if (!won) {
+      if (!won && !lost) {
         setSubmittingMove(false);
         expeditionBusyRef.current = false;
       }
@@ -595,11 +605,12 @@ export default function BobozanOnline() {
     if (expPhase !== 'shop' || expeditionBusyRef.current || hasSkillOverflow(expRunRef.current)) return;
     playSound('confirm', muted);
     expRunRef.current = takeExpeditionRoute(expRunRef.current, route);
-    if (expRunRef.current.difficulty === 'endless') setupExpeditionBattle(expRunRef.current.stageIdx + 1);
-    else {
-      setExpNextStage(expRunRef.current.stageIdx + 1);
+    const nextStage = expRunRef.current.stageIdx + 1;
+    // Keep chapter openings and the tower decision; ordinary rematches flow straight in.
+    if (expRunRef.current.difficulty !== 'endless' && chapterForStage(nextStage).from === nextStage) {
+      setExpNextStage(nextStage);
       setExpPhase('journey');
-    }
+    } else setupExpeditionBattle(nextStage);
   };
 
 
@@ -731,7 +742,7 @@ export default function BobozanOnline() {
 
   const preloadedCutinsRef = useRef(new Set<string>());
   useEffect(() => {
-    if (view !== 'GAME' || reduceMotion) return;
+    if (view !== 'GAME' || reduceMotion || isExpedition) return;
     for (const player of gameState.players) {
       if (player.isDead) continue;
       for (const card of getPlayerCards(player, gameState.players)) {
@@ -743,7 +754,7 @@ export default function BobozanOnline() {
         img.src = assetUrl(def.image);
       }
     }
-  }, [gameState.players, view, reduceMotion]);
+  }, [gameState.players, view, reduceMotion, isExpedition]);
 
   const [revengeCardId, setRevengeCardId] = useState<string | null>(null);
   const prevMatchCountRef = useRef(gameState.matchCount);
@@ -843,7 +854,7 @@ export default function BobozanOnline() {
   // Raise, release, land, compare, then play ultimate/combo cut-ins.
   useEffect(() => {
     const presentation = battleRoundRef.current;
-    if (gameState.status === 'SHOWDOWN' && presentation?.key === battleRoundKey && !reduceMotion
+    if (!isExpedition && gameState.status === 'SHOWDOWN' && presentation?.key === battleRoundKey && !reduceMotion
       && !presentation.snapshot.motionStopped && !presentation.snapshot.cutinsPlayed) {
       const picks = pickUltCutins(presentation.snapshot.players, SKILL_DB, presentation.snapshot.lang);
       const finishIn = remainingBattleTime(presentation.startedAt, CARD_REVEAL_MS + ULT_CUTIN_MS, Date.now());
@@ -858,15 +869,16 @@ export default function BobozanOnline() {
       }
     }
     setUltCutins([]);
-  }, [gameState.status, battleRoundKey, reduceMotion]);
+  }, [gameState.status, battleRoundKey, reduceMotion, isExpedition]);
 
   useEffect(() => {
     const presentation = battleRoundRef.current;
     if (muted || gameState.status !== 'SHOWDOWN' || presentation?.key !== battleRoundKey) return;
     const played = presentation.snapshot.players.filter(player => !player.isDead && player.selectedCardId);
     if (!played.length) return;
-    const beats = [{ at: CARD_LAND_MS, sound: 'card_slam' as const },
-      ...(played.length > 1 ? [{ at: CARD_COMPARE_IMPACT_MS, sound: 'card_clash' as const }] : [])];
+    const motionScale = isExpedition ? SOLO_MOTION_SCALE : 1;
+    const beats = [{ at: CARD_LAND_MS * motionScale, sound: 'card_slam' as const },
+      ...(played.length > 1 ? [{ at: CARD_COMPARE_IMPACT_MS * motionScale, sound: 'card_clash' as const }] : [])];
     const timers = beats.flatMap(({ at, sound }) => {
       const wait = remainingBattleTime(presentation.startedAt, at, Date.now());
       if (!wait || presentation.snapshot.soundsPlayed.includes(at)) return [];
@@ -876,7 +888,7 @@ export default function BobozanOnline() {
       }, wait)];
     });
     return () => timers.forEach(clearTimeout);
-  }, [muted, gameState.status, battleRoundKey]);
+  }, [muted, gameState.status, battleRoundKey, isExpedition]);
 
   useEffect(() => {
     const settled = prevShowdownRef.current && gameState.status !== 'SHOWDOWN';
@@ -967,6 +979,7 @@ export default function BobozanOnline() {
     setGoldFly(null);
     setExpRecap(undefined);
     setExpHelp(null);
+    setExpStoryOpen(false);
     setAcademyTab(null);
     setMoveManualOpen(false);
     setAcademyFromManual(false);
@@ -1994,13 +2007,14 @@ export default function BobozanOnline() {
   const campaignStyle = campaignTheme ? Object.fromEntries(Object.entries(campaignTheme.palette).map(([key, value]) => [`--world-${key}`, value])) as React.CSSProperties : undefined;
 
   return (
-    <div style={campaignStyle} className={`pixel-app pixel-screen-battle ${!isExpedition ? 'pixel-screen-multiplayer' : ''} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
+    <div style={campaignStyle} className={`pixel-app pixel-screen-battle ${isExpedition ? 'pixel-screen-solo-quick' : 'pixel-screen-multiplayer'} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
       {learningOverlay}
       {skillSelectionOverlay}
-      {isExpedition && expPhase === 'journey' && <CrownJourney lang={lang} stageIdx={expNextStage} cleared={expRunRef.current.crownCleared ?? []}
-        onEnter={() => { if (expPhase === 'journey') setupExpeditionBattle(expNextStage); }}
-        onSkipTowers={expNextStage === 13 ? () => { setExpNextStage(16); } : undefined}
-        onExit={() => { void leaveRoom(); }} />}
+      {isExpedition && (expPhase === 'journey' || expPhase === 'battle' && expStoryOpen) && <CrownJourney lang={lang}
+        review={expStoryOpen} stageIdx={expStoryOpen ? expStageIdx : expNextStage} cleared={expRunRef.current.crownCleared ?? []}
+        onEnter={() => { if (expStoryOpen) setExpStoryOpen(false); else if (expPhase === 'journey') setupExpeditionBattle(expNextStage); }}
+        onSkipTowers={!expStoryOpen && expNextStage === 13 ? () => { setExpNextStage(16); } : undefined}
+        onExit={() => { if (expStoryOpen) setExpStoryOpen(false); else void leaveRoom(); }} />}
       {isExpedition && expPhase === 'clear' && <CrownEnding lang={lang} cleared={expRunRef.current.crownCleared ?? []}
         onHome={() => { void goNameInput(); }}
         onArena={() => { if (!playerName.trim()) setPlayerName(lang === 'zh' ? '灯尾旅人' : 'Emberwick'); resetRoom(); }}
@@ -2213,6 +2227,7 @@ export default function BobozanOnline() {
             <div className="expedition-learning-heading">
               <div><strong>{getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}</strong><small><span className={`exp-difficulty-badge exp-difficulty-badge--${expDifficulty}`}>{expDifficultyConfig.label[lang]}</span> · {lang === 'zh' ? '第 ' + gameState.turn + ' 回合' : 'Turn ' + gameState.turn}{expRunRef.current.route === 'risk' ? (lang === 'zh' ? ' · 挑战' : ' · Challenge') : ''}</small></div>
               <div className="exp-help-actions">
+                {!isEndless && <button type="button" disabled={submittingMove} onClick={() => setExpStoryOpen(true)}>{lang === 'zh' ? '剧情' : 'Story'}</button>}
                 <button type="button" disabled={submittingMove} onClick={() => setMoveManualOpen(true)}>{lang === 'zh' ? '招式手册' : 'Move manual'}</button>
                 <button type="button" disabled={!expRecap || submittingMove} onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '复盘' : 'Review'}</button>
               </div>
@@ -2280,7 +2295,7 @@ export default function BobozanOnline() {
         <div ref={tableRef} data-player-count={totalPlayers} className={`pixel-battle-board center-table-board ${totalPlayers > 4 ? 'battle-board-crowded' : ''} relative flex-1 w-full overflow-hidden bg-transparent`}>
            
            {/* Background Table Outline */}
-           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} compact={isSmallScreen} />
+           <BattleArena turn={gameState.turn} showdown={gameState.status === 'SHOWDOWN'} lang={lang} compact={isSmallScreen} quick={isExpedition} />
 
            {/* Player positions also drive card origins and facing directions. */}
            {gameState.players.map((p, i) => {
@@ -2293,12 +2308,12 @@ export default function BobozanOnline() {
              return <BattleFighter key={p.id} player={p} seat={pos} bounds={tableBounds} self={isMe}
                maxHp={isExpedition ? (expBattleRef.current.maxHp[p.id] ?? MAX_HP) : MAX_HP}
                level={pMaxLvl} viewerLevel={myPlayer ? getPlayerLevel(myPlayer) : undefined} endless={isExpedition && isEndless} lang={lang} roundKey={battleRoundKey}
-               showdown={gameState.status === 'SHOWDOWN'}
+               showdown={gameState.status === 'SHOWDOWN'} quick={isExpedition}
                damage={damageNumbers[p.id]} hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
 
            {gameState.status === 'SHOWDOWN' && <BattleTableCards key={'cards-' + gameState.matchCount + '-' + gameState.turn}
-             players={gameState.players} lang={lang} reduced={reduceMotion} bounds={tableBounds}
+             players={gameState.players} lang={lang} reduced={reduceMotion} bounds={tableBounds} quick={isExpedition}
              seatFor={i => getPlayerPosition(i, totalPlayers, myIndex)} />}
 
            {/* 必杀技演出 overlay：左侧闪入巨型立绘 + 压暗 + 喊话 + 像素特效 */}
@@ -2465,7 +2480,8 @@ export default function BobozanOnline() {
           </div>}
 
         <BattleHand player={myPlayer} knownCards={knownCards} cards={orderedHand} lang={lang}
-          category={handCategory} viewMode={handViewMode} status={gameState.status} submitting={submittingMove || skillOverflow.length > 0}
+          quickPlay={isExpedition} category={handCategory} viewMode={handViewMode} status={gameState.status}
+          submitting={submittingMove || skillOverflow.length > 0 || isExpedition && (expPhase !== 'battle' || expStoryOpen)}
           poppingFree={poppingFree}
           onCategory={selectCategory} onBack={goBackToCategories} onPlay={id => {
             if (isExpedition) handleExpeditionMove(id);

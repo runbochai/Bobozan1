@@ -11,6 +11,11 @@ export const CARD_COMPARE_END_MS = 1400;
 export const CARD_REVEAL_MS = 1450;
 export const ULT_CUTIN_MS = 2850;
 
+/** Solo duels keep the same visible beats, compressed into one quick exchange. */
+export const SOLO_MOTION_SCALE = .42;
+export const SOLO_SHOWDOWN_MS = 700;
+export const SOLO_REDUCED_SHOWDOWN_MS = 450;
+
 export interface BattleRoundClock<T> { key: string; startedAt: number; snapshot: T }
 
 /** Keep the original committed moves and deadline across emoji/room updates. */
@@ -24,5 +29,6 @@ export function remainingBattleTime(startedAt: number, milestone: number, now: n
 
 /** A reduced-motion host must still leave time for everyone else's presentation. */
 export function showdownDurationMs(hasCutin: boolean, mode: 'room' | 'expedition', reduced = false): number {
-  return CARD_REVEAL_MS + (mode === 'room' ? (hasCutin ? 4700 : 1200) : (hasCutin && !reduced ? 4300 : 900));
+  if (mode === 'expedition') return reduced ? SOLO_REDUCED_SHOWDOWN_MS : SOLO_SHOWDOWN_MS;
+  return CARD_REVEAL_MS + (hasCutin ? 4700 : 1200);
 }

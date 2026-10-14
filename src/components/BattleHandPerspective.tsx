@@ -8,10 +8,11 @@ import { HAND_RETRACT_MS, handPerspectiveScale, handWarpRegion } from '../logic/
 import { acquireHandPerspective } from './handPerspectiveRenderer';
 
 /** A single inverse-warped texture replaces the original; it never overlays a second hand. */
-export default function BattleHandPerspective({ source, directionIndex, frame, startedAt, image, handPerspective }: {
+export default function BattleHandPerspective({ source, directionIndex, frame, startedAt, image, handPerspective, motionScale = 1 }: {
   source: string; directionIndex: number; frame: number; startedAt: number;
   image: RefObject<HTMLImageElement | null>;
   handPerspective: boolean;
+  motionScale?: number;
 }) {
   const canvas = useRef<HTMLCanvasElement>(null);
   const failed = useRef(false);
@@ -42,7 +43,7 @@ export default function BattleHandPerspective({ source, directionIndex, frame, s
     const fail = () => { failed.current = true; stop(); };
     const draw = () => {
       if (ended) return;
-      const elapsed = performance.now() - startedAt;
+      const elapsed = (performance.now() - startedAt) / motionScale;
       const expectedFrame = elapsed < CARD_RELEASE_MS ? 1 : 2;
       if (elapsed >= CARD_RELEASE_MS + HAND_RETRACT_MS
         || window.matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -58,7 +59,7 @@ export default function BattleHandPerspective({ source, directionIndex, frame, s
     };
     draw();
     return stop;
-  }, [source, directionIndex, frame, startedAt, image, handPerspective]);
+  }, [source, directionIndex, frame, startedAt, image, handPerspective, motionScale]);
   if (!handPerspective) return null;
   return <canvas ref={canvas} className="battle-action-perspective" width={192} height={256}
     data-action-frame={frame} data-perspective-ready="false" aria-hidden="true" />;
