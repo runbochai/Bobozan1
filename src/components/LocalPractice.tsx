@@ -3,6 +3,9 @@ import type { CSSProperties } from 'react';
 import type { Card, Lang } from '../types';
 import { SKILL_DB } from '../data/skills';
 import { MAX_HP } from '../data/constants';
+import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS, CARD_LAND_MS,
+  SOLO_MOTION_SCALE, SOLO_REDUCED_SHOWDOWN_MS, SOLO_SHOWDOWN_MS, remainingBattleTime } from '../data/battleTiming';
+import { getShowdownWinner } from '../logic/combat';
 import { assetUrl } from '../assets';
 import { initAudio, playSound } from '../audio/sound';
 import BattleSprite from './BattleSprite';
@@ -48,8 +51,17 @@ export default function LocalPractice({
   const resultRef = useRef<HTMLElement>(null);
   const handRef = useRef<HTMLHeadingElement>(null);
   const handScrollRef = useRef<HTMLDivElement>(null);
+  const roundStartedRef = useRef(0);
+  const impactPlayedRef = useRef(false);
   const systemReducedMotion = useSystemReducedMotion();
   const reducedMotion = reduceMotion || systemReducedMotion;
+  const round = duel.lastRound;
+  // The engine clears selectedCardId after settlement. Reconstruct the original
+  // committed plays from the immutable reveal snapshot, including lethal hits.
+  const slamWinners = new Set(round ? getShowdownWinner(round.before.map(player => ({
+    ...player, selectedCardId: round.moves[player.id],
+  }))) : []);
+  const hasSlam = slamWinners.size > 0;
   useEdgeScroll(handScrollRef, phase === 'choose');
   const say = (zh: string, en: string) => lang === 'zh' ? zh : en;
 
@@ -69,16 +81,22 @@ export default function LocalPractice({
 
   useEffect(() => {
     if (phase !== 'reveal') return;
+    if (!roundStartedRef.current) roundStartedRef.current = Date.now();
+    const still = reducedMotion || document.documentElement.classList.contains('reduce-motion');
+    const impactTimer = hasSlam && !still && !impactPlayedRef.current ? window.setTimeout(() => {
+      impactPlayedRef.current = true;
+      playSound('card_slam', muted);
+    }, remainingBattleTime(roundStartedRef.current, CARD_COMPARE_IMPACT_MS * SOLO_MOTION_SCALE, Date.now())) : undefined;
     const timer = window.setTimeout(() => {
       // The engine has already resolved this turn and committed the next bot
       // move. Only a finished duel needs a result screen between plays.
       const nextPhase = duel.isGameOver ? 'result' : 'choose';
       phaseRef.current = nextPhase;
       setPhase(nextPhase);
-      playSound(duel.isGameOver ? duel.winnerId === LOCAL_HERO_ID ? 'win' : 'card_clash' : 'card_slam', muted);
-    }, reducedMotion || document.documentElement.classList.contains('reduce-motion') ? 450 : 700);
-    return () => window.clearTimeout(timer);
-  }, [phase, reducedMotion, duel.isGameOver, duel.winnerId, muted]);
+      if (duel.isGameOver) playSound(duel.winnerId === LOCAL_HERO_ID ? 'win' : 'card_clash', muted);
+    }, remainingBattleTime(roundStartedRef.current, still ? SOLO_REDUCED_SHOWDOWN_MS : SOLO_SHOWDOWN_MS, Date.now()));
+    return () => { window.clearTimeout(timer); window.clearTimeout(impactTimer); };
+  }, [phase, reducedMotion, duel.isGameOver, duel.winnerId, hasSlam, muted]);
 
   useEffect(() => {
     if (phase === 'result') resultRef.current?.focus();
@@ -100,6 +118,8 @@ export default function LocalPractice({
     if (phaseRef.current !== 'choose' || !getLocalPracticeLegalCards(duel.players).some(legal => legal.id === card.id)) return;
     // Lock before React renders: a double tap or held shortcut cannot play twice.
     phaseRef.current = 'reveal';
+    roundStartedRef.current = 0;
+    impactPlayedRef.current = false;
     interactedRef.current = true;
     sound('card_flip');
     setDuel(current => resolveLocalPracticeTurn(current, card.id, lang));
@@ -118,7 +138,6 @@ export default function LocalPractice({
     action();
   };
 
-  const round = duel.lastRound;
   const displayedPlayers = phase === 'reveal' && round ? round.before : duel.players;
   const hero = displayedPlayers.find(player => player.id === LOCAL_HERO_ID)!;
   const opponent = displayedPlayers.find(player => player.id === LOCAL_BOT_ID)!;
@@ -202,15 +221,30 @@ export default function LocalPractice({
             {[hero, opponent].map(player => <div key={player.id} className={`local-practice-figure${player.isBot ? ' is-opponent' : ' is-hero'}${player.isDead ? ' is-out' : ''}${phase === 'reveal' ? ' is-acting' : ''}`}>
               <span className="local-practice-figure-shadow" />
               <BattleSprite avatar={player.isBot ? 'avatars/robot.webp' : avatar || 'avatars/bdrag.png'} name={player.name}
-                direction={player.isBot ? 'sw' : 'ne'} reduced={reducedMotion}
+                direction={player.isBot ? 'sw' : 'ne'} reduced={reducedMotion} quick
                 actionKey={phase === 'reveal' ? `local-${round?.turn}-${player.id}` : undefined} />
             </div>)}
-            {phase !== 'choose' && round && <div className={`local-practice-revealed${phase === 'reveal' ? ' is-revealing' : ''}`}>
-                {[LOCAL_HERO_ID, LOCAL_BOT_ID].map(id => {
+            {phase !== 'choose' && round && <div key={round.turn} className={`local-practice-revealed${phase === 'reveal' ? ' is-revealing' : ''}`}
+              data-reveal-turn={round.turn} style={{
+                '--local-reveal-duration': `${CARD_LAND_MS * SOLO_MOTION_SCALE}ms`,
+                '--local-slam-delay': `${CARD_COMPARE_START_MS * SOLO_MOTION_SCALE}ms`,
+                '--local-slam-duration': `${(CARD_COMPARE_END_MS - CARD_COMPARE_START_MS) * SOLO_MOTION_SCALE}ms`,
+                '--local-impact-delay': `${CARD_COMPARE_IMPACT_MS * SOLO_MOTION_SCALE}ms`,
+                '--local-impact-duration': `${(CARD_COMPARE_END_MS - CARD_COMPARE_IMPACT_MS) * SOLO_MOTION_SCALE}ms`,
+              } as CSSProperties}>
+                {[LOCAL_HERO_ID, LOCAL_BOT_ID].map((id, index) => {
                   const card = SKILL_DB.find(candidate => candidate.id === round?.moves[id])!;
-                  return <div key={id} className={`local-practice-reveal-card local-practice-reveal-${card.type.toLowerCase()}`}>
-                    <span className="local-practice-reveal-art"><WoodcutCardFace card={card} lang={lang} /></span>
-                    <span className="local-practice-reveal-label">{id === LOCAL_HERO_ID ? say('你', 'YOU') : say('对手', 'BOT')}</span>
+                  const winner = slamWinners.has(id);
+                  return <div key={id} data-player-id={id} data-slam-winner={winner}
+                    className={`local-practice-reveal-card local-practice-reveal-${card.type.toLowerCase()}${winner ? ' is-slam-winner' : ''}`}
+                    style={{ '--local-slam-side': index === 0 ? 1 : -1, '--local-slam-tilt': `${index === 0 ? -8 : 8}deg` } as CSSProperties}>
+                    <div className="local-practice-card-slam">
+                      {winner && <span className="local-practice-slam-flash" />}
+                      <span className="local-practice-reveal-art"><WoodcutCardFace card={card} lang={lang} />
+                        {winner && <span className="local-practice-slam-edge" />}</span>
+                      <span className="local-practice-reveal-label">{id === LOCAL_HERO_ID ? say('你', 'YOU') : say('对手', 'BOT')}
+                        {winner && <b className="local-practice-slam-mark"> · {card.name[lang]} · {say('占优', 'EDGE')}</b>}</span>
+                    </div>
                   </div>;
                 })}
               </div>}

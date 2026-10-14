@@ -1,5 +1,5 @@
-/* Winners leave a faint source card and jump into independent center showcases.
-   The comparison clock places the big impact at 40% of each quick animation. */
+/* The classic slam: travel up, tilt at 28%, strike at 40%, then rebound.
+   Separate named showcases preserve each player's original slot. */
 .table-card-slam { position: relative; }
 .table-card-flight[data-slam-winner="true"] { z-index: 2; }
 .table-card-flight[data-slam-winner="true"] .table-card-slam {
@@ -95,18 +95,15 @@
 @keyframes table-slam-travel {
   0% { opacity: 0; transform: translate(var(--slam-from-x), var(--slam-from-y)); }
   1% { opacity: 1; }
-  28%, 39% { opacity: 1; transform: translate(0, calc(var(--slam-lift) * -1)); }
+  28% { opacity: 1; transform: translate(0, calc(var(--slam-lift) * -1)); animation-timing-function: cubic-bezier(.25,1,.5,1); }
   40%, 100% { opacity: 1; transform: translate(0, 0); }
-  47% { transform: translate(-4px, 3px); }
-  54% { transform: translate(3px, -2px); }
-  64% { transform: translate(0, 0); }
 }
 @keyframes table-slam-flip {
-  0% { transform: perspective(600px) rotateX(0) rotate(0) scale(var(--slam-from-scale)); }
-  28%, 39% { transform: perspective(600px) rotateX(-56deg) rotate(-12deg) scale(calc(var(--slam-scale) * 1.1)); }
-  40% { transform: perspective(600px) rotateX(0) rotate(var(--slam-tilt)) scale(calc(var(--slam-scale) * 1.04), calc(var(--slam-scale) * .92)); }
-  54% { transform: perspective(600px) rotateX(0) rotate(calc(var(--slam-tilt) * .6)) scale(calc(var(--slam-scale) * .98)); }
-  64%, 100% { transform: perspective(600px) rotateX(0) rotate(var(--slam-tilt)) scale(var(--slam-scale)); }
+  0% { transform: perspective(1000px) rotateX(0) rotate(0) scale(var(--slam-from-scale)); }
+  28% { transform: perspective(1000px) rotateX(-60deg) rotate(var(--slam-tilt)) scale(calc(var(--slam-scale) * .88889)); animation-timing-function: cubic-bezier(.25,1,.5,1); }
+  40% { transform: perspective(1000px) rotateX(0) rotate(var(--slam-tilt)) scale(var(--slam-scale)); }
+  65% { transform: perspective(1000px) rotateX(0) rotate(var(--slam-tilt)) scale(calc(var(--slam-scale) * .95556)); }
+  100% { transform: perspective(1000px) rotateX(0) rotate(var(--slam-tilt)) scale(var(--slam-scale)); }
 }
 @keyframes table-slam-shockwave {
   0% { opacity: 1; transform: scale(.45); }
