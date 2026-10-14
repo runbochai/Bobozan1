@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft, Check, Copy, Crown, Edit3, Flame, LoaderCircle, Minus, Play, Plus, Share2, User, Users } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Crown, Edit3, Flame, LoaderCircle, Minus, Play, Plus, Share2, Target, User, Users } from 'lucide-react';
 import { assetUrl, avatarUrl } from '../assets';
 import CharacterChoice from './CharacterChoice';
 import EditionSwitch from './EditionSwitch';
@@ -32,6 +32,7 @@ export interface RetroMenuProps {
   onChooseCharacter: () => void;
   onRoomCodeChange: (code: string) => void;
   onEnter: () => void;
+  onPractice: () => void;
   onCreate: () => void;
   onJoin: () => void;
   onLeave: () => void;
@@ -56,7 +57,7 @@ function Portrait({ avatar, name, className = '' }: { avatar?: string; name: str
 export default function RetroMenu(props: RetroMenuProps) {
   const { view, lang, game, playerId, name, avatar, roomCode, loading, onlineReady, connectionMessage, error,
     invited, modePending, reduceMotion, controls, overlays, toast, onNameChange, onChooseCharacter,
-    onRoomCodeChange, onEnter, onCreate, onJoin, onLeave, onStart, onAddBot, onRemoveBot,
+    onRoomCodeChange, onEnter, onPractice, onCreate, onJoin, onLeave, onStart, onAddBot, onRemoveBot,
     onModeChange, onToggleRevenge, onCopyInvite, onCopyCode, onModern, onEditProfile } = props;
   const zh = lang === 'zh';
   const host = game.hostId === playerId;
@@ -90,6 +91,9 @@ export default function RetroMenu(props: RetroMenuProps) {
         <button className="retro-menu-primary" type="button" onClick={onEnter} disabled={loading}>
           {loading ? <LoaderCircle className="retro-menu-spinner" size={24} /> : <Users size={24} />}
           {invited ? (zh ? '加入朋友房间' : 'Join your friends') : (zh ? '多人模式' : 'Multiplayer')}
+        </button>
+        <button className="retro-menu-secondary" type="button" onClick={onPractice}>
+          <Target size={18} />{zh ? '自由对练' : 'Free sparring'}
         </button>
       </div>
     </main> : view === 'HOME' ? <main className="retro-menu-panel retro-friends-panel">
