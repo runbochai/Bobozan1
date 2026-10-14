@@ -1734,12 +1734,6 @@ export default function BobozanOnline() {
                 </div>
               )}
             </div>
-            <div className="friends-menu-extras">
-              <button type="button" onClick={() => setLearningMode('tutorial')}>{lang === 'zh' ? '新手教程' : 'How to play'}</button>
-              <button type="button" className="reference-entry-link" onClick={() => setLearningMode('practice')}><Target size={16} />{lang === 'zh' ? '自由对练' : 'Free sparring'}</button>
-              <button type="button" className="reference-entry-link" onClick={() => setMoveManualOpen(true)}><Scroll size={16} />{lang === 'zh' ? '招式手册' : 'Move manual'}</button>
-              <button type="button" onClick={openSoloMode}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
-            </div>
         </div>
       </div>
     </div>

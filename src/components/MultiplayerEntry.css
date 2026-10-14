@@ -11,11 +11,10 @@
 .story-practice-link { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 38px; padding: 4px 8px; color: #f0d49b; border-bottom: 1px solid #b69b6680; font: 500 14px/1.5 system-ui, sans-serif; }
 .story-practice-link:hover { color: #fff2cd; border-color: currentColor; }
 .story-practice-link:focus-visible { outline: 2px solid #f5db97; outline-offset: 3px; }
-.friends-title-actions button:focus-visible, .friends-menu-extras button:focus-visible, .exp-briefing-story:focus-visible { outline: 2px solid #f5db97; outline-offset: 3px; }
+.friends-title-actions button:focus-visible, .exp-briefing-story:focus-visible { outline: 2px solid #f5db97; outline-offset: 3px; }
 .friends-invitation { width: 100%; padding: 10px 12px; border: 1px solid #ba985e; background: #1a3439ef; color: #ffe4ab; font-size: 13px; line-height: 1.6; overflow-wrap: anywhere; }
-.friends-menu-extras { display: flex; justify-content: center; flex-wrap: wrap; gap: 8px 20px; }
-.friends-menu-extras button, .exp-briefing-story { min-height: 36px; border-bottom: 1px solid #baa57880; color: #ead7b3; font-size: 13px; }
-.friends-menu-extras button:hover, .exp-briefing-story:hover { color: #fff4dc; border-color: currentColor; }
+.exp-briefing-story { min-height: 36px; border-bottom: 1px solid #baa57880; color: #ead7b3; font-size: 13px; }
+.exp-briefing-story:hover { color: #fff4dc; border-color: currentColor; }
 .exp-briefing-story { margin: 0 0 12px; }
 .pixel-screen-multiplayer .pixel-battle-layout { --battle-headroom: 270px; }
 .pixel-screen-multiplayer .pixel-battle-layout > .multiplayer-help { position: absolute; top: 118px; left: 12px; width: min(560px, calc(100% - 24px)); z-index: 40; }
