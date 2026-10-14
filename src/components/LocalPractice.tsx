@@ -8,6 +8,7 @@ import { initAudio, playSound } from '../audio/sound';
 import BattleSprite from './BattleSprite';
 import WoodcutCardFace from './WoodcutCardFace';
 import { Volume2, VolumeX } from './PixelIcons';
+import { useEdgeScroll } from './useEdgeScroll';
 import { useSystemReducedMotion } from './useSystemReducedMotion';
 import {
   createLocalPractice, getLocalPracticeCards, getLocalPracticeLegalCards,
@@ -37,8 +38,7 @@ export default function LocalPractice({
 }: LocalPracticeProps) {
   const [duel, setDuel] = useState(() => createLocalPractice(lang, avatar));
   const [phase, setPhase] = useState<Phase>('choose');
-  const [tipsEnabled, setTipsEnabled] = useState(true);
-  const [moreOpen, setMoreOpen] = useState(false);
+  const [tipsEnabled, setTipsEnabled] = useState(false);
   const phaseRef = useRef<Phase>('choose');
   const completedRef = useRef(false);
   const interactedRef = useRef(false);
@@ -47,8 +47,10 @@ export default function LocalPractice({
   const tipsToggleRef = useRef<HTMLButtonElement>(null);
   const resultRef = useRef<HTMLElement>(null);
   const handRef = useRef<HTMLHeadingElement>(null);
+  const handScrollRef = useRef<HTMLDivElement>(null);
   const systemReducedMotion = useSystemReducedMotion();
   const reducedMotion = reduceMotion || systemReducedMotion;
+  useEdgeScroll(handScrollRef, phase === 'choose');
   const say = (zh: string, en: string) => lang === 'zh' ? zh : en;
 
   useEffect(() => {
@@ -68,16 +70,19 @@ export default function LocalPractice({
   useEffect(() => {
     if (phase !== 'reveal') return;
     const timer = window.setTimeout(() => {
-      phaseRef.current = 'result';
-      setPhase('result');
+      // The engine has already resolved this turn and committed the next bot
+      // move. Only a finished duel needs a result screen between plays.
+      const nextPhase = duel.isGameOver ? 'result' : 'choose';
+      phaseRef.current = nextPhase;
+      setPhase(nextPhase);
       playSound(duel.isGameOver ? duel.winnerId === LOCAL_HERO_ID ? 'win' : 'card_clash' : 'card_slam', muted);
-    }, reducedMotion || document.documentElement.classList.contains('reduce-motion') ? 0 : 700);
+    }, reducedMotion || document.documentElement.classList.contains('reduce-motion') ? 450 : 700);
     return () => window.clearTimeout(timer);
   }, [phase, reducedMotion, duel.isGameOver, duel.winnerId, muted]);
 
   useEffect(() => {
     if (phase === 'result') resultRef.current?.focus();
-    else if (phase === 'choose' && interactedRef.current) handRef.current?.focus();
+    else if (phase === 'choose' && interactedRef.current) handRef.current?.focus({ preventScroll: true });
   }, [phase, duel.lastRound]);
 
   useEffect(() => {
@@ -100,19 +105,12 @@ export default function LocalPractice({
     setDuel(current => resolveLocalPracticeTurn(current, card.id, lang));
     setPhase('reveal');
   };
-  const continueDuel = () => {
-    if (phaseRef.current !== 'result' || duel.isGameOver) return;
-    phaseRef.current = 'choose';
-    sound('click');
-    setPhase('choose');
-  };
   const retry = () => {
     if (phaseRef.current !== 'result' || !duel.isGameOver) return;
     phaseRef.current = 'choose';
     completedRef.current = false;
     sound('confirm');
     setDuel(createLocalPractice(lang, avatar));
-    setMoreOpen(false);
     setPhase('choose');
   };
   const leave = (action: () => void) => {
@@ -124,22 +122,13 @@ export default function LocalPractice({
   const displayedPlayers = phase === 'reveal' && round ? round.before : duel.players;
   const hero = displayedPlayers.find(player => player.id === LOCAL_HERO_ID)!;
   const opponent = displayedPlayers.find(player => player.id === LOCAL_BOT_ID)!;
-  const cards = getLocalPracticeCards(duel.players);
-  const legalIds = new Set(getLocalPracticeLegalCards(duel.players).map(card => card.id));
+  const cards = getLocalPracticeCards(displayedPlayers);
+  const legalIds = new Set(getLocalPracticeLegalCards(displayedPlayers).map(card => card.id));
   const basicCards = STARTER_CARDS.flatMap(id => cards.filter(card => card.id === id));
-  const moreCards = cards.filter(card => !STARTER_CARDS.includes(card.id));
-  const newlyAvailable = phase === 'choose' && round
-    ? moreCards.filter(card => legalIds.has(card.id) && !getLocalPracticeLegalCards(round.before).some(previous => previous.id === card.id)).length : 0;
+  const handCards = [...basicCards, ...cards.filter(card => !STARTER_CARDS.includes(card.id))];
   const heroWon = duel.winnerId === LOCAL_HERO_ID;
   const finalTitle = heroWon ? say('漂亮，拿下！', 'Well played!')
     : duel.winnerId === LOCAL_BOT_ID ? say('这局输了', 'Defeat') : say('同归于尽！', 'A double knockout!');
-  const turnTitle = !round ? '' : hero.hp < round.before.find(player => player.id === LOCAL_HERO_ID)!.hp
-    ? say('被抓住破绽了', 'Caught off guard')
-    : opponent.hp < round.before.find(player => player.id === LOCAL_BOT_ID)!.hp
-      ? say('命中！', 'A clean hit!')
-      : hero.energy > round.before.find(player => player.id === LOCAL_HERO_ID)!.energy
-        ? say('能量到手', 'Energy gained')
-        : say('双方都还在场', 'Still in the fight');
   const hint = hero.energy === 0
     ? opponent.energy === 0
       ? say('先攒点能量？双方选好后会同时亮牌。', 'Build some energy? Both cards reveal together.')
@@ -147,7 +136,7 @@ export default function LocalPractice({
     : hero.layer !== opponent.layer
       ? say('你们不在同一层，留意招式的攻击范围。', 'You are on different layers. Check your attack’s reach.')
       : hero.energy >= 3
-        ? say('咔能破普通防。其他招式也在手牌里，随时可以用。', 'Ka breaks basic Defend. Open your other moves to try it.')
+        ? say('咔能破普通防。左右滑动手牌，看看还有什么招式。', 'Ka breaks basic Defend. Scroll your hand to see every move.')
         : opponent.energy === 0
           ? say('对手没能量。你觉得这回会攒，还是防？', 'They have no energy. Will they Charge or Defend?')
           : say('盯住对手的能量，猜猜这次会出什么。', 'Watch their energy. What do you think they will play?');
@@ -159,11 +148,14 @@ export default function LocalPractice({
     const unavailable = !legalIds.has(card.id);
     return <button key={card.id} type="button"
       className={`local-practice-card local-practice-card-${card.type.toLowerCase()}`}
-      disabled={unavailable || phase !== 'choose'} onClick={() => play(card)}
+      disabled={unavailable || phase !== 'choose'} onClick={event => { if (event.detail <= 1) play(card); }}
+      title={`${card.name[lang]} · ${card.cost} ${say('能量', 'energy')} · ${cardSummary(card)}`}
       aria-label={`${card.name[lang]} · ${card.cost} ${say('能量', 'energy')} · ${cardSummary(card)}${unavailable ? ` · ${say(`还需 ${Math.max(0, card.cost - hero.energy)} 能量`, `Need ${Math.max(0, card.cost - hero.energy)} more energy`)}` : ''}`}>
       <span className="local-practice-card-face" aria-hidden="true"><WoodcutCardFace card={card} lang={lang} /></span>
       <span className="local-practice-card-description">{index !== undefined && <kbd aria-hidden="true">{index + 1}</kbd>}{cardSummary(card)}</span>
-      {unavailable && <span className="local-practice-card-locked">{say(`还需 ${Math.max(0, card.cost - hero.energy)} 能量`, `${Math.max(0, card.cost - hero.energy)} more energy`)}</span>}
+      <span className={`local-practice-card-locked${unavailable ? '' : ' is-available'}`} aria-hidden={!unavailable}>
+        {unavailable ? say(`还需 ${Math.max(0, card.cost - hero.energy)} 能量`, `${Math.max(0, card.cost - hero.energy)} more energy`) : '\u00a0'}
+      </span>
     </button>;
   };
 
@@ -213,8 +205,7 @@ export default function LocalPractice({
                 direction={player.isBot ? 'sw' : 'ne'} reduced={reducedMotion}
                 actionKey={phase === 'reveal' ? `local-${round?.turn}-${player.id}` : undefined} />
             </div>)}
-            {phase === 'choose' ? <div className="local-practice-versus"><span>VS</span><small>{say('出牌见分晓', 'Make it count')}</small></div>
-              : <div className={`local-practice-revealed${phase === 'reveal' ? ' is-revealing' : ''}`}>
+            {phase !== 'choose' && round && <div className={`local-practice-revealed${phase === 'reveal' ? ' is-revealing' : ''}`}>
                 {[LOCAL_HERO_ID, LOCAL_BOT_ID].map(id => {
                   const card = SKILL_DB.find(candidate => candidate.id === round?.moves[id])!;
                   return <div key={id} className={`local-practice-reveal-card local-practice-reveal-${card.type.toLowerCase()}`}>
@@ -224,38 +215,29 @@ export default function LocalPractice({
                 })}
               </div>}
           </div>
-          <div className="local-practice-arena-caption" role="status" aria-live="polite">
-            {phase === 'choose' ? say('同时出牌 · 命中即可淘汰', 'Simultaneous moves · One hit wins')
-              : phase === 'reveal' ? say('亮牌！', 'Reveal!') : duel.isGameOver ? finalTitle : turnTitle}
+          <div className="local-practice-sr-only" role="status" aria-live="polite">
+            {phase === 'choose' ? say(`第 ${duel.turn} 回合，选择招式`, `Turn ${duel.turn}. Choose a move.`)
+              : phase === 'reveal' ? say('亮牌！', 'Reveal!') : finalTitle}
             {phase !== 'choose' && round && <span className="local-practice-sr-only">{say('你出了', 'You played')} {SKILL_DB.find(card => card.id === round.moves[LOCAL_HERO_ID])?.name[lang]} · {say('对手出了', 'Opponent played')} {SKILL_DB.find(card => card.id === round.moves[LOCAL_BOT_ID])?.name[lang]}</span>}
           </div>
         </section>
 
-        {phase === 'choose' ? <section className="local-practice-hand" aria-labelledby="local-practice-hand-title">
+        {phase !== 'result' ? <section className="local-practice-hand" aria-labelledby="local-practice-hand-title" aria-busy={phase === 'reveal'}>
           <div className="local-practice-hand-heading"><h2 ref={handRef} tabIndex={-1} id="local-practice-hand-title">{say('选一招', 'Make your move')}</h2>
-            <button type="button" className={`local-practice-text-button local-practice-more-toggle${newlyAvailable ? ' has-new-moves' : ''}`}
-              onClick={() => { sound(); setMoreOpen(open => !open); }} aria-expanded={moreOpen} aria-controls={moreOpen ? 'local-practice-more-cards' : undefined}>
-              {moreOpen ? say('收起其他招式', 'Hide other moves') : say('其他招式', 'Other moves')}
-              {!moreOpen && newlyAvailable > 0 && <span className="local-practice-new-count">+{newlyAvailable}</span>}
-              <span aria-hidden="true">{moreOpen ? ' −' : ' +'}</span>
-            </button></div>
+            <span className="local-practice-hand-guide">{say('左右滑动查看招式', 'Scroll to see every move')}</span></div>
           {tipsEnabled && <div className="local-practice-hint"><span aria-hidden="true">✦</span><p>{hint}</p>
             <button type="button" onClick={() => { sound(); setTipsEnabled(false); tipsToggleRef.current?.focus(); }} aria-label={say('关闭提示', 'Dismiss hints')}>×</button></div>}
-          <div className="local-practice-cards">{basicCards.map((card, index) => renderCard(card, index))}</div>
-          {moreOpen && <div id="local-practice-more-cards" className="local-practice-extra-cards">{moreCards.map(card => renderCard(card))}</div>}
-        </section> : phase === 'reveal' ? <p className="local-practice-resolving" role="status">{say('双方已锁定出牌…', 'Both moves are locked…')}</p>
-          : round && <section ref={resultRef} tabIndex={-1} className={`local-practice-result${duel.isGameOver ? ` is-final${heroWon ? ' is-victory' : ''}` : ''}`} aria-labelledby="local-practice-result-title">
+          <div ref={handScrollRef} className="local-practice-cards" aria-label={say('全部招式', 'All moves')}>{handCards.map((card, index) => renderCard(card, index < basicCards.length ? index : undefined))}</div>
+        </section> : round && <section ref={resultRef} tabIndex={-1} className={`local-practice-result is-final${heroWon ? ' is-victory' : ''}`} aria-labelledby="local-practice-result-title">
             <div className="local-practice-result-copy">
-              {duel.isGameOver && <span className="local-practice-result-eyebrow">{heroWon ? say('对练获胜', 'DUEL WON') : duel.winnerId ? say('本局结束', 'DUEL COMPLETE') : say('平局', 'DRAW')}</span>}
-              <h2 id="local-practice-result-title">{duel.isGameOver ? finalTitle : turnTitle}</h2>
+              <span className="local-practice-result-eyebrow">{heroWon ? say('对练获胜', 'DUEL WON') : duel.winnerId ? say('本局结束', 'DUEL COMPLETE') : say('平局', 'DRAW')}</span>
+              <h2 id="local-practice-result-title">{finalTitle}</h2>
               {tipsEnabled && <p>{round.explanation}</p>}
             </div>
             <div className="local-practice-actions">
-              {duel.isGameOver ? <>
-                <button type="button" className="local-practice-primary" onClick={() => leave(onPlayFriends)}>{say('和朋友开一局', 'Play with friends')} <span aria-hidden="true">↗</span></button>
-                <button type="button" onClick={retry}>{say('再来一局', 'Play again')}</button>
-                {onSolo && <button type="button" className="local-practice-text-button" onClick={() => leave(onSolo)}>{say('独自出发', 'Go solo')} <span aria-hidden="true">→</span></button>}
-              </> : <button type="button" className="local-practice-primary" onClick={continueDuel}>{say('下一回合', 'Next turn')} <span aria-hidden="true">→</span></button>}
+              <button type="button" className="local-practice-primary" onClick={() => leave(onPlayFriends)}>{say('和朋友开一局', 'Play with friends')} <span aria-hidden="true">↗</span></button>
+              <button type="button" onClick={retry}>{say('再来一局', 'Play again')}</button>
+              {onSolo && <button type="button" className="local-practice-text-button" onClick={() => leave(onSolo)}>{say('独自出发', 'Go solo')} <span aria-hidden="true">→</span></button>}
             </div>
             {round.logs.length > 0 && <details className="local-practice-log"><summary>{say('看看刚才发生了什么', 'See what happened')}</summary><ul>{round.logs.map((log, index) => <li key={`${log.type}-${index}`}>{log.text}</li>)}</ul></details>}
           </section>}
