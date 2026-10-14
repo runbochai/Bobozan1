@@ -30,7 +30,7 @@ test('a reachable universal attack is preferred once distant endless fighters ha
   const result = weights(enemy, hero);
   assert.ok(chance(result, 'kajifen') > .45);
   assert.ok(chance(result, 'kajifen') > chance(result, 'charge', 'descend', 'defend'));
-  assert.ok(chance(result, 'kajifen') > chance(result, 'ka', 'ji', 'threestar', 'fiveslap', 'superwave') * 3);
+  assert.ok(chance(result, 'kajifen') > chance(result, 'ka', 'ji', 'superwave') * 3);
 });
 
 test('safe permanent movement approaches in either direction rather than drifting away', () => {
@@ -58,13 +58,13 @@ test('global and directional threats remain threats at long range, without readi
   assert.deepEqual(weights(hidden[0], hidden[1]), weights(enemy, global));
 });
 
-test('the same distant finite encounter retains its prior action probabilities exactly', () => {
+test('distant finite encounters retain their ordinary probabilities with the current base deck', () => {
   const enemy = player('enemy', 0, -7, 2), hero = player('hero', 0, 0, 2);
   delete enemy.endlessLevel;
   delete hero.endlessLevel;
   const result = weights(enemy, hero);
-  const before = { charge: .5938109061217243, defend: .24441761105482152,
-    hong: .06794066909575498, hong2: .046915406863849624, liuke: .046915406863849624 };
+  const before = { charge: .5938109061217244, defend: .24441761105482154,
+    hong: .09569248027856576, hong2: .06607900254488848 };
   assert.deepEqual(result.map(entry => entry.cardId).sort(), Object.keys(before).sort());
   for (const [id, expected] of Object.entries(before)) assert.equal(chance(result, id), expected);
 });

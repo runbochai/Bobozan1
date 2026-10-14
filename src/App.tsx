@@ -19,7 +19,11 @@ import MoveManual from './components/MoveManual';
 import './components/ReferenceEntries.css';
 import MultiplayerHelp from './components/MultiplayerHelp';
 import MultiplayerResults from './components/MultiplayerResults';
-import { getMultiplayerMatchSummary } from './logic/multiplayerMatch';
+import { getMultiplayerMatchSummary, getMultiplayerMode } from './logic/multiplayerMatch';
+import { migrateRoomSkillCatalog } from './logic/roomCatalog';
+import { SKILL_CATALOG_VERSION } from './logic/skillLoadout';
+import MultiplayerOpening from './components/MultiplayerOpening';
+import './components/MultiplayerModes.css';
 import ExpeditionBriefing, { type ExpeditionRecap } from './components/ExpeditionBriefing';
 import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
 import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
@@ -68,7 +72,7 @@ import {
   doc,
   onSnapshot,
 } from 'firebase/firestore';
-import type { Lang, HandCategory, HandViewMode, Player, GameState } from './types';
+import type { Lang, HandCategory, HandViewMode, Player, GameState, MultiplayerMode } from './types';
 import { TEXT } from './data/translations';
 import { SKILL_DB } from './data/skills';
 import { pickUltCutins, hasBattleCutin, ULT_CUTINS, type UltCutinPick } from './data/ultCutins';
@@ -87,6 +91,7 @@ import {
 } from './logic/expedition';
 import {
   APP_ID,
+  FINAL_LEVEL,
   MAX_HP,
   MAX_PLAYERS,
   MIN_PLAYERS,
@@ -105,7 +110,7 @@ import { firebaseErrorMessage } from './config/firebaseConfig';
 import { useBackgroundMusic } from './audio/useBackgroundMusic';
 import { assetUrl, avatarUrl } from './assets';
 import { mutateRoom, createUniqueRoom } from './services/rooms';
-import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './logic/room';
+import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, setRoomMode, settleRoom, startRoom, submitPlayerMove } from './logic/room';
 import type { User as FirebaseUser } from 'firebase/auth';
 import './components/BattleViewport.css';
 import ExpeditionCoach from './components/ExpeditionCoach';
@@ -665,6 +670,7 @@ export default function BobozanOnline() {
   const [invitedRoom, setInvitedRoom] = useState(() => readInvitedRoom(window.location.search));
   const [roomCode, setRoomCode] = useState(() => readInvitedRoom(window.location.search) ?? '');
   const [loading, setLoading] = useState(false);
+  const [modePending, setModePending] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [toastMsg, setToastMsg] = useState('');
 
@@ -685,6 +691,8 @@ export default function BobozanOnline() {
     logs: [],
     hostId: '',
   });
+  const multiplayerMode = getMultiplayerMode(gameState);
+  const isCrownFinalBattle = gameState.matchCount >= FINAL_LEVEL;
 
   // 阶段重置过场：gameState.resetSeq 增加（有人被淘汰、幸存者状态重置）时闪一下提示
   useEffect(() => {
@@ -1001,7 +1009,7 @@ export default function BobozanOnline() {
         setErrorMsg(t.roomNotFound);
         return;
       }
-      const data = snapshot.data() as GameState;
+      const data = migrateRoomSkillCatalog(snapshot.data() as GameState);
       if (!data.players.some(p => p.id === user.uid)) {
         resetRoom();
         return;
@@ -1105,6 +1113,8 @@ export default function BobozanOnline() {
         hostId: user.uid,
         logs: [],
         revengeMode: false,
+        multiplayerMode: 'kills',
+        skillCatalogVersion: SKILL_CATALOG_VERSION,
         players: [
           {
             id: user.uid,
@@ -1115,6 +1125,7 @@ export default function BobozanOnline() {
             energy: 0,
             isDead: false,
             inventory: [0],
+            skillCatalogVersion: SKILL_CATALOG_VERSION,
             layer: 0,
             tempLayerMod: 0,
             selectedCardId: null,
@@ -1159,6 +1170,7 @@ export default function BobozanOnline() {
             energy: 0,
             isDead: false,
             inventory: [0],
+            skillCatalogVersion: SKILL_CATALOG_VERSION,
             layer: 0,
             tempLayerMod: 0,
             selectedCardId: null,
@@ -1256,7 +1268,7 @@ export default function BobozanOnline() {
     if (isExpedition || !isOnline || !user) return;
     try {
       await mutateRoom(roomCode, room => patchPlayer(room, user.uid, p =>
-        ['dragondef', 'ninedef'].some(id => isAcquiredSkill(p, SKILL_DB.find(card => card.id === id)!))
+        ['dragondef'].some(id => isAcquiredSkill(p, SKILL_DB.find(card => card.id === id)!))
           ? { ...p, isShared: !p.isShared } : p));
       playSound('click', muted);
     } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
@@ -1284,6 +1296,16 @@ export default function BobozanOnline() {
     try {
       await mutateRoom(roomCode, room => patchPlayer(room, user.uid, p => ({ ...p, emoji, emojiAt })));
     } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
+  };
+
+  const chooseMultiplayerMode = async (mode: MultiplayerMode) => {
+    if (!isOnline || !user || modePending) return;
+    setModePending(true);
+    try {
+      await mutateRoom(roomCode, room => setRoomMode(room, user.uid, mode));
+      playSound('click', muted);
+    } catch (error) { setToastMsg(firebaseErrorMessage(error, lang)); }
+    finally { setModePending(false); }
   };
 
   const toggleRevengeMode = async () => {
@@ -1356,9 +1378,9 @@ export default function BobozanOnline() {
     });
 
     // 4. Update Firestore
-      const logText = lang === 'zh'
-        ? `--- 第 ${room.matchCount + 1} 局 ---`
-        : `--- MATCH ${room.matchCount + 1} ---`;
+      const logText = room.matchCount + 1 >= FINAL_LEVEL
+        ? (lang === 'zh' ? '--- 王冠争夺·最后一战 ---' : '--- FINAL BATTLE FOR THE CROWN ---')
+        : lang === 'zh' ? `--- 第 ${room.matchCount + 1} 局 ---` : `--- MATCH ${room.matchCount + 1} ---`;
 
       return {
         status: 'PLAYING',
@@ -1795,7 +1817,13 @@ export default function BobozanOnline() {
         {/* Body Section */}
         <div className="p-8 md:p-10 space-y-8">
 
-            <MultiplayerHelp lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setMoveManualOpen(true)} />
+            <fieldset className="multiplayer-mode-choice" disabled={modePending || gameState.hostId !== user?.uid} aria-busy={modePending}>
+              <legend>{lang === 'zh' ? '对战模式' : 'Game mode'}</legend>
+              <div className="multiplayer-mode-options">
+                <label data-selected={multiplayerMode === 'kills'}><input type="radio" name="multiplayer-mode" value="kills" checked={multiplayerMode === 'kills'} onChange={() => void chooseMultiplayerMode('kills')} /><span>{lang === 'zh' ? '杀敌赛' : 'Kill race'}</span></label>
+                <label data-selected={multiplayerMode === 'survival'}><input type="radio" name="multiplayer-mode" value="survival" checked={multiplayerMode === 'survival'} onChange={() => void chooseMultiplayerMode('survival')} /><span>{lang === 'zh' ? '生存赛' : 'Survival'}</span></label>
+              </div>
+            </fieldset>
             
             {/* Settings Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-2xl border border-white/5">
@@ -1878,7 +1906,7 @@ export default function BobozanOnline() {
                 <div className="flex-1 flex justify-end">
                   {gameState.players.length > 0 && gameState.hostId === user?.uid ? (
                       /* 🎨 CHANGED: Start Button to Red/Orange Gradient */
-                      <button onClick={startGameHost} className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white px-12 py-4 rounded-2xl font-black text-xl shadow-xl shadow-orange-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3">
+                      <button onClick={startGameHost} disabled={modePending} className="w-full md:w-auto bg-gradient-to-r from-orange-500 to-red-600 hover:from-orange-400 hover:to-red-500 text-white px-12 py-4 rounded-2xl font-black text-xl shadow-xl shadow-orange-900/20 transition-all hover:scale-[1.02] active:scale-[0.98] flex items-center justify-center gap-3">
                         <Play fill="currentColor" /> {t.startGame}
                       </button>
                   ) : (
@@ -2006,6 +2034,9 @@ export default function BobozanOnline() {
       `}</style>
 
       <PixelBackdrop scene="battle" themeId={campaignTheme?.id} />
+      {!isExpedition && <MultiplayerOpening key={`${roomCode}:${isCrownFinalBattle}`} gameKey={`${roomCode}:${multiplayerMode}:${isCrownFinalBattle ? 'final' : 'opening'}`} mode={multiplayerMode} lang={lang} reduceMotion={reduceMotion} finalBattle={isCrownFinalBattle}
+        atStart={(gameState.matchCount === 1 || isCrownFinalBattle) && gameState.turn === 1 && (gameState.status === 'PLAYING' || gameState.status === 'SHOWDOWN')}
+        finished={gameState.status === 'GAMEOVER' || (gameState.matchCount !== 1 && !isCrownFinalBattle)} />}
 
       <TopControls 
        muted={muted} 
@@ -2029,8 +2060,8 @@ export default function BobozanOnline() {
       {/* 🔹 Side Buttons (Emoji & Share) */}
       <div className="battle-social-controls hidden md:flex absolute top-[76px] right-4 z-50 gap-3 items-center">
         
-        {/* 1. SHARE BUTTON (Only visible if you have Lv3 or Lv18) */}
-        {!isExpedition && myPlayer && ['dragondef', 'ninedef'].some(id => isAcquiredSkill(myPlayer, SKILL_DB.find(card => card.id === id)!)) && (
+        {/* Share the retained Dragon Defense. */}
+        {!isExpedition && myPlayer && ['dragondef'].some(id => isAcquiredSkill(myPlayer, SKILL_DB.find(card => card.id === id)!)) && (
           <div className="relative group">
              <button
                onClick={toggleShare}
@@ -2143,7 +2174,7 @@ export default function BobozanOnline() {
             <LogOut size={18} /> <span className="font-bold">{t.exit}</span>
           </div>
           <span className="text-xs bg-indigo-500 px-2 py-1 rounded-full font-bold">
-            {t.match} {gameState.matchCount}
+            {!isExpedition && isCrownFinalBattle ? (lang === 'zh' ? '王冠争夺·最后一战' : 'Crown final') : `${t.match} ${gameState.matchCount}`}
           </span>
         </div>
 
@@ -2239,7 +2270,7 @@ export default function BobozanOnline() {
         <div className="pixel-mobile-header md:hidden p-3 flex justify-between items-center bg-slate-900 border-b border-slate-800 z-50">
           <button onClick={() => leaveRoom()} className="flex items-center gap-1 text-slate-400"><LogOut size={18} /></button>
           <span className="font-mono font-bold text-yellow-500">{isExpedition ? `${isEndless ? expDifficultyConfig.label[lang] : lang === 'zh' ? '远征' : 'Expedition'} ${expStageIdx + 1}${isEndless ? '' : '/' + EXPEDITION_STAGES.length}` : roomCode}</span>
-          <span className="text-xs bg-indigo-500 px-2 py-1 rounded">M{gameState.matchCount}</span>
+          <span className="text-xs bg-indigo-500 px-2 py-1 rounded">{!isExpedition && isCrownFinalBattle ? (lang === 'zh' ? '王冠争夺·最后一战' : 'Crown final') : `M${gameState.matchCount}`}</span>
         </div>
 
         {/* ROUND TABLE LAYER */}
@@ -2302,7 +2333,7 @@ export default function BobozanOnline() {
           </div>
 
           {/* Scroll with the scene header so the collapsed board cannot cover a seat. */}
-          {!isExpedition && (
+          {!isExpedition && multiplayerMode === 'kills' && (
            <div
                ref={leaderboardRef}
                data-mode={leaderboardMode}

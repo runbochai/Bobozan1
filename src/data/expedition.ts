@@ -100,7 +100,7 @@ intro: { zh: '印是真的。让我看看你怎么出牌。', en: 'The seal is r
 id: 's3', chapter: { zh: '第一枚印记 · 赤铜赛区', en: 'Ember Seal · Copper District' },
 name: { zh: '第 4 关 · 与洛牙交手', en: 'Stage 4 · A Rival Named Rook' },
 rewardTier: 1,
-tip: { zh: '天马只花 1 费；用轰轰或六克可以打平。', en: 'Pegasus costs 1; Double Blast or Six Cuts can tie it.'},
+tip: { zh: '天马只花 1 费；用轰轰可以打平。', en: 'Pegasus costs 1; Double Blast can tie it.'},
 enemies: [{
 id: 'slime', avatarId: 'wolf', name: { zh: '洛牙 · 初遇', en: 'Rook · First Meeting' }, hp: 1.5, inventory: [0, 1],
 personality: P(0.5, 0.3, 0.5, 0.2),
@@ -180,7 +180,7 @@ intro: { zh: '听他吵。不如看水面。', en: 'Forget his noise. Watch the 
 id: 's8', chapter: { zh: '第二枚印记 · 潮汐赛区', en: 'Tide Seal · Tidehold' },
 name: { zh: '第 10 关 · 潮汐守印人', en: 'Stage 10 · Keeper of the Tide Seal' },
 rewardTier: 2,
-tip: { zh: '龙爪压过天马；轰轰、六克仍能打平。', en: 'Dragon Claw beats Pegasus; Double Blast and Six Cuts still tie.'},
+tip: { zh: '龙爪压过天马；轰轰仍能打平。', en: 'Dragon Claw beats Pegasus; Double Blast still ties.'},
 enemies: [{
 id: 'dragon_elder', name: { zh: '潮汐守印人 · 苍鳞', en: 'Old Scale · Tide Keeper' }, hp: 3, inventory: [0, 3],
 personality: P(0.75, 0.25, 0.35, 0.7, 'patient'), elite: true,

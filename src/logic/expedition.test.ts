@@ -282,7 +282,7 @@ test('Boss2 远古塔魂：5 血与联合技能，不靠穿透或免费能量', 
   assert.equal(boss.passive?.pierce ?? false, false);
 });
 
-test('刀吸针对六克习惯，避免会击破刀吸的轰', () => {
+test('刀吸针对天马习惯，避免会击破刀吸的轰', () => {
   const smartP = { aggression: 0.7, defense: 0.35, charge: 0.25, smart: 1.0 };
   const mk = (): Player => ({
     id: 'e', name: 'E', isBot: true, hp: 5, energy: 3, isDead: false,
@@ -290,12 +290,12 @@ test('刀吸针对六克习惯，避免会击破刀吸的轰', () => {
     selectedCardId: null, lastCardId: null, lastAction: null,
     disabledSkills: [], freeSkills: [], kills: 0, tempSkills: [],
   });
-  const me: Player = { ...mk(), id: 'p', isBot: false, energy: 2, inventory: [0] };
-  const options = { history: { p: ['liuke', 'liuke', 'liuke'] } };
+  const me: Player = { ...mk(), id: 'p', isBot: false, energy: 2, inventory: [0, 1] };
+  const options = { history: { p: ['pegasus', 'pegasus', 'pegasus'] } };
   const smartAbsorb = expeditionMoveWeights(mk(), [mk(), me], smartP, 'p', options).find(entry => entry.cardId === 'absorb')!.probability;
   const dangerous = expeditionMoveWeights(mk(), [mk(), me], smartP, 'p', { history: { p: ['hong', 'hong', 'hong'] } })
     .find(entry => entry.cardId === 'absorb')!.probability;
-  assert.ok(smartAbsorb > dangerous * 2, `absorb vs six cuts ${smartAbsorb}, versus blast ${dangerous}`);
+  assert.ok(smartAbsorb > dangerous * 2, `absorb vs pegasus ${smartAbsorb}, versus blast ${dangerous}`);
 });
 test('意图显示规则：前三关全显示，之后按哈希 45% 显示且稳定', () => {
   for (let t = 1; t <= 5; t++) {

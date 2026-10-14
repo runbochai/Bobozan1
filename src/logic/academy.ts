@@ -3,6 +3,7 @@ import { ACADEMY_LESSONS, MULTIPLAYER_ACADEMY_LESSONS, type AcademyFighter, type
 import { calculateTurnOutcome, getPlayerCards, isOffensiveCard } from './combat';
 import { getMultiplayerMatchSummary, type MultiplayerMatchSummary } from './multiplayerMatch';
 import { FINAL_LEVEL } from '../data/constants';
+import { SKILL_CATALOG_VERSION } from './skillLoadout';
 
 export const PRACTICE_HERO_ID = 'academy-hero';
 export const PRACTICE_ENEMY_ID = 'academy-enemy';
@@ -38,6 +39,7 @@ function makePlayer(id: string, preset: AcademyFighter, lang: Lang): Player {
     hp: preset.hp,
     energy: preset.energy,
     inventory: [...preset.inventory],
+    skillCatalogVersion: SKILL_CATALOG_VERSION,
     layer: preset.layer ?? 0,
     tempLayerMod: 0,
     isDead: false,
@@ -172,7 +174,7 @@ export function resolvePracticeRound(lesson: AcademyLesson, roundIndex: number, 
 }
 
 export interface MultiplayerPracticeState {
-  game: Pick<GameState, 'status' | 'matchCount' | 'players' | 'turn'>;
+  game: Pick<GameState, 'status' | 'matchCount' | 'players' | 'turn' | 'multiplayerMode'>;
   beforePlayers: Player[];
   summary: MultiplayerMatchSummary;
   survivorReset: boolean;
@@ -202,7 +204,8 @@ export function getMultiplayerPractice(id: MultiplayerAcademyLesson['id'], lang:
       break;
     case 'winner-and-leader':
     case 'final-standings':
-      matchCount = id === 'final-standings' ? FINAL_LEVEL : 7;
+    case 'survival-winner':
+      matchCount = id === 'final-standings' || id === 'survival-winner' ? FINAL_LEVEL : 7;
       beforePlayers = [
         player(PRACTICE_HERO_ID, names.you, { energy: 1, kills: id === 'final-standings' ? 4 : 1, selectedCardId: 'hong' }),
         player(PRACTICE_ENEMY_ID, names.blue, { kills: id === 'final-standings' ? 5 : 4, selectedCardId: 'charge' }),
@@ -220,9 +223,10 @@ export function getMultiplayerPractice(id: MultiplayerAcademyLesson['id'], lang:
       ];
       break;
   }
-  const outcome = calculateTurnOutcome(beforePlayers, 1, matchCount, lang);
+  const multiplayerMode = id === 'survival-winner' ? 'survival' : 'kills';
+  const outcome = calculateTurnOutcome(beforePlayers, 1, matchCount, lang, { multiplayerMode });
   const game: MultiplayerPracticeState['game'] = {
-    status: outcome.isGameOver ? 'GAMEOVER' : 'PLAYING', matchCount, players: outcome.players, turn: 1,
+    status: outcome.isGameOver ? 'GAMEOVER' : 'PLAYING', matchCount, players: outcome.players, turn: 1, multiplayerMode,
   };
   const summary = getMultiplayerMatchSummary(game);
   let correctChoice: string;
@@ -240,6 +244,13 @@ export function getMultiplayerPractice(id: MultiplayerAcademyLesson['id'], lang:
       explanation = {
         zh: `你是第 ${summary.matchNumber} 局的最后幸存者，获得本局新技能。击杀榜领先不等于赢下这一局；本局胜利也不等于总冠军。还剩 ${summary.remainingMatches} 局，由房主开始下一局，累计击杀继续记录。`,
         en: `You are the last survivor of match ${summary.matchNumber} and earn its skill. Leading total kills does not win a match, and winning a match does not yet win the series. ${summary.remainingMatches} matches remain; the host starts the next one and cumulative kills carry on.`,
+      };
+      break;
+    case 'survival-winner':
+      correctChoice = summary.champions[0]?.id === PRACTICE_HERO_ID ? 'last-survivor' : 'kill-leader';
+      explanation = {
+        zh: '生存模式由王冠争夺最后一战的幸存者夺冠。前面的升级阶段已经结束，你是最后一战的唯一幸存者，赢得王冠；对手累计击杀更多也不会改变结果。最后一战若所有人同时倒下，则以平局结束。',
+        en: 'Survival is decided by the last survivor of the final Crown Battle. The leveling phase is complete, and you are the final survivor, so you win the crown despite the opponent’s higher total kills. If nobody survives the final battle, the competition ends in a draw.',
       };
       break;
     case 'final-standings':

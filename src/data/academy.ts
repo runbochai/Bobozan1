@@ -1,7 +1,8 @@
 import type { LocalizedText } from '../types';
 import { EXPEDITION_STAGES, EXPEDITION_START_HP } from './expedition';
 import { EXPEDITION_DIFFICULTIES } from './expeditionDifficulty';
-import { FINAL_LEVEL } from './constants';
+import { FINAL_LEVEL, LAST_SKILL_LEVEL } from './constants';
+import { SKILL_DB } from './skills';
 
 export type AcademyGoal = 'gain-energy' | 'block' | 'hit' | 'tie' | 'survive';
 
@@ -39,7 +40,7 @@ export interface RuleTopic {
 }
 
 export interface MultiplayerAcademyLesson {
-  id: 'turn-and-match' | 'winner-and-leader' | 'final-standings' | 'elimination-reset';
+  id: 'turn-and-match' | 'winner-and-leader' | 'final-standings' | 'elimination-reset' | 'survival-winner';
   title: LocalizedText;
   intro: LocalizedText;
   prompt: LocalizedText;
@@ -47,6 +48,7 @@ export interface MultiplayerAcademyLesson {
 }
 
 const text = (zh: string, en: string): LocalizedText => ({ zh, en });
+const skillLevel = (id: string) => SKILL_DB.find(card => card.id === id)?.levelRequired ?? 0;
 const fighter = (energy: number, inventory = [0], layer = 0): AcademyFighter => ({ hp: 1, energy, inventory, layer });
 
 /** These are small preset exercises, not a live run; each round restores its shown state. */
@@ -145,7 +147,7 @@ export const ACADEMY_LESSONS: AcademyLesson[] = [
       {
         hero: fighter(3), enemy: fighter(1, [0, 3]), enemyMove: 'dragonclaw', choices: ['hong', 'hong2', 'defend'], goal: 'tie',
         prompt: text('用基础攻击顶住龙爪，打成平局。', 'Tie Dragon Claw with a basic attack.'),
-        explanation: text('轰轰、六克与所有二档攻击技能打平，不吃普通技能的等级压制。轰轰后你剩 1 能量，对手剩 0。', 'Double Blast and 6g Strike tie all tier-2 attack skills, regardless of their level. After Double Blast, you have 1 energy and the opponent has 0.'),
+        explanation: text('轰轰与所有二档攻击技能打平，不吃普通技能的等级压制。轰轰后你剩 1 能量，对手剩 0。', 'Double Blast ties all tier-2 attack skills, regardless of their level. After Double Blast, you have 1 energy and the opponent has 0.'),
       },
       {
         hero: fighter(1), enemy: fighter(0, [0, 3]), enemyMove: 'charge', choices: ['charge', 'hong', 'defend'], goal: 'hit',
@@ -234,7 +236,7 @@ export const MULTIPLAYER_ACADEMY_LESSONS: MultiplayerAcademyLesson[] = [
   {
     id: 'winner-and-leader',
     title: text('这一局赢了，总冠军呢？', 'Match winner and series leader'),
-    intro: text('你用轰击中了正在攒的对手，成为最后的幸存者；但对手此前累计的击杀仍比你多。', 'Your Blast hit the charging opponent, leaving you as the last survivor. The opponent still has more kills from earlier matches.'),
+    intro: text('杀敌赛中，你用轰击中了正在攒的对手，成为最后的幸存者；但对手此前累计的击杀仍比你多。', 'In a kill series, your Blast hit the charging opponent, leaving you as the last survivor. The opponent still has more kills from earlier matches.'),
     prompt: text('这一局的新技能该由谁领取？', 'Who earns the new skill for this match?'),
     choices: [
       { id: 'leader-reward', label: text('击杀榜第一领技能，最后活下来也不算赢。', 'The kill leader earns the skill; being the last survivor does not count.') },
@@ -245,12 +247,23 @@ export const MULTIPLAYER_ACADEMY_LESSONS: MultiplayerAcademyLesson[] = [
   {
     id: 'final-standings',
     title: text('最后一局，总要有个结尾', 'The final result'),
-    intro: text(`这是第 ${FINAL_LEVEL} 局的最后一次交锋。你活到了最后，双方累计击杀数却一样。`, `This is the last exchange of match ${FINAL_LEVEL}. You survived, but both players have the same total kills.`),
+    intro: text(`这是杀敌赛第 ${FINAL_LEVEL} 局的最后一次交锋。你活到了最后，双方累计击杀数却一样。`, `This is the last exchange of match ${FINAL_LEVEL} in a kill series. You survived, but both players have the same total kills.`),
     prompt: text('这次应该怎样公布成绩？', 'How should the final result be announced?'),
     choices: [
       { id: 'survivor-champion', label: text('只有最后活下来的人是总冠军。', 'Only the last survivor is the overall champion.') },
       { id: 'next-match', label: text('再开下一局，一直打到有人独占第一。', 'Keep starting matches until only one player leads.') },
       { id: 'joint-champions', label: text('累计击杀相同，并列总冠军，赛程结束。', 'The tied kill leaders are joint champions; the series is complete.') },
+    ],
+  },
+  {
+    id: 'survival-winner',
+    title: text('生存赛，最后一战', 'Survival: the final Crown Battle'),
+    intro: text(`生存模式已经打完前 ${LAST_SKILL_LEVEL} 局升级阶段。王冠争夺最后一战，你击中了最后一名对手；他的累计击杀更多，桌上却只剩你。`, `Survival has completed its ${LAST_SKILL_LEVEL}-match leveling phase. In the final Crown Battle, you hit the last opponent. Their total kills are higher, but you are the only survivor.`),
+    prompt: text('谁赢下这场生存赛？', 'Who wins this Survival match?'),
+    choices: [
+      { id: 'last-survivor', label: text('你活到了最后，直接获胜。', 'You are the last survivor, so you win.') },
+      { id: 'kill-leader', label: text('对手击杀更多，所以对手获胜。', 'The opponent has more kills, so they win.') },
+      { id: 'next-match', label: text('最后一战还不结算，继续开下一局。', 'The final battle is not the end; start another match.') },
     ],
   },
   {
@@ -280,7 +293,7 @@ export const RULE_TOPICS: RuleTopic[] = [
     id: 'clashes', title: text('攻击强弱与例外', 'Clashes and exceptions'),
     items: [
       text('先比强度档位；同档普通技能再比等级。轰轰压过轰，龙爪压过天马。', 'Compare tier first, then level for ordinary skills in the same tier. Double Blast beats Blast; Dragon Claw beats Pegasus.'),
-      text('基础轰轰、六克与任意二档攻击技能打平，包括天马、龙爪。', 'Basic Double Blast and 6g Strike tie any tier-2 attack skill, including Pegasus and Dragon Claw.'),
+      text('基础轰轰与任意二档攻击技能打平，包括天马、龙爪。', 'Basic Double Blast ties any tier-2 attack skill, including Pegasus and Dragon Claw.'),
       text('叽与四档非联合终极技能打平；咔叽粉与五档联合技能打平。', 'Ji ties tier-4 non-combo Ultimates; KaJi ties tier-5 combos.'),
       text('攻击压制只保护这两人的对抗；多人场上，第三个人仍可能命中你。', 'An attack clash concerns that pair only. In multiplayer, a third player can still hit you.'),
     ],
@@ -289,7 +302,7 @@ export const RULE_TOPICS: RuleTopic[] = [
     id: 'defense', title: text('防御不是什么都挡', 'Defense has limits'),
     items: [
       text('普通防免费挡住多数普通攻击；终极技能、砍刀会打穿普通防，定枪会穿透半点伤害。', 'Basic Defend is free and blocks most regular attacks. Ultimates and Machete break it; Pistol pierces for half a point.'),
-      text('天下第一波会击破许多防御；小飞、大飞、五克防、八克防、九克防、手盔防、脚盔防能挡。', 'World Wave breaks many defenses. Small Fly, Big Fly, 5g/8g/9g Def, Hand Def, and Foot Def can stop it.'),
+      text('天下第一波会击破许多防御；小飞、大飞、手盔防、脚盔防能挡。', 'World Wave breaks many defenses. Small Fly, Big Fly, Hand Def, and Foot Def can stop it.'),
       text('小飞、大飞会临时改变高度。是否躲过终极，要看结算后的距离；大飞还能从高处截下小飞。', 'Small Fly and Big Fly temporarily change height. Dodging an Ultimate depends on the resulting distance; Big Fly can also intercept Small Fly from above.'),
     ],
   },
@@ -299,23 +312,23 @@ export const RULE_TOPICS: RuleTopic[] = [
       text('普通攻击默认只打同层。咔、叽打自身及上下各 1 层；其他普通终极通常上下各 2 层；联合终极上下各 3 层。', 'Regular attacks normally hit the same layer. Ka/Ji reach ±1 layer; other ordinary Ultimates normally reach ±2; combo Ultimates reach ±3.'),
       text('咔叽粉、咔叽超粉和轰天轰地轰可打任意层。轰天只打更高层，轰地只打更低层，同层无法回防。', 'KaJi, Super KaJi, and Omni-Bomb hit any layer. Sky Bomb hits only higher layers, Land Bomb only lower ones, leaving them exposed on their own layer.'),
       text('攻击会分别对每个范围内的其他存活玩家判定，不是只锁定一个目标；桌上的左右位置不等于层数。', 'Attacks resolve against every other living player in range, not a single selected target. Left/right seats are not layers.'),
-      text('场上有人持有 Lv.20 技能时，升天、遁地才开放；永久层数变化与小飞等临时高度不同。', 'Ascend and Descend unlock when someone holds Lv.20. Their lasting layer changes differ from temporary flight height.'),
+      text(`场上有人持有 Lv.${skillLevel('hongtian')} 技能时，升天、遁地才开放；永久层数变化与小飞等临时高度不同。`, `Ascend and Descend unlock when someone holds Lv.${skillLevel('hongtian')}. Their lasting layer changes differ from temporary flight height.`),
     ],
   },
   {
     id: 'combos', title: text('联合技能', 'Combo skills'),
     items: [
-      text('持有 Lv.1+2+3 解锁天龙剑；2+5 解锁双翼齐飞；8+10+11 解锁三大金刚；20+21 解锁轰天轰地轰和诛心毒气。', 'Hold Lv.1+2+3 for Sky Dragon; 2+5 for 2 Wings; 8+10+11 for 3 Vajras; 20+21 for Omni-Bomb and Heart Poison.'),
+      text(`持有 Lv.1+2+3 解锁天龙剑；2+5 解锁双翼齐飞；8+10+11 解锁三大金刚；${skillLevel('hongtian')}+${skillLevel('hongdi')} 解锁轰天轰地轰和诛心毒气。`, `Hold Lv.1+2+3 for Sky Dragon; 2+5 for 2 Wings; 8+10+11 for 3 Vajras; ${skillLevel('hongtian')}+${skillLevel('hongdi')} for Omni-Bomb and Heart Poison.`),
       text('联合技有效等级取组成技能最高等级。先比档位；同档普通攻击不能压制联合攻击，联合只有有效等级更高时才压制普通技能。', 'A combo uses its highest component level. Tier comes first; at the same tier an ordinary attack cannot overpower a combo, while a combo beats an ordinary skill only with a higher effective level.'),
       text('同档联合互撞比有效等级；咔叽粉与五档联合强制打平。更高档位仍可压制较低档位。', 'Same-tier combos compare effective levels. KaJi always ties tier-5 combos. A higher tier can still overpower a lower tier.'),
-      text('轰天轰地轰是三档攻击，有效 Lv.21，并非终极；双翼齐飞是身法，不参与攻击压制比较。', 'Omni-Bomb is a tier-3 Attack with effective Lv.21, not an Ultimate. 2 Wings is a movement skill, not an offensive clash.'),
+      text(`轰天轰地轰是三档攻击，有效 Lv.${skillLevel('hongdi')}，并非终极；双翼齐飞是身法，不参与攻击压制比较。`, `Omni-Bomb is a tier-3 Attack with effective Lv.${skillLevel('hongdi')}, not an Ultimate. 2 Wings is a movement skill, not an offensive clash.`),
       text('双翼齐飞暂升 3 层，靠离开范围躲攻击，并非无敌；范围仍够远的攻击可以命中。', '2 Wings rises 3 layers and avoids attacks by leaving their range. It is not invulnerability; attacks that still reach can hit.'),
     ],
   },
   {
     id: 'special', title: text('吸取与封印', 'Absorb and disable'),
     items: [
-      text('锐吸可吸收技能，但被轰、轰轰、轰天、轰地、天下第一波克制；奥吸被六克克制。终极能打穿吸取。', 'Sharp Absorb copies skills but loses to Blast, Double Blast, Sky Bomb, Land Bomb, and World Wave. Ultra Absorb loses to 6g Strike. Ultimates beat absorption.'),
+      text('锐吸可吸收技能，但被轰、轰轰、轰天、轰地、天下第一波克制；奥吸也会被轰击杀。终极能打穿吸取。', 'Sharp Absorb copies skills but loses to Blast, Double Blast, Sky Bomb, Land Bomb, and World Wave. Ultra Absorb also loses to Blast. Ultimates beat absorption.'),
       text('吸取攒得到能量；吸取技能得到可免费使用的技能，不额外送能量。锐吸为一份，奥吸为两份。', 'Absorbing Charge grants energy; absorbing skills grants free uses rather than bonus energy. Sharp Absorb grants one copy, Ultra Absorb two.'),
       text('同层破碎可封印多数四档及以下招式；五档以上终极能打穿破碎。', 'On the same layer, Shatter disables most moves through tier 4. Tier-5 or higher Ultimates break through it.'),
     ],
@@ -323,12 +336,14 @@ export const RULE_TOPICS: RuleTopic[] = [
   {
     id: 'multiplayer', title: text('多人怎样赢，什么时候结束', 'Winning and finishing multiplayer'),
     items: [
-      text(`一回合是大家同时出一次牌；一局要打到至多一人存活。整场比赛共有 ${FINAL_LEVEL} 局，最终按累计击杀排名，不按最后一局谁活下来。`, `A turn is one simultaneous card choice. A match ends with at most one survivor. A multiplayer series lasts ${FINAL_LEVEL} matches, then ranks players by total kills, not who survived the final match.`),
-      text(`前 ${FINAL_LEVEL - 1} 局的最后幸存者按局数领新技能；所有人同归于尽则无人领胜者奖励。局间由房主开始下一局，淘汰者恢复生命、能量归零并重新加入，已获得技能和累计击杀保留。`, `Before match ${FINAL_LEVEL}, the last survivor earns a skill for that match number; if everyone dies, no one earns the winner’s reward. Between matches the host starts the next one. Eliminated players return with restored HP and zero energy, keeping earned skills and cumulative kills.`),
-      text(`第 ${FINAL_LEVEL} 局结束就公布总成绩，不再发升级奖励，也不继续第 ${FINAL_LEVEL + 1} 局。累计击杀最高者是总冠军；最高分相同则并列，没有额外加赛。`, `After match ${FINAL_LEVEL}, announce the final standings with no further skill reward or match ${FINAL_LEVEL + 1}. The highest total kills wins the series; tied leaders are joint champions, with no extra match.`),
+      text('一回合是大家同时出一次牌；一局要打到至多一人存活。多人可选杀敌模式或生存模式，开局会显示本场目标。', 'A turn is one simultaneous card choice. A match ends with at most one survivor. Choose Kills or Survival in the room; the objective appears at the start.'),
+      text(`两种模式均先进行 ${LAST_SKILL_LEVEL} 局升级阶段，每局的最后幸存者获得对应等级的新技能。若所有人同归于尽，无人领取本局技能。房主开始下一局，淘汰者恢复生命、能量归零，已获得技能和战绩保留。`, `Both modes begin with ${LAST_SKILL_LEVEL} leveling matches. Each match’s last survivor earns that level’s skills; a draw awards no skill. The host starts the next match. Eliminated players return with restored HP and zero energy, keeping skills and stats.`),
+      text(`获得最后一级技能后，进入第 ${FINAL_LEVEL} 局「王冠争夺 · 最后一战」。最后一战不再发升级奖励，结算后不继续下一局。`, `After the final skill level comes match ${FINAL_LEVEL}, the final Crown Battle. It awards no new skill and ends the competition.`),
+      text('杀敌模式打完最后一战后，累计击杀最高者获得总冠军；最高分相同则并列。即使最后一战无人存活，也会按累计击杀结算。', 'In Kills mode, the most cumulative kills after the Crown Battle wins, with joint champions for a tie. Total kills decide the result even if nobody survives the final battle.'),
+      text('生存模式由最后一战的唯一幸存者夺冠，前面的击杀数只记战绩；最后一战若所有人同时淘汰，则以平局结束。', 'In Survival, the only survivor of the final Crown Battle wins the crown. Earlier kills are stats only. If nobody survives the final battle, the competition ends in a draw.'),
       text('攻击、防守、终极各最多保留 3 个新技能，超出后分别选择。基础牌始终保留；临时、吸收、共享和联合技不占名额。', 'Keep up to 3 acquired skills each in Attack, Defense, and Ultimate; choose separately when full. Basic cards stay. Temporary, absorbed, shared, and combo skills do not use slots.'),
       text('特殊技能已归入对应分类：吸取、封印和身法在防守里。新获得的技能排在左边；换下一个技能不影响同等级的其他技能。', 'Special tools are grouped by role: absorption, disabling, and movement are in Defense. New acquisitions appear first. Replacing one skill does not remove other skills of the same level.'),
-      text('联机阵亡不会抹去已获得的技能。下一局恢复生命、能量归零，保留技能库。', 'Dying in multiplayer does not erase earned skills. The next match restores HP and resets energy while keeping the inventory.'),
+      text('联机阵亡不会抹去已获得的技能。升级阶段下一局恢复生命、能量归零，保留技能库。', 'Dying in multiplayer does not erase earned skills. During the leveling phase, the next match restores HP and resets energy while keeping the inventory.'),
       text('有人淘汰且还有至少两人存活时，幸存者生命恢复到 1、能量和层数归零，并清除封印及吸取的免费技能；技能库保留。', 'When someone is eliminated with at least two players still alive, survivors reset to 1 HP, 0 energy, and layer 0; disables and absorbed free skills clear, but the inventory stays.'),
     ],
   },

@@ -1,6 +1,6 @@
 import React from 'react';
 import PixelCardArt from '../components/PixelCardArt';
-import type { Card, Player, LogEntry, Lang } from '../types';
+import type { Card, Player, LogEntry, Lang, MultiplayerMode } from '../types';
 import { TEXT } from '../data/translations';
 import { SKILL_DB } from '../data/skills';
 import { MAX_HP } from '../data/constants';
@@ -22,7 +22,7 @@ export const isBasicTier2Level0 = (c: Card) =>
   c.tier === 2 &&
   c.levelRequired === 0 &&
 
-  (c.id === 'hong2' || c.id === 'liuke');
+  c.id === 'hong2';
 
 /**
  * card1 是否“压制” card2：
@@ -40,7 +40,7 @@ export const doesCard1Overpower = (card1: Card, card2: Card): boolean => {
   if (!isOffensiveCard(card1) || !isOffensiveCard(card2)) return false;
 
   // 🔸 EXCEPTION:
-  // Lvl 0 基础 T2 攻击（轰轰 / 六克）和任何 T2 攻击技能打架时 => 一律平手
+  // Lvl 0 基础 T2 攻击（轰轰）和任何 T2 攻击技能打架时 => 一律平手
   // -> 无论谁是 card1 / card2，都不“压制”对方
   const card1IsBasic0 = isBasicTier2Level0(card1);
   const card2IsBasic0 = isBasicTier2Level0(card2);
@@ -155,7 +155,7 @@ export const getShowdownWinner = (players: Player[]): string[] => {
           if (p.pierce || card.id === 'machete') hitSuccess = true;
           else if (card.id === 'gun') hitSuccess = true;
           else if (card.id === 'wave') {
-             const strongDefs = ['ninedef', 'bigfly', 'smallfly', 'fivedef', 'eightdef', 'handdef', 'footdef'];
+             const strongDefs = ['bigfly', 'smallfly', 'handdef', 'footdef'];
              if (!strongDefs.includes(targetCard.id)) hitSuccess = true;
           }
           else if (card.type === 'ULTIMATE' && !targetCard.tags?.includes('dodge_ult')) hitSuccess = true;
@@ -173,7 +173,7 @@ export const getShowdownWinner = (players: Player[]): string[] => {
           else if (doesCard1Overpower(card, targetCard)) hitSuccess = true;
       }
       else if (targetCard.type === 'ABSORB') {
-          if (targetCard.id === 'aoxi' && card.id === 'liuke') hitSuccess = true;
+          if (targetCard.id === 'aoxi' && card.id === 'hong') hitSuccess = true;
           else if (targetCard.tags?.includes('sharp_absorb') && ['hong','hong2','hongtian','hongdi','wave'].includes(card.id)) hitSuccess = true;
           else if (card.type === 'ULTIMATE') hitSuccess = true;
       }
@@ -210,6 +210,8 @@ export const getShowdownWinner = (players: Player[]): string[] => {
 
 export interface TurnOutcomeOptions {
   mode?: 'multiplayer' | 'expedition' | 'practice';
+  /** Multiplayer rooms without a setting keep the cumulative-kill series. */
+  multiplayerMode?: MultiplayerMode;
   /** Applied once to each player's total incoming damage, before death is decided. */
   damageReduction?: Record<string, number>;
   /** On lethal damage, preserve up to this much of the player's starting HP. */
@@ -240,6 +242,7 @@ export const calculateTurnOutcome = (
 ): TurnOutcome => {
   const logs: LogEntry[] = [];
   const multiplayer = (options.mode ?? 'multiplayer') === 'multiplayer';
+  const multiplayerMode = options.multiplayerMode ?? 'kills';
   const damageTaken: Record<string, number> = Object.fromEntries(currentPlayers.map(p => [p.id, 0]));
   const damageBlocked: Record<string, number> = Object.fromEntries(currentPlayers.map(p => [p.id, 0]));
   const protectionUsed: Record<string, boolean> = Object.fromEntries(currentPlayers.map(p => [p.id, false]));
@@ -378,10 +381,10 @@ export const calculateTurnOutcome = (
             continue;
           }
         }
-        if (card2.id === 'aoxi' && card1.id === 'liuke') {
+        if (card2.id === 'aoxi' && card1.id === 'hong') {
            dealDamage(p1, p2.id, MAX_HP);
            recordKill(p1.id, p2.id); // 🟢 Kill Credit
-           logs.push({ turn, text: lang === 'zh' ? `${p1.name} 六克命中 ${p2.name} (奥吸失败)!` : `${p1.name} 6g Strike hits ${p2.name} (Ultra Absorb failed)!`, type: 'combat' });
+           logs.push({ turn, text: lang === 'zh' ? `${p1.name} 轰命中 ${p2.name} (奥吸失败)!` : `${p1.name} Blast hits ${p2.name} (Ultra Absorb failed)!`, type: 'combat' });
            continue;
         }
         if (card1.type === 'CHARGE') {
@@ -449,7 +452,7 @@ export const calculateTurnOutcome = (
             logs.push({ turn, text: lang === 'zh' ? `${p1.name} 定枪穿透 ${p2.name}!` : `${p1.name} Sniper pierces ${p2.name}!`, type: 'combat' });
           } 
           else if (card1.id === 'wave') {
-            const strongDefs = ['ninedef', 'bigfly', 'smallfly', 'fivedef', 'eightdef', 'handdef', 'footdef'];
+            const strongDefs = ['bigfly', 'smallfly', 'handdef', 'footdef'];
             if (!strongDefs.includes(card2.id)) {
               dealDamage(p1, p2.id, MAX_HP);
               recordKill(p1.id, p2.id); // 🟢 Kill Credit
@@ -584,7 +587,7 @@ export const calculateTurnOutcome = (
 
   if (living.length <= 1) {
     isGameOver = true;
-    const matchSummary = getMultiplayerMatchSummary({ status: 'GAMEOVER', matchCount, players: finalPlayers });
+    const matchSummary = getMultiplayerMatchSummary({ status: 'GAMEOVER', matchCount, players: finalPlayers, multiplayerMode });
     if (living.length === 1) {
       winner = living[0];
       
@@ -594,8 +597,8 @@ export const calculateTurnOutcome = (
           logs.push({
             turn,
             text: lang === 'zh' 
-              ? `🏆 ${winner.name} 赢下第 ${matchCount} 局！`
-              : `🏆 ${winner.name} wins match ${matchCount}!`,
+              ? `🏆 ${winner.name} 赢下王冠争夺最后一战！`
+              : `🏆 ${winner.name} wins the final Crown Battle!`,
             type: 'win',
           });
       } else {
@@ -609,7 +612,7 @@ export const calculateTurnOutcome = (
     } else {
       logs.push({ turn, text: lang === 'zh' ? `平局!` : `Draw!`, type: 'death' });
     }
-    if (multiplayer && matchSummary.isSeriesOver && matchSummary.champions.length > 0) {
+    if (multiplayer && multiplayerMode === 'kills' && matchSummary.isSeriesOver && matchSummary.champions.length > 0) {
       const names = matchSummary.champions.map(player => player.name).join(lang === 'zh' ? '、' : ', ');
       const kills = matchSummary.champions[0].kills ?? 0;
       const shared = matchSummary.champions.length > 1;
@@ -621,6 +624,15 @@ export const calculateTurnOutcome = (
         type: 'win',
       });
     }
+    if (multiplayer && multiplayerMode === 'survival' && matchSummary.isSeriesOver && winner) {
+      logs.push({
+        turn,
+        text: lang === 'zh'
+          ? `👑 ${winner.name} 活到最后，赢得王冠！`
+          : `👑 ${winner.name} is the last survivor and wins the Crown!`,
+        type: 'win',
+      });
+    }
   }
 
   return { players: finalPlayers, logs, isGameOver, winner, survivorReset, damageTaken, damageBlocked, protectionUsed, defendedHits };
@@ -628,9 +640,8 @@ export const calculateTurnOutcome = (
 
 export const getPlayerCards = (p: Player, allPlayers?: Player[]) => {
   const retained = new Set(getRetainedSkillIds(p));
-  const hongTianUnlocked = allPlayers
-    ? allPlayers.some((pl) => pl.inventory.includes(20))
-    : false;
+  const hongTianLevel = SKILL_DB.find(card => card.id === 'hongtian')?.levelRequired;
+  const hongTianUnlocked = hongTianLevel != null && !!allPlayers?.some(pl => pl.inventory.includes(hongTianLevel));
 
   const knownCards = SKILL_DB.filter((c) => {
     // 🔥 关键修复：检查这张卡是否是临时卡
@@ -664,17 +675,11 @@ export const getPlayerCards = (p: Player, allPlayers?: Player[]) => {
   if (allPlayers) {
     // Unlock history alone cannot lend a skill that the owner discarded.
     const dragon = SKILL_DB.find(card => card.id === 'dragondef')!;
-    const nine = SKILL_DB.find(card => card.id === 'ninedef')!;
     const anyoneSharingDragon = allPlayers.some(pl => pl.isShared && isAcquiredSkill(pl, dragon));
-    const anyoneSharing9g = allPlayers.some(pl => pl.isShared && isAcquiredSkill(pl, nine));
 
     if (anyoneSharingDragon) {
        const c = SKILL_DB.find(x => x.id === 'dragondef');
        // Only add if I don't already have it
-       if (c && !knownCards.some(k => k.id === c.id)) knownCards.push(c);
-    }
-    if (anyoneSharing9g) {
-       const c = SKILL_DB.find(x => x.id === 'ninedef');
        if (c && !knownCards.some(k => k.id === c.id)) knownCards.push(c);
     }
   }

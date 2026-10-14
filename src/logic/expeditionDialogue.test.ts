@@ -58,7 +58,7 @@ test('repeated revealed routines are noticed, without claiming to predict the ne
   const base = context();
   const repeated = (moves: string[]) => ({ ...base, history: { [base.hero!.id]: moves } });
   assert.equal(cue(repeated(['hong', 'hong', 'hong'])), 'pattern');
-  assert.equal(cue(repeated(['hong', 'liuke', 'hong2'])), 'pattern');
+  assert.equal(cue(repeated(['hong', 'pegasus', 'hong2'])), 'pattern');
   assert.equal(cue(repeated(['charge', 'hong', 'charge'])), 'pattern');
   assert.equal(cue(repeated(['hong', 'hong'])), 'idle');
   assert.equal(cue(repeated(['charge', 'defend', 'hong'])), 'idle');

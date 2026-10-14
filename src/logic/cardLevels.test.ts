@@ -59,7 +59,7 @@ test('tier still outranks a level above 100 in combat and the winner animation',
 
 test('basic paid ties and defensive escapes survive arbitrarily high enemy ranks', () => {
   const enemy = player('enemy', { endlessLevel: 500 });
-  for (const move of ['hong2', 'liuke', 'defend', 'smallfly']) {
+  for (const move of ['hong2', 'defend', 'smallfly']) {
     const result = settle(enemy, player('hero', { selectedCardId: move, inventory: [0, 2] }));
     assert.equal(result.damageTaken.hero, 0, move);
     assert.equal(result.damageTaken.enemy, 0, move);
@@ -97,8 +97,8 @@ test('discarded skill history cannot retain training through a temporary borrowe
 
 test('ordinary modes retain original skill ranks and the shared catalog is never mutated', () => {
   const catalog = structuredClone(SKILL_DB);
-  const ordinary = player('hero', { inventory: [0, 1, 23] });
-  assert.equal(getPlayerLevel(ordinary), 23);
+  const ordinary = player('hero', { inventory: [0, 1, 19] });
+  assert.equal(getPlayerLevel(ordinary), 19);
   assert.equal(getEffectiveLevel(getPlayerCard(ordinary, 'pegasus')!), 1);
   const advanced = player('enemy', { inventory: [0, 2], skillLoadout: ['icesword'], selectedCardId: 'icesword' });
   assert.equal(settle(ordinary, advanced).damageTaken.hero, 1);
@@ -109,11 +109,11 @@ test('ordinary modes retain original skill ranks and the shared catalog is never
 });
 
 test('endless training never lowers a retained skill below its actual unlock level', () => {
-  const hero = player('hero', { endlessLevel: 5, inventory: [0, 23], skillLoadout: ['poison'] });
-  assert.equal(getEffectiveLevel(getPlayerCard(hero, 'poison')!), 23);
+  const hero = player('hero', { endlessLevel: 5, inventory: [0, 19], skillLoadout: ['poison'] });
+  assert.equal(getEffectiveLevel(getPlayerCard(hero, 'poison')!), 19);
   for (const invalid of [NaN, Infinity, -1, 2.5]) {
     const invalidHero = { ...hero, endlessLevel: invalid };
-    assert.equal(getPlayerLevel(invalidHero), 23);
+    assert.equal(getPlayerLevel(invalidHero), 19);
     assert.equal(getPlayerCard(invalidHero, 'poison')!.combatLevel, undefined);
   }
 });
@@ -134,4 +134,13 @@ test('public AI forecasts use endless ranks and never inspect locked selections'
   assert.deepEqual(expeditionMoveWeights(hidden[0], hidden, personality, hero.id), higher);
   assert.doesNotThrow(() => getPlayerCards(hidden[0], hidden));
   assert.doesNotThrow(() => getBotMove(hidden[0], hidden));
+});
+
+test('joint skills derive their effective level from current component unlocks', () => {
+  for (const [id, expected] of [['skydragon', 3], ['doublewing', 5], ['vajra', 11], ['allbomb', 17], ['heartpoison', 17]] as const) {
+    assert.equal(getEffectiveLevel(card(id)), expected, id);
+  }
+  const later = player('hero', { inventory: [0, 16, 17], skillLoadout: ['hongtian', 'hongdi'] });
+  assert.ok(getPlayerCards(later).some(move => move.id === 'allbomb'));
+  assert.equal(getEffectiveLevel(getPlayerCard(later, 'heartpoison')!), 17);
 });

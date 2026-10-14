@@ -5,7 +5,7 @@ import { SKILL_DB } from '../data/skills';
 import { getPlayerCards } from './combat';
 import {
   autoSelectSkillLoadout, getHandCategory, getSkillOverflow, grantSkillLevel, hasSkillOverflow,
-  isAcquiredSkill, normalizeSkillLoadout, resolveSkillLoadout, sortHandCards,
+  isAcquiredSkill, migrateLegacySkillCatalog, normalizeSkillLoadout, resolveSkillLoadout, sortHandCards, SKILL_CATALOG_VERSION,
 } from './skillLoadout';
 
 const card = (id: string) => SKILL_DB.find(item => item.id === id)!;
@@ -100,8 +100,8 @@ test('derived combos need their retained parts and cost no additional permanent 
   assert.ok(ids(missing).includes('doublewing'), 'Another category’s combination survives');
   for (const [combo, parts, levels] of [
     ['vajra', ['helmetdef', 'handdef', 'footdef'], [8, 10, 11]],
-    ['allbomb', ['hongtian', 'hongdi'], [20, 21]],
-    ['heartpoison', ['hongtian', 'hongdi'], [20, 21]],
+    ['allbomb', ['hongtian', 'hongdi'], [16, 17]],
+    ['heartpoison', ['hongtian', 'hongdi'], [16, 17]],
   ] as const) {
     assert.ok(ids(player({ inventory: [0, ...levels], skillLoadout: [...parts] })).includes(combo));
     assert.ok(!ids(player({ inventory: [0, ...levels], skillLoadout: parts.slice(1) })).includes(combo));
@@ -120,13 +120,12 @@ test('absorbed and temporary combo cards remain usable once and never occupy per
 
 test('sharing requires a retained permanent defense, while recipients use it outside their slots', () => {
   const me = player({ inventory: [0, 2, 5, 8], skillLoadout: ['smallfly', 'bigfly', 'helmetdef'] });
-  const lender = player({ id: 'lender', inventory: [0, 3, 18], skillLoadout: ['dragondef', 'ninedef'], isShared: true });
+  const lender = player({ id: 'lender', inventory: [0, 3], skillLoadout: ['dragondef'], isShared: true });
   assert.ok(ids(me, [me, lender]).includes('dragondef'));
-  assert.ok(ids(me, [me, lender]).includes('ninedef'));
   assert.equal(hasSkillOverflow(me), false);
-  const discarded = { ...lender, skillLoadout: [], freeSkills: ['dragondef'], tempSkills: ['ninedef'] };
+  const discarded = { ...lender, skillLoadout: [], freeSkills: ['dragondef'], tempSkills: ['footdef'] };
   assert.ok(!ids(me, [me, discarded]).includes('dragondef'));
-  assert.ok(!ids(me, [me, discarded]).includes('ninedef'));
+  assert.ok(!ids(me, [me, discarded]).includes('footdef'));
 });
 
 test('new acquisitions sort before old ones regardless of level and basics stay in their familiar order', () => {
@@ -139,4 +138,65 @@ test('new acquisitions sort before old ones regardless of level and basics stay 
   const withExtras = sortHandCards(extra, getPlayerCards(extra));
   assert.equal(withExtras[0].id, 'skydragon');
   assert.equal(withExtras[1].id, 'doublewing');
+});
+
+test('retired skills stay absent from old inventories, retained decks, free copies and shared hands', () => {
+  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap'];
+  assert.ok(retired.every(id => !SKILL_DB.some(card => card.id === id)));
+  const legacy = player({ inventory: [0, 6, 12, 13, 14, 15, 16, 17, 18],
+    skillLoadout: [...retired, 'aoxi', 'bang', 'stab', 'superwave'],
+    freeSkills: ['hong2', ...retired], tempSkills: ['pegasus', ...retired], isShared: true });
+  const migrated = normalizeSkillLoadout(legacy);
+  assert.ok(migrated.skillLoadout.every(id => !retired.includes(id)));
+  assert.ok(migrated.skillLoadout.includes('aoxi'));
+  assert.deepEqual(migrated.freeSkills, ['hong2']);
+  assert.deepEqual(migrated.tempSkills, ['pegasus']);
+  assert.deepEqual(legacy.freeSkills, ['hong2', ...retired], 'Migration leaves the old save untouched');
+  for (const id of ['bang', 'stab', 'superwave']) assert.ok(migrated.skillLoadout.includes(id), id);
+  const receiver = player();
+  for (const hand of [ids(legacy), ids(migrated), ids(receiver, [receiver, legacy])]) {
+    assert.ok(hand.every(id => !retired.includes(id)));
+  }
+  for (const level of [13, 14, 15, 16, 17, 18]) {
+    assert.ok(grantSkillLevel(player(), level).skillLoadout.every(id => !retired.includes(id)));
+  }
+});
+
+test('stored legacy skill groups migrate by original unlock and stable retained IDs exactly once', () => {
+  const old = player({ skillCatalogVersion: 1, inventory: [0, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22, 23],
+    skillLoadout: ['aoxi', 'pointdiff', 'threestar', 'fiveslap', 'bang', 'stab', 'hongtian', 'poison'],
+    freeSkills: ['pointdiff', 'hong2'], tempSkills: ['threestar', 'pegasus'] });
+  const before = structuredClone(old);
+  const migrated = migrateLegacySkillCatalog(old);
+  assert.equal(migrated.skillCatalogVersion, SKILL_CATALOG_VERSION);
+  assert.deepEqual(migrated.inventory, [0, 12, 13, 14, 16, 17, 18, 19]);
+  assert.deepEqual(migrated.skillLoadout, ['aoxi', 'bang', 'stab', 'hongtian', 'poison']);
+  assert.deepEqual(migrated.freeSkills, ['hong2']);
+  assert.deepEqual(migrated.tempSkills, ['pegasus']);
+  assert.deepEqual(migrateLegacySkillCatalog(migrated), migrated);
+  assert.deepEqual(old, before);
+  assert.deepEqual(migrateLegacySkillCatalog(player({ inventory: [0, 13, 14, 15, 16] })).inventory, [0]);
+  assert.deepEqual(migrateLegacySkillCatalog(player({ inventory: [0, 13] })).skillLoadout, []);
+  assert.deepEqual(migrateLegacySkillCatalog(player({ inventory: [0, 23] })).skillLoadout, ['poison']);
+});
+
+test('legacy pending rewards cannot turn deleted groups into different new skills', () => {
+  for (const pendingLevel of [13, 14, 15, 16]) {
+    const migrated = migrateLegacySkillCatalog(player({ pendingLevel }));
+    assert.deepEqual(migrated.inventory, [0]);
+    assert.deepEqual(migrated.skillLoadout, []);
+    assert.equal(migrated.pendingLevel, null);
+  }
+  const pending = migrateLegacySkillCatalog(player({ pendingLevel: 17 }));
+  assert.deepEqual(pending.inventory, [0, 13]);
+  assert.deepEqual(pending.skillLoadout, ['bang']);
+  const discarded = migrateLegacySkillCatalog(player({ inventory: [0, 17], skillLoadout: [], pendingLevel: 17 }));
+  assert.deepEqual(discarded.skillLoadout, []);
+});
+
+test('new unversioned in-memory loadouts normalize as current data and versioned boundary reads stay current', () => {
+  const current = normalizeSkillLoadout(player({ inventory: [0, 13], skillLoadout: ['bang'] }));
+  assert.equal(current.skillCatalogVersion, SKILL_CATALOG_VERSION);
+  assert.deepEqual(current.skillLoadout, ['bang']);
+  assert.deepEqual(migrateLegacySkillCatalog(current), current);
 });

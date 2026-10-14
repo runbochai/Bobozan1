@@ -81,8 +81,8 @@ export function getExpeditionLesson(context: ExpeditionLessonContext): Expeditio
           ? text(`${attack.name.zh} Lv.${attack.levelRequired}；轰轰可打平。`, `${attack.name.en} Lv.${attack.levelRequired}; Double Blast ties it.`)
           : text('防住、打平，或抓住攒的空当。', 'Block, tie, or catch a Charge.'),
         detail: text(
-          `${higher ? '前辈保留的普通招比你当前等级高，同档普通招硬碰会被压制。' : '同档普通技能相撞时比较技能等级。'}普通防能挡下他的普通招；轰轰或六克能与二档攻击打平，双方仍花能量。等他攒时用轰反击，仍要猜他是否换招。人物等级不会给旧牌加伤。`,
-          `${higher ? 'The veteran has a higher-level ordinary skill; a lower-level same-tier clash loses. ' : 'Same-tier ordinary skills compare their skill levels. '}Defend blocks this ordinary attack. Double Blast or 6g Strike ties it, spending energy on both sides. Blast can catch a Charge, but the veteran may change moves. Player level does not add damage to old cards.`,
+          `${higher ? '前辈保留的普通招比你当前等级高，同档普通招硬碰会被压制。' : '同档普通技能相撞时比较技能等级。'}普通防能挡下他的普通招；轰轰能与二档攻击打平，双方仍花能量。等他攒时用轰反击，仍要猜他是否换招。人物等级不会给旧牌加伤。`,
+          `${higher ? 'The veteran has a higher-level ordinary skill; a lower-level same-tier clash loses. ' : 'Same-tier ordinary skills compare their skill levels. '}Defend blocks this ordinary attack. Double Blast ties it, spending energy on both sides. Blast can catch a Charge, but the veteran may change moves. Player level does not add damage to old cards.`,
         ),
         cardIds: attack ? ['hong2', attack.id] : ['defend', 'hong2'],
         ...(attack ? { relation: '=' as const } : {}),

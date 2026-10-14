@@ -20,7 +20,7 @@ test('offline duel starts with multiplayer HP, zero energy, and the full base de
     assert.equal(participant.selectedCardId, null);
   }
   assert.deepEqual(new Set(getLocalPracticeCards(state.players).map(card => card.id)),
-    new Set(['charge', 'defend', 'hong', 'hong2', 'liuke', 'ka', 'ji', 'kajifen', 'kajisuper']));
+    new Set(['charge', 'defend', 'hong', 'hong2', 'ka', 'ji', 'kajifen', 'kajisuper']));
   assert.deepEqual(getLocalPracticeLegalCards(state.players).map(card => card.id), ['charge', 'defend']);
 });
 
@@ -121,4 +121,18 @@ test('reachable bot decisions remain legal across repeated real duels', () => {
     }
   }
   assert.ok(finished > 0, 'Real AI duels must reach an actual terminal result');
+});
+
+test('retired moves cannot return through copied free or temporary practice hands', () => {
+  const state = createLocalPractice();
+  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap'];
+  state.players.forEach(participant => {
+    participant.energy = 10;
+    participant.freeSkills = [...retired];
+    participant.tempSkills = [...retired];
+  });
+  for (const id of retired) {
+    assert.ok(!getLocalPracticeCards(state.players).some(card => card.id === id));
+    assert.throws(() => resolveLocalPracticeTurn(state, id), /Unavailable practice card/);
+  }
 });

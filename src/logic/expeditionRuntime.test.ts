@@ -221,3 +221,40 @@ test('legacy expedition saves expose overflow without pruning fixed enemy roster
   const replay = setupExpeditionStage(choices, 16, identity, seeded);
   assert.ok(getPlayerCards(hero(replay), replay.players).some(card => card.id === 'skydragon'));
 });
+
+test('legacy temporary cards are retired when entering a stage or claiming a reward', () => {
+  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap'];
+  const valid = { cardId: 'pegasus', usesLeft: 2 };
+  const previous = { ...createExpeditionRun(), tempCards: [valid, ...retired.map(cardId => ({ cardId, usesLeft: 3 }))] };
+  const before = structuredClone(previous);
+  const battle = setupExpeditionStage(previous, 0, identity, seeded);
+  assert.deepEqual(battle.run.tempCards, [valid]);
+  assert.deepEqual(hero(battle).tempSkills, ['pegasus']);
+  assert.ok(getPlayerCards(hero(battle), battle.players).every(card => !retired.includes(card.id)));
+  const reward = takeExpeditionReward(previous, { kind: 'levelup', level: 1 });
+  assert.deepEqual(reward.tempCards, [valid]);
+  assert.deepEqual(previous, before, 'Retiring cards cannot mutate the saved run');
+});
+
+test('an old expedition run compacts unlocks once without turning deleted reward groups into new skills', () => {
+  const old: ExpeditionRun = { ...createExpeditionRun(), skillCatalogVersion: 1,
+    inventory: [0, 12, 13, 14, 15, 16, 17, 20, 21, 23],
+    skillLoadout: ['aoxi', 'pointdiff', 'threestar', 'fiveslap', 'bang', 'hongtian', 'poison'],
+    tempCards: [{ cardId: 'pointdiff', usesLeft: 3 }, { cardId: 'pegasus', usesLeft: 2 }] };
+  const before = structuredClone(old);
+  const battle = setupExpeditionStage(old, 0, identity, seeded);
+  assert.equal(battle.run.skillCatalogVersion, 2);
+  assert.deepEqual(battle.run.inventory, [0, 12, 13, 16, 17, 19]);
+  assert.deepEqual(battle.run.skillLoadout, ['aoxi', 'bang', 'hongtian', 'poison']);
+  assert.deepEqual(battle.run.tempCards, [{ cardId: 'pegasus', usesLeft: 2 }]);
+  assert.equal(hero(battle).skillCatalogVersion, 2);
+  const replay = setupExpeditionStage(battle.run, 0, identity, seeded);
+  assert.deepEqual(replay.run.inventory, battle.run.inventory);
+  assert.deepEqual(replay.run.skillLoadout, battle.run.skillLoadout);
+  assert.deepEqual(old, before);
+  const deletedOnly = setupExpeditionStage({ ...createExpeditionRun(), skillCatalogVersion: 1,
+    inventory: [0, 13], skillLoadout: ['pointdiff'] }, 0, identity, seeded);
+  assert.deepEqual(deletedOnly.run.inventory, [0]);
+  assert.deepEqual(deletedOnly.run.skillLoadout, []);
+  assert.ok(!getPlayerCards(hero(deletedOnly), deletedOnly.players).some(card => card.id === 'bang'));
+});

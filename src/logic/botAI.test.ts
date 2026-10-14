@@ -112,7 +112,7 @@ test('AI avoids attacks that cannot reach and considers other bots in a free-for
 
 test('dead players do not act but their room-wide movement unlock remains available', () => {
   const me = bot({ disabledSkills: only('ascend') });
-  const dead = opponent({ id: 'dead', isDead: true, inventory: [0, 20], energy: 10 });
+  const dead = opponent({ id: 'dead', isDead: true, inventory: [0, 16], energy: 10 });
   assert.equal(getBotMove(me, [me, opponent(), dead]), 'ascend');
   const active = bot({ energy: 2 });
   const enemy = opponent({ energy: 2 });

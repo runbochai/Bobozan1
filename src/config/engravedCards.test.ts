@@ -30,3 +30,9 @@ test('approved skill prints stay separate from the four navy covers', () => {
   assert.deepEqual(manifest.cards.map(({ id, file }) => ({ id, file })), [{ id: 'charge', file: 'charge.webp' }]);
 });
 
+test('retired skills have no live art mapping', () => {
+  for (const id of ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap']) {
+    assert.equal(WOODCUT_CARDS[id], undefined, id);
+    assert.ok(!SKILL_DB.some(card => card.id === id));
+  }
+});

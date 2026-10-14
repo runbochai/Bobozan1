@@ -26,7 +26,7 @@
 .multiplayer-results-header .multiplayer-results-eyebrow { margin: 0 0 6px; color: #f5ce86; font-size: 12px; font-weight: 800; letter-spacing: .12em; }
 .multiplayer-results-header h2 { display: flex; align-items: center; justify-content: center; gap: 10px; margin: 0 0 8px; color: #ffe0a0; font-size: clamp(23px, 6vw, 32px); line-height: 1.3; }
 .multiplayer-results-header h2 > svg { flex: 0 0 auto; }
-.multiplayer-results-header h2:focus { outline: none; }
+.multiplayer-results-header h2:focus { outline: none !important; }
 .multiplayer-results-header progress { display: block; width: 100%; height: 6px; margin: 15px 0 20px; overflow: hidden; appearance: none; border: 0; background: #344750; color: #ddba77; }
 .multiplayer-results-header progress::-webkit-progress-bar { background: #344750; }
 .multiplayer-results-header progress::-webkit-progress-value { background: #ddba77; }
@@ -52,7 +52,7 @@
 .multiplayer-results-standings table { width: 100%; border-collapse: collapse; text-align: left; }
 .multiplayer-results-standings thead { background: #263945; color: #adbdbf; font-size: 11px; }
 .multiplayer-results-standings th, .multiplayer-results-standings td { padding: 8px 10px; border-bottom: 1px solid #3c5059; }
-.multiplayer-results-standings thead th:first-child, .multiplayer-results-standings td:first-child { width: 46px; text-align: center; }
+.multiplayer-results-standings thead th:first-child, .multiplayer-results-standings td:first-child { width: 46px; text-align: center; white-space: nowrap; }
 .multiplayer-results-standings td:first-child > svg { display: inline-block; vertical-align: middle; }
 .multiplayer-results-standings th:last-child, .multiplayer-results-standings td:last-child { width: 86px; text-align: right; }
 .multiplayer-results-standings tbody th { font-weight: 600; }

@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import type { Player } from '../types';
 import { SKILL_DB } from '../data/skills';
-import { calculateTurnOutcome } from './combat';
+import { calculateTurnOutcome, getPlayerCards } from './combat';
 import { getSkillOverflow, hasSkillOverflow } from './skillLoadout';
 
 const player = (id: string, selectedCardId: string, patch: Partial<Player> = {}): Player => ({
@@ -12,6 +12,18 @@ const player = (id: string, selectedCardId: string, patch: Partial<Player> = {})
 });
 const after = (result: ReturnType<typeof calculateTurnOutcome>, id: string) =>
   result.players.find(p => p.id === id)!;
+
+test('movement unlocks for the table when the renumbered Sky Bomb skill is earned', () => {
+  const skyLevel = SKILL_DB.find(card => card.id === 'hongtian')!.levelRequired;
+  assert.equal(skyLevel, 16);
+  const me = player('me', 'charge');
+  const beforeUnlock = player('other', 'charge', { inventory: [0, skyLevel - 1] });
+  const afterUnlock = { ...beforeUnlock, inventory: [...beforeUnlock.inventory, skyLevel] };
+  for (const id of ['ascend', 'descend']) {
+    assert.equal(getPlayerCards(me, [me, beforeUnlock]).some(card => card.id === id), false);
+    assert.equal(getPlayerCards(me, [me, afterUnlock]).some(card => card.id === id), true);
+  }
+});
 
 for (const mode of ['expedition', 'practice'] as const) {
   test(mode + ': another player dying cannot remove HP or reset an untouched survivor', () => {
@@ -214,12 +226,12 @@ test('defendedHits counts each in-range attack stopped by the card, including st
   assert.equal(result.defendedHits.defender, 2);
   assert.equal(result.damageTaken.defender, 0);
   assert.equal(result.defendedHits['already-dead'], 0);
-  for (const move of ['fivedef', 'defend']) {
+  for (const move of ['handdef', 'footdef', 'defend']) {
     const wave = calculateTurnOutcome([
       player('defender', move), player('attacker', 'wave'),
     ], 1, 1, 'zh', { mode: 'expedition' });
-    assert.equal(wave.defendedHits.defender, move === 'fivedef' ? 1 : 0);
-    assert.equal(wave.damageTaken.defender, move === 'fivedef' ? 0 : 1);
+    assert.equal(wave.defendedHits.defender, move === 'defend' ? 0 : 1);
+    assert.equal(wave.damageTaken.defender, move === 'defend' ? 1 : 0);
   }
 });
 

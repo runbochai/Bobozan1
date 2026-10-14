@@ -16,7 +16,7 @@ const veteranStage = () => EXPEDITION_STAGES.findIndex(stage => stage.enemies.so
 const knownLevels = (level: number) => [0, ...EXPEDITION_SKILL_LEVELS.filter(value => value <= level)];
 
 test('every ordinary catalog level is unlockable with actual skills, including after level five', () => {
-  assert.equal(EXPEDITION_MAX_LEVEL, 23);
+  assert.equal(EXPEDITION_MAX_LEVEL, 19);
   let run = createExpeditionRun();
   for (const level of EXPEDITION_SKILL_LEVELS) {
     const before = structuredClone(run);
@@ -38,14 +38,14 @@ test('every ordinary catalog level is unlockable with actual skills, including a
     assert.deepEqual(takeExpeditionReward(run, { kind: 'levelup', level }).skillLoadout, run.skillLoadout, 'Stale reward cannot restore rejected skills');
   }
   assert.equal(nextExpeditionLevel(run.inventory), null);
-  assert.deepEqual(takeExpeditionReward(run, { kind: 'levelup', level: 24 }), run);
+  assert.deepEqual(takeExpeditionReward(run, { kind: 'levelup', level: 20 }), run);
   assert.deepEqual(takeExpeditionReward(run, { kind: 'levelup', level: 100 }), run);
   assert.ok(genRewardOptions(5, 5, [], 3, run.inventory, 17, fixed).every(option => option.kind !== 'levelup'));
 });
 
 test('an upgrade badge keeps working past five, but never spends gold for an empty or duplicate level', () => {
   const onlyBadgeUnowned = EXPEDITION_EQUIPMENTS.filter(item => item.id !== 'levelbadge').map(item => item.id);
-  for (const current of [5, 6, 11, 18, 22]) {
+  for (const current of [5, 6, 11, 17, 18]) {
     const before = { ...createExpeditionRun(), inventory: knownLevels(current), gold: 100, skillLoadout: [] };
     const after = buyExpeditionItem(before, { kind: 'equipment', equipment: badge }, fixed);
     assert.equal(expeditionLevel(after.inventory), current + 1);
@@ -56,9 +56,9 @@ test('an upgrade badge keeps working past five, but never spends gold for an emp
     assert.equal(before.gold, 100);
     assert.deepEqual(before.skillLoadout, []);
   }
-  const complete = { ...createExpeditionRun(), inventory: knownLevels(23), gold: 100 };
+  const complete = { ...createExpeditionRun(), inventory: knownLevels(19), gold: 100 };
   assert.deepEqual(buyExpeditionItem(complete, { kind: 'equipment', equipment: badge }, fixed), complete);
-  assert.ok(genShopItems(onlyBadgeUnowned, 23, 17, fixed).every(item => item.kind !== 'equipment'));
+  assert.ok(genShopItems(onlyBadgeUnowned, 19, 17, fixed).every(item => item.kind !== 'equipment'));
 });
 
 test('secret draws and secret gear return real nearby cards at every level including layer-only gaps and the catalog end', () => {
@@ -68,7 +68,7 @@ test('secret draws and secret gear return real nearby cards at every level inclu
     assert.equal(new Set(pool).size, pool.length);
     for (const random of [() => 0, () => .5, () => 1]) {
       const draw = drawGachaCard(level, stage, random), skill = SKILL_DB.find(card => card.id === draw.cardId)!;
-      assert.ok(skill && skill.levelRequired > 0 && skill.levelRequired <= 23);
+      assert.ok(skill && skill.levelRequired > 0 && skill.levelRequired <= 19);
       assert.ok(Math.abs(skill.levelRequired - level) <= 2);
       assert.ok(!skill.tags?.some(tag => ['combo', 'hit_up', 'hit_down'].includes(tag)));
       assert.ok(draw.uses >= 1 && draw.uses <= 3);
@@ -107,7 +107,7 @@ test('the new encounter uses a genuinely stronger ordinary attack for every norm
 
 test('higher-level encounter attacks win ordinary clashes while free defense and basic two-cost ties remain valid', () => {
   const stageIndex = veteranStage();
-  for (let level = 0; level < 23; level++) {
+  for (let level = 0; level < 19; level++) {
     const battle = setupExpeditionStage({ ...createExpeditionRun(), inventory: knownLevels(level) }, stageIndex, identity, fixed);
     const originalHero = battle.players.find(player => player.id === EXPEDITION_HERO_ID)!;
     const originalEnemy = battle.players.find(player => player.id !== EXPEDITION_HERO_ID)!;
@@ -115,7 +115,7 @@ test('higher-level encounter attacks win ordinary clashes while free defense and
     assert.ok(attack.levelRequired > level);
     const hero = { ...originalHero, energy: 10, hp: 3 };
     const enemy = { ...originalEnemy, energy: 10, hp: 3, selectedCardId: attack.id };
-    for (const response of ['defend', 'hong2', 'liuke']) {
+    for (const response of ['defend', 'hong2']) {
       const outcome = calculateTurnOutcome([{ ...hero, selectedCardId: response }, enemy], 1, 1, 'zh', { mode: 'expedition' });
       assert.equal(outcome.damageTaken[hero.id], 0, `${response} against ${attack.id}`);
       assert.equal(outcome.damageTaken[enemy.id], 0);
@@ -132,10 +132,23 @@ test('higher-level encounter attacks win ordinary clashes while free defense and
 
 test('maximum-level artificial runs get a real catalog card and an honest fallback, without fake combat levels', () => {
   const stageIndex = veteranStage(), enemy = EXPEDITION_STAGES[stageIndex].enemies[0];
-  const resolved = resolveExpeditionEnemyLoadout(enemy, [0, 23]);
-  assert.deepEqual(resolved, { inventory: [0, 23], skillLoadout: ['poison'] });
-  const battle = setupExpeditionStage({ ...createExpeditionRun(), inventory: knownLevels(23) }, stageIndex, identity, fixed);
+  const resolved = resolveExpeditionEnemyLoadout(enemy, [0, 19]);
+  assert.deepEqual(resolved, { inventory: [0, 19], skillLoadout: ['poison'] });
+  const battle = setupExpeditionStage({ ...createExpeditionRun(), inventory: knownLevels(19) }, stageIndex, identity, fixed);
   assert.ok(battle.logs.some(log => log.text.includes('不再高于')));
   assert.equal(expeditionLevel([0, 5, 100, NaN, -1]), 5, 'Combination sentinels and malformed values cannot create fake levels');
   assert.equal(nextExpeditionLevel([0, 5, 100]), 6);
+});
+
+test('the compressed catalog has every level from one through nineteen and no retired group rewards', () => {
+  assert.deepEqual(EXPEDITION_SKILL_LEVELS, Array.from({ length: 19 }, (_, index) => index + 1));
+  assert.equal(nextExpeditionLevel(knownLevels(12)), 13);
+  const run = { ...createExpeditionRun(), inventory: knownLevels(12) };
+  const offered = genRewardOptions(3, 3, [], 3, run.inventory, 10, fixed);
+  assert.ok(offered.some(option => option.kind === 'levelup' && option.level === 13));
+  const upgraded = takeExpeditionReward(run, { kind: 'levelup', level: 13 });
+  assert.ok(upgraded.skillLoadout?.includes('bang'));
+  assert.equal(SKILL_DB.find(card => card.id === 'bang')!.levelRequired, 13);
+  assert.equal(SKILL_DB.find(card => card.id === 'poison')!.levelRequired, 19);
+  assert.ok(upgraded.skillLoadout?.every(id => !['pointdiff', 'threestar', 'fiveslap'].includes(id)));
 });

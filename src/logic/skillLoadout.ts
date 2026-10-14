@@ -1,13 +1,18 @@
 import type { Card, HandCategory } from '../types';
 import { SKILL_DB } from '../data/skills';
 
+export const SKILL_CATALOG_VERSION = 2;
 export const SKILL_SLOT_LIMIT = 3;
 export const SKILL_CATEGORIES = ['ATTACK', 'DEFEND', 'ULTIMATE'] as const;
 export type SkillCategory = typeof SKILL_CATEGORIES[number];
 export type SkillSelections = Partial<Record<SkillCategory, readonly string[]>>;
 export interface SkillLoadoutState {
   inventory: number[];
+  /** Version 2 removes the old Lv.13–16 skill groups and compacts later unlocks. */
+  skillCatalogVersion?: number;
   skillLoadout?: string[];
+  tempSkills?: string[];
+  freeSkills?: string[];
   /** Old saves may have a whole level awaiting the previous discard screen. */
   pendingLevel?: number | null;
 }
@@ -47,12 +52,31 @@ function readSkillLoadout(holder: SkillLoadoutState) {
 
 export const getRetainedSkillIds = (holder: SkillLoadoutState): string[] => readSkillLoadout(holder).skillLoadout;
 
-/** Migration exposes every old skill; only an explicit choice may remove a human's cards. */
-export function normalizeSkillLoadout<T extends SkillLoadoutState>(holder: T): T & { skillLoadout: string[] } {
-  return { ...holder, ...readSkillLoadout(holder) };
+/** Keep available saved skills for explicit selection; retired IDs cannot create borrowed cards. */
+export function normalizeSkillLoadout<T extends SkillLoadoutState>(holder: T): T & { skillLoadout: string[]; skillCatalogVersion: number } {
+  return { ...holder, ...readSkillLoadout(holder), skillCatalogVersion: SKILL_CATALOG_VERSION,
+    ...(holder.tempSkills ? { tempSkills: holder.tempSkills.filter(id => byId.has(id)) } : {}),
+    ...(holder.freeSkills ? { freeSkills: holder.freeSkills.filter(id => byId.has(id)) } : {}),
+  };
 }
 
-export function grantSkillLevel<T extends SkillLoadoutState>(holder: T, level: number): T & { skillLoadout: string[] } {
+/** Only storage/network boundaries use this: unversioned data uses the original catalog levels. */
+export function migrateLegacySkillCatalog<T extends SkillLoadoutState>(holder: T): T & { skillLoadout: string[]; skillCatalogVersion: number } {
+  if ((holder.skillCatalogVersion ?? 0) >= SKILL_CATALOG_VERSION) return normalizeSkillLoadout(holder);
+  const migrateLevel = (level: number): number | null => {
+    if (!Number.isSafeInteger(level) || level < 0 || level > 23) return null;
+    if (level <= 12) return level;
+    return level >= 17 ? level - 4 : null;
+  };
+  const inventory = holder.inventory.flatMap(level => {
+    const mapped = migrateLevel(level);
+    return mapped == null ? [] : [mapped];
+  });
+  const pendingLevel = holder.pendingLevel == null ? holder.pendingLevel : migrateLevel(holder.pendingLevel);
+  return normalizeSkillLoadout({ ...holder, inventory, ...(holder.pendingLevel != null ? { pendingLevel } : {}) });
+}
+
+export function grantSkillLevel<T extends SkillLoadoutState>(holder: T, level: number): T & { skillLoadout: string[]; skillCatalogVersion: number } {
   const next = normalizeSkillLoadout(holder);
   if (!next.inventory.includes(level)) {
     next.inventory.push(level);
@@ -76,7 +100,7 @@ export function getSkillOverflow(holder: SkillLoadoutState): SkillOverflow[] {
 export const hasSkillOverflow = (holder: SkillLoadoutState) => getSkillOverflow(holder).length > 0;
 
 /** A missing, stale or foreign choice is rejected as a whole, never partially applied. */
-export function resolveSkillLoadout<T extends SkillLoadoutState>(holder: T, selections: SkillSelections): (T & { skillLoadout: string[] }) | null {
+export function resolveSkillLoadout<T extends SkillLoadoutState>(holder: T, selections: SkillSelections): (T & { skillLoadout: string[]; skillCatalogVersion: number }) | null {
   const next = normalizeSkillLoadout(holder), overflow = getSkillOverflow(next);
   const categories = new Set(overflow.map(group => group.category));
   if (Object.keys(selections).some(category => !categories.has(category as SkillCategory))) return null;
@@ -93,7 +117,7 @@ export function resolveSkillLoadout<T extends SkillLoadoutState>(holder: T, sele
 }
 
 /** Bots keep the latest three in each category, without introducing a new combat policy. */
-export function autoSelectSkillLoadout<T extends SkillLoadoutState>(holder: T): T & { skillLoadout: string[] } {
+export function autoSelectSkillLoadout<T extends SkillLoadoutState>(holder: T): T & { skillLoadout: string[]; skillCatalogVersion: number } {
   const next = normalizeSkillLoadout(holder);
   const selections = Object.fromEntries(getSkillOverflow(next).map(group =>
     [group.category, group.cards.slice(0, SKILL_SLOT_LIMIT).map(card => card.id)]));

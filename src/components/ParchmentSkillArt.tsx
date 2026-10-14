@@ -4,11 +4,11 @@ import { WOODCUT_CARDS } from '../data/woodcutCards';
 import { Shield, Sword, Star, Flame, Ghost, ArrowUp, ArrowDown, Target, Skull, Heart, Layers, Scroll } from './PixelIcons';
 
 const symbols: Record<string, typeof Star> = {
-  defend: Shield, hong: Flame, hong2: Flame, liuke: Sword, ka: Sword,
+  defend: Shield, hong: Flame, hong2: Flame, ka: Sword,
   ji: Star, kajifen: Star, kajisuper: Star, ascend: ArrowUp, descend: ArrowDown,
   smallfly: ArrowUp, bigfly: ArrowUp, absorb: Ghost, aoxi: Ghost,
   helmetatk: Shield, helmetdef: Shield, handatk: Sword, handdef: Shield,
-  shatter: Skull, stab: Sword, ninedef: Shield, eightdef: Shield, seveng: Target,
+  shatter: Skull, stab: Sword,
   bang: Flame, hongtian: Flame, hongdi: Flame, skydragon: Star,
   doublewing: Layers, vajra: Shield, allbomb: Flame, heartpoison: Heart, hearteye: Target, poison: Skull,
 };

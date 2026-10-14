@@ -1,13 +1,20 @@
-import type { GameState, Lang, Player } from '../types';
+import type { GameState, Lang, MultiplayerMode, Player } from '../types';
 import { MAX_PLAYERS, MIN_PLAYERS } from '../data/constants';
 import { calculateTurnOutcome, getPlayerCards } from './combat';
 import { getBotMove } from './botAI';
 import { autoSelectSkillLoadout, hasSkillOverflow, normalizeSkillLoadout, resolveSkillLoadout, type SkillSelections } from './skillLoadout';
+import { getMultiplayerMode } from './multiplayerMatch';
 
 export type RoomPatch = Partial<GameState> | null;
 export type RoundId = Pick<GameState, 'turn' | 'matchCount'>;
 export const sameRound = (room: GameState, round: RoundId) =>
   room.turn === round.turn && room.matchCount === round.matchCount;
+
+export function setRoomMode(room: GameState, uid: string, mode: MultiplayerMode): RoomPatch {
+  if (room.hostId !== uid || room.status !== 'LOBBY') return null;
+  if (mode !== 'kills' && mode !== 'survival') throw new Error('Invalid multiplayer mode');
+  return room.multiplayerMode === mode ? null : { multiplayerMode: mode };
+}
 
 export function joinPlayer(room: GameState, player: Player): RoomPatch {
   // Existing members can reconnect during a match, even when the room is full.
@@ -76,7 +83,7 @@ export function advanceRoom(room: GameState, uid: string): RoomPatch {
 
 export function settleRoom(room: GameState, uid: string, round: RoundId, lang: Lang): RoomPatch {
   if (room.hostId !== uid || room.status !== 'SHOWDOWN' || !sameRound(room, round)) return null;
-  const result = calculateTurnOutcome(room.players, room.turn, room.matchCount, lang);
+  const result = calculateTurnOutcome(room.players, room.turn, room.matchCount, lang, { multiplayerMode: getMultiplayerMode(room) });
   return {
     players: result.players,
     logs: [...result.logs, ...room.logs].slice(0, 300),

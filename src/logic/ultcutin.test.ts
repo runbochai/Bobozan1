@@ -43,10 +43,18 @@ test('阵亡玩家的必杀不参与', () => {
 test('every level ultimate and combo has a complete cut-in definition', () => {
   const ults = SKILL_DB.filter(c => isLevelUltimate(c) || c.tags?.includes('combo'));
   assert.ok(ults.length > 0);
+  assert.deepEqual(Object.keys(ULT_CUTINS).sort(), ults.map(card => card.id).sort());
   for (const u of ults) {
     assert.ok(ULT_CUTINS[u.id], `missing cutin for ${u.id}`);
     assert.equal(hasBattleCutin(u), true);
     assert.ok(ULT_CUTINS[u.id].shouts.zh.length && ULT_CUTINS[u.id].shouts.en.length);
+  }
+});
+
+test('retired ultimate moves have no cut-in definitions or presentation from a stale selection', () => {
+  for (const id of ['pointdiff', 'threestar', 'fiveslap']) {
+    assert.equal(ULT_CUTINS[id], undefined);
+    assert.deepEqual(pickUltCutins([p({ selectedCardId: id })], SKILL_DB, 'zh'), []);
   }
 });
 

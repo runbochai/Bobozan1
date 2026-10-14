@@ -1,5 +1,6 @@
 import { MAX_HP } from '../data/constants';
 import type { Player } from '../types';
+import { SKILL_CATALOG_VERSION } from './skillLoadout';
 
 export interface BotPersonality {
   aggression: number;
@@ -35,7 +36,7 @@ export function createBot(id: string, players: Player[]): Player {
   while (players.some(p => p.name === `Bot ${number}`)) number++;
   return {
     id, name: `Bot ${number}`, avatar: BOT_AVATAR, isBot: true,
-    hp: MAX_HP, energy: 0, isDead: false, inventory: [0], layer: 0, tempLayerMod: 0,
+    hp: MAX_HP, energy: 0, isDead: false, inventory: [0], skillCatalogVersion: SKILL_CATALOG_VERSION, layer: 0, tempLayerMod: 0,
     selectedCardId: null, lastCardId: null, lastAction: null,
     emoji: null, emojiAt: null, freeSkills: [], pendingLevel: null, disabledSkills: [],
     revengeObtainedAt: null, kills: 0,

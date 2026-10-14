@@ -3,6 +3,8 @@ import { requireDatabase } from '../firebase';
 import { APP_ID } from '../data/constants';
 import type { GameState } from '../types';
 import type { RoomPatch } from '../logic/room';
+import { migrateRoomSkillCatalog } from '../logic/roomCatalog';
+import { SKILL_CATALOG_VERSION } from '../logic/skillLoadout';
 
 export const roomRef = (code: string) => doc(requireDatabase(), 'rooms', `${APP_ID}_${code.trim().toUpperCase()}`);
 
@@ -13,9 +15,11 @@ export async function mutateRoom(code: string, update: (room: GameState) => Room
   return runTransaction(requireDatabase(), async transaction => {
     const snapshot = await transaction.get(ref);
     if (!snapshot.exists()) throw new Error('roomNotFound');
-    const room = snapshot.data() as GameState;
+    const room = migrateRoomSkillCatalog(snapshot.data() as GameState);
     const patch = update(room);
-    if (patch) transaction.update(ref, patch);
+    if (patch) transaction.update(ref, {
+      players: room.players, matchCount: room.matchCount, skillCatalogVersion: SKILL_CATALOG_VERSION, ...patch,
+    });
     return patch ? { ...room, ...patch } : room;
   });
 }
@@ -26,7 +30,7 @@ export async function createUniqueRoom(room: GameState) {
     const ref = roomRef(code);
     const created = await runTransaction(requireDatabase(), async transaction => {
       if ((await transaction.get(ref)).exists()) return false;
-      transaction.set(ref, room);
+      transaction.set(ref, migrateRoomSkillCatalog({ ...room, skillCatalogVersion: SKILL_CATALOG_VERSION }));
       return true;
     });
     if (created) return code;

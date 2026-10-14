@@ -1,0 +1,14 @@
+.pixel-app .multiplayer-mode-choice { min-width:0; margin:0; padding:0; border:0; color:#f1dfb8; }
+.multiplayer-mode-choice legend { margin-bottom:8px; padding:0; font:600 12px/1.4 system-ui,sans-serif; color:#cdbb97; }
+.multiplayer-mode-options { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; }
+.multiplayer-mode-options label { position:relative; display:flex; align-items:center; justify-content:center; gap:9px; min-height:46px; padding:9px 12px; border:2px solid #8e805e; background:#152c36; cursor:pointer; font:700 15px/1.3 system-ui,sans-serif; }
+.multiplayer-mode-options label[data-selected='true'] { color:#182732; background:#d6b67e; border-color:#f0d7a6; }
+.multiplayer-mode-options input { width:16px; height:16px; min-width:16px; min-height:16px; padding:0; margin:0; border:0; box-shadow:none; accent-color:#5e4b2e; flex-shrink:0; }
+.multiplayer-mode-options label:focus-within { outline:3px solid #ffe1a0; outline-offset:3px; }
+.multiplayer-mode-choice:disabled label { cursor:default; }
+.multiplayer-mode-choice[aria-busy='true'] label { opacity:.65; cursor:wait; }
+.multiplayer-opening { position:fixed; inset:0; z-index:80; display:grid; place-items:center; pointer-events:none; }
+.multiplayer-opening p { max-width:calc(100vw - 24px); margin:0; color:#ffe6ae; font:900 clamp(19px,4.6vw,48px)/1.25 system-ui,sans-serif; white-space:nowrap; text-align:center; text-shadow:0 2px #66452b, 0 4px 3px #05121c, 0 0 24px #05121c; animation:multiplayer-goal-fade 3.2s ease-out both; }
+@keyframes multiplayer-goal-fade { 0%,65% { opacity:1; } 100% { opacity:0; } }
+.multiplayer-opening[data-reduced-motion='true'] p, .reduce-motion .multiplayer-opening p { animation:none; }
+@media (prefers-reduced-motion:reduce) { .multiplayer-opening p { animation:none; } }

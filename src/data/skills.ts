@@ -8,7 +8,6 @@ export const SKILL_DB: Card[] = [
   { id: 'defend', name: { zh: '防', en: 'Defend' }, cost: 0, type: 'DEFEND', levelRequired: 0, tier: 0, description: { zh: '抵挡大部分攻击', en: 'Block basic attacks' } },
   { id: 'hong', name: { zh: '轰', en: 'Blast' }, cost: 1, type: 'ATTACK', levelRequired: 0, tier: 1, description: { zh: '基础攻击', en: 'Basic Attack' } },
   { id: 'hong2', name: { zh: '轰轰', en: 'Double Blast' }, cost: 2, type: 'ATTACK', levelRequired: 0, tier: 2, description: { zh: '压过轰；与高级二档攻击打平', en: 'Beats Blast; ties higher-level tier-2 attacks' } },
-  { id: 'liuke', name: { zh: '六克', en: '6g Strike' }, cost: 2, type: 'ATTACK', levelRequired: 0, tier: 2, description: { zh: '压过轰；与高级二档攻击打平', en: 'Beats Blast; ties higher-level tier-2 attacks' } },
   { id: 'ka', name: { zh: '咔', en: 'Ka' }, cost: 3, type: 'ULTIMATE', levelRequired: 0, tier: 3, description: { zh: '破普通防，射程自身及上下各1层', en: 'Breaks basic Defend; reaches your layer and ±1' } },
   { id: 'ji', name: { zh: '叽', en: 'Ji' }, cost: 4, type: 'ULTIMATE', levelRequired: 0, tier: 4, description: { zh: '破普通防，射程自身及上下各1层', en: 'Breaks basic Defend; reaches your layer and ±1' } },
   { id: 'kajifen', name: { zh: '咔叽粉', en: 'KaJi' }, cost: 5, type: 'ULTIMATE', levelRequired: 0, tier: 5, description: { zh: '必杀技', en: 'SUPER' } },
@@ -67,47 +66,29 @@ export const SKILL_DB: Card[] = [
   { id: 'footdef', name: { zh: '脚盔防', en: 'Foot Def' }, cost: 0, type: 'DEFEND', levelRequired: 11, tier: 0, description: { zh: '脚盔防御', en: 'Foot Defense' } },
 
   // Lvl 12
-  { id: 'aoxi', name: { zh: '奥吸', en: 'Ultra Absorb' }, cost: 1, type: 'ABSORB', levelRequired: 12, tier: 0, description: { zh: '吸收2倍其他玩家打出的技能 (若被六克击中则被淘汰)', en: 'Absorb 2x (Countered by 6g)' }, tags: ['ao_absorb'] },
+  { id: 'aoxi', name: { zh: '奥吸', en: 'Ultra Absorb' }, cost: 1, type: 'ABSORB', levelRequired: 12, tier: 0, description: { zh: '吸收2倍其他玩家打出的技能 (若被轰击中则被淘汰)', en: 'Absorb 2x (Countered by Blast)' }, tags: ['ao_absorb'] },
 
   // Lvl 13
-  { id: 'oneg', name: { zh: '一克', en: '1g' }, cost: 1, type: 'ATTACK', levelRequired: 13, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
-  { id: 'pointdiff', name: { zh: '点差', en: 'Point Diff' }, cost: 3, type: 'ULTIMATE', levelRequired: 13, tier: 4, description: { zh: '终极技能', en: 'Ultimate Skill' } },
+  { id: 'bang', name: { zh: '崩!', en: 'Bang!' }, cost: 1, type: 'ATTACK', levelRequired: 13, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
 
   // Lvl 14
-  { id: 'threeg', name: { zh: '三克', en: '3g' }, cost: 1, type: 'ATTACK', levelRequired: 14, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
-  { id: 'threestar', name: { zh: '三星龙', en: '3-Star' }, cost: 3, type: 'ULTIMATE', levelRequired: 14, tier: 4, description: { zh: '终极技能', en: 'Ultimate Skill' } },
+  { id: 'stab', name: { zh: '捅', en: 'Stab' }, cost: 1, type: 'ATTACK', levelRequired: 14, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
 
   // Lvl 15
-  { id: 'fiveg', name: { zh: '五克', en: '5g' }, cost: 1, type: 'ATTACK', levelRequired: 15, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
-  { id: 'fiveslap', name: { zh: '五连拍', en: '5 Slaps' }, cost: 3, type: 'ULTIMATE', levelRequired: 15, tier: 4, description: { zh: '终极技能', en: 'Ultimate Skill' } },
-  { id: 'fivedef', name: { zh: '五克防', en: '5g Def' }, cost: 0, type: 'DEFEND', levelRequired: 15, tier: 0, description: { zh: '五克防御', en: '5g Defense' } },
+  { id: 'wave', name: { zh: '天下第一波', en: 'World Wave' }, cost: 1, type: 'ATTACK', levelRequired: 15, tier: 2, description: { zh: '击破普通防、龙爪防和头盔防；飞行、手盔防、脚盔防仍能抵挡', en: 'Breaks Defend, Claw Def and Helm Def; Fly, Hand Def and Foot Def still block it' }, tags: ['break_mid_def'] },
+  { id: 'superwave', name: { zh: '超级第一波', en: 'Super Wave' }, cost: 3, type: 'ULTIMATE', levelRequired: 15, tier: 4, description: { zh: '终极技能', en: 'Ultimate Skill' } },
 
   // Lvl 16
-  { id: 'seveng', name: { zh: '七克', en: '7g' }, cost: 1, type: 'ATTACK', levelRequired: 16, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
+  { id: 'hongtian', name: { zh: '轰天', en: 'Sky Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 16, tier: 2, description: { zh: '攻击上层玩家', en: 'Attack Player Above' }, tags: ['hit_up'] },
 
   // Lvl 17
-  { id: 'bang', name: { zh: '崩!', en: 'Bang!' }, cost: 1, type: 'ATTACK', levelRequired: 17, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
-  { id: 'eightdef', name: { zh: '八克防', en: '8g Def' }, cost: 0, type: 'DEFEND', levelRequired: 17, tier: 0, description: { zh: '八克防御', en: '8g Defense' } },
+  { id: 'hongdi', name: { zh: '轰地', en: 'Land Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 17, tier: 2, description: { zh: '攻击下层玩家', en: 'Attack Player Below' }, tags: ['hit_down'] },
 
   // Lvl 18
-  { id: 'stab', name: { zh: '捅', en: 'Stab' }, cost: 1, type: 'ATTACK', levelRequired: 18, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
-  { id: 'ninedef', name: { zh: '九克防', en: '9g Def' }, cost: 0, type: 'DEFEND', levelRequired: 18, tier: 0, description: { zh: '九克防御', en: '9g Defense' } },
+  { id: 'hearteye', name: { zh: '诛心诛眼', en: 'Heart & Eye' }, cost: 1, type: 'ATTACK', levelRequired: 18, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
 
   // Lvl 19
-  { id: 'wave', name: { zh: '天下第一波', en: 'World Wave' }, cost: 1, type: 'ATTACK', levelRequired: 19, tier: 2, description: { zh: '击败任意<九克', en: 'Break Def < 9g (Exc. Fly)' }, tags: ['break_mid_def'] },
-  { id: 'superwave', name: { zh: '超级第一波', en: 'Super Wave' }, cost: 3, type: 'ULTIMATE', levelRequired: 19, tier: 4, description: { zh: '终极技能', en: 'Ultimate Skill' } },
-
-  // Lvl 20
-  { id: 'hongtian', name: { zh: '轰天', en: 'Sky Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 20, tier: 2, description: { zh: '攻击上层玩家', en: 'Attack Player Above' }, tags: ['hit_up'] },
-
-  // Lvl 21
-  { id: 'hongdi', name: { zh: '轰地', en: 'Land Bomb' }, cost: 1, type: 'ATTACK', levelRequired: 21, tier: 2, description: { zh: '攻击下层玩家', en: 'Attack Player Below' }, tags: ['hit_down'] },
-
-  // Lvl 22
-  { id: 'hearteye', name: { zh: '诛心诛眼', en: 'Heart & Eye' }, cost: 1, type: 'ATTACK', levelRequired: 22, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
-
-  // Lvl 23
-  { id: 'poison', name: { zh: '散发毒气', en: 'Poison' }, cost: 1, type: 'ATTACK', levelRequired: 23, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
+  { id: 'poison', name: { zh: '散发毒气', en: 'Poison' }, cost: 1, type: 'ATTACK', levelRequired: 19, tier: 2, description: { zh: '攻击技能', en: 'Attack Skill' } },
 
   // Combos
   { id: 'skydragon', name: { zh: '天龙剑', en: 'Sky Dragon' }, cost: 3, type: 'ULTIMATE', levelRequired: 100, tier: 5, description: { zh: '联合: 压制普通终极，与咔叽粉相抵；射程上下各3层', en: 'Combo: beats ordinary Ults; ties KaJi; reaches ±3 layers' }, tags: ['combo'] },

@@ -51,3 +51,16 @@ test('discarded unlock history does not alter public opponent forecasts or mutat
   );
   assert.deepEqual(longHistory, before);
 });
+
+test('both AIs ignore retired skills in legacy retained, free and temporary copies', () => {
+  const retired = ['liuke', 'oneg', 'threeg', 'fiveg', 'fivedef', 'seveng', 'eightdef', 'ninedef', 'pointdiff', 'threestar', 'fiveslap'];
+  const enemy = player('enemy', { energy: 10, inventory: [0, 13, 14, 15, 16, 17, 18],
+    skillLoadout: [...retired], freeSkills: [...retired], tempSkills: [...retired] });
+  const hero = player('hero');
+  const weights = expeditionMoveWeights(enemy, [enemy, hero], personality, hero.id);
+  assert.ok(weights.every(entry => !retired.includes(entry.cardId)));
+  for (let turn = 1; turn <= 12; turn++) {
+    assert.ok(!retired.includes(getBotMove(enemy, [enemy, hero], { turn })));
+    assert.ok(!retired.includes(expeditionBotMove(enemy, [enemy, hero], personality, hero.id, { random: () => turn / 13 })));
+  }
+});

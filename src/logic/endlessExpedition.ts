@@ -32,7 +32,7 @@ export function getEndlessEnemyLoadout(level: number) {
     && card.levelRequired > 0 && card.levelRequired <= level && card.levelRequired < 100
     && !card.tags?.some(tag => ['combo', 'pierce_basic', 'break_basic', 'break_mid_def', 'hit_up', 'hit_down'].includes(tag)))
     .sort((a, b) => b.levelRequired - a.levelRequired)[0];
-  // Layer-only attacks at Lv.20/21 must not displace every usable same-layer attack.
+  // Layer-only attacks at Lv.16/17 must not displace every usable same-layer attack.
   if (ordinaryAttack && !loadout.skillLoadout.includes(ordinaryAttack.id)) {
     const attacks = loadout.skillLoadout.filter(id => getHandCategory(SKILL_DB.find(card => card.id === id)!) === 'ATTACK');
     if (attacks.length >= 3) loadout.skillLoadout = loadout.skillLoadout.filter(id => id !== attacks[0]);

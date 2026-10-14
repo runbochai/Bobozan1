@@ -46,7 +46,7 @@ test('endless starts at one HP and zero Energy, and every NPC retains a genuine 
   assert.equal(first.run.hp, 1);
   assert.equal(first.run.maxHp, 1);
   assert.equal(hero(first).endlessLevel, 0);
-  for (const level of [1, 6, 7, 20, 21, 22, 23, 24, 150]) for (const floor of [0, 2, 14, 29]) {
+  for (const level of [1, 6, 7, 16, 17, 18, 19, 20, 150]) for (const floor of [0, 2, 14, 29]) {
     const battle = start({ endlessLevel: level - 1, endlessEnemyLevel: level }, floor);
     for (const enemy of battle.players.filter(player => player.isBot)) {
       assert.equal(enemy.endlessLevel, level);
@@ -56,7 +56,7 @@ test('endless starts at one HP and zero Energy, and every NPC retains a genuine 
       const ordinary = getPlayerCards(enemy, battle.players).filter(card => card.type === 'ATTACK' && card.tier === 2
         && card.levelRequired > 0 && !card.tags?.some(tag => ['combo', 'pierce_basic', 'break_basic', 'break_mid_def', 'hit_up', 'hit_down'].includes(tag)));
       assert.ok(ordinary.length > 0, `Lv.${level} floor ${floor} has a same-layer regular attack`);
-      assert.ok(enemy.inventory.every(unlock => unlock <= 23));
+      assert.ok(enemy.inventory.every(unlock => unlock <= 19));
     }
   }
   assert.deepEqual(createExpeditionRun('normal').inventory, [0]);
@@ -203,7 +203,7 @@ test('endless rewards remain useful without a second level-up, and endless shops
     assert.ok(shop.some(item => item.kind === 'equipment' && item.equipment.id === onlyAvailable));
     assert.ok(!shop.some(item => item.kind === 'equipment' && item.equipment.id === 'levelbadge'));
   }
-  const saturated = { ...run, ...autoSelectSkillLoadout({ inventory: Array.from({ length: 24 }, (_, i) => i) }),
+  const saturated = { ...run, ...autoSelectSkillLoadout({ inventory: Array.from({ length: 20 }, (_, i) => i) }),
     hp: 5, maxHp: 5, relics: EXPEDITION_RELICS.map(relic => relic.id), endlessLevel: 200 };
   const late = genExpeditionRewards(saturated, rng);
   assert.equal(late.length, 4);
@@ -213,7 +213,7 @@ test('endless rewards remain useful without a second level-up, and endless shops
 test('saturated endless rewards always fill three choices or four with the map, preferring distinct cards before copies', () => {
   for (let level = 0; level <= 25; level++) for (const withMap of [false, true]) for (const injured of [false, true]) {
     const run: ExpeditionRun = { ...createExpeditionRun('endless'), endlessLevel: level,
-      inventory: Array.from({ length: Math.min(level, 23) + 1 }, (_, i) => i),
+      inventory: Array.from({ length: Math.min(level, 19) + 1 }, (_, i) => i),
       stageIdx: Math.max(0, level - 1), hp: injured ? 4 : 5, maxHp: 5,
       relics: EXPEDITION_RELICS.filter(relic => withMap || relic.id !== 'cbt').map(relic => relic.id) };
     // Constant and boundary rolls are valid seeded sources, not just an average sample.
@@ -229,7 +229,7 @@ test('saturated endless rewards always fill three choices or four with the map, 
         assert.equal(selected.tempCards.find(card => card.cardId === reward.cardId)?.usesLeft, reward.uses);
       }
       const secretIds = options.flatMap(option => option.kind === 'temp' ? [option.cardId] : []);
-      if (level === 23) assert.equal(new Set(secretIds).size, Math.min(2, secretIds.length), 'Both available endgame secrets precede repeated copies');
+      if (level === 19) assert.equal(new Set(secretIds).size, Math.min(2, secretIds.length), 'Both available endgame secrets precede repeated copies');
     }
   }
 });

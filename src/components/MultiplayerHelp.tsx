@@ -22,14 +22,16 @@ export default function MultiplayerHelp({ lang, game, playerId, onOpenRules, com
   const waiting = game.players.filter(player => !player.isDead && !player.isBot && !player.selectedCardId);
   const recap = getMultiplayerRecap(game, lang);
   const series = getMultiplayerMatchSummary(game);
+  const survival = series.mode === 'survival';
   const completedMatches = game.status === 'LOBBY' ? 0 : game.status === 'GAMEOVER' ? series.matchNumber : series.matchNumber - 1;
   const seriesProgress = <div className="multiplayer-series-progress">
     <strong>{game.status === 'LOBBY'
-      ? (zh ? `整场共 ${series.totalMatches} 局` : `${series.totalMatches} matches in this series`)
+      ? (zh ? `整场共 ${series.totalMatches} 局` : `${series.totalMatches} matches in this competition`)
       : (zh ? `第 ${series.matchNumber} / ${series.totalMatches} 局` : `Match ${series.matchNumber} / ${series.totalMatches}`)}</strong>
-    <span>{series.isSeriesOver ? (zh ? '整场结束' : 'Series complete')
-      : (zh ? '打完最后一局，累计击杀最多者夺冠' : 'Most total kills wins after the final match')}</span>
-    <progress max={series.totalMatches} value={Math.min(series.totalMatches, completedMatches)} aria-label={zh ? '整场已完成局数' : 'Completed matches in this series'} />
+    <span>{series.isSeriesOver ? (zh ? '整场结束' : 'Competition complete') : series.isFinalBattle
+      ? (zh ? '王冠争夺 · 最后一战' : 'Crown Battle · Final Match')
+      : (zh ? `升级阶段 · 最高 Lv.${series.lastSkillLevel}` : `Leveling phase · Up to Lv.${series.lastSkillLevel}`)}</span>
+    <progress max={series.totalMatches} value={Math.min(series.totalMatches, completedMatches)} aria-label={zh ? '整场已完成局数' : 'Completed matches in this competition'} />
   </div>;
 
   const rules = [
@@ -59,26 +61,28 @@ export default function MultiplayerHelp({ lang, game, playerId, onOpenRules, com
     <button type="button" onClick={() => setInstruction('cards')}>{zh ? '出牌说明' : 'Card basics'}</button>
     <button type="button" onClick={() => setInstruction('series')}>{zh ? '胜负怎么算' : 'How to win'}</button>
   </div>;
-  const instructionPopup = instruction && <TutorialPopup title={instruction === 'cards' ? (zh ? '先记住这三件事' : 'Three things to know') : (zh ? '一局和整场比赛' : 'One match and the full series')} onDismiss={() => setInstruction(null)}>
+  const instructionPopup = instruction && <TutorialPopup title={instruction === 'cards' ? (zh ? '先记住这三件事' : 'Three things to know') : (zh ? '升级，然后争夺王冠' : 'Level up, then claim the crown')} onDismiss={() => setInstruction(null)}>
     {instruction === 'cards' ? <ol>{rules.map(rule => <li key={rule}>{rule}</li>)}</ol> : <>
-      <p>{zh ? '一局打到至多一人存活。最后的幸存者赢下本局，前面的局数还会获得新技能。' : 'A match ends with at most one survivor. The last survivor wins it and earns skills before the final match.'}</p>
-      <p>{zh ? `整场共 ${series.totalMatches} 局，打完后累计击杀最多的人夺冠；最高分相同就并列。最后一局即使同归于尽，整场也会结束。` : `The series has ${series.totalMatches} matches. Most total kills wins, with joint champions for a tie. Even a final draw completes the series.`}</p>
-      <p>{zh ? '每局结束由房主继续。淘汰者下一局恢复生命、能量归零，已获得的技能和累计击杀保留。' : 'The host starts each next match. Eliminated players return with restored HP and zero energy, keeping learned skills and total kills.'}</p>
+      <p>{zh ? `前 ${series.lastSkillLevel} 局为升级阶段，每局最后的幸存者获得对应等级的新技能。学到最后一级后，进入第 ${series.totalMatches} 局「王冠争夺 · 最后一战」。` : `The first ${series.lastSkillLevel} matches are the leveling phase: each match’s last survivor earns that level’s skills. After the final skill level comes match ${series.totalMatches}, the final Crown Battle.`}</p>
+      <p>{survival
+        ? (zh ? '生存模式由最后一战的幸存者夺冠，前面的击杀数不决定冠军。最后一战若无人存活，以平局结束。' : 'In Survival, the survivor of the final battle wins the crown. Earlier kills do not decide the champion. If nobody survives the final battle, the competition is a draw.')
+        : (zh ? '杀敌模式打完最后一战后，累计击杀最多的人夺冠；最高分相同就并列。最后一战即使同归于尽，也会按累计击杀结算。' : 'In Kills mode, the most cumulative kills after the final battle wins, with joint champions for a tie. Even if nobody survives the final battle, total kills decide the result.')}</p>
+      <p>{zh ? '升级阶段若所有人同归于尽，无人领取本局技能。房主继续下一局；淘汰者恢复生命、能量归零，已获得的技能和战绩保留。最后一战结束后不再升级或开下一局。' : 'A leveling match with no survivors awards no skill. The host starts the next match; eliminated players return with restored HP and zero energy, keeping skills and stats. After the Crown Battle, there is no further upgrade or match.'}</p>
     </>}
   </TutorialPopup>;
 
   if (!compact) return <><section className="multiplayer-help" aria-label={zh ? '开局提示' : 'Before you play'}>
-    <div className="multiplayer-help-heading"><strong>{zh ? '这一场怎么玩' : 'How this series works'}</strong>{rulesButton}</div>
+    <div className="multiplayer-help-heading"><strong>{zh ? '这一场怎么玩' : 'How to play'}</strong>{rulesButton}</div>
     {seriesProgress}
     {instructionButtons}
   </section>{instructionPopup}</>;
 
   return <><section className="multiplayer-help multiplayer-help-compact" aria-label={zh ? '对局提示与复盘' : 'Battle help and recap'}>
     <div className="multiplayer-help-heading"><p className="multiplayer-help-status" role="status">{status}</p>{rulesButton}</div>
-    {seriesProgress}
     <details className="multiplayer-help-details" key={`${game.matchCount}-${game.status === 'LOBBY' ? 'lobby' : 'battle'}`}>
       <summary>{recap ? (zh ? `出牌提示 · 第 ${recap.turn} 回合复盘` : `Tips · Turn ${recap.turn} recap`) : (zh ? '出牌提示' : 'Card tips')}</summary>
       <div className="multiplayer-help-content">
+        {seriesProgress}
         {instructionButtons}
         {recap && <div className="multiplayer-help-recap">
           <h3>{zh ? `第 ${recap.turn} 回合 · 复盘` : `Turn ${recap.turn} · Recap`}</h3>

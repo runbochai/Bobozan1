@@ -88,7 +88,7 @@ export function getBotMove(bot: Player, allPlayers: Player[], options: Options =
   // Copy public combat state explicitly; even reading a hidden selection is forbidden.
   const players: Player[] = allPlayers.map(p => ({
     id: p.id, name: p.name, isBot: p.isBot, hp: p.hp, energy: p.energy, isDead: p.isDead,
-    inventory: [...p.inventory], pendingLevel: p.pendingLevel, endlessLevel: p.endlessLevel,
+    inventory: [...p.inventory], skillCatalogVersion: p.skillCatalogVersion, pendingLevel: p.pendingLevel, endlessLevel: p.endlessLevel,
     ...(p.skillLoadout ? { skillLoadout: [...p.skillLoadout] } : {}),
     layer: p.layer, tempLayerMod: p.tempLayerMod, selectedCardId: null,
     lastCardId: p.lastCardId, lastAction: p.lastAction, kills: p.kills, isShared: p.isShared,

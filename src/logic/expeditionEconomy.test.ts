@@ -47,7 +47,7 @@ test('growth, recovery and both route effects have explicit finite limits', () =
 });
 
 test('injured heroes always see healing and unfinished levels always see the next upgrade', () => {
-  for (const level of [0, 1, 4, 5, 6, 10, 18, 22, 23]) for (const maxHp of [3, 4, 5]) for (const injury of [0, .5, 2]) for (let seed = 0; seed < 40; seed++) {
+  for (const level of [0, 1, 4, 5, 6, 10, 14, 18, 19]) for (const maxHp of [3, 4, 5]) for (const injury of [0, .5, 2]) for (let seed = 0; seed < 40; seed++) {
     const inventory = Array.from({ length: level + 1 }, (_, index) => index);
     const options = genRewardOptions(maxHp - injury, maxHp, [], 3, inventory, 10, seeded(seed));
     assert.equal(options.length, 3);

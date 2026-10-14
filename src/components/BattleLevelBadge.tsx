@@ -24,7 +24,7 @@ function LevelDetails({ level, difference, self, endless, name, lang, onClose }:
       : difference < 0 ? (zh ? `比你低 ${-difference} 级。` : `${-difference} levels below you.`)
         : (zh ? '与你同级。' : 'Same level as you.')}</p>}
     <p>{endless ? (zh ? '永久保留的普通攻击与终极，按当前等级比较同档强弱。基础牌、联合技和临时吸收牌仍按原规则；等级不会额外增加伤害。' : 'Retained ordinary attacks and Ultimates use your current level in same-tier clashes. Basic cards, combos and temporary or absorbed skills keep their original rules. Levels do not add damage.') : (zh ? '每张牌按自己的档位和技能等级比较。升级解锁新招，旧牌不会一起变强。' : 'Each card uses its own tier and skill level. Leveling unlocks moves; older cards stay unchanged.')}</p>
-    <small>{zh ? '先比档位，再比技能等级；基础轰轰、六克可打平二档攻击。高等级不等于必胜。' : 'Compare tier before skill level. Basic Double Blast and 6g Strike can tie tier-2 attacks. A higher level does not guarantee victory.'}</small>
+    <small>{zh ? '先比档位，再比技能等级；基础轰轰可打平二档攻击。高等级不等于必胜。' : 'Compare tier before skill level. Basic Double Blast can tie tier-2 attacks. A higher level does not guarantee victory.'}</small>
   </dialog>, document.body);
 }
 

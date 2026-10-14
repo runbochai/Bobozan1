@@ -5,7 +5,7 @@ import { EXPEDITION_SKILL_LEVELS, EXPEDITION_VIGOR_HP, EXPEDITION_WARMUP_ENERGY,
   drawGachaCard, expeditionSecretPool, type ExpeditionEnemyDef } from '../data/expedition';
 import { calculateTurnOutcome, getPlayerLevel } from './combat';
 import { consumeExpeditionCard, EXPEDITION_MAX_HP, expeditionLevel, nextExpeditionLevel, genRewardOptions, goldForWin, POTION_HEAL, type RewardOption, type ShopItem } from './expedition';
-import { grantSkillLevel, normalizeSkillLoadout, type SkillLoadoutState } from './skillLoadout';
+import { grantSkillLevel, migrateLegacySkillCatalog, normalizeSkillLoadout, SKILL_CATALOG_VERSION, type SkillLoadoutState } from './skillLoadout';
 import { getExpeditionDifficulty, normalizeExpeditionDifficulty, type ExpeditionDifficulty } from '../data/expeditionDifficulty';
 import { getEndlessEnemyLoadout, getExpeditionStage } from './endlessExpedition';
 
@@ -32,11 +32,12 @@ export interface ExpeditionBattleMemory {
   ironhideUsed: boolean; whetstoneUsed: boolean; adrenalineUsed: boolean;
 }
 export const EXPEDITION_HERO_ID = 'exp_me';
-const cloneRun = (run: ExpeditionRun): ExpeditionRun => ({ ...run, relics: [...run.relics], inventory: [...run.inventory],
+const liveSkillIds = new Set(SKILL_DB.map(card => card.id));
+const cloneRun = (run: ExpeditionRun): ExpeditionRun => migrateLegacySkillCatalog({ ...run, relics: [...run.relics], inventory: [...run.inventory],
   difficulty: normalizeExpeditionDifficulty(run.difficulty),
   crownCleared: [...new Set((run.crownCleared ?? []).filter(index => Number.isInteger(index) && index >= 0 && index < 18))],
   ...(run.skillLoadout ? { skillLoadout: [...run.skillLoadout] } : {}),
-  tempCards: run.tempCards.map(card => ({ ...card })), equipment: [...run.equipment] });
+  tempCards: run.tempCards.filter(card => liveSkillIds.has(card.cardId)).map(card => ({ ...card })), equipment: [...run.equipment] });
 const levelOf = (run: ExpeditionRun) => expeditionLevel(run.inventory);
 const addCard = (run: ExpeditionRun, cardId: string, uses: number) => {
   const found = run.tempCards.find(card => card.cardId === cardId);
@@ -53,14 +54,14 @@ export function resolveExpeditionEnemyLoadout(enemy: ExpeditionEnemyDef, playerI
     && !card.tags?.some(tag => ['combo', 'pierce_basic', 'break_basic', 'break_mid_def', 'hit_up', 'hit_down'].includes(tag)))
     .sort((a, b) => a.levelRequired - b.levelRequired);
   // The normal early encounter always has a higher real attack available.
-  // An artificial maximum-level save gets the strongest existing card, never a fake Lv.24.
+  // An artificial maximum-level save gets the strongest existing card, never an invented extra skill level.
   const attack = attacks.find(card => card.levelRequired >= targetLevel) ?? attacks.at(-1);
   return attack ? { inventory: [0, attack.levelRequired], skillLoadout: [attack.id] } : { inventory: [...enemy.inventory] };
 }
 
 export function createExpeditionRun(difficulty: ExpeditionDifficulty = 'beginner'): ExpeditionRun {
   const config = getExpeditionDifficulty(difficulty);
-  return { difficulty: config.id, stageIdx: 0, relics: [], inventory: [0], skillLoadout: [], hp: config.startHp, maxHp: config.startHp,
+  return { skillCatalogVersion: SKILL_CATALOG_VERSION, difficulty: config.id, stageIdx: 0, relics: [], inventory: [0], skillLoadout: [], hp: config.startHp, maxHp: config.startHp,
     tempCards: [], gold: 0, equipment: [], ironShirtUsed: false, dollUsed: false, route: 'rest', crownCleared: [],
     ...(config.id === 'endless' ? { endlessLevel: 0, endlessEnemyLevel: 1, endlessDefeats: 0 } : {}) };
 }
@@ -163,7 +164,7 @@ export function setupExpeditionStage(previous: ExpeditionRun, stageIdx: number,
   }
   if (firstEntry && run.equipment.includes('moneytree')) run.gold += Math.min(EXPEDITION_MONEYTREE_CAP, Math.max(1, Math.floor(run.gold / 10)));
   if (endless && firstEntry) run.endlessEnteredStageIdx = stageIdx;
-  const base = { isDead: false, layer: 0, tempLayerMod: 0, selectedCardId: null, lastCardId: null, lastAction: null,
+  const base = { skillCatalogVersion: SKILL_CATALOG_VERSION, isDead: false, layer: 0, tempLayerMod: 0, selectedCardId: null, lastCardId: null, lastAction: null,
     disabledSkills: [], freeSkills: [], kills: 0, tempSkills: [] };
   const enemies: Player[] = stage.enemies.map(enemy => ({ ...base, id: `exp_${stage.id}_${enemy.id}`,
     name: enemy.name[identity.lang], avatar: `avatars/enemies/${enemy.avatarId ?? enemy.id}.webp`, isBot: true,
@@ -181,7 +182,7 @@ export function setupExpeditionStage(previous: ExpeditionRun, stageIdx: number,
     }
   }
   const hero: Player = { ...base, id: EXPEDITION_HERO_ID, name: identity.name, avatar: identity.avatar, isBot: false,
-    hp: run.hp, energy: 0, inventory: [...run.inventory], skillLoadout: [...(run.skillLoadout ?? [])], tempSkills: run.tempCards.map(card => card.cardId),
+    hp: run.hp, energy: 0, skillCatalogVersion: SKILL_CATALOG_VERSION, inventory: [...run.inventory], skillLoadout: [...(run.skillLoadout ?? [])], tempSkills: run.tempCards.map(card => card.cardId),
     ...(endless ? { endlessLevel: run.endlessLevel } : {}),
     dmgBonus: run.equipment.includes('waraxe') ? .5 : 0 };
   const memory: ExpeditionBattleMemory = { ironhideUsed: false, whetstoneUsed: false, adrenalineUsed: false,

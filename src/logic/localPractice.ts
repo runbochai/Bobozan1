@@ -2,6 +2,7 @@ import type { Card, Lang, LogEntry, Player } from '../types';
 import { MAX_HP } from '../data/constants';
 import { getBotMove } from './botAI';
 import { calculateTurnOutcome, getPlayerCards, isOffensiveCard, type TurnOutcome } from './combat';
+import { SKILL_CATALOG_VERSION } from './skillLoadout';
 
 export const LOCAL_HERO_ID = 'local-hero';
 export const LOCAL_BOT_ID = 'local-bot';
@@ -71,6 +72,7 @@ export function createLocalPractice(lang: Lang = 'zh', avatar?: string): LocalPr
     energy: 0,
     isDead: false,
     inventory: [0],
+    skillCatalogVersion: SKILL_CATALOG_VERSION,
     layer: 0,
     tempLayerMod: 0,
     selectedCardId: null,

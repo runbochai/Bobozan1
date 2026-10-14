@@ -1,21 +1,14 @@
 import type { Card, Player } from '../types';
 import { SKILL_DB } from '../data/skills';
-import { getRetainedSkillIds } from './skillLoadout';
+import { COMBO_COMPONENTS, getRetainedSkillIds } from './skillLoadout';
 
 const validLevel = (level: number | undefined): level is number =>
   level !== undefined && Number.isSafeInteger(level) && level >= 0;
 
 /** Catalog levels describe unlocks; derived combinations use their highest component level. */
 function originalLevel(card: Card): number {
-  if (card.tags?.includes('combo')) {
-    switch (card.id) {
-      case 'skydragon': return 3;
-      case 'doublewing': return 5;
-      case 'vajra': return 11;
-      case 'allbomb':
-      case 'heartpoison': return 21;
-    }
-  }
+  const components = card.tags?.includes('combo') ? COMBO_COMPONENTS[card.id] : undefined;
+  if (components) return Math.max(0, ...components.map(id => SKILL_DB.find(component => component.id === id)?.levelRequired ?? 0));
   return card.levelRequired;
 }
 

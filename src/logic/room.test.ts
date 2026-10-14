@@ -1,9 +1,9 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import type { GameState, Player } from '../types';
-import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, settleRoom, startRoom, submitPlayerMove } from './room';
+import type { GameState, MultiplayerMode, Player } from '../types';
+import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, setRoomMode, settleRoom, startRoom, submitPlayerMove } from './room';
 import { calculateTurnOutcome } from './combat';
-import { MAX_PLAYERS } from '../data/constants';
+import { FINAL_LEVEL, LAST_SKILL_LEVEL, MAX_PLAYERS } from '../data/constants';
 import { hasSkillOverflow } from './skillLoadout';
 
 const player = (id: string, patch: Partial<Player> = {}): Player => ({
@@ -14,6 +14,63 @@ const player = (id: string, patch: Partial<Player> = {}): Player => ({
 const room = (patch: Partial<GameState> = {}): GameState => ({
   status: 'PLAYING', turn: 1, matchCount: 1, hostId: 'a',
   players: [player('a'), player('b')], logs: [], ...patch,
+});
+
+test('only the host can change a lobby mode, and the shared patch preserves all players', () => {
+  const state = room({ status: 'LOBBY' });
+  const before = structuredClone(state);
+  assert.equal(setRoomMode(state, 'b', 'survival'), null);
+  assert.equal(setRoomMode(state, 'unknown', 'survival'), null);
+  const patch = setRoomMode(state, 'a', 'survival');
+  assert.deepEqual(patch, { multiplayerMode: 'survival' });
+  const shared = { ...state, ...patch };
+  const observer = structuredClone(shared);
+  assert.equal(observer.multiplayerMode, 'survival');
+  assert.deepEqual(observer.players, state.players);
+  assert.equal(setRoomMode(shared, 'a', 'survival'), null);
+  assert.deepEqual(setRoomMode(shared, 'a', 'kills'), { multiplayerMode: 'kills' });
+  assert.throws(() => setRoomMode(state, 'a', 'invalid' as MultiplayerMode), /Invalid multiplayer mode/);
+  assert.deepEqual(state, before);
+});
+
+for (const status of ['PLAYING', 'SHOWDOWN', 'GAMEOVER'] as const) {
+  test(status + ': even the host cannot change rules after the lobby', () => {
+    assert.equal(setRoomMode(room({ status, multiplayerMode: 'kills' }), 'a', 'survival'), null);
+  });
+}
+
+test('the room retains its shared survival setting and grants the first progression skill', () => {
+  let state = room({ status: 'LOBBY', players: [player('a', { hp: 1 }), player('b', { hp: 1 })] });
+  state = { ...state, ...setRoomMode(state, 'a', 'survival') };
+  state = { ...state, ...startRoom(state, 'a', 'zh') };
+  assert.equal(state.multiplayerMode, 'survival');
+  state = { ...state, ...submitPlayerMove(state, 'a', 'hong', state) };
+  state = { ...state, ...submitPlayerMove(state, 'b', 'charge', state) };
+  state = { ...state, ...advanceRoom(state, 'a') };
+  state = { ...state, ...settleRoom(state, 'a', state, 'zh') };
+  assert.equal(state.status, 'GAMEOVER');
+  assert.equal(state.multiplayerMode, 'survival');
+  assert.deepEqual(state.players.find(p => p.id === 'a')!.inventory, [0, 1]);
+  assert.equal(state.logs.filter(log => log.type === 'win').length, 1);
+});
+
+test('the shared room rewards the last skill before settling a separate survival Crown Battle', () => {
+  let state = room({ status: 'SHOWDOWN', multiplayerMode: 'survival', matchCount: LAST_SKILL_LEVEL, players: [
+    player('a', { selectedCardId: 'hong', hp: 1 }), player('b', { selectedCardId: 'charge', hp: 1 }),
+  ] });
+  state = { ...state, ...settleRoom(state, 'a', state, 'zh') };
+  const winner = state.players.find(p => p.id === 'a')!;
+  assert.ok(winner.skillLoadout?.includes('poison'));
+  assert.deepEqual(winner.inventory, [0, LAST_SKILL_LEVEL]);
+  const final = { ...state, status: 'SHOWDOWN' as const, matchCount: FINAL_LEVEL, players: [
+    { ...winner, selectedCardId: 'hong' }, player('b', { selectedCardId: 'charge', hp: 1, kills: 100 }),
+  ] };
+  const settled = { ...final, ...settleRoom(final, 'a', final, 'zh') };
+  assert.equal(settled.status, 'GAMEOVER');
+  assert.deepEqual(settled.players.find(p => p.id === 'a')!.inventory, [0, LAST_SKILL_LEVEL]);
+  const ending = settled.logs.find(log => /赢得王冠/.test(log.text))!.text;
+  assert.match(ending, /a.*赢得王冠/);
+  assert.doesNotMatch(ending, /b|击杀/);
 });
 
 test('both players retain moves when callbacks run against the latest room in either order', () => {

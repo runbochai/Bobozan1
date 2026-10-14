@@ -3,7 +3,7 @@ import { assetUrl } from '../assets';
 import './BrawlCover.css';
 
 // Reuse the game's fighters as independently layered, responsive cover art.
-const fighters = ['hangman', 'meteor', 'gungod', 'superwave', 'triplekill', 'iceult', 'fireclaw', 'boiler', 'threestar', 'triplekick', 'pointdiff', 'fiveslap'];
+const fighters = ['hangman', 'meteor', 'gungod', 'superwave', 'triplekill', 'iceult', 'fireclaw', 'boiler', 'triplekick'];
 export default function BrawlCover() {
   return <div className="brawl-cover" aria-hidden="true">
     <svg className="brawl-impact" viewBox="0 0 1000 600" preserveAspectRatio="xMidYMid slice" shapeRendering="crispEdges">

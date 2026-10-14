@@ -18,6 +18,7 @@ export interface ExpeditionMoveWeight {
 }
 
 const cardById = new Map(SKILL_DB.map(card => [card.id, card]));
+const maxCatalogLevel = Math.max(0, ...SKILL_DB.filter(card => card.levelRequired < 100).map(card => card.levelRequired));
 const unit = (value: number) => Number.isFinite(value) ? Math.max(0, Math.min(1, value)) : 0.5;
 const costOf = (player: Player, card: Card) => player.freeSkills?.includes(card.id) ? 0 : card.cost;
 const ownedCards = (player: Player, players: Player[]) => [...new Map(getPlayerCards(player, players)
@@ -66,7 +67,7 @@ function historyRates(player: Player, cards: Card[], history?: Record<string, st
 /** Explicit public snapshot: spreading a Player would read selectedCardId getters. */
 function publicCombatant(player: Player): Player {
   return { id: player.id, name: player.name, isBot: player.isBot, hp: player.hp, energy: player.energy,
-    isDead: player.isDead, inventory: [...player.inventory],
+    isDead: player.isDead, inventory: [...player.inventory], skillCatalogVersion: player.skillCatalogVersion,
     ...(player.skillLoadout ? { skillLoadout: [...player.skillLoadout] } : {}),
     endlessLevel: player.endlessLevel,
     layer: player.layer, tempLayerMod: player.tempLayerMod,
@@ -207,7 +208,7 @@ export function expeditionMoveWeights(
 
   const weighted = available.map(card => {
     const cost = costOf(enemy, card);
-    let weight = (1 + card.tier * 0.2 + Math.min(23, getEffectiveLevel(card)) * 0.055) / (1 + cost * 0.3);
+    let weight = (1 + card.tier * 0.2 + Math.min(maxCatalogLevel, getEffectiveLevel(card)) * 0.055) / (1 + cost * 0.3);
     if (isOffensiveCard(card)) {
       const reachable = opponents.filter(player => reaches(card, movedLayer(enemy, card), player.layer)).length;
       weight *= opponents.length ? 0.06 + 0.94 * reachable / opponents.length : 1;

@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { ACADEMY_LESSONS, MULTIPLAYER_ACADEMY_LESSONS, RULE_TOPICS, type AcademyLesson } from '../data/academy';
-import { FINAL_LEVEL } from '../data/constants';
+import { FINAL_LEVEL, LAST_SKILL_LEVEL } from '../data/constants';
 import { SKILL_DB } from '../data/skills';
 import { EXPEDITION_STAGES } from '../data/expedition';
 import type { Player } from '../types';
@@ -47,7 +47,7 @@ test('multiplayer situations each require a real decision and use unchanged engi
       assert.ok(value.zh.trim() && value.en.trim());
     }
     const practice = getMultiplayerPractice(item.id);
-    const actual = calculateTurnOutcome(practice.beforePlayers, practice.game.turn, practice.game.matchCount, 'zh');
+    const actual = calculateTurnOutcome(practice.beforePlayers, practice.game.turn, practice.game.matchCount, 'zh', { multiplayerMode: practice.game.multiplayerMode });
     assert.deepEqual(practice.game.players, actual.players);
     assert.equal(practice.game.status, actual.isGameOver ? 'GAMEOVER' : 'PLAYING');
     assert.equal(practice.survivorReset, actual.survivorReset);
@@ -95,6 +95,21 @@ test('three-player teaching keeps eliminated players out and preserves survivors
   assert.deepEqual(survivor.disabledSkills, []);
   assert.deepEqual(survivor.freeSkills, []);
   assert.equal(resolveMultiplayerPractice('elimination-reset', 'survivors-continue').passed, true);
+});
+
+test('survival teaching awards the only survivor even when an eliminated player has more kills', () => {
+  const practice = getMultiplayerPractice('survival-winner');
+  assert.equal(practice.game.status, 'GAMEOVER');
+  assert.equal(practice.summary.mode, 'survival');
+  assert.equal(practice.summary.totalMatches, FINAL_LEVEL);
+  assert.equal(practice.summary.isFinalBattle, true);
+  assert.equal(practice.summary.lastSkillLevel, LAST_SKILL_LEVEL);
+  assert.equal(practice.summary.isSeriesOver, true);
+  assert.ok(enemy(practice.game.players).kills! > hero(practice.game.players).kills!);
+  assert.deepEqual(practice.summary.champions.map(player => player.id), [PRACTICE_HERO_ID]);
+  assert.deepEqual(hero(practice.game.players).inventory, [0], 'The Crown Battle ends without another skill reward');
+  assert.equal(resolveMultiplayerPractice('survival-winner', 'last-survivor').passed, true);
+  assert.equal(resolveMultiplayerPractice('survival-winner', 'kill-leader').passed, false);
 });
 
 for (const item of ACADEMY_LESSONS) {
@@ -162,8 +177,8 @@ test('Dragon Claw beats Pegasus, but basic tier-2 attacks can tie Dragon Claw', 
   assert.equal(tie.passed, true);
   assert.equal(hero(tie.players).energy, 1);
   assert.equal(enemy(tie.players).energy, 0);
-  assert.equal(doesCard1Overpower(card('liuke'), card('dragonclaw')), false);
-  assert.equal(doesCard1Overpower(card('dragonclaw'), card('liuke')), false);
+  assert.equal(doesCard1Overpower(card('hong2'), card('dragonclaw')), false);
+  assert.equal(doesCard1Overpower(card('dragonclaw'), card('hong2')), false);
 });
 
 test('Ka breaks basic defense; a 1-layer rise fails while a 2-layer rise escapes', () => {
@@ -218,7 +233,7 @@ test('a tied pair remains vulnerable to a third player in range', () => {
 test('combo tier and effective-level exceptions match the rules lookup', () => {
   assert.equal(getEffectiveLevel(card('skydragon')), 3);
   assert.equal(getEffectiveLevel(card('vajra')), 11);
-  assert.equal(getEffectiveLevel(card('allbomb')), 21);
+  assert.equal(getEffectiveLevel(card('allbomb')), card('hongdi').levelRequired);
   assert.equal(card('allbomb').type, 'ATTACK');
   assert.equal(card('allbomb').tier, 3);
   assert.equal(doesCard1Overpower(card('vajra'), card('skydragon')), true);
@@ -234,7 +249,7 @@ test('practice neither mutates lesson presets nor grants multiplayer rewards', (
   const item = lesson('catch-charge');
   const original = JSON.stringify(item);
   const first = getPracticePlayers(item, 0);
-  first[0].inventory.push(23);
+  first[0].inventory.push(LAST_SKILL_LEVEL);
   assert.deepEqual(getPracticePlayers(item, 0)[0].inventory, [0]);
   const win = resolvePracticeRound(item, 0, 'hong');
   assert.deepEqual(hero(win.players).inventory, [0]);

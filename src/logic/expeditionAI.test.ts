@@ -114,7 +114,7 @@ test('two-energy turtles have real alternatives instead of becoming permanently 
   }
   assert.ok(Math.abs(counts.charge / 5000 - charge) < 0.035);
   assert.ok(Math.abs(counts.defend / 5000 - defend) < 0.035);
-  assert.ok(counts.hong + (counts.hong2 ?? 0) + (counts.liuke ?? 0) > 100);
+  assert.ok(counts.hong + (counts.hong2 ?? 0) > 100);
 });
 
 test('public attack energy reduces safe charging; zero-energy free attacks still count as threats', () => {

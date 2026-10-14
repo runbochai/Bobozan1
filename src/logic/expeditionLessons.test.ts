@@ -213,11 +213,11 @@ test('veteran coaching uses the publicly retained attack and its real block, tie
 
 test('maximum-content-level and missing-public-data lessons never claim an invented higher level', () => {
   const same = getExpeditionLesson(context(17, {
-    hero: fighter('hero', 'hong', { inventory: [0, 23] }),
-    opponents: [fighter('enemy', 'charge', { inventory: [0, 23], skillLoadout: ['poison'] })],
+    hero: fighter('hero', 'hong', { inventory: [0, 19] }),
+    opponents: [fighter('enemy', 'charge', { inventory: [0, 19], skillLoadout: ['poison'] })],
   }));
-  assert.match(same.text.zh, /Lv\.23/);
-  assert.doesNotMatch(same.detail.zh, /比你当前等级高|24/);
+  assert.match(same.text.zh, /Lv\.19/);
+  assert.doesNotMatch(same.detail.zh, /比你当前等级高|20/);
   const missing = getExpeditionLesson(context(17, {
     opponents: [{ id: 'enemy', hp: 1.5, energy: 0, isDead: false }],
   }));

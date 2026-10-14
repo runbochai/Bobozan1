@@ -73,7 +73,7 @@ function CardDetails({ card, lang, freeCount, endless, onClose }: { card: Card; 
     <p>{card.description[lang]}</p>
     <details className="hand-detail-rank-guide"><summary>{lang === 'zh' ? '等级与档位' : 'Levels and tiers'}</summary>
       <p>{card.combatLevel !== undefined ? (lang === 'zh' ? '无尽模式中，这张已保留的攻击随当前等级提升，用于同档比较。基础牌、联合技和临时吸收牌仍按原规则。等级与能量费用都不额外增加伤害。' : 'In Endless, this retained attack grows with your current level for same-tier comparisons. Basic cards, combos and temporary or absorbed skills keep their original rules. Neither level nor energy cost adds damage.') : endless ? (lang === 'zh' ? '这张牌保留原等级。无尽中只有永久保留的等级攻击随等级成长；基础牌、联合技和临时吸收牌不提升。能量费用不是伤害。' : 'This card keeps its original level. Only retained leveled attacks grow in Endless; basic cards, combos and temporary or absorbed skills do not. Energy cost is not damage.') : (lang === 'zh' ? '这里是这张牌自己的等级。角色升级解锁新招，不会让旧招变强；能量费用也不是伤害。' : 'This is the card’s own level. Character upgrades unlock new moves; they do not strengthen old moves. Energy cost is not damage.')}</p>
-      {isOffensiveCard(card) && <p>{lang === 'zh' ? '对攻先比较档位，同档再按技能规则比较等级。轰轰、六克等招式有打平例外。' : 'Attack clashes compare tiers first, then apply level rules within a tier. Moves such as Double Blast and 6g have tie exceptions.'}</p>}
+      {isOffensiveCard(card) && <p>{lang === 'zh' ? '对攻先比较档位，同档再按技能规则比较等级。轰轰有打平例外。' : 'Attack clashes compare tiers first, then apply level rules within a tier. Double Blast has a tie exception.'}</p>}
     </details>
   </dialog>, document.body);
 }

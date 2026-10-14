@@ -1,5 +1,6 @@
 // --- 1. TYPE DEFINITIONS ---
 export type Lang = 'zh' | 'en';
+export type MultiplayerMode = 'kills' | 'survival';
 export type CardType = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE' | 'ABSORB' | 'SPECIAL';
 export type HandCategory = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE';
 export type HandViewMode = 'CATEGORIES' | 'CARDS';
@@ -31,6 +32,8 @@ export interface Player {
   energy: number;
   isDead: boolean;
   inventory: number[];
+  /** Persisted catalog format; version 2 removes the retired gram-skill levels. */
+  skillCatalogVersion?: number;
   /** Retained permanent skill IDs, oldest first. Missing means a legacy unlock history; overflow requires a choice. */
   skillLoadout?: string[];
   /** Endless expedition rank, independent of the finite skill-unlock catalog. */
@@ -69,6 +72,10 @@ export interface GameState {
   players: Player[];
   logs: LogEntry[];
   hostId: string;
+  /** Room progress uses the same persisted skill catalog version as its roster. */
+  skillCatalogVersion?: number;
+  /** Older rooms omit this field and use the cumulative-kill series. */
+  multiplayerMode?: MultiplayerMode;
   revengeMode?: boolean;
   /** 幸存者重置计数：有人被淘汰导致阶段重置时 +1，UI 据此播放过场动画 */
   resetSeq?: number;
