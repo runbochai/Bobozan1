@@ -11,12 +11,13 @@
   --hand-card-height: clamp(132px, 22svh, 200px);
   --table-hand-overlap: clamp(40px, 8svh, 90px);
   --battle-headroom: 104px;
+  --battle-table-min: 320px;
   /* Reserve the closed hand once, never the changing nav/toolbar/inspector height. */
   --battle-hand-space: calc(var(--hand-card-height) + 44px - var(--table-hand-overlap));
   display: block;
   height: 100vh;
   height: 100svh;
-  min-height: calc(var(--battle-headroom) + 320px + var(--battle-hand-space) + env(safe-area-inset-top) + env(safe-area-inset-bottom));
+  min-height: calc(var(--battle-headroom) + var(--battle-table-min) + var(--battle-hand-space) + env(safe-area-inset-top) + env(safe-area-inset-bottom));
   padding: 0;
 }
 .pixel-screen-battle .pixel-battle-board.center-table-board {
@@ -27,7 +28,7 @@
   right: env(safe-area-inset-right);
   width: auto;
   height: auto;
-  min-height: 320px;
+  min-height: var(--battle-table-min);
   flex: none;
   margin: 0;
 }

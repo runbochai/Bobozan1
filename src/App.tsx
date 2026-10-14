@@ -1,3 +1,4 @@
+import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import BattleArena from './components/BattleArena';
 import ThemePicker from './components/ThemePicker';
 import { useBattleBounds } from './components/useBattleBounds';
@@ -13,22 +14,27 @@ import { CARD_LAND_MS, CARD_COMPARE_IMPACT_MS, CARD_REVEAL_MS, ULT_CUTIN_MS,
 import BattleFighter from './components/BattleFighter';
 import BattleLevelBadge from './components/BattleLevelBadge';
 import BattleStats from './components/BattleStats';
-import BattleAcademy from './components/BattleAcademy';
-import LocalPractice from './components/LocalPractice';
+const BattleAcademy = React.lazy(() => import('./components/BattleAcademy'));
+const LocalPractice = React.lazy(() => import('./components/LocalPractice'));
+const MoveCodex = React.lazy(() => import('./components/MoveCodex'));
 import MultiplayerHelp from './components/MultiplayerHelp';
 import MultiplayerResults from './components/MultiplayerResults';
 import { getMultiplayerMatchSummary } from './logic/multiplayerMatch';
-import ExpeditionBriefing, { type ExpeditionRecap } from './components/ExpeditionBriefing';
+import type { ExpeditionRecap } from './components/ExpeditionBriefing';
+const ExpeditionBriefing = React.lazy(() => import('./components/ExpeditionBriefing'));
+import GameHub from './components/GameHub';
+import GameMenu from './components/GameMenu';
+import SoloStart from './components/SoloStart';
+import { readGamePreferences, saveGamePreferences } from './logic/gamePreferences';
+import { createExpeditionCheckpoint, saveExpeditionCheckpoint, loadExpeditionCheckpoint, clearExpeditionCheckpoint, createExpeditionCheckpointRandom, type ExpeditionCheckpoint } from './logic/expeditionCheckpoint';
+import './components/GameExperience.css';
 import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
 import { createBot, getBotStyle, playerAvatar as getPlayerAvatar } from './logic/bots';
 import { getBattleSeat } from './logic/battleLayout';
-import CrownTitleScene, { CrownTitleCrest } from './components/CrownTitleScene';
+import CrownTitleScene from './components/CrownTitleScene';
 import PixelBackdrop from './components/PixelBackdrop';
-import { AVATAR_OPTIONS } from './data/avatars';
-import React, { useState, useEffect, useLayoutEffect, useRef, useCallback } from 'react';
 import {
-  Music,
-  Swords,
+  Scroll,
   Skull,
   Smile,
   X,
@@ -48,13 +54,10 @@ import {
   Edit,
   CheckCircle,
   AlertTriangle,
-  Globe,
   Volume2,
   VolumeX,
   Undo2,
   HandHeart,
-  House,
-  Film
 } from './components/PixelIcons';
 import {
   signInAnonymously,
@@ -129,143 +132,32 @@ import { createExpeditionRun, setupExpeditionStage, settleExpeditionRound, recor
 
 
 
-const TopControls = ({
-  muted,
-  toggleMute,
-  lang,
-  toggleLang,
-  logOpen,
-  toggleLog,
-  showLogToggle = false,
-  musicVolume,
-  setMusicVolume,
-  onHome,
-  onBack,
-  reduceMotion,
-  toggleReduceMotion,
-  campaignScene = false,
+const TopControls = ({ muted, toggleMute, lang, toggleLang, logOpen, toggleLog,
+  showLogToggle = false, musicVolume, setMusicVolume, onHome, onBack,
+  reduceMotion, toggleReduceMotion, campaignScene = false, onRules, onPractice, onStory, liveMatch = false,
 }: {
-  muted: boolean;
-  toggleMute: () => void;
-  lang: Lang;
-  toggleLang: () => void;
-  logOpen: boolean;
-  toggleLog: () => void;
-  showLogToggle?: boolean;
-  musicVolume: number;
-  setMusicVolume: (v: number) => void;
-  onHome?: () => void;
-  onBack?: () => void;
-  reduceMotion: boolean;
-  toggleReduceMotion: () => void;
-  campaignScene?: boolean;
+  muted: boolean; toggleMute: () => void; lang: Lang; toggleLang: () => void;
+  logOpen: boolean; toggleLog: () => void; showLogToggle?: boolean;
+  musicVolume: number; setMusicVolume: (value: number) => void;
+  onHome?: () => void; onBack?: () => void; reduceMotion: boolean; toggleReduceMotion: () => void;
+  campaignScene?: boolean; onRules?: () => void; onPractice?: () => void; onStory?: () => void; liveMatch?: boolean;
 }) => {
-  // Local state for the slider toggle
-  const [isVolumeOpen, setIsVolumeOpen] = useState(false);
-
-  return (
-    <div className="pixel-controls absolute top-4 right-4 z-50 flex items-center gap-3">
-      {campaignScene ? <span className="crown-scene-mark" title={lang === 'zh' ? '王冠主线场景' : 'Crown War story setting'} aria-label={lang === 'zh' ? '主线场景' : 'Story scene'}><Crown size={18} /></span> : <ThemePicker lang={lang} />}
-
-      {/* Back Button */}
-      {onBack && (
-        <button
-          onClick={onBack}
-          title={lang === 'zh' ? '返回' : 'Back'}
-          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
-        >
-          <Undo2 size={20} />
-        </button>
-      )}
-
-      {/* Home Button */}
-      {onHome && (
-        <button
-          onClick={onHome}
-          title={lang === 'zh' ? '主页' : 'Home'}
-          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
-        >
-          <House size={20} />
-        </button>
-      )}
-      
-      {/* Music Volume Toggle (Round Button + Pop-out Slider) */}
-      <div className="relative flex items-center">
-          {/* The Slider Panel (Slides out to the left) */}
-          <div className={`
-              absolute right-full mr-3 
-              bg-slate-900/90 backdrop-blur-xl border border-slate-600 rounded-full 
-              flex items-center gap-3 shadow-xl transition-all duration-300 origin-right overflow-hidden
-              ${isVolumeOpen ? 'w-48 px-4 py-2 opacity-100' : 'w-0 p-0 opacity-0 pointer-events-none'}
-          `}>
-              <span className="text-[10px] font-bold text-slate-400 whitespace-nowrap">BGM</span>
-              <input 
-                type="range" 
-                min="0" 
-                max="1" 
-                step="0.05" 
-                value={musicVolume}
-                onChange={(e) => setMusicVolume(parseFloat(e.target.value))}
-                className="w-full h-1.5 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-orange-500 focus:outline-none"
-              />
-          </div>
-
-          {/* The Round Music Button */}
-          <button
-            onClick={() => setIsVolumeOpen(!isVolumeOpen)}
-            className={`
-              p-3 rounded-full text-white transition-all shadow-lg border relative z-10
-              ${isVolumeOpen 
-                ? 'bg-orange-500 border-orange-400 rotate-12 scale-110' 
-                : 'bg-white/10 hover:bg-white/20 border-white/20 backdrop-blur-md'}
-            `}
-          >
-            <Music size={20} />
-          </button>
-      </div>
-
-      {/* Log Toggle */}
-      {showLogToggle && (
-        <button
-          onClick={toggleLog}
-          className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
-        >
-          {logOpen ? <ArrowLeft size={20} /> : <ArrowLeft size={20} className="rotate-180" />}
-        </button>
-      )}
-
-      {/* Mute Button */}
-      <button
-        onClick={toggleMute}
-        className={`p-3 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 ${muted ? 'bg-red-500/80 hover:bg-red-500' : 'bg-white/10 hover:bg-white/20'}`}
-      >
-        {muted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+  const [menuOpen, setMenuOpen] = useState(false);
+  const zh = lang === 'zh';
+  return <>
+    <nav className="pixel-controls game-controls absolute top-4 right-4 z-50" aria-label={zh ? '游戏操作' : 'Game controls'}>
+      {!campaignScene && <ThemePicker lang={lang} />}
+      {onBack && <button type="button" className="game-controls-back" onClick={onBack} aria-label={zh ? '返回' : 'Back'}><Undo2 size={19} /></button>}
+      {showLogToggle && <button type="button" className="game-controls-log" onClick={toggleLog} aria-pressed={logOpen} aria-label={zh ? '战报' : 'Combat log'}><Scroll size={19} /></button>}
+      <button type="button" className="game-controls-sound" onClick={toggleMute} aria-pressed={muted} aria-label={muted ? (zh ? '打开声音' : 'Enable sound') : (zh ? '静音' : 'Mute sound')}>
+        {muted ? <VolumeX size={19} /> : <Volume2 size={19} />}
       </button>
-
-      {/* Reduce Motion Button */}
-      <button
-        onClick={toggleReduceMotion}
-        title={lang === 'zh' ? '减弱动效' : 'Reduce motion'}
-        className={`p-3 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 ${reduceMotion ? 'bg-cyan-500/80 hover:bg-cyan-500' : 'bg-white/10 hover:bg-white/20'}`}
-      >
-        <Film size={20} />
-      </button>
-
-      {/* Lang Button */}
-      <button
-        onClick={toggleLang}
-        aria-label={lang === 'zh' ? '切换语言' : 'Switch language'}
-        className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20 group"
-      >
-        <div className="flex items-center gap-2">
-          <Globe size={20} />
-          <span className="font-bold text-sm hidden group-hover:inline-block animate-in slide-in-from-right-2">
-            {lang === 'zh' ? 'EN' : '中文'}
-          </span>
-        </div>
-      </button>
-    </div>
-  );
+      <button type="button" className="game-controls-menu" onClick={() => setMenuOpen(true)} aria-haspopup="dialog" aria-label={zh ? '游戏菜单' : 'Game menu'}><span aria-hidden="true">☰</span></button>
+    </nav>
+    {menuOpen && <GameMenu lang={lang} onClose={() => setMenuOpen(false)} muted={muted} onToggleMute={toggleMute}
+      musicVolume={musicVolume} onMusicVolumeChange={setMusicVolume} reduceMotion={reduceMotion} onToggleReduceMotion={toggleReduceMotion}
+      onToggleLang={toggleLang} onRules={onRules} onPractice={onPractice} onReplayStory={onStory} onHome={onHome} inMatch={liveMatch} />}
+  </>;
 };
 
 // --- MAIN COMPONENT ---
@@ -279,8 +171,10 @@ export default function BobozanOnline() {
   }, [view]);
   const [playerName, setPlayerName] = useState(readPlayerName);
   useEffect(() => { savePlayerName(playerName); }, [playerName]);
-  const [lang, setLang] = useState<Lang>('zh'); 
-  const [muted, setMuted] = useState(false);
+  const [initialPreferences] = useState(readGamePreferences);
+  const [lang, setLang] = useState<Lang>(initialPreferences.lang);
+  const [muted, setMuted] = useState(initialPreferences.muted);
+  const [musicVolume, setMusicVolume] = useState(initialPreferences.musicVolume);
   const [reduceMotionPreference, setReduceMotion] = useState(() => {
     try { return localStorage.getItem('bobozan-reduce-motion') === '1'; } catch { return false; }
   });
@@ -300,8 +194,8 @@ export default function BobozanOnline() {
   const [leaderboardMode, setLeaderboardMode] = useState<'MINIMIZED' | 'TOP3' | 'EXPANDED'>('MINIMIZED');
 
   // Avatar State
-  const [playerAvatar, setPlayerAvatar] = useState(assetUrl('avatars/bdrag.png')); // Default to first image
-  const [isAvatarMenuOpen, setIsAvatarMenuOpen] = useState(false);
+  const [playerAvatar, setPlayerAvatar] = useState(initialPreferences.avatar);
+  useEffect(() => { saveGamePreferences({ lang, muted, musicVolume, avatar: playerAvatar }); }, [lang, muted, musicVolume, playerAvatar]);
   
   const renderProfileAvatar = (avatar: string | undefined, size: number = 32) => {
     // Fallback if avatar is missing or empty
@@ -337,7 +231,10 @@ export default function BobozanOnline() {
   const [expNextStage, setExpNextStage] = useState(0);
   const [crownPrologue, setCrownPrologue] = useState(() => !readInvitedRoom(window.location.search));
   const [storyLeadsToPractice, setStoryLeadsToPractice] = useState(true);
-  const [learningMode, setLearningMode] = useState<'tutorial' | 'practice' | null>(null);
+  const [learningMode, setLearningMode] = useState<'practice' | null>(null);
+  const [soloStartOpen, setSoloStartOpen] = useState(false);
+  const [codexOpen, setCodexOpen] = useState(false);
+  const [checkpoint, setCheckpoint] = useState(loadExpeditionCheckpoint);
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
   const [expGold, setExpGold] = useState(0);
@@ -390,8 +287,16 @@ export default function BobozanOnline() {
     return intents;
   };
 
-  const setupExpeditionBattle = (stageIdx: number) => {
-    const battle = setupExpeditionStage(expRunRef.current, stageIdx, { name: playerName || (lang === 'zh' ? '我' : 'Me'), avatar: playerAvatar, lang });
+  const setupExpeditionBattle = (stageIdx: number, previousCheckpoint?: ExpeditionCheckpoint) => {
+    const input = { run: expRunRef.current, stageIdx, heroHistory: expHistoryRef.current[expMyId()],
+      name: playerName, avatar: playerAvatar, setupSeed: previousCheckpoint?.setupSeed };
+    const prepared = createExpeditionCheckpoint(input);
+    const saved = prepared ? saveExpeditionCheckpoint({ ...input, setupSeed: prepared.setupSeed }) : null;
+    setCheckpoint(saved);
+    if (prepared && !saved) setToastMsg(lang === 'zh' ? '当前浏览器无法存档，本次进度只在本页保留' : 'This browser cannot save progress. Keep this page open to continue your run.');
+    const battle = setupExpeditionStage(expRunRef.current, stageIdx,
+      { name: playerName || (lang === 'zh' ? '我' : 'Me'), avatar: playerAvatar, lang },
+      prepared ? createExpeditionCheckpointRandom(prepared) : Math.random);
     expRunRef.current = battle.run;
     expBattleRef.current = battle.memory;
     // Only revealed hero moves travel with the challenger; new opponents have no past moves.
@@ -406,7 +311,7 @@ export default function BobozanOnline() {
     setExpEquipment([...battle.run.equipment]);
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
-    setHandViewMode('CATEGORIES');
+    setHandViewMode('ALL');
     setHandCategory('CHARGE');
     setGameState({ status: 'PLAYING', turn: 1, matchCount: stageIdx + 1, hostId: expMyId(), players: battle.players, logs: battle.logs });
     setExpIntents(computeExpIntents(battle.players, stageIdx));
@@ -420,6 +325,10 @@ export default function BobozanOnline() {
   const startExpedition = (difficulty: ExpeditionDifficulty = expDifficulty) => {
     playSound('confirm', muted);
     clearExpeditionTimers();
+    clearExpeditionCheckpoint();
+    setCheckpoint(null);
+    setSoloStartOpen(false);
+    setLearningMode(null);
     expRunRef.current = createExpeditionRun(difficulty);
     expHistoryRef.current = {};
     setExpHistory({});
@@ -430,7 +339,7 @@ export default function BobozanOnline() {
     setExpEquipment([]);
     setExpShop([]);
     setExpHelp(null);
-    setAcademyTab(null);
+    setAcademyTab(null); setCodexOpen(false);
     setGoldFly(null);
     setIsExpedition(true);
     if (difficulty === 'endless') {
@@ -442,6 +351,29 @@ export default function BobozanOnline() {
       setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, hostId: expMyId(), players: [], logs: [] });
     }
     setView('GAME');
+  };
+
+  const resumeExpedition = () => {
+    const saved = loadExpeditionCheckpoint();
+    if (!saved) { setCheckpoint(null); return; }
+    clearExpeditionTimers();
+    expRunRef.current = saved.run;
+    expHistoryRef.current = saved.heroHistory ? { [expMyId()]: [...saved.heroHistory] } : {};
+    selectExpeditionDifficulty(saved.run.difficulty ?? 'beginner');
+    setIsExpedition(true);
+    setIsOnline(false);
+    setSoloStartOpen(false);
+    setLearningMode(null);
+    setAcademyTab(null); setCodexOpen(false);
+    setExpHelp(null);
+    setSubmittingMove(false);
+    setExpShop([]);
+    setExpRewards([]);
+    setGoldFly(null);
+    expDialogueSeedRef.current = saved.setupSeed;
+    setupExpeditionBattle(saved.stageIdx, saved);
+    setView('GAME');
+    setToastMsg(lang === 'zh' ? '已从本关开局继续' : 'Resumed from the start of this battle');
   };
 
   const continueEndlessExpedition = () => {
@@ -514,11 +446,13 @@ export default function BobozanOnline() {
           level: getEffectiveLevel(getPlayerCard(p, p.selectedCardId)!), })),
       });
       if (lost) {
+        if (run.difficulty !== 'endless') { clearExpeditionCheckpoint(); setCheckpoint(null); }
         saveExpeditionBest(run.stageIdx, run.difficulty);
         setExpBest(loadExpeditionBest(run.difficulty));
         // Let the settled hit read before the defeat panel covers the table.
         expeditionTimersRef.current.push(setTimeout(() => setExpPhase('runover'), reduceMotion ? 0 : 700));
       } else if (won) {
+        if (run.difficulty !== 'endless' && run.stageIdx + 1 === EXPEDITION_STAGES.length) { clearExpeditionCheckpoint(); setCheckpoint(null); }
         saveExpeditionBest(run.stageIdx + 1, run.difficulty);
         setExpBest(loadExpeditionBest(run.difficulty));
         setGoldFly({ amount: result.gold, key: Date.now() });
@@ -598,9 +532,7 @@ export default function BobozanOnline() {
   };
 
   // --- Global Event Listeners ---
-  const [musicVolume, setMusicVolume] = useState(0.15); // Default 15%
-
-  const music = useBackgroundMusic(assetUrl('music/bgm.mp3'), view === 'GAME', muted, musicVolume);
+  const music = useBackgroundMusic(assetUrl('music/bgm.mp3'), view === 'GAME' || learningMode === 'practice', muted, musicVolume);
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
@@ -627,7 +559,7 @@ export default function BobozanOnline() {
 
   // New State for Hand Categories & View Mode
   const [handCategory, setHandCategory] = useState<HandCategory>('CHARGE');
-  const [handViewMode, setHandViewMode] = useState<HandViewMode>('CATEGORIES');
+  const [handViewMode, setHandViewMode] = useState<HandViewMode>('ALL');
   const [logOpen, setLogOpen] = useState(false); // 战报面板是否展开
   useEffect(() => {
     if (view === 'GAME') {
@@ -940,8 +872,9 @@ export default function BobozanOnline() {
     setGoldFly(null);
     setExpRecap(undefined);
     setExpHelp(null);
-    setAcademyTab(null);
+    setAcademyTab(null); setCodexOpen(false);
     setLearningMode(null);
+    setSoloStartOpen(false);
     setCrownPrologue(false);
     setGameState({ status: 'LOBBY', turn: 1, matchCount: 1, players: [], logs: [], hostId: '' });
     setView('HOME');
@@ -968,6 +901,8 @@ export default function BobozanOnline() {
         await mutateRoom(roomCode, room => leavePlayer(room, user.uid));
       } catch (error) {
         console.error('Unable to leave room', error);
+        setToastMsg(firebaseErrorMessage(error, lang));
+        return;
       }
     }
     resetRoom();
@@ -1055,19 +990,13 @@ export default function BobozanOnline() {
   else if (lastLog.type === 'win') playSound('win', muted);
 }, [gameState.logs, muted]);
 
-  useEffect(() => {
-  // 每次进入新回合，把手牌视图重置回“分类”
-  setHandViewMode('CATEGORIES');
-  setHandCategory('CHARGE'); // 可选：顺便把当前分类重置成攒
-}, [gameState.turn]);
-
-
   const handleEnterName = () => {
     initAudio();
     playSound('confirm', muted);
+    if (isExpedition) resetRoom();
     setPlayerName(playerName.trim() || (lang === 'zh' ? '玩家' : 'Player'));
     setLearningMode(null);
-    setAcademyTab(null);
+    setAcademyTab(null); setCodexOpen(false);
     setExpHelp(null);
     setView('HOME');
     if (invitedRoom && roomCode === invitedRoom && user && firebaseConfigured) void joinRoom();
@@ -1422,7 +1351,7 @@ export default function BobozanOnline() {
 
   const goBackToCategories = () => {
     playSound('click', muted);
-    setHandViewMode('CATEGORIES');
+    setHandViewMode('ALL');
   };
 
 
@@ -1432,7 +1361,7 @@ export default function BobozanOnline() {
 
   // Category folders do not change the skill's actual combat type.
   const orderedHand = myPlayer ? sortHandCards(myPlayer,
-    knownCards.filter(card => getHandCategory(card) === handCategory)) : [];
+    handViewMode === 'ALL' ? knownCards : knownCards.filter(card => getHandCategory(card) === handCategory)) : [];
   const skillHolder = isExpedition ? expRunRef.current : myPlayer;
   const skillOverflow = skillHolder ? getSkillOverflow(skillHolder) : [];
   const expNeedsSkillChoice = isExpedition && skillOverflow.length > 0;
@@ -1450,35 +1379,41 @@ export default function BobozanOnline() {
   // --- RENDER LOGIC ---
 
   const inMatch = view === 'GAME' || view === 'LOBBY';
-  const openSoloMode = () => {
-    setLearningMode(null);
-    setAcademyTab(null);
-    setExpHelp('intro');
+  const openSoloMode = () => { setLearningMode(null); setAcademyTab(null); setCodexOpen(false); setSoloStartOpen(true); };
+  const replayStory = () => { setStoryLeadsToPractice(false); setCrownPrologue(true); };
+  useEffect(() => {
+    if (view !== 'NAME_INPUT' || crownPrologue || learningMode || soloStartOpen || codexOpen || academyTab) return;
+    const frame = requestAnimationFrame(() => {
+      if (document.activeElement === document.body || document.activeElement === document.documentElement)
+        document.querySelector<HTMLButtonElement>('.game-hub__mode--multiplayer')?.focus({ preventScroll: true });
+    });
+    return () => cancelAnimationFrame(frame);
+  }, [view, crownPrologue, learningMode, soloStartOpen, codexOpen, academyTab]);
+  const menuActions = {
+    onRules: () => setCodexOpen(true),
+    onPractice: !inMatch ? () => setLearningMode('practice') : undefined,
+    onStory: !inMatch ? replayStory : undefined,
+    liveMatch: inMatch && isOnline,
   };
+  const loadingOverlay = <div className="game-loading" role="status"><Loader size={24} />{lang === 'zh' ? '正在准备牌桌…' : 'Preparing the table…'}</div>;
   const learningOverlay = <>
-    {learningMode === 'tutorial' && <BattleAcademy intro lang={lang} avatar={playerAvatar}
-      onClose={() => setLearningMode(null)} onContinue={handleEnterName}
-      onSolo={openSoloMode}
-      startLabel={lang === 'zh' ? '多人模式' : 'Multiplayer'} />}
-    {learningMode === 'practice' && <LocalPractice lang={lang} avatar={playerAvatar}
+    {learningMode === 'practice' && <React.Suspense fallback={loadingOverlay}><LocalPractice lang={lang} avatar={playerAvatar}
+      muted={muted} onToggleMute={toggleMute} reduceMotion={reduceMotion} onSolo={openSoloMode}
       onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
-      onOpenRules={() => setAcademyTab('rules')} />}
-    {academyTab && <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
-      startLabel={inMatch ? (lang === 'zh' ? '返回对局' : 'Return to game')
-        : learningMode === 'practice' ? (lang === 'zh' ? '返回练习局' : 'Return to practice')
-        : (lang === 'zh' ? '和朋友玩' : 'Play with friends')}
-      onClose={() => setAcademyTab(null)} onContinue={() => {
-        setAcademyTab(null);
-        if (!inMatch && learningMode !== 'practice') handleEnterName();
-      }} />}
-    {expHelp && <ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
+      onOpenRules={() => setCodexOpen(true)} /></React.Suspense>}
+    {codexOpen && <React.Suspense fallback={loadingOverlay}><MoveCodex lang={lang} onClose={() => setCodexOpen(false)}
+      onExercises={() => { setCodexOpen(false); setAcademyTab('lessons'); }} /></React.Suspense>}
+    {academyTab && <React.Suspense fallback={loadingOverlay}><BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
+      startLabel={inMatch ? (lang === 'zh' ? '返回对局' : 'Return to game') : (lang === 'zh' ? '返回' : 'Back')}
+      onClose={() => setAcademyTab(null)} onContinue={() => setAcademyTab(null)} /></React.Suspense>}
+    {soloStartOpen && <SoloStart lang={lang} difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty}
+      hasCheckpoint={!!checkpoint} onStart={() => startExpedition()} onClose={() => setSoloStartOpen(false)} />}
+    {expHelp && <React.Suspense fallback={loadingOverlay}><ExpeditionBriefing lang={lang} recap={expHelp === 'recap' ? expRecap : undefined}
       difficulty={expDifficulty} onDifficultyChange={selectExpeditionDifficulty} best={expBest}
-      onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setAcademyTab(expHelp === 'recap' ? 'rules' : 'lessons'); }}
-      onStory={expHelp === 'intro' && !inMatch ? () => { setExpHelp(null); setStoryLeadsToPractice(false); setCrownPrologue(true); } : undefined}
-      onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} />}
+      onClose={() => setExpHelp(null)} onPractice={() => { setExpHelp(null); setCodexOpen(true); }} /></React.Suspense>}
   </>;
 
-  // Preserve the original comic and the complete optional tutorial before choosing a mode.
+  // Preserve the original comic; continue straight into a playable duel, with the full academy optional.
   // Invitations can go straight to their room without replaying the introduction.
   // Keep the menu unmounted until dismissal so it cannot flash or receive focus behind the comic.
   if (crownPrologue) return <div className="pixel-app crown-opening-screen">
@@ -1486,149 +1421,19 @@ export default function BobozanOnline() {
     <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang}
       completeLabel={storyLeadsToPractice ? (lang === 'zh' ? '先坐下试试' : 'Take a seat') : undefined}
       skipLabel={storyLeadsToPractice ? (lang === 'zh' ? '跳到实战' : 'Skip to practice') : undefined}
-      onComplete={() => { setCrownPrologue(false); if (storyLeadsToPractice) setLearningMode('tutorial'); }}
+      onComplete={() => { setCrownPrologue(false); if (storyLeadsToPractice) setLearningMode('practice'); }}
       onClose={() => setCrownPrologue(false)} />
   </div>;
 
-  if (view === 'NAME_INPUT') return (
-    <div className="pixel-app pixel-screen-title brawl-title-screen brawl-menu-screen crown-title-screen min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
-      {learningOverlay}
-      
-
-      <TopControls 
-        muted={muted} 
-        toggleMute={toggleMute} 
-        lang={lang} 
-        toggleLang={toggleLang} 
-        logOpen={logOpen} 
-        toggleLog={() => setLogOpen(o => !o)} 
-        showLogToggle={false} 
-        campaignScene
-        musicVolume={musicVolume}
-        setMusicVolume={setMusicVolume}
-        reduceMotion={reduceMotion}
-        toggleReduceMotion={toggleReduceMotion}
-      />
-
-      {/* ================= CONTENT ================= */}
-      <div className="pixel-title-content relative z-10 flex flex-col items-center w-full max-w-2xl px-4">
-        
-        <header className="pixel-title-header brawl-title-header brawl-menu-backdrop">
-          <CrownTitleScene showCart />
-          <div className="brawl-logo">
-            <h1 className="pixel-wordmark">{t.title}</h1>
-            <p className="crown-title-subtitle" data-lang={lang}>{lang === 'zh' ? '王冠战争' : 'THE CROWN WAR'}</p>
-            <CrownTitleCrest />
-          </div>
-        </header>
-
-        {/* --- INPUT AREA --- */}
-        <div className="pixel-panel pixel-start-panel brawl-start-panel w-full flex flex-col items-center gap-5">
-            <div className="pixel-player-setup flex items-center gap-5 w-full">
-               <div className="crown-avatar-setup relative z-50 flex flex-col items-center gap-2">
-            <button
-              onClick={() => { playSound('click', muted); setIsAvatarMenuOpen(!isAvatarMenuOpen); }}
-              aria-label={lang === 'zh' ? '更换头像' : 'Change avatar'}
-              aria-expanded={isAvatarMenuOpen}
-              aria-controls="title-avatar-options"
-              className={`
-                w-28 h-28 rounded-full flex items-center justify-center shadow-[0_0_30px_rgba(234,88,12,0.3)] 
-                transition-all duration-300 relative border-4 border-white/10 overflow-hidden group
-                ${playerName.trim() ? 'bg-gradient-to-br from-orange-500 to-red-600 scale-110 ring-4 ring-orange-400/50' : 'bg-slate-800/80 ring-2 ring-slate-700'}
-                hover:scale-110 hover:shadow-[0_0_40px_rgba(234,88,12,0.6)]
-              `}
-            >
-              {/* 1. Show Selected Avatar using the helper */}
-              {renderProfileAvatar(playerAvatar, 112)} 
-
-              {/* 2. Edit Pencil Badge */}
-              <div className="absolute bottom-2 right-2 bg-slate-900 rounded-full p-2 border border-slate-600 text-white shadow-lg z-20">
-                <Edit size={14} />
-              </div>
-            </button>
-
-            {/* --- POPUP MENU --- */}
-            {isAvatarMenuOpen && (
-              <div id="title-avatar-options" className="absolute top-full left-1/2 -translate-x-1/2 mt-2 w-80 max-w-[calc(100vw-24px)] max-h-[50vh] overflow-y-auto bg-slate-900/95 border border-slate-700 p-4 rounded-2xl shadow-2xl grid grid-cols-4 gap-3 backdrop-blur-xl animate-in fade-in slide-in-from-top-4 z-[100]">
-                {AVATAR_OPTIONS.map(({ path, name }) => (
-                  <button
-                    key={path}
-                    onClick={() => {
-                      playSound('confirm', muted);
-                      setPlayerAvatar(path);
-                      setIsAvatarMenuOpen(false);
-                    }}
-                    className={`
-                      aspect-square rounded-xl overflow-hidden border-2 transition-all hover:scale-110
-                      ${avatarUrl(playerAvatar) === assetUrl(path) ? 'border-orange-500 ring-2 ring-orange-500/50' : 'border-slate-600 hover:border-white'}
-                    `}
-                  >
-                    <img src={assetUrl(path)} className="w-full h-full object-cover [image-rendering:pixelated]" alt={name[lang]} title={name[lang]} />
-                  </button>
-                ))}
-                
-                {/* Option to Reset to Default */}
-                <button
-                  onClick={() => {
-                      playSound('confirm', muted);
-                      setPlayerAvatar(''); // Empty string = Default User Icon
-                      setIsAvatarMenuOpen(false);
-                  }}
-                  className="aspect-square rounded-xl bg-slate-800 border-2 border-slate-600 hover:border-white flex items-center justify-center"
-                >
-                  <User size={24} className="text-slate-400" />
-                </button>
-              </div>
-            )}
-          </div>
-               <div className="relative w-full max-w-xs group">
-                  <input 
-                    type="text" 
-                    aria-label={lang === 'zh' ? '你的昵称' : 'Your nickname'}
-                    placeholder={lang === 'zh' ? '昵称（可稍后更改）' : 'Nickname (optional)'}
-                    className="w-full bg-transparent border-b-4 border-slate-700 py-3 text-center text-3xl font-black text-white placeholder:text-slate-700 placeholder:font-bold focus:border-orange-500 focus:outline-none transition-colors duration-300 uppercase tracking-wider"
-                    value={playerName} 
-                    onChange={(e) => setPlayerName(e.target.value)} 
-                    onKeyDown={(e) => e.key === 'Enter' && handleEnterName()} 
-                    maxLength={10}
-                  />
-                  <div className="absolute bottom-0 left-0 w-full h-1 bg-orange-500 shadow-[0_0_20px_rgba(249,115,22,0.8)] scale-x-0 group-focus-within:scale-x-100 transition-transform duration-500 origin-center" />
-               </div>
-            </div>
-            <p className="friends-entry-note">{lang === 'zh' ? '独自踏上远征，或与朋友同桌猜招。' : 'Set out on a solo journey, or read your friends across the table.'}</p>
-            {invitedRoom && <p className="friends-invitation" role="status">{lang === 'zh' ? `朋友邀请你加入房间 ${invitedRoom}` : `You’re invited to room ${invitedRoom}`}</p>}
-            <div className="friends-title-actions w-full">
-              <button type="button" onClick={openSoloMode} className="btn-primary friends-play-button mode-choice-button p-4">
-                <Swords size={24} /><span>{lang === 'zh' ? '单人模式' : 'Solo mode'}<small>{lang === 'zh' ? '王冠远征 · 继续故事' : 'Campaign · Continue the story'}</small></span>
-              </button>
-              <button
-                onClick={handleEnterName}
-                disabled={loading}
-                className="btn-secondary friends-learn-button mode-choice-button group relative overflow-hidden p-4"
-              >
-                <div className="relative w-full flex items-center justify-center gap-2">
-                  <Users size={24} />
-                  <span>{invitedRoom ? (lang === 'zh' ? '加入朋友房间' : 'Join your friends') : (lang === 'zh' ? '多人模式' : 'Multiplayer')}<small>{lang === 'zh' ? '2–8 人 · 和朋友同桌' : '2–8 players · Play with friends'}</small></span>
-                </div>
-              </button>
-            </div>
-            <button type="button" className="story-practice-link" onClick={() => setLearningMode('tutorial')}><Play size={16} />{lang === 'zh' ? '新手教程' : 'How to play'}</button>
-            <div className="crown-title-links">
-              <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '机器人练习' : 'Bot practice'}</button>
-              <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
-              <button type="button" onClick={() => { setStoryLeadsToPractice(true); setCrownPrologue(true); }}>{lang === 'zh' ? '重看开场漫画' : 'Replay the opening comic'}</button>
-            </div>
-            {expBest > 0 && (
-              <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
-                {lang === 'zh' ? `🏆 ${expDifficultyConfig.label[lang]}最佳：第 ${expBest} 关` : `🏆 ${expDifficultyConfig.label[lang]} best: Stage ${expBest}`}
-              </div>
-            )}
-
-
-        </div>
-      </div>
-    </div>
-  );
+  if (view === 'NAME_INPUT') return <GameHub lang={lang} playerName={playerName} avatar={playerAvatar}
+    onNameChange={setPlayerName} onAvatarChange={setPlayerAvatar} onMultiplayer={handleEnterName}
+    onSolo={openSoloMode} onPractice={() => setLearningMode('practice')} onReplayStory={replayStory}
+    invitedRoom={invitedRoom} busy={loading} best={expBest} savedStage={checkpoint ? checkpoint.stageIdx + 1 : null} onResume={resumeExpedition}>
+    {learningOverlay}
+    <TopControls {...menuActions} muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang}
+      logOpen={logOpen} toggleLog={() => setLogOpen(value => !value)} musicVolume={musicVolume} setMusicVolume={setMusicVolume}
+      reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} campaignScene />
+  </GameHub>;
 
   if (view === 'HOME') return (
     <div className="pixel-app pixel-screen-home brawl-menu-screen crown-arena-menu min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex flex-col items-center justify-center font-sans selection:bg-orange-500/30">
@@ -1638,7 +1443,7 @@ export default function BobozanOnline() {
 
       {/* ================= MAIN CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage} campaignScene />
+      <TopControls {...menuActions} muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage} campaignScene />
       
       {toastMsg && (
         <div className="pixel-toast fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 font-bold tracking-wide animate-in slide-in-from-top-4">
@@ -1713,10 +1518,8 @@ export default function BobozanOnline() {
               )}
             </div>
             <div className="friends-menu-extras">
-              <button type="button" onClick={() => setLearningMode('tutorial')}>{lang === 'zh' ? '新手教程' : 'How to play'}</button>
-              <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '先和机器人练一局' : 'Practice with a bot'}</button>
-              <button type="button" onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则 / 进阶练习' : 'Rules / More practice'}</button>
-              <button type="button" onClick={() => setExpHelp('intro')}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
+              <button type="button" onClick={() => setLearningMode('practice')}>{lang === 'zh' ? '练习场' : 'Practice arena'}</button>
+              <button type="button" onClick={openSoloMode}>{lang === 'zh' ? '单人挑战' : 'Solo challenges'}</button>
             </div>
         </div>
       </div>
@@ -1733,7 +1536,7 @@ export default function BobozanOnline() {
 
       {/* ================= LOBBY CONTENT ================= */}
       
-      <TopControls muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage}/>
+      <TopControls {...menuActions} muted={muted} toggleMute={toggleMute} lang={lang} toggleLang={toggleLang} logOpen={logOpen} toggleLog={() => setLogOpen(o => !o)} showLogToggle={false} musicVolume={musicVolume} setMusicVolume={setMusicVolume} reduceMotion={reduceMotion} toggleReduceMotion={toggleReduceMotion} onHome={goNameInput} onBack={goBackPage}/>
       
       {toastMsg && (
         <div className="pixel-toast fixed top-6 left-1/2 -translate-x-1/2 bg-emerald-500 text-white px-6 py-3 rounded-full shadow-2xl z-[100] flex items-center gap-2 animate-in slide-in-from-top-4 font-bold tracking-wide">
@@ -1780,7 +1583,7 @@ export default function BobozanOnline() {
         {/* Body Section */}
         <div className="p-8 md:p-10 space-y-8">
 
-            <MultiplayerHelp lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setAcademyTab('rules')} />
+            <MultiplayerHelp lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setCodexOpen(true)} />
             
             {/* Settings Bar */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-slate-800/50 rounded-2xl border border-white/5">
@@ -1992,7 +1795,7 @@ export default function BobozanOnline() {
 
       <PixelBackdrop scene="battle" themeId={campaignTheme?.id} />
 
-      <TopControls 
+      <TopControls {...menuActions}
        muted={muted} 
        toggleMute={toggleMute} 
        lang={lang} 
@@ -2157,14 +1960,13 @@ export default function BobozanOnline() {
       {/* CENTER ARENA */}
       <div className="pixel-battle-layout flex-1 flex flex-col relative z-10">
 
-        {!isExpedition && <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setAcademyTab('rules')} />}
+        {!isExpedition && <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setCodexOpen(true)} />}
 
         {isExpedition && expPhase === 'battle' && (
           <div className="pixel-exp-hud expedition-learning-hud absolute top-3 left-3 z-50 pointer-events-none">
             <div className="expedition-learning-heading">
               <div><strong>{getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}</strong><small><span className={`exp-difficulty-badge exp-difficulty-badge--${expDifficulty}`}>{expDifficultyConfig.label[lang]}</span> · {lang === 'zh' ? '第 ' + gameState.turn + ' 回合' : 'Turn ' + gameState.turn}{expRunRef.current.route === 'risk' ? (lang === 'zh' ? ' · 挑战' : ' · Challenge') : ''}</small></div>
               <div className="exp-help-actions">
-                <button type="button" disabled={submittingMove} onClick={() => setAcademyTab('rules')}>{lang === 'zh' ? '规则' : 'Rules'}</button>
                 <button type="button" disabled={!expRecap || submittingMove} onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '复盘' : 'Review'}</button>
               </div>
             </div>
@@ -2206,7 +2008,7 @@ export default function BobozanOnline() {
                 : (lang === 'zh' ? `重开：Lv.0 · ♥${expDifficultyConfig.startHp} · 金币0。装备重置，最佳记录保留。` : `Restart: Lv.0 · ♥${expDifficultyConfig.startHp} · 0 gold. Gear resets; your best remains.`)}</p>
               <div className="flex gap-3 justify-center mb-5">
                 <button type="button" onClick={() => setExpHelp('recap')} className="text-amber-200 underline">{lang === 'zh' ? '败因' : 'Review'}</button>
-                <button type="button" onClick={() => setAcademyTab('lessons')} className="text-sky-200 underline">{lang === 'zh' ? '练一手' : 'Practice'}</button>
+                <button type="button" onClick={() => setLearningMode('practice')} className="text-sky-200 underline">{lang === 'zh' ? '练一手' : 'Practice'}</button>
               </div>
               <div className="flex gap-3 justify-center">
                 <button onClick={() => isEndless ? continueEndlessExpedition() : startExpedition(expRunRef.current.difficulty)} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-orange-600 to-red-600 font-bold text-white hover:scale-105 active:scale-95 transition-all">
@@ -2222,7 +2024,7 @@ export default function BobozanOnline() {
 
         {/* Mobile Header */}
         <div className="pixel-mobile-header md:hidden p-3 flex justify-between items-center bg-slate-900 border-b border-slate-800 z-50">
-          <button onClick={() => leaveRoom()} className="flex items-center gap-1 text-slate-400"><LogOut size={18} /></button>
+          <button type="button" onClick={() => leaveRoom()} aria-label={lang === 'zh' ? '退出对局' : 'Leave match'} className="flex items-center gap-1 text-slate-400"><LogOut size={18} /></button>
           <span className="font-mono font-bold text-yellow-500">{isExpedition ? `${isEndless ? expDifficultyConfig.label[lang] : lang === 'zh' ? '远征' : 'Expedition'} ${expStageIdx + 1}${isEndless ? '' : '/' + EXPEDITION_STAGES.length}` : roomCode}</span>
           <span className="text-xs bg-indigo-500 px-2 py-1 rounded">M{gameState.matchCount}</span>
         </div>
@@ -2277,10 +2079,10 @@ export default function BobozanOnline() {
            )}
 
            {/* A drawn final match also completes the series and needs a result screen. */}
-           {!isExpedition && !academyTab && gameState.status === 'GAMEOVER' && showBattleResult && <MultiplayerResults
+           {!isExpedition && !academyTab && !codexOpen && gameState.status === 'GAMEOVER' && showBattleResult && <MultiplayerResults
              lang={lang} game={gameState} playerId={user?.uid}
              onNextMatch={nextMatchHost} onExit={() => { void leaveRoom(); }}
-             onOpenRules={() => setAcademyTab('rules')}
+             onOpenRules={() => setCodexOpen(true)}
              pendingSkills={!!myPlayer && hasSkillOverflow(myPlayer)}
              nextDisabled={gameState.players.some(p => !p.isBot && hasSkillOverflow(p))} />}
 

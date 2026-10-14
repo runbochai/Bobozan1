@@ -17,9 +17,9 @@
 .friends-menu-extras button, .exp-briefing-story { min-height: 36px; border-bottom: 1px solid #baa57880; color: #ead7b3; font-size: 13px; }
 .friends-menu-extras button:hover, .exp-briefing-story:hover { color: #fff4dc; border-color: currentColor; }
 .exp-briefing-story { margin: 0 0 12px; }
-.pixel-screen-multiplayer .pixel-battle-layout { --battle-headroom: 270px; }
+.pixel-screen-multiplayer .pixel-battle-layout { --battle-headroom: 184px; }
 .pixel-screen-multiplayer .pixel-battle-layout > .multiplayer-help { position: absolute; top: 118px; left: 12px; width: min(560px, calc(100% - 24px)); z-index: 40; }
-.pixel-screen-multiplayer .pixel-battle-layout:has(> .multiplayer-help details[open]) { --battle-headroom: 500px; }
+
 .pixel-app.crown-title-screen .crown-avatar-setup { padding-bottom: 0; }
 .pixel-app.crown-title-screen .friends-title-actions button span { white-space: normal; }
 .pixel-app.crown-title-screen .crown-title-links { gap: 4px 20px; }
@@ -35,9 +35,9 @@
   .pixel-app.crown-title-screen .crown-title-links { gap: 4px 14px; }
 }
 @media (max-width: 767px) {
-  .pixel-screen-multiplayer .pixel-battle-layout { --battle-headroom: 310px; }
+  .pixel-screen-multiplayer .pixel-battle-layout { --battle-headroom: 220px; }
   .pixel-screen-multiplayer .pixel-battle-layout > .multiplayer-help { top: 162px; left: 10px; width: calc(100% - 20px); }
-  .pixel-screen-multiplayer .pixel-battle-layout:has(> .multiplayer-help details[open]) { --battle-headroom: 550px; }
+
 }
 @media (max-height: 640px) and (min-width: 701px) {
   .pixel-app.crown-title-screen { min-height: 640px; overflow-y: auto; }

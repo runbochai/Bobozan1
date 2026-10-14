@@ -1,0 +1,79 @@
+/* Shared game chrome: one small menu instead of a row of lesson/settings windows. */
+.pixel-app .game-controls { display:flex; align-items:center; gap:7px; }
+.pixel-app .game-controls > button { display:grid; place-items:center; width:44px; height:44px; min-width:44px; min-height:44px; padding:8px; color:#f4e5c7; background:#122a34ed; border:1px solid #9c916e; box-shadow:0 2px 9px #0005; }
+.pixel-app .game-controls > button:hover { background:#29434b; border-color:#f2d39a; }
+.pixel-app .game-controls-menu span { font:24px/1 system-ui,sans-serif; }
+.pixel-app .game-controls > button[aria-pressed="true"] { color:#f5c878; border-color:#c7a969; }
+.game-loading { position:fixed; inset:0; z-index:1000; display:flex; align-items:center; justify-content:center; gap:12px; color:#f4d8a7; background:#091720f5; font:16px/1.5 system-ui,sans-serif; }
+.game-loading .pixel-icon { animation:game-loading-turn 1s steps(8) infinite; }
+@keyframes game-loading-turn { to { transform:rotate(360deg); } }
+.pixel-screen-battle .hand-category-nav { display:flex; gap:4px; padding:0 0 5px; }
+.pixel-screen-battle .hand-category-nav > button { min-width:44px; min-height:36px; padding:5px 10px; font-size:12px; }
+.pixel-screen-battle .hand-category-nav .pixel-hand-back[aria-current="true"] { color:#ffdf9a; background:#314843; border-color:#bca576; }
+.pixel-screen-battle .expedition-learning-hud .exp-help-actions button { min-height:36px; }
+.pixel-screen-home .friends-menu-extras { gap:10px 20px; }
+.pixel-screen-home .friends-menu-extras button { min-height:44px; }
+@media (max-width:767px) {
+  .pixel-app .game-controls { gap:5px; }
+  .pixel-app .game-controls > button { width:40px; min-width:40px; height:44px; min-height:44px; }
+  .pixel-app .game-controls .pixel-icon { width:18px; height:18px; }
+  .pixel-screen-battle .hand-category-nav > button { min-width:40px; padding:5px 8px; }
+  .pixel-screen-battle .expedition-learning-hud { width:calc(100% - 24px); }
+}
+@media (prefers-reduced-motion:reduce) { .game-loading .pixel-icon { animation:none; } }
+.reduce-motion .game-loading .pixel-icon { animation:none; }
+/* Keep card navigation inside its reserved hand space, including eight-player tables. */
+.pixel-app.pixel-screen-battle .pixel-hand-area.battle-hand .pixel-hand-tray.hand-fan {
+  height:calc(var(--hand-card-height) + 26px); padding:8px 16px 12px; scroll-padding-inline:16px;
+}
+.pixel-screen-battle .battle-command-dock { z-index:60; }
+.pixel-screen-battle .center-table-board { isolation:isolate; }
+:root[data-world-theme] .pixel-app.pixel-screen-battle .game-controls > button { width:44px; min-width:44px; height:44px; min-height:44px; }
+@media (max-width:767px) and (max-height:640px) {
+  .pixel-app.pixel-screen-battle .game-controls { top:2px; right:8px; gap:3px; }
+  .pixel-app.pixel-screen-battle .game-controls .theme-picker-trigger,
+  .pixel-app.pixel-screen-battle .game-controls-back { display:none; }
+  .pixel-app.pixel-screen-battle .pixel-mobile-header { justify-content:flex-start; gap:8px; padding:2px 152px 2px 8px; min-height:48px; }
+  .pixel-app.pixel-screen-battle .pixel-mobile-header > button { min-width:44px; min-height:44px; }
+  .pixel-app.pixel-screen-battle .pixel-mobile-header > span:nth-child(2) { font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .pixel-app.pixel-screen-battle .pixel-mobile-header > span:last-child { display:none; }
+  .pixel-app.pixel-screen-battle .pixel-battle-layout {
+    --hand-card-height:112px; --battle-table-min:184px; --battle-headroom:148px; --battle-hand-space:208px;
+  }
+  .pixel-app.pixel-screen-multiplayer .pixel-battle-layout { --battle-headroom:208px; }
+  .pixel-app.pixel-screen-battle .pixel-battle-layout:has(.center-table-board[data-player-count="6"]),
+  .pixel-app.pixel-screen-battle .pixel-battle-layout:has(.center-table-board[data-player-count="7"]),
+  .pixel-app.pixel-screen-battle .pixel-battle-layout:has(.center-table-board[data-player-count="8"]) { --battle-table-min:264px; }
+  .pixel-app.pixel-screen-multiplayer .pixel-battle-layout:has(.center-table-board[data-player-count]) { --battle-table-min:320px; }
+  .pixel-app.pixel-screen-battle .expedition-learning-hud { top:52px; }
+  .pixel-app.pixel-screen-battle .expedition-learning-hud .crown-quest-strip { display:none; }
+  .pixel-app.pixel-screen-battle .battle-leaderboard[data-mode="MINIMIZED"] { top:52px !important; }
+  .pixel-app.pixel-screen-multiplayer .pixel-battle-layout > .multiplayer-help { top:114px; }
+  .pixel-app.pixel-screen-battle .battle-hand .hand-toolbar { display:none; }
+  .pixel-app.pixel-screen-battle .battle-command-dock .battle-hud-portrait { width:40px; height:40px; }
+  .pixel-app.pixel-screen-battle .battle-command-dock .battle-player-hud { padding:4px 0; }
+  .pixel-app.pixel-screen-battle .battle-command-dock .battle-hud-inventory .pixel-inventory { max-height:48px; }
+}
+
+.pixel-app.pixel-screen-battle .game-controls { z-index:80; }
+
+/* A compact solo HUD leaves the opponent and the near seat clear on short phones. */
+@media (max-width:767px) and (max-height:640px) {
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .expedition-learning-hud {
+    display:flex; align-items:center; gap:6px;
+  }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .expedition-learning-heading { display:contents; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .expedition-learning-heading > div:first-child { flex:1; min-width:0; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .expedition-learning-heading strong { font-size:11px; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .exp-help-actions { order:3; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .exp-coach { flex:0 0 auto; height:44px; max-width:92px; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .exp-coach-restore { min-width:44px; height:44px; padding:4px 5px; font-size:11px; white-space:nowrap; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .exp-help-actions button { min-width:44px; min-height:44px; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .exp-coach-message { width:44px; min-width:44px; height:44px; padding:3px; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .exp-coach-message .exp-coach-text { display:none; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .exp-coach-collapse { width:44px; min-width:44px; height:44px; margin-left:4px; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .center-table-board[data-player-count="2"] { overflow:visible; }
+  .pixel-app.pixel-screen-battle:not(.pixel-screen-multiplayer) .center-table-board .battle-fighter-self {
+    margin-top:calc(var(--model-size) * -4 / 3 * var(--seat-anchor) - 46px);
+  }
+}

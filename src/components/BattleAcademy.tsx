@@ -1,3 +1,4 @@
+import { acquireBodyScrollLock } from '../logic/bodyScrollLock';
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { Lang, Player } from '../types';
@@ -107,13 +108,12 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
     const dialog = dialogRef.current;
     if (!dialog) return;
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    const releaseScrollLock = acquireBodyScrollLock();
     dialog.showModal();
     headingRef.current?.focus({ preventScroll: true });
     return () => {
       dialog.close();
-      document.body.style.overflow = previousOverflow;
+      releaseScrollLock();
       if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
     };
   }, []);

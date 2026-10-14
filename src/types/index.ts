@@ -2,7 +2,7 @@
 export type Lang = 'zh' | 'en';
 export type CardType = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE' | 'ABSORB' | 'SPECIAL';
 export type HandCategory = 'CHARGE' | 'ATTACK' | 'DEFEND' | 'ULTIMATE';
-export type HandViewMode = 'CATEGORIES' | 'CARDS';
+export type HandViewMode = 'ALL' | 'CATEGORIES' | 'CARDS';
 
 export interface LocalizedText {
   zh: string;
