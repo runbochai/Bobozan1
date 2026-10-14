@@ -140,9 +140,9 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
         {isHoloCard(locked) && <CardHolo />}<WoodcutCardFace card={locked} lang={lang} free={player.freeSkills?.includes(locked.id)} /></div>}
       <div className="hand-committed-copy"><CheckCircle size={26} /><strong>{status === 'SHOWDOWN' ? (lang === 'zh' ? '招式释放中' : 'CASTING') : (lang === 'zh' ? '已出牌，等待对手' : 'Locked in. Waiting…')}</strong><small>{lang === 'zh' ? '下一回合，再出新招' : 'Your hand returns next round'}</small></div>
     </div> : <>
-      {viewMode !== 'CATEGORIES' && <nav className="hand-category-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
-        <button type="button" className="pixel-hand-back" onClick={e => { keyboardCategory.current = e.detail === 0; onBack(); }} aria-current={viewMode === 'ALL' ? 'true' : undefined} aria-label={lang === 'zh' ? '全部招式' : 'All moves'}>{lang === 'zh' ? '全部' : 'All'}</button>
-        {categories.map(cat => <button type="button" key={cat} className="hand-category-tab" data-card-type={cat} aria-current={viewMode === 'CARDS' && category === cat ? 'true' : undefined}
+      {viewMode === 'CARDS' && <nav className="hand-category-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
+        <button type="button" className="pixel-hand-back" onClick={e => { keyboardCategory.current = e.detail === 0; onBack(); }} aria-label={lang === 'zh' ? '返回全部分类' : 'Back to all categories'}><ArrowLeft size={18} /></button>
+        {categories.map(cat => <button type="button" key={cat} className="hand-category-tab" data-card-type={cat} aria-current={category === cat ? 'true' : undefined}
           data-folder-finish={categoryFinish[cat]}
           data-ultimate-finish={cat === 'ULTIMATE' ? 'amethyst' : undefined}
           data-ultimate-ready={cat === 'ULTIMATE' && ultimateReady || undefined}
@@ -203,7 +203,7 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
     </>}
     {viewMode === 'CATEGORIES' && <UltimateAura selector='.hand-category-card[data-card-type="ULTIMATE"]' host={handRef} active={ultimateReady}
       layoutKey={lang} face={<WoodcutCardFace folder="ULTIMATE" lang={lang} count={knownCards.filter(c => getHandCategory(c) === 'ULTIMATE').length} />} />}
-    {viewMode !== 'CATEGORIES' && cards.filter(card => card.type === 'ULTIMATE' && !isBlocked(card)).map(card => <UltimateAura key={card.id}
+    {viewMode === 'CARDS' && cards.filter(card => card.type === 'ULTIMATE').map(card => <UltimateAura key={card.id}
       selector={'.hand-skill-card[data-card-id="' + card.id + '"]'} host={handRef} active={!isBlocked(card)} holo={isHoloCard(card)}
       layoutKey={category + ':' + cards.length + ':' + lang} face={<WoodcutCardFace card={card} lang={lang} free={player?.freeSkills?.includes(card.id)} />} />)}
     {detail && canChoose && <CardDetails card={detail} lang={lang} freeCount={player?.freeSkills?.filter(id => id === detail.id).length ?? 0} endless={player?.endlessLevel !== undefined} onClose={() => setDetailId(null)} />}

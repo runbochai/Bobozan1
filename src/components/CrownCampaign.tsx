@@ -1,4 +1,3 @@
-import { acquireBodyScrollLock } from '../logic/bodyScrollLock';
 import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import type { Lang } from '../types';
@@ -32,12 +31,13 @@ function CrownDialog({ className, titleId, onClose, children, onKeyDown, onClick
   useEffect(() => {
     const dialog = ref.current!;
     const previous = document.activeElement as HTMLElement | null;
-    const releaseScrollLock = acquireBodyScrollLock();
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     if (!dialog.open) dialog.showModal();
     dialog.querySelector<HTMLElement>('[data-crown-initial-focus]')?.focus({ preventScroll: true });
     return () => {
       dialog.close();
-      releaseScrollLock();
+      document.body.style.overflow = previousOverflow;
       if (previous?.isConnected) previous.focus({ preventScroll: true });
     };
   }, []);
@@ -192,7 +192,7 @@ export function CrownJourney({ lang, stageIdx, cleared, onEnter, onSkipTowers, o
     <div className="crown-journey-content" style={{ '--chapter-color': chapter.color } as CSSProperties}>
       <header className="crown-dialog-header">
         <div className="crown-wordmark"><CrownMark /><div><span>{zh ? '王冠战争 · 主线' : 'CROWN WAR · CAMPAIGN'}</span><h1 id={titleId}>{chapter.title[lang]}</h1></div></div>
-        <div className="crown-exit-run"><button type="button" className="crown-text-button" onClick={onExit}>{zh ? '返回主页' : 'Return home'} <span aria-hidden="true">↗</span></button><small>{zh ? '保留本机关卡存档' : 'Battle checkpoint stays on this device'}</small></div>
+        <div className="crown-exit-run"><button type="button" className="crown-text-button" onClick={onExit}>{zh ? '结束本轮' : 'End run'} <span aria-hidden="true">↗</span></button><small>{zh ? '成长不保留；最佳记录保留' : 'Run growth resets; your best stays'}</small></div>
       </header>
       <ol className="crown-chapter-route" aria-label={zh ? '主线路线' : 'Campaign route'}>
         {CROWN_CHAPTERS.map((item, index) => {

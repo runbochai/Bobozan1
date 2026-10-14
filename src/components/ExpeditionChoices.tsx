@@ -1,4 +1,3 @@
-import { acquireBodyScrollLock } from '../logic/bodyScrollLock';
 import { useEffect, useId, useLayoutEffect, useRef, useState, type ReactNode } from 'react';
 import type { Lang } from '../types';
 import type { RewardOption, ShopItem } from '../logic/expedition';
@@ -132,10 +131,11 @@ function ChoicePanel({ title, subtitle, shop, gold, children, footer }: {
   const titleId = useId();
   useEffect(() => {
     const modal = dialog.current!;
-    const releaseScrollLock = acquireBodyScrollLock();
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     modal.showModal();
     titleRef.current?.focus();
-    return () => { modal.close(); releaseScrollLock(); };
+    return () => { modal.close(); document.body.style.overflow = overflow; };
   }, []);
   return <dialog ref={dialog} className={`expedition-panel${shop ? ' expedition-shop' : ' expedition-rewards'}`} aria-labelledby={titleId} onCancel={e => e.preventDefault()}>
     <header className="expedition-panel-heading">

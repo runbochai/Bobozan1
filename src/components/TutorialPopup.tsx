@@ -1,4 +1,3 @@
-import { acquireBodyScrollLock } from '../logic/bodyScrollLock';
 import { useEffect, useId, useRef, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import './TutorialPopup.css';
@@ -20,7 +19,8 @@ export default function TutorialPopup({ title, children, onDismiss }: Props) {
     if (!dialog) return;
     let previousFocus: HTMLElement | null = null;
     let previousDialog: HTMLDialogElement | null = null;
-    let releaseScrollLock: (() => void) | undefined;
+    let previousOverflow = '';
+    let ownsScrollLock = false;
     // The parent may be another native dialog mounting in the same render.
     // Open after its effect so this explanation is the uppermost modal.
     const frame = requestAnimationFrame(() => {
@@ -29,14 +29,16 @@ export default function TutorialPopup({ title, children, onDismiss }: Props) {
       if (previousFocus === document.body || previousFocus === document.documentElement) previousFocus = null;
       const openDialogs = [...document.querySelectorAll<HTMLDialogElement>('dialog[open]')].filter(item => item !== dialog);
       previousDialog = previousFocus?.closest('dialog') ?? openDialogs.at(-1) ?? null;
-      releaseScrollLock = acquireBodyScrollLock();
+      previousOverflow = document.body.style.overflow;
+      ownsScrollLock = previousOverflow !== 'hidden';
+      if (ownsScrollLock) document.body.style.overflow = 'hidden';
       dialog.showModal();
       dialog.focus({ preventScroll: true });
     });
     return () => {
       cancelAnimationFrame(frame);
       dialog.close();
-      releaseScrollLock?.();
+      if (ownsScrollLock) document.body.style.overflow = previousOverflow;
       if (previousFocus?.isConnected && !previousFocus.matches(':disabled')) {
         previousFocus.focus({ preventScroll: true });
       } else if (previousDialog?.isConnected && previousDialog.open) {

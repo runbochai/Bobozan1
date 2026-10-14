@@ -1,4 +1,3 @@
-import { acquireBodyScrollLock } from '../logic/bodyScrollLock';
 import { useEffect, useId, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import type { Lang, LogEntry } from '../types';
@@ -33,8 +32,8 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
   const endless = mode.id === 'endless';
   const choosingDifficulty = !!onStart && !recap;
   const restartNote = endless
-    ? (zh ? '守擂没有终点，倒下保留成长继续；每关开局自动存档，可从主页继续。' : 'Continue after defeat with your growth intact. Each battle saves a restart point; continue from the home screen.')
-    : (zh ? '重开清空本轮成长，保留各难度最佳与练习记录；每关开局自动存档，可从主页继续。' : 'Restart clears run growth, keeping each difficulty’s best and practice records. Each battle saves a restart point; continue from the home screen.');
+    ? (zh ? '守擂没有终点，倒下保留成长继续；退出或刷新不保存本轮。' : 'Continue after defeat with your growth intact. Leaving or refreshing still does not save this run.')
+    : (zh ? '重开清空本轮成长，保留各难度最佳与练习记录；退出或刷新不保存本轮。' : 'Restart clears run growth, keeping each difficulty’s best and practice records. Leaving or refreshing does not save this run.');
   const quickRules = <div className="exp-briefing-rules">
     <article><PixelCardArt id="charge" /><p>{zh ? '攒能量，抓对手攒时出手。' : 'Build energy; attack when the opponent Charges.'}</p></article>
     <article><PixelCardArt id="defend" /><p>{zh ? '听台词，看出招，自己判断。' : 'Listen, watch their moves, and make your own read.'}</p></article>
@@ -60,9 +59,10 @@ export default function ExpeditionBriefing({ lang, recap, onClose, onPractice, o
   useEffect(() => {
     const element = dialog.current!;
     const previous = document.activeElement as HTMLElement | null;
-    const releaseScrollLock = acquireBodyScrollLock();
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     element.showModal();
-    return () => { element.close(); releaseScrollLock(); if (previous?.isConnected) previous.focus({ preventScroll: true }); };
+    return () => { element.close(); document.body.style.overflow = overflow; if (previous?.isConnected) previous.focus({ preventScroll: true }); };
   }, []);
   return createPortal(<dialog ref={dialog} className={`exp-briefing${choosingDifficulty ? ' exp-difficulty-dialog' : ''}`} aria-labelledby={titleId} onCancel={event => { event.preventDefault(); onClose(); }}>
     <header><h2 id={titleId}>{recap ? (zh ? `第 ${recap.turn} 回合` : `Turn ${recap.turn}`) : choosingDifficulty ? (zh ? '单人挑战 · 远征' : 'Solo challenges · Campaign') : (zh ? '远征速览' : 'Expedition at a glance')}</h2>
