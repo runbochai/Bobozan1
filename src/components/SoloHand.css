@@ -94,11 +94,71 @@
 .pixel-app.pixel-screen-solo-quick .battle-command-dock .battle-hud-inventory .pixel-inventory {
   max-height: calc(var(--hand-card-height) + 38px);
 }
+
+/* Folders use the same reserved hand footprint as their fanned cards. */
+.pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .hand-category-nav {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 82px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 3px;
+  gap: 4px;
+  z-index: 2;
+}
+.pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .hand-category-nav > button {
+  min-width: 28px;
+  min-height: 28px;
+  height: 28px;
+  padding: 3px 6px;
+  font-size: 11px;
+}
+.solo-folder-hand .hand-scroll-hint { display: none; }
+.pixel-app .pixel-hand-area.battle-hand.solo-quick-hand.solo-folder-hand .pixel-hand-tray.hand-fan {
+  height: calc(var(--solo-card-height) + 32px);
+  min-height: calc(var(--solo-card-height) + 32px);
+  max-height: none;
+  padding: 16px 24px;
+  scroll-padding-inline: 24px;
+  gap: 0;
+  align-items: flex-end;
+}
+.pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .solo-quick-tray > :is(.hand-category-slot, .hand-skill-slot) {
+  flex-basis: calc(var(--solo-card-height) * 2 / 3);
+  width: calc(var(--solo-card-height) * 2 / 3);
+  pointer-events: none;
+}
+.pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .solo-quick-tray > .hand-category-slot {
+  flex-grow: 0;
+  flex-shrink: 1;
+  min-width: 52px;
+  max-width: calc(var(--solo-card-height) * 2 / 3);
+}
+.pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .hand-card-lift {
+  transform: translateY(var(--fan-offset, 0px)) rotate(var(--fan-angle, 0deg));
+  transition: transform 120ms ease-out;
+}
+.pixel-app .battle-hand.solo-quick-hand.solo-folder-hand button.hand-category-card {
+  height: var(--solo-card-height);
+}
+.pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .hand-skill-slot:has(:focus-visible) .hand-card-lift,
+.pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .hand-category-slot:has(:focus-visible) .hand-card-lift {
+  transform: translateY(-10px) rotate(0deg);
+}
+@media (hover: hover) and (pointer: fine) {
+  .pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .hand-fan:hover .hand-card-lift {
+    transform: translate(var(--fan-spread, 0px), var(--fan-offset, 0px)) rotate(var(--fan-angle, 0deg));
+  }
+  .pixel-app .battle-hand.solo-quick-hand.solo-folder-hand[data-hand-state="ready"]:not([aria-busy="true"]) .hand-fan > :is(.hand-category-slot, .hand-skill-slot):hover .hand-card-lift {
+    transform: translateY(-10px) rotate(0deg);
+  }
+}
 @media (max-width: 767px) {
   .pixel-app.pixel-screen-solo-quick .pixel-battle-layout {
     --solo-card-width: clamp(88px, calc((100vw - 48px) / 3), 110px);
     --hand-card-height: calc(var(--solo-card-width) * 1.5);
-    --battle-headroom: 168px;
+    --battle-headroom: 96px;
     --table-hand-overlap: 88px;
     --battle-hand-space: calc(var(--hand-card-height) + 158px - var(--table-hand-overlap));
     min-height: calc(var(--battle-headroom) + 220px + var(--battle-hand-space) + env(safe-area-inset-top) + env(safe-area-inset-bottom));
@@ -119,47 +179,20 @@
     width: var(--solo-card-width);
   }
   .pixel-app .battle-hand.solo-quick-hand .solo-quick-tray { gap: 10px; }
+  .pixel-app .pixel-hand-area.battle-hand.solo-quick-hand.solo-folder-hand .pixel-hand-tray.hand-skill-fan { gap: 8px; }
   .solo-quick-hand .solo-quick-key { display: none; }
   .pixel-app.pixel-screen-solo-quick .pixel-mobile-header { height: 28px; padding: 3px 8px; }
   .pixel-app.pixel-screen-solo-quick .pixel-controls { top: calc(34px + env(safe-area-inset-top)); }
-  .pixel-app.pixel-screen-solo-quick .expedition-learning-hud {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 4px 6px;
-    top: calc(76px + env(safe-area-inset-top));
-    padding: 6px;
-  }
-  .pixel-app.pixel-screen-solo-quick .expedition-learning-heading {
-    grid-column: 1 / -1;
-    min-height: 34px;
-    gap: 6px;
-    margin: 0;
-  }
-  .pixel-app.pixel-screen-solo-quick .expedition-learning-heading strong { font-size: 12px; }
-  .pixel-app.pixel-screen-solo-quick .expedition-learning-heading small { font-size: 9px; white-space: nowrap; }
-  .pixel-app.pixel-screen-solo-quick .expedition-learning-heading .exp-help-actions { gap: 3px; }
-  .pixel-app.pixel-screen-solo-quick .expedition-learning-heading .exp-help-actions button { min-height: 32px; padding-inline: 5px; font-size: 11px; }
-  .pixel-app.pixel-screen-solo-quick .crown-quest-strip { width: 100%; min-width: 0; padding: 2px 4px; gap: 4px; }
-  .pixel-app.pixel-screen-solo-quick .crown-quest-strip > .crown-mark { width: 15px; height: 22px; }
-  .pixel-app.pixel-screen-solo-quick .crown-quest-strip strong { max-width: 100%; font-size: 9px; }
-  .pixel-app.pixel-screen-solo-quick .crown-seal-row--compact { gap: 2px; margin-left: 1px; }
-  .pixel-app.pixel-screen-solo-quick .crown-seal-row--compact .crown-mark { width: 12px; height: 17px; }
-  .pixel-app.pixel-screen-solo-quick .exp-coach { min-width: 68px; max-width: 90px; }
-  .pixel-app.pixel-screen-solo-quick .exp-coach button { font-size: 11px; }
-  .pixel-app.pixel-screen-solo-quick .exp-coach-restore { min-height: 32px; padding-inline: 6px; }
-  .pixel-app.pixel-screen-solo-quick .exp-coach[data-collapsed="false"] { grid-column: 1 / -1; max-width: 100%; }
 }
 @media (max-width: 767px) and (max-height: 620px) {
   .pixel-app.pixel-screen-solo-quick .pixel-battle-layout {
-    --battle-headroom: 160px;
     min-height: calc(var(--battle-headroom) + 202px + var(--battle-hand-space) + env(safe-area-inset-top) + env(safe-area-inset-bottom));
   }
   .pixel-app.pixel-screen-solo-quick .pixel-battle-board.center-table-board { min-height: 202px; }
-  .pixel-app.pixel-screen-solo-quick .expedition-learning-hud { top: calc(68px + env(safe-area-inset-top)); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .pixel-app .battle-hand.solo-quick-hand .hand-card-lift { transition: none; }
+  .pixel-app .battle-hand.solo-quick-hand .hand-card-lift,
+  .pixel-app .battle-hand.solo-quick-hand.solo-folder-hand .hand-card-lift { transition: none; }
 }
 .reduce-motion .pixel-app .battle-hand.solo-quick-hand .hand-card-lift,
 .reduce-motion.pixel-app .battle-hand.solo-quick-hand .hand-card-lift { transition: none; }

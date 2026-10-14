@@ -15,6 +15,10 @@ export const ULT_CUTIN_MS = 2850;
 export const SOLO_MOTION_SCALE = .42;
 export const SOLO_SHOWDOWN_MS = 700;
 export const SOLO_REDUCED_SHOWDOWN_MS = 450;
+export const SOLO_CUTIN_START_MS = CARD_REVEAL_MS * SOLO_MOTION_SCALE;
+export const SOLO_CUTIN_MS = 700;
+export const SOLO_CUTIN_SCALE = SOLO_CUTIN_MS / ULT_CUTIN_MS;
+export const SOLO_ULT_SHOWDOWN_MS = 1450;
 
 export interface BattleRoundClock<T> { key: string; startedAt: number; snapshot: T }
 
@@ -29,6 +33,6 @@ export function remainingBattleTime(startedAt: number, milestone: number, now: n
 
 /** A reduced-motion host must still leave time for everyone else's presentation. */
 export function showdownDurationMs(hasCutin: boolean, mode: 'room' | 'expedition', reduced = false): number {
-  if (mode === 'expedition') return reduced ? SOLO_REDUCED_SHOWDOWN_MS : SOLO_SHOWDOWN_MS;
+  if (mode === 'expedition') return reduced ? SOLO_REDUCED_SHOWDOWN_MS : hasCutin ? SOLO_ULT_SHOWDOWN_MS : SOLO_SHOWDOWN_MS;
   return CARD_REVEAL_MS + (hasCutin ? 4700 : 1200);
 }

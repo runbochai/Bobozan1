@@ -1,4 +1,5 @@
 import './UltCutin.css';
+import './SoloUltCutin.css';
 // src/components/UltCutin.tsx
 // 必杀技演出 overlay：左侧闪入巨型像素立绘 → 压暗全屏 → 漫画对话框喊话 → 像素风技能特效
 import { useEffect, useMemo, useState } from 'react';
@@ -6,6 +7,7 @@ import type { UltCutinDef } from '../data/ultCutins';
 import { pickShout } from '../data/ultCutins';
 import { assetUrl } from '../assets';
 import { playSound } from '../audio/sound';
+import { SOLO_CUTIN_SCALE } from '../data/battleTiming';
 import ComboCutinArt from './ComboCutinArt';
 
 interface Props {
@@ -19,12 +21,14 @@ interface Props {
   index?: number;
   /** 同屏总数 */
   total?: number;
+  /** Solo keeps the full cut-in with a compressed animation and sound clock. */
+  quick?: boolean;
 }
 
 const METEORS = [0, 1, 2, 3, 4, 5, 6, 7];
 const SPARKS = Array.from({ length: 18 }, (_, i) => i);
 
-export default function UltCutin({ def, playerName, skillName, level, lang, muted, index = 0, total = 1 }: Props) {
+export default function UltCutin({ def, playerName, skillName, level, lang, muted, index = 0, total = 1, quick = false }: Props) {
   const shout = useMemo(() => pickShout(def, lang), [def, lang]);
   // 立绘缺失时降级为像素徽章，保证演出不断
   const [imgOk, setImgOk] = useState(true);
@@ -32,19 +36,21 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
   const multi = total > 1;
   const columns = total > 1 ? 2 : 1;
   const rows = Math.ceil(total / columns);
+  const motionScale = quick ? SOLO_CUTIN_SCALE : 1;
+  const seconds = (value: number) => `${value * motionScale}s`;
 
   // 冲击音效（流星落地 / 特效爆发时）
   useEffect(() => {
     if (index > 0) return;
-    const t = setTimeout(() => playSound('combat', muted), 1150);
+    const t = setTimeout(() => playSound('combat', muted), 1150 * motionScale);
     return () => clearTimeout(t);
-  }, [muted, index]);
+  }, [muted, index, motionScale]);
 
   return (
     <div
-      className={`ultcutin fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim ${multi ? 'ultcutin-multi' : ''} ${total > 4 ? 'ultcutin-dense' : ''}`}
+      className={`ultcutin fixed inset-0 z-[120] pointer-events-none overflow-hidden animate-ultcutin-dim ${quick ? 'ultcutin-quick' : ''} ${multi ? 'ultcutin-multi' : ''} ${total > 4 ? 'ultcutin-dense' : ''}`}
       data-skill={def.skillId} data-combo={!!def.combo}
-      style={{ ['--ultdim' as string]: index === 0 ? 0.68 : 0 }}
+      style={{ ['--ultdim' as string]: index === 0 ? 0.68 : 0, ['--ult-quick-scale' as string]: motionScale }}
     >
       {/* 速度线 + 震动容器 */}
       {index === 0 && <div className="absolute inset-0 ultcutin-speedlines" />}
@@ -116,7 +122,7 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
         {def.combo && ['wings', 'guard', 'detonation', 'poison'].includes(def.fx) && <div className={`combo-cutin-fx combo-fx-${def.fx} absolute inset-0 overflow-hidden`} data-combo-fx={def.fx}>
           {Array.from({ length: def.fx === 'poison' ? 6 : 3 }, (_, i) => <div key={i} className="combo-fx-mark" style={{
             left: `${def.fx === 'wings' ? 50 : 24 + i % 3 * 26}%`, top: `${def.fx === 'poison' ? 48 + i % 2 * 24 : 56}%`,
-            animationDelay: `${1.0 + i * .16}s`, color: def.fxColor,
+            animationDelay: seconds(1.0 + i * .16), color: def.fxColor,
           }}><ComboCutinArt id={def.combo!} /></div>)}
           <div className="absolute inset-0 animate-ultcutin-flash" style={{ background: def.fxColor }} />
         </div>}
@@ -129,7 +135,7 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
                 style={{
                   right: `${-6 + i * 13}%`,
                   top: `${-14 - (i % 3) * 9}%`,
-                  animation: `ultcutin-meteor-fall ${0.85 + (i % 4) * 0.14}s steps(16) ${0.85 + i * 0.07}s both`,
+                  animation: `ultcutin-meteor-fall ${seconds(0.85 + (i % 4) * 0.14)} steps(16) ${seconds(0.85 + i * 0.07)} both`,
                 }}
               >
                 <div className={def.fx === "ice" ? "px-ice-core" : "px-meteor-core"} />
@@ -145,7 +151,7 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
             {Array.from({ length: def.fx === 'palm' ? 5 : 3 }, (_, i) => (
               <div key={i} className={`px-strike ${def.fx === 'palm' ? 'px-palm' : 'px-boot'}`}
                 style={{ left: `${28 + (i % 3) * 20}%`, top: `${38 + (i % 2) * 22}%`,
-                  color: def.fxColor, animationDelay: `${1.05 + i * 0.2}s` }} />
+                  color: def.fxColor, animationDelay: seconds(1.05 + i * 0.2) }} />
             ))}
           </div>
         )}
@@ -161,7 +167,7 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
                   height: `${10 - i * 2}px`,
                   background: def.fxColor,
                   boxShadow: `8px 8px 0 #fff, -8px -8px 0 ${def.fxColor}`,
-                  animationDelay: `${1.05 + i * 0.16}s`,
+                  animationDelay: seconds(1.05 + i * 0.16),
                 }}
               />
             ))}
@@ -188,7 +194,7 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
                       boxShadow: `4px 4px 0 #0f172a`,
                       ['--sx' as string]: `${Math.cos(ang) * dist}vw`,
                       ['--sy' as string]: `${steam ? -dist : Math.sin(ang) * dist}vh`,
-                      animationDelay: `${1.15 + (i % 5) * 0.05}s`,
+                      animationDelay: seconds(1.15 + (i % 5) * 0.05),
                     }}
                   />
                 );
@@ -208,7 +214,7 @@ export default function UltCutin({ def, playerName, skillName, level, lang, mute
                   background: `repeating-linear-gradient(90deg, ${def.fxColor} 0 18px, transparent 18px 36px)`,
                   top: def.fx === 'beam' ? `${40 + i * 12}%` : undefined,
                   opacity: 0.75 - i * 0.18,
-                  animationDelay: `${1.0 + i * 0.22}s`,
+                  animationDelay: seconds(1.0 + i * 0.22),
                 }}
               />
             ))}

@@ -21,6 +21,7 @@ interface Props {
   roundKey: string;
   showdown: boolean;
   damage?: number;
+  damageKey?: number;
   hit: boolean;
   reduceMotion: boolean;
   quick?: boolean;
@@ -36,7 +37,7 @@ function BattleEmoji({ emoji, at }: { emoji: string; at: number }) {
   return visible ? <span className="battle-emoji">{emoji}</span> : null;
 }
 
-export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, roundKey, showdown, damage, hit, reduceMotion, quick = false, intent }: Props) {
+export default function BattleFighter({ player, seat, bounds, self, maxHp, level, viewerLevel, endless, lang, roundKey, showdown, damage, damageKey, hit, reduceMotion, quick = false, intent }: Props) {
   const seed = player.id.split('').reduce((sum, c) => sum + c.charCodeAt(0), 0);
   const direction = seat.facing ?? directionToward(seat);
   const dealing = showdown && !player.isDead && !!player.selectedCardId;
@@ -52,8 +53,8 @@ export default function BattleFighter({ player, seat, bounds, self, maxHp, level
       <BattleSprite avatar={playerAvatar(player)} name={player.name} direction={direction}
         actionKey={dealing ? `${roundKey}:${player.id}` : undefined} reduced={reduceMotion} handPerspective={self} quick={quick} />
     </div>
-    {!reduceMotion && !!damage && <div className="battle-hit-burst" aria-hidden="true" />}
-    {!!damage && <span className={`battle-damage ${reduceMotion ? 'battle-damage-still' : ''}`}>−{damage}</span>}
+    {!reduceMotion && !!damage && <div key={`hit-${damageKey}`} className="battle-hit-burst" aria-hidden="true" />}
+    {!!damage && <span key={`damage-${damageKey}`} className={`battle-damage ${reduceMotion ? 'battle-damage-still' : ''}`}>−{damage}</span>}
     {player.emoji && player.emojiAt && <BattleEmoji key={player.emojiAt} emoji={player.emoji} at={player.emojiAt} />}
     {player.isDead && <Skull size={26} className="battle-dead-mark" />}
     {!self && <div className="table-seat-status" style={{ left: `calc(50% + ${getBattleStatusOffset(seat, self, bounds)}px)` }}>

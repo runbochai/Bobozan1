@@ -9,10 +9,12 @@ import { getBattleFigure, SELF_SEAT, type BattleBounds, type BattleSeat } from '
 import { playerAvatar } from '../logic/bots';
 import { tableCardPositions } from '../logic/tableCardLayout';
 import { tableCardClash } from '../logic/tableCardMotion';
+import { getShowdownWinner } from '../logic/combat';
 import WoodcutCardFace from './WoodcutCardFace';
 import CardHolo from './CardHolo';
+import './BattleCardSlam.css';
 
-/** Present every revealed play, then compare them together without predicting a winner. */
+/** Compare the committed plays, highlighting only the engine's card advantage. */
 export default function BattleTableCards({ players, lang, seatFor, reduced, bounds, quick = false }: {
   players: Player[]; lang: Lang; seatFor: (index: number) => BattleSeat; reduced: boolean; bounds: BattleBounds; quick?: boolean;
 }) {
@@ -34,6 +36,7 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
   const positions = tableCardPositions(players.map((_, index) => seatFor(index)), bounds);
   const clash = tableCardClash(positions, bounds);
   const comparing = played.length > 1;
+  const winners = new Set(getShowdownWinner(players));
   const scale = quick ? SOLO_MOTION_SCALE : 1;
   return <div className={`table-cards ${reduced || motionStopped ? 'table-cards-still' : ''}`} data-comparing={comparing}
     aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'} style={{
@@ -67,23 +70,35 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
         + (ownerHeight + ownerGap) * .32 / 2;
       const inward = clash.offsets[index] ?? { x: 0, y: 0 };
       const cost = player.freeSkills?.includes(card.id) ? 0 : card.cost;
-      const label = `${player.name}: ${card.name[lang]} · Lv.${getEffectiveLevel(card)} · ${cost} ${lang === 'zh' ? '能量' : 'energy'}`;
+      const winner = winners.has(player.id);
+      const advantage = lang === 'zh' ? '本回合出牌占优' : 'Card advantage this round';
+      const label = `${player.name}: ${card.name[lang]} · Lv.${getEffectiveLevel(card)} · ${cost} ${lang === 'zh' ? '能量' : 'energy'}${winner ? ` · ${advantage}` : ''}`;
       return <div className="table-card-flight" key={player.id} data-player-id={player.id} data-compact={compact} data-small={width < 64}
+        data-slam-winner={winner}
         role="img" aria-label={label} title={label} style={{
         left: `${x}%`, top: `${y}%`, width, '--played-width': `${width}px`, '--played-height': `${cardHeight}px`,
         '--owner-height': `${ownerHeight}px`, '--owner-gap': `${ownerGap}px`, '--card-from-x': `${fromX}px`,
         '--card-from-y': `${fromY}px`, '--card-tilt': `${index % 2 ? 3 : -3}deg`,
         '--card-clash-x': `${inward.x}px`, '--card-clash-y': `${inward.y}px`,
+        // Crowded card slots keep their full footprint; the tilt/squash still
+        // conveys impact without lifting over a neighboring player's card.
+        '--card-slam-lift': `${players.length > 4 ? 0 : Math.min(12, cardHeight * .12)}px`,
       } as CSSProperties}>
         <div className="table-card-compare">
-          <div className="table-card-surface">
-            <div className="pixel-showdown-card table-played-card" data-card-type={card.type} data-card-id={card.id}
-              data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}>
-              {isHoloCard(card) && <CardHolo />}
-              <WoodcutCardFace card={card} lang={lang} free={cost === 0} />
+          <div className="table-card-slam">
+            {winner && <span className="table-slam-flash" aria-hidden="true"><i /><i /><i /><i /></span>}
+            <div className="table-card-surface">
+              <div className="pixel-showdown-card table-played-card" data-card-type={card.type} data-card-id={card.id}
+                data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}>
+                {isHoloCard(card) && <CardHolo />}
+                <WoodcutCardFace card={card} lang={lang} free={cost === 0} />
+              </div>
+              {winner && <span className="table-slam-outline" aria-hidden="true" />}
             </div>
           </div>
-          {ownerHeight > 0 && <span className="table-card-owner">{player.name}</span>}
+          {ownerHeight > 0 && <span className="table-card-owner"><span className="table-card-owner-name">{player.name}</span>
+            {winner && <b className="table-slam-owner-mark" aria-hidden="true">{lang === 'zh' ? '占优' : 'EDGE'}</b>}
+          </span>}
         </div>
       </div>;
     })}

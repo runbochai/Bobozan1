@@ -8,7 +8,7 @@ import SkillLoadoutPicker from './components/SkillLoadoutPicker';
 import { SKILL_SLOT_LIMIT, getHandCategory, getSkillOverflow, hasSkillOverflow, normalizeSkillLoadout,
   autoSelectSkillLoadout, isAcquiredSkill, resolveSkillLoadout, sortHandCards, type SkillSelections } from './logic/skillLoadout';
 import BattleTableCards from './components/BattleTableCards';
-import { CARD_LAND_MS, CARD_COMPARE_IMPACT_MS, CARD_REVEAL_MS, ULT_CUTIN_MS, SOLO_MOTION_SCALE,
+import { CARD_LAND_MS, CARD_COMPARE_IMPACT_MS, CARD_REVEAL_MS, ULT_CUTIN_MS, SOLO_MOTION_SCALE, SOLO_CUTIN_START_MS, SOLO_CUTIN_MS,
   captureBattleRound, remainingBattleTime, showdownDurationMs, type BattleRoundClock } from './data/battleTiming';
 import BattleFighter from './components/BattleFighter';
 import BattleLevelBadge from './components/BattleLevelBadge';
@@ -122,9 +122,10 @@ import { mutateRoom, createUniqueRoom } from './services/rooms';
 import { advanceRoom, choosePlayerSkills, joinPlayer, leavePlayer, patchPlayer, setRoomMode, settleRoom, startRoom, submitPlayerMove } from './logic/room';
 import type { User as FirebaseUser } from 'firebase/auth';
 import './components/BattleViewport.css';
-import ExpeditionCoach from './components/ExpeditionCoach';
+import SoloOpeningHint from './components/SoloOpeningHint';
+import SoloBattleMenu from './components/SoloBattleMenu';
 import ExpeditionSpeech from './components/ExpeditionSpeech';
-import { CrownPrologue, CrownJourney, CrownEnding, CrownQuestStrip } from './components/CrownCampaign';
+import { CrownPrologue, CrownJourney, CrownEnding } from './components/CrownCampaign';
 import { chapterForStage, themeForStage } from './data/crownCampaign';
 import { findTheme } from './data/gameThemes';
 import './components/CrownIntegration.css';
@@ -162,6 +163,8 @@ const TopControls = ({
   reduceMotion,
   toggleReduceMotion,
   campaignScene = false,
+  onOpenBattleMenu,
+  battleMenuDisabled = false,
 }: {
   muted: boolean;
   toggleMute: () => void;
@@ -177,6 +180,8 @@ const TopControls = ({
   reduceMotion: boolean;
   toggleReduceMotion: () => void;
   campaignScene?: boolean;
+  onOpenBattleMenu?: () => void;
+  battleMenuDisabled?: boolean;
 }) => {
   // Local state for the slider toggle
   const [isVolumeOpen, setIsVolumeOpen] = useState(false);
@@ -243,7 +248,11 @@ const TopControls = ({
       </div>
 
       {/* Log Toggle */}
-      {showLogToggle && (
+      {onOpenBattleMenu ? <button type="button" onClick={onOpenBattleMenu} disabled={battleMenuDisabled}
+        aria-label={lang === 'zh' ? '对局菜单' : 'Battle menu'} title={lang === 'zh' ? '对局菜单' : 'Battle menu'}
+        className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20">
+        <Scroll size={20} />
+      </button> : showLogToggle && (
         <button
           onClick={toggleLog}
           className="p-3 bg-white/10 hover:bg-white/20 backdrop-blur-md rounded-full text-white transition-all shadow-lg border border-white/20"
@@ -366,6 +375,8 @@ export default function BobozanOnline() {
   const [academyFromManual, setAcademyFromManual] = useState(false);
   const [expHelp, setExpHelp] = useState<'intro' | 'recap' | null>(null);
   const [expStoryOpen, setExpStoryOpen] = useState(false);
+  const [expMenuOpen, setExpMenuOpen] = useState(false);
+  const [expChargeTipDismissed, setExpChargeTipDismissed] = useState(false);
   const [expRecap, setExpRecap] = useState<ExpeditionRecap>();
   const [expIntents, setExpIntents] = useState<Record<string, string>>({}); // 敌人ID -> 本回合预定的出牌
   const [goldFly, setGoldFly] = useState<{ amount: number; key: number } | null>(null); // 金币飞入动画
@@ -388,7 +399,6 @@ export default function BobozanOnline() {
   const [expHistory, setExpHistory] = useState<ExpeditionHistory>({});
   const [expDialogueRound, setExpDialogueRound] = useState<{ damageTaken: Record<string, number>; defendedHits: Record<string, number> }>();
   const expDialogueSeedRef = useRef(0);
-  const [expLastResult, setExpLastResult] = useState<{ damageTaken: number; defendedHits: number; heroCardId: string; opponentCardIds: string[] }>();
   const expeditionBusyRef = useRef(false);
   const expeditionTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const clearExpeditionTimers = () => {
@@ -425,7 +435,6 @@ export default function BobozanOnline() {
     expHistoryRef.current = publicHistory ? { [expMyId()]: publicHistory.slice(-12) } : {};
     setExpHistory(expHistoryRef.current);
     setExpDialogueRound(undefined);
-    setExpLastResult(undefined);
     setExpRecap(undefined);
     setExpGold(battle.run.gold);
     setExpRelics([...battle.run.relics]);
@@ -433,6 +442,7 @@ export default function BobozanOnline() {
     setExpStageIdx(stageIdx);
     setExpPhase('battle');
     setExpStoryOpen(false);
+    setExpMenuOpen(false);
     setSubmittingMove(false);
     setHandViewMode('CATEGORIES');
     setHandCategory('CHARGE');
@@ -459,6 +469,8 @@ export default function BobozanOnline() {
     setExpShop([]);
     setExpHelp(null);
     setExpStoryOpen(false);
+    setExpMenuOpen(false);
+    setExpChargeTipDismissed(false);
     setAcademyTab(null);
     setMoveManualOpen(false);
     setAcademyFromManual(false);
@@ -486,7 +498,7 @@ export default function BobozanOnline() {
   };
 
   const handleExpeditionMove = (cardId: string) => {
-    if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle' || expStoryOpen) return;
+    if (!isExpedition || expeditionBusyRef.current || expPhase !== 'battle' || expStoryOpen || expMenuOpen || expOpeningHintPending) return;
     if (hasSkillOverflow(expRunRef.current)) return;
     if (gameState.status !== 'PLAYING') return;
     const myId = expMyId();
@@ -518,7 +530,7 @@ export default function BobozanOnline() {
       text: `${gameState.players.find(player => player.id === id)?.name ?? ''}：“${line.text}”` }));
     setGameState(prev => ({ ...prev, players: playersWithMoves, status: 'SHOWDOWN' }));
 
-    // Every solo move uses the same short exchange, including ultimates and combos.
+    // Keep quick card beats, with a brief full cut-in for ultimates and combos.
     const ultPlayed = playersWithMoves.some(p => {
       if (p.isDead || !p.selectedCardId) return false;
       const c = SKILL_DB.find(x => x.id === p.selectedCardId);
@@ -537,8 +549,6 @@ export default function BobozanOnline() {
       setExpEquipment([...run.equipment]);
       setExpGold(run.gold);
       const resolvedHero = players.find(p => p.id === myId)!;
-      setExpLastResult({ damageTaken: result.damageTaken[myId], defendedHits: result.defendedHits[myId], heroCardId: cardId,
-        opponentCardIds: playersWithMoves.filter(p => p.id !== myId && !p.isDead).map(p => p.selectedCardId!) });
       setExpRecap({ turn: gameState.turn, hpBefore: me.hp, hpAfter: resolvedHero.hp,
         energyBefore: me.energy, energyAfter: resolvedHero.energy, logs: [...speechLogs, ...logs],
         cards: playersWithMoves.filter(p => !p.isDead && p.selectedCardId).map(p => ({ name: p.name, id: p.selectedCardId!,
@@ -670,7 +680,8 @@ export default function BobozanOnline() {
     }
   }, [view]);
 
-  const [damageNumbers, setDamageNumbers] = useState<{[key: string]: number}>({});
+  const [damageNumbers, setDamageNumbers] = useState<Record<string, { amount: number; eventKey: number }>>({});
+  const damageEventRef = useRef(0);
   const [showBattleResult, setShowBattleResult] = useState(false);
   const prevPlayersRef = useRef<Player[]>([]);
   const prevShowdownRef = useRef(false);
@@ -737,12 +748,14 @@ export default function BobozanOnline() {
   const [emojiMenuOpen, setEmojiMenuOpen] = useState(false);
 
   const myPlayerId = isExpedition ? expMyId() : user?.uid || 'me';
+  const expOpeningHintPending = isExpedition && !isEndless && expPhase === 'battle'
+    && expStageIdx === 0 && !expChargeTipDismissed && gameState.status === 'PLAYING' && gameState.turn === 1;
   const myPlayer = gameState.players.find((p: Player) => p.id === myPlayerId);
   const knownCards = myPlayer ? getPlayerCards(myPlayer, gameState.players) : [];
 
   const preloadedCutinsRef = useRef(new Set<string>());
   useEffect(() => {
-    if (view !== 'GAME' || reduceMotion || isExpedition) return;
+    if (view !== 'GAME' || reduceMotion) return;
     for (const player of gameState.players) {
       if (player.isDead) continue;
       for (const card of getPlayerCards(player, gameState.players)) {
@@ -754,7 +767,7 @@ export default function BobozanOnline() {
         img.src = assetUrl(def.image);
       }
     }
-  }, [gameState.players, view, reduceMotion, isExpedition]);
+  }, [gameState.players, view, reduceMotion]);
 
   const [revengeCardId, setRevengeCardId] = useState<string | null>(null);
   const prevMatchCountRef = useRef(gameState.matchCount);
@@ -854,16 +867,18 @@ export default function BobozanOnline() {
   // Raise, release, land, compare, then play ultimate/combo cut-ins.
   useEffect(() => {
     const presentation = battleRoundRef.current;
-    if (!isExpedition && gameState.status === 'SHOWDOWN' && presentation?.key === battleRoundKey && !reduceMotion
+    if (gameState.status === 'SHOWDOWN' && presentation?.key === battleRoundKey && !reduceMotion
       && !presentation.snapshot.motionStopped && !presentation.snapshot.cutinsPlayed) {
       const picks = pickUltCutins(presentation.snapshot.players, SKILL_DB, presentation.snapshot.lang);
-      const finishIn = remainingBattleTime(presentation.startedAt, CARD_REVEAL_MS + ULT_CUTIN_MS, Date.now());
+      const revealAt = isExpedition ? SOLO_CUTIN_START_MS : CARD_REVEAL_MS;
+      const cutinDuration = isExpedition ? SOLO_CUTIN_MS : ULT_CUTIN_MS;
+      const finishIn = remainingBattleTime(presentation.startedAt, revealAt + cutinDuration, Date.now());
       if (picks.length > 0 && finishIn > 0) {
         setUltCutins([]);
         const reveal = setTimeout(() => {
           presentation.snapshot.cutinsPlayed = true;
           setUltCutins(picks.map(pick => ({ ...pick, key: presentation.key })));
-        }, remainingBattleTime(presentation.startedAt, CARD_REVEAL_MS, Date.now()));
+        }, remainingBattleTime(presentation.startedAt, revealAt, Date.now()));
         const finish = setTimeout(() => setUltCutins([]), finishIn);
         return () => { clearTimeout(reveal); clearTimeout(finish); };
       }
@@ -896,16 +911,17 @@ export default function BobozanOnline() {
     prevPlayersRef.current = gameState.players;
     prevShowdownRef.current = gameState.status === 'SHOWDOWN';
     if (!settled) {
-      if (gameState.status === 'SHOWDOWN') setDamageNumbers({});
+      if (gameState.status === 'SHOWDOWN' && !isExpedition) setDamageNumbers({});
       return;
     }
-    const damages: Record<string, number> = {};
+    const damages: typeof damageNumbers = {};
+    const eventKey = ++damageEventRef.current;
     for (const player of gameState.players) {
       const before = previous.find(p => p.id === player.id);
-      if (before && player.hp < before.hp) damages[player.id] = before.hp - player.hp;
+      if (before && player.hp < before.hp) damages[player.id] = { amount: before.hp - player.hp, eventKey };
     }
     setDamageNumbers(damages);
-  }, [gameState.players, gameState.status]);
+  }, [gameState.players, gameState.status, isExpedition]);
 
   useEffect(() => {
     if (!Object.keys(damageNumbers).length) return;
@@ -980,6 +996,8 @@ export default function BobozanOnline() {
     setExpRecap(undefined);
     setExpHelp(null);
     setExpStoryOpen(false);
+    setExpMenuOpen(false);
+    setExpChargeTipDismissed(false);
     setAcademyTab(null);
     setMoveManualOpen(false);
     setAcademyFromManual(false);
@@ -1098,10 +1116,11 @@ export default function BobozanOnline() {
 }, [gameState.logs, muted]);
 
   useEffect(() => {
-  // 每次进入新回合，把手牌视图重置回“分类”
+  // Solo keeps the chosen folder open so the next move stays one click away.
+  if (isExpedition) return;
   setHandViewMode('CATEGORIES');
-  setHandCategory('CHARGE'); // 可选：顺便把当前分类重置成攒
-}, [gameState.turn]);
+  setHandCategory('CHARGE');
+}, [gameState.turn, isExpedition]);
 
 
   const handleEnterName = () => {
@@ -2010,6 +2029,15 @@ export default function BobozanOnline() {
     <div style={campaignStyle} className={`pixel-app pixel-screen-battle ${isExpedition ? 'pixel-screen-solo-quick' : 'pixel-screen-multiplayer'} min-h-screen w-screen bg-[#0f172a] overflow-hidden relative flex justify-center items-start font-sans selection:bg-orange-500/30`}>
       {learningOverlay}
       {skillSelectionOverlay}
+      {expOpeningHintPending && !expStoryOpen && !expMenuOpen && !moveManualOpen && !academyTab && !expHelp && !learningMode
+        && <SoloOpeningHint lang={lang} onClose={() => setExpChargeTipDismissed(true)} />}
+      {isExpedition && expMenuOpen && expPhase === 'battle' && <SoloBattleMenu lang={lang}
+        stageName={getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]} turn={gameState.turn}
+        onClose={() => setExpMenuOpen(false)}
+        onManual={() => { setExpMenuOpen(false); setMoveManualOpen(true); }}
+        onStory={isEndless ? undefined : () => { setExpMenuOpen(false); setExpStoryOpen(true); }}
+        onRecap={expRecap ? () => { setExpMenuOpen(false); setExpHelp('recap'); } : undefined}
+        onLog={() => { setExpMenuOpen(false); setLogOpen(true); }} />}
       {isExpedition && (expPhase === 'journey' || expPhase === 'battle' && expStoryOpen) && <CrownJourney lang={lang}
         review={expStoryOpen} stageIdx={expStoryOpen ? expStageIdx : expNextStage} cleared={expRunRef.current.crownCleared ?? []}
         onEnter={() => { if (expStoryOpen) setExpStoryOpen(false); else if (expPhase === 'journey') setupExpeditionBattle(expNextStage); }}
@@ -2063,6 +2091,8 @@ export default function BobozanOnline() {
        logOpen={logOpen} 
        toggleLog={() => setLogOpen(o => !o)}
        showLogToggle={true}
+       onOpenBattleMenu={isExpedition ? () => setExpMenuOpen(true) : undefined}
+       battleMenuDisabled={isExpedition && (submittingMove || expPhase !== 'battle')}
        campaignScene={!!campaignTheme}
        musicVolume={musicVolume}
       setMusicVolume={setMusicVolume}
@@ -2222,24 +2252,6 @@ export default function BobozanOnline() {
 
         {!isExpedition && <MultiplayerHelp compact lang={lang} game={gameState} playerId={user?.uid} onOpenRules={() => setMoveManualOpen(true)} />}
 
-        {isExpedition && expPhase === 'battle' && (
-          <div className="pixel-exp-hud expedition-learning-hud absolute top-3 left-3 z-50 pointer-events-none">
-            <div className="expedition-learning-heading">
-              <div><strong>{getExpeditionStage(expStageIdx, expRunRef.current.difficulty)!.name[lang]}</strong><small><span className={`exp-difficulty-badge exp-difficulty-badge--${expDifficulty}`}>{expDifficultyConfig.label[lang]}</span> · {lang === 'zh' ? '第 ' + gameState.turn + ' 回合' : 'Turn ' + gameState.turn}{expRunRef.current.route === 'risk' ? (lang === 'zh' ? ' · 挑战' : ' · Challenge') : ''}</small></div>
-              <div className="exp-help-actions">
-                {!isEndless && <button type="button" disabled={submittingMove} onClick={() => setExpStoryOpen(true)}>{lang === 'zh' ? '剧情' : 'Story'}</button>}
-                <button type="button" disabled={submittingMove} onClick={() => setMoveManualOpen(true)}>{lang === 'zh' ? '招式手册' : 'Move manual'}</button>
-                <button type="button" disabled={!expRecap || submittingMove} onClick={() => setExpHelp('recap')}>{lang === 'zh' ? '复盘' : 'Review'}</button>
-              </div>
-            </div>
-            {!isEndless && <CrownQuestStrip lang={lang} stageIdx={expStageIdx} cleared={expRunRef.current.crownCleared ?? []} />}
-            {myPlayer && !isEndless && <ExpeditionCoach stageIdx={expStageIdx} turn={gameState.turn} lang={lang}
-              hero={{ id: myPlayer.id, hp: myPlayer.hp, energy: myPlayer.energy, isDead: myPlayer.isDead, inventory: [...myPlayer.inventory], skillLoadout: myPlayer.skillLoadout }}
-              opponents={gameState.players.filter(p => p.id !== myPlayer.id).map(({ id, hp, energy, isDead, inventory, skillLoadout }) => ({ id, hp, energy, isDead, inventory: [...inventory], skillLoadout }))}
-              history={expHistory} legalCardIds={getPlayerCards(myPlayer, gameState.players).map(card => card.id)}
-              lastResult={expLastResult} recap={expRecap} />}
-          </div>
-        )}
         {isExpedition && expPhase === 'reward' && !expNeedsSkillChoice && (
           <ExpeditionRewards rewards={expRewards} lang={lang}
             status={{ hp: expRunRef.current.hp, maxHp: expRunRef.current.maxHp, level: expRunRef.current.endlessLevel ?? Math.max(...expRunRef.current.inventory) }}
@@ -2309,7 +2321,8 @@ export default function BobozanOnline() {
                maxHp={isExpedition ? (expBattleRef.current.maxHp[p.id] ?? MAX_HP) : MAX_HP}
                level={pMaxLvl} viewerLevel={myPlayer ? getPlayerLevel(myPlayer) : undefined} endless={isExpedition && isEndless} lang={lang} roundKey={battleRoundKey}
                showdown={gameState.status === 'SHOWDOWN'} quick={isExpedition}
-               damage={damageNumbers[p.id]} hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
+               damage={damageNumbers[p.id]?.amount} damageKey={damageNumbers[p.id]?.eventKey}
+               hit={!!damageNumbers[p.id]} reduceMotion={reduceMotion} intent={intent} />;
            })}
 
            {gameState.status === 'SHOWDOWN' && <BattleTableCards key={'cards-' + gameState.matchCount + '-' + gameState.turn}
@@ -2321,6 +2334,7 @@ export default function BobozanOnline() {
              <UltCutin
                key={`ultcutin-${u.key}-${i}`}
                def={u.def}
+               quick={isExpedition}
                playerName={u.playerName}
                skillName={u.skillName}
                level={u.level}
@@ -2480,8 +2494,8 @@ export default function BobozanOnline() {
           </div>}
 
         <BattleHand player={myPlayer} knownCards={knownCards} cards={orderedHand} lang={lang}
-          quickPlay={isExpedition} category={handCategory} viewMode={handViewMode} status={gameState.status}
-          submitting={submittingMove || skillOverflow.length > 0 || isExpedition && (expPhase !== 'battle' || expStoryOpen)}
+          quickPlay={isExpedition} folders={isExpedition} category={handCategory} viewMode={handViewMode} status={gameState.status}
+          submitting={submittingMove || skillOverflow.length > 0 || isExpedition && (expPhase !== 'battle' || expStoryOpen || expMenuOpen)}
           poppingFree={poppingFree}
           onCategory={selectCategory} onBack={goBackToCategories} onPlay={id => {
             if (isExpedition) handleExpeditionMove(id);

@@ -1,0 +1,47 @@
+/* Keep the original cut-in layers and keyframes, on the solo exchange's clock. */
+.ultcutin-quick.animate-ultcutin-dim {
+  animation-duration: calc(.25s * var(--ult-quick-scale)), calc(.3s * var(--ult-quick-scale));
+  animation-delay: 0s, calc(2.4s * var(--ult-quick-scale));
+}
+.ultcutin-quick .animate-ultcutin-enter {
+  animation-duration: calc(.45s * var(--ult-quick-scale)), calc(.3s * var(--ult-quick-scale));
+  animation-delay: 0s, calc(2.4s * var(--ult-quick-scale));
+}
+.ultcutin-quick .animate-ultcutin-bob { animation-duration: calc(.9s * var(--ult-quick-scale)); }
+.ultcutin-quick .ultcutin-speedlines { animation-duration: calc(.5s * var(--ult-quick-scale)); }
+.ultcutin-quick .animate-ultcutin-banner {
+  animation-duration: calc(2.1s * var(--ult-quick-scale));
+  animation-delay: calc(.35s * var(--ult-quick-scale));
+}
+.ultcutin-quick .animate-ultcutin-bubble {
+  animation-duration: calc(.4s * var(--ult-quick-scale)), calc(.25s * var(--ult-quick-scale));
+  animation-delay: calc(.75s * var(--ult-quick-scale)), calc(2.35s * var(--ult-quick-scale));
+}
+.ultcutin-quick .animate-ultcutin-shake {
+  animation-duration: calc(.45s * var(--ult-quick-scale));
+  animation-delay: calc(1.15s * var(--ult-quick-scale));
+}
+.ultcutin-quick .animate-ultcutin-beam { animation-duration: calc(.55s * var(--ult-quick-scale)); }
+.ultcutin-quick .px-impact {
+  animation-duration: calc(.7s * var(--ult-quick-scale));
+  animation-delay: calc(1.6s * var(--ult-quick-scale));
+}
+.ultcutin-quick .animate-ultcutin-spark {
+  animation-duration: calc(.8s * var(--ult-quick-scale));
+  animation-delay: calc(1.15s * var(--ult-quick-scale));
+}
+.ultcutin-quick .animate-ultcutin-slash { animation-duration: calc(.5s * var(--ult-quick-scale)); }
+.ultcutin-quick .animate-ultcutin-wave {
+  animation-duration: calc(1.1s * var(--ult-quick-scale));
+  animation-delay: calc(1.05s * var(--ult-quick-scale));
+}
+.ultcutin-quick .animate-ultcutin-flash {
+  animation-duration: calc(.6s * var(--ult-quick-scale));
+  animation-delay: calc(1.15s * var(--ult-quick-scale));
+}
+.ultcutin-quick .px-strike { animation-duration: calc(.45s * var(--ult-quick-scale)); }
+.ultcutin-quick .ultcutin-combo-crest {
+  animation-duration: calc(.5s * var(--ult-quick-scale)), calc(.25s * var(--ult-quick-scale));
+  animation-delay: calc(.45s * var(--ult-quick-scale)), calc(2.35s * var(--ult-quick-scale));
+}
+.ultcutin-quick .combo-fx-mark { animation-duration: calc(.8s * var(--ult-quick-scale)); }

@@ -1,0 +1,66 @@
+.solo-battle-menu {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 24px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #f3e5cb;
+  font: 15px/1.5 'Microsoft YaHei', 'PingFang SC', system-ui, sans-serif;
+  box-sizing: border-box;
+  touch-action: manipulation;
+}
+
+.solo-battle-menu[open] { display: grid; place-items: center; }
+.solo-battle-menu::backdrop { background: #030911bd; }
+.solo-battle-menu *, .solo-battle-menu *::before, .solo-battle-menu *::after { box-sizing: border-box; }
+
+.solo-battle-menu-panel {
+  width: min(100%, 320px);
+  max-height: calc(100dvh - 48px);
+  padding: 22px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  border: 2px solid #b99a64;
+  background: #172b36;
+  box-shadow: 0 0 0 4px #0b1720, 6px 6px 0 #02070bbd;
+}
+
+.solo-battle-menu-panel h2 { margin: 0 0 6px; color: #ffe0a1; font-size: 22px; font-weight: 900; }
+.solo-battle-menu-panel header p { margin: 0 0 18px; color: #b9c5c8; font-size: 12px; overflow-wrap: anywhere; }
+.solo-battle-menu-panel header p span { display: block; margin-top: 2px; }
+.solo-battle-menu-tools { display: grid; gap: 8px; }
+
+.solo-battle-menu-panel button {
+  min-height: 44px;
+  border: 1px solid #809096;
+  border-radius: 0;
+  padding: 10px 13px;
+  background: #203843;
+  color: #f3e5cb;
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.solo-battle-menu-tools button { display: flex; align-items: center; justify-content: space-between; gap: 12px; text-align: start; }
+.solo-battle-menu-tools button span { color: #d2b67d; font-size: 21px; line-height: 1; }
+.solo-battle-menu-panel button:focus-visible { outline: 2px solid #ffe0a1; outline-offset: 3px; }
+.solo-battle-menu-panel button:active { background: #314a52; }
+.solo-battle-menu-panel .solo-battle-menu-return { width: 100%; margin-top: 18px; border-color: #d2b67d; background: #ba9458; color: #14232b; }
+
+@media (hover: hover) {
+  .solo-battle-menu-panel button:hover { border-color: #e4c18a; background: #2a414a; }
+  .solo-battle-menu-panel .solo-battle-menu-return:hover { background: #d0aa6d; color: #14232b; }
+}
+
+@media (max-width: 420px) {
+  .solo-battle-menu { padding: 20px; }
+  .solo-battle-menu-panel { max-height: calc(100dvh - 40px); padding: 20px; }
+}

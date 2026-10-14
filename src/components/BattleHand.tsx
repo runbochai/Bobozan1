@@ -91,6 +91,7 @@ interface Props {
   status: GameState['status'];
   submitting: boolean;
   quickPlay?: boolean;
+  folders?: boolean;
   tutorialHighlight?: string;
   tutorialCategory?: HandCategory | null;
   poppingFree: Record<string, boolean>;
@@ -100,7 +101,7 @@ interface Props {
 }
 
 /** Presentation only: the parent retains the game's card ordering and move submission. */
-export default function BattleHand({ player, knownCards, cards, lang, category, viewMode, status, submitting, quickPlay = false, tutorialHighlight, tutorialCategory, poppingFree, onCategory, onBack, onPlay }: Props) {
+export default function BattleHand({ player, knownCards, cards, lang, category, viewMode, status, submitting, quickPlay = false, folders = false, tutorialHighlight, tutorialCategory, poppingFree, onCategory, onBack, onPlay }: Props) {
   const [detailId, setDetailId] = useState<string | null>(null);
   const trayRef = useRef<HTMLDivElement>(null);
   const handRef = useRef<HTMLElement>(null);
@@ -110,8 +111,11 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
   const locked = player ? getPlayerCard(player, player.selectedCardId) : undefined;
   const canChoose = !!player && !player.isDead && !player.selectedCardId && !submitting && status === 'PLAYING';
   const quickHand = quickPlay && !tutorialHighlight && !tutorialCategory;
+  const quickFolders = quickHand && folders;
+  const showFolders = !quickHand || quickFolders;
+  const categoryView = showFolders && viewMode === 'CATEGORIES';
   // Keep common moves in the same place while earned, borrowed and combined moves follow.
-  const visibleCards = quickHand ? [
+  const visibleCards = quickHand && !quickFolders ? [
     ...quickKeys.flatMap(id => knownCards.filter(card => card.id === id)),
     ...(player ? sortHandCards(player, knownCards) : knownCards).filter(card => !quickKeys.includes(card.id)),
   ] : cards;
@@ -143,18 +147,18 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
     const observer = new ResizeObserver(update);
     observer.observe(tray);
     tray.addEventListener('scroll', update, { passive: true });
-    if (!quickHand && keyboardCategory.current) {
+    if (showFolders && keyboardCategory.current) {
       tray.querySelector<HTMLElement>(viewMode === 'CATEGORIES' ? `[data-card-type="${category}"]` : '.hand-card')?.focus({ preventScroll: true });
       keyboardCategory.current = false;
     }
     return () => { observer.disconnect(); tray.removeEventListener('scroll', update); };
-  }, [quickHand, viewMode, category, visibleCards.length, player?.selectedCardId, player?.isDead]);
+  }, [showFolders, viewMode, category, visibleCards.length, player?.selectedCardId, player?.isDead]);
   const scrollHand = (direction: number) => {
     const reduce = document.documentElement.classList.contains('reduce-motion') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     trayRef.current?.scrollBy({ left: direction * trayRef.current.clientWidth * .8, behavior: reduce ? 'instant' : 'smooth' });
   };
 
-  return <section ref={handRef} className={`pixel-hand-area battle-hand${quickHand ? ' solo-quick-hand' : ''}`} aria-label={lang === 'zh' ? '手牌' : 'Your hand'} aria-busy={quickHand && !canChoose && !player?.isDead || undefined} data-hand-state={status === 'SHOWDOWN' ? 'clash' : locked ? 'locked' : 'ready'}>
+  return <section ref={handRef} className={`pixel-hand-area battle-hand${quickHand ? ' solo-quick-hand' : ''}${quickFolders ? ' solo-folder-hand' : ''}`} aria-label={lang === 'zh' ? '手牌' : 'Your hand'} aria-busy={quickHand && !canChoose && !player?.isDead || undefined} data-hand-state={status === 'SHOWDOWN' ? 'clash' : locked ? 'locked' : 'ready'}>
     <div className="hand-toolbar">
       {!player?.isDead && (quickHand || !player?.selectedCardId && (scrollable.left || scrollable.right)) && <div className="hand-scroll-controls"><span className="hand-scroll-hint">{lang === 'zh' ? '滑动选牌' : 'Browse'}</span>
         <button type="button" aria-label={lang === 'zh' ? '向左浏览手牌' : 'Scroll hand left'} disabled={!scrollable.left} onClick={() => scrollHand(-1)}><ArrowLeft size={16} /></button>
@@ -167,7 +171,7 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
         {isHoloCard(locked) && <CardHolo />}<WoodcutCardFace card={locked} lang={lang} free={player.freeSkills?.includes(locked.id)} /></div>}
       <div className="hand-committed-copy"><CheckCircle size={26} /><strong>{status === 'SHOWDOWN' ? (lang === 'zh' ? '招式释放中' : 'CASTING') : (lang === 'zh' ? '已出牌，等待对手' : 'Locked in. Waiting…')}</strong><small>{lang === 'zh' ? '下一回合，再出新招' : 'Your hand returns next round'}</small></div>
     </div> : <>
-      {!quickHand && viewMode === 'CARDS' && <nav className="hand-category-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
+      {showFolders && viewMode === 'CARDS' && <nav className="hand-category-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
         <button type="button" className="pixel-hand-back" onClick={e => { keyboardCategory.current = e.detail === 0; onBack(); }} aria-label={lang === 'zh' ? '返回全部分类' : 'Back to all categories'}><ArrowLeft size={18} /></button>
         {categories.map(cat => <button type="button" key={cat} className="hand-category-tab" data-card-type={cat} aria-current={category === cat ? 'true' : undefined}
           data-folder-finish={categoryFinish[cat]}
@@ -180,21 +184,22 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
         </button>)}
       </nav>}
 
-      <div ref={trayRef} key={quickHand ? 'quick-play' : `${viewMode}-${category}`} className={quickHand ? 'pixel-hand-tray solo-quick-tray' : `pixel-hand-tray hand-fan ${viewMode === 'CATEGORIES' ? 'hand-category-fan' : 'hand-skill-fan'}`}>
-        {!quickHand && viewMode === 'CATEGORIES' ? categories.map((cat, index) => {
+      <div ref={trayRef} key={quickHand ? 'quick-play' : `${viewMode}-${category}`} className={`pixel-hand-tray${quickHand ? ' solo-quick-tray' : ''}${showFolders ? ` hand-fan ${categoryView ? 'hand-category-fan' : 'hand-skill-fan'}` : ''}`}>
+        {categoryView ? categories.map((cat, index) => {
 
           const charge = knownCards.find(c => c.id === 'charge');
-          const disabled = cat === 'CHARGE' && (!charge || isBlocked(charge));
+          const disabled = cat === 'CHARGE' && (!charge || isBlocked(charge)) || quickHand && !canChoose;
           const highlighted = tutorialCategory === cat;
           const count = knownCards.filter(c => getHandCategory(c) === cat).length;
           return <div className="hand-category-slot" key={cat} style={fanPosition(index, categories.length)}>
             <div className="hand-card-lift">
             <button type="button" role="button" className={`hand-card hand-category-card ${highlighted ? 'tutorial-highlight' : ''}`} data-card-type={cat}
+              data-card-id={cat === 'CHARGE' ? 'charge' : undefined} data-selected={quickHand && cat === 'CHARGE' && player.selectedCardId === 'charge' || undefined}
               data-folder-finish={categoryFinish[cat]}
               data-ultimate-finish={cat === 'ULTIMATE' ? 'amethyst' : undefined}
               data-tutorial-target={highlighted} data-ultimate-ready={cat === 'ULTIMATE' && ultimateReady || undefined}
-              aria-label={`${t.categories[cat]}${cat === 'ULTIMATE' && ultimateReady ? ` · ${lang === 'zh' ? '可以释放' : 'Ready to play'}` : ''}`} aria-disabled={disabled} aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined}
-              onClick={e => { if (cat === 'CHARGE') play(charge); else { keyboardCategory.current = e.detail === 0; onCategory(cat); } }}>
+              aria-label={`${t.categories[cat]}${cat === 'ULTIMATE' && ultimateReady ? ` · ${lang === 'zh' ? '可以释放' : 'Ready to play'}` : ''}`} aria-disabled={disabled} aria-keyshortcuts={quickHand && cat === 'CHARGE' ? '1' : undefined} aria-describedby={tutorialHighlight ? 'tutorial-instruction' : undefined}
+              onClick={e => { if (quickHand && (!canChoose || e.detail > 1)) return; if (cat === 'CHARGE') play(charge); else { keyboardCategory.current = e.detail === 0; onCategory(cat); } }}>
               <FolderFinish category={cat} />
               {cat === 'CHARGE' && charge ? <WoodcutCardFace card={charge} lang={lang} /> : cat !== 'CHARGE' ? <WoodcutCardFace folder={cat} count={count} lang={lang} /> : null}
             </button>
@@ -212,7 +217,7 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
           const blocked = isBlocked(card);
           const label = disabled ? (lang === 'zh' ? '已禁用' : 'Disabled') : shortage ? (lang === 'zh' ? `还需 ${shortage} 能量` : `Need ${shortage} energy`) : tutorialHighlight && !highlighted ? (lang === 'zh' ? '请跟随教学' : 'Follow the lesson') : freeCount ? `${lang === 'zh' ? '免费' : 'Free'} ×${freeCount}` : quickHand && !canChoose ? '' : (lang === 'zh' ? '点击出牌' : 'Play card');
           const shortcut = quickHand ? quickKeys.indexOf(card.id) + 1 : 0;
-          return <div className="pixel-card-slot hand-skill-slot" key={card.id} style={quickHand ? undefined : fanPosition(index, visibleCards.length)}>
+          return <div className="pixel-card-slot hand-skill-slot" key={card.id} style={showFolders ? fanPosition(index, visibleCards.length) : undefined}>
             <div className="hand-card-lift">
             <button type="button" role="button" className={`hand-card hand-skill-card ${highlighted ? 'tutorial-highlight' : ''}`} data-card-type={getHandCategory(card)} data-card-id={card.id} data-skill-type={card.type}
               data-combo={!!card.tags?.includes('combo')} data-card-finish={holo ? 'gold-holo' : undefined} data-acquired={acquired || undefined} data-tutorial-target={highlighted} data-selected={quickHand && player.selectedCardId === card.id || undefined} aria-disabled={blocked} aria-keyshortcuts={shortcut ? String(shortcut) : undefined} aria-label={`${card.name[lang]} · ${lang === 'zh' ? '费用' : 'Cost'} ${freeCount ? 0 : card.cost} · ${skillRankHint(card, lang)}${acquired ? ` · ${lang === 'zh' ? '获得技能' : 'Acquired skill'}` : ''} · ${label}`}
@@ -230,11 +235,11 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
         })}
       </div>
     </>}
-    {!quickHand && viewMode === 'CATEGORIES' && <UltimateAura selector='.hand-category-card[data-card-type="ULTIMATE"]' host={handRef} active={ultimateReady}
+    {categoryView && <UltimateAura selector='.hand-category-card[data-card-type="ULTIMATE"]' host={handRef} active={ultimateReady}
       layoutKey={lang} face={<WoodcutCardFace folder="ULTIMATE" lang={lang} count={knownCards.filter(c => getHandCategory(c) === 'ULTIMATE').length} />} />}
-    {(quickHand || viewMode === 'CARDS') && visibleCards.filter(card => card.type === 'ULTIMATE').map(card => <UltimateAura key={card.id}
+    {!categoryView && visibleCards.filter(card => card.type === 'ULTIMATE').map(card => <UltimateAura key={card.id}
       selector={'.hand-skill-card[data-card-id="' + card.id + '"]'} host={handRef} active={!isBlocked(card)} holo={isHoloCard(card)}
-      layoutKey={(quickHand ? 'quick-play' : category) + ':' + visibleCards.length + ':' + lang} face={<WoodcutCardFace card={card} lang={lang} free={player?.freeSkills?.includes(card.id)} />} />)}
+      layoutKey={(quickHand && !quickFolders ? 'quick-play' : category) + ':' + visibleCards.length + ':' + lang} face={<WoodcutCardFace card={card} lang={lang} free={player?.freeSkills?.includes(card.id)} />} />)}
     {detail && canChoose && <CardDetails card={detail} lang={lang} freeCount={player?.freeSkills?.filter(id => id === detail.id).length ?? 0} endless={player?.endlessLevel !== undefined} onClose={() => setDetailId(null)} />}
   </section>;
 }
