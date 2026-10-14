@@ -5,6 +5,7 @@ import { TEXT } from '../data/translations';
 import { isHoloCard } from '../data/cardFinish';
 import { getEffectiveLevel, isOffensiveCard } from '../logic/combat';
 import WoodcutCardFace from './WoodcutCardFace';
+import { RetroSkillIcon } from './RetroCard';
 import CardHolo from './CardHolo';
 import { CheckCircle, Zap } from './PixelIcons';
 import './SkillLoadoutPicker.css';
@@ -16,6 +17,7 @@ export interface SkillLoadoutGroup {
 }
 
 interface Props {
+  appearance?: 'current' | 'retro';
   groups: SkillLoadoutGroup[];
   lang: Lang;
   limit: number;
@@ -25,7 +27,7 @@ interface Props {
 }
 
 /** Only overflowing permanent categories are passed here; other skills stay untouched. */
-export default function SkillLoadoutPicker({ groups, lang, limit, busy = false, error, onConfirm }: Props) {
+export default function SkillLoadoutPicker({ appearance = 'current', groups, lang, limit, busy = false, error, onConfirm }: Props) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   const descriptionId = useId();
@@ -46,7 +48,7 @@ export default function SkillLoadoutPicker({ groups, lang, limit, busy = false, 
   }, []);
 
   const toggle = (id: string) => setKept(ids => ids.includes(id) ? ids.filter(value => value !== id) : [...ids, id]);
-  return createPortal(<dialog ref={dialogRef} className="skill-loadout-picker" aria-labelledby={titleId} aria-describedby={descriptionId}
+  return createPortal(<dialog ref={dialogRef} className={`skill-loadout-picker${appearance === 'retro' ? ' retro-overlay skill-loadout-picker-retro' : ''}`} aria-labelledby={titleId} aria-describedby={descriptionId}
     onCancel={event => event.preventDefault()}>
     <header className="skill-loadout-header">
       <h2 id={titleId}>{zh ? '选要保留的技能' : 'Choose skills to keep'}</h2>
@@ -71,7 +73,7 @@ export default function SkillLoadoutPicker({ groups, lang, limit, busy = false, 
               <span className="skill-loadout-card-top"><span><Zap size={14} />{card.cost}</span><span className="skill-loadout-rank" aria-label={`${zh ? '技能等级' : 'Skill level'} Lv.${getEffectiveLevel(card)}`}>Lv.{getEffectiveLevel(card)}</span>{isNew && <b>{zh ? '新' : 'NEW'}</b>}
                 <span className="skill-loadout-check" aria-hidden="true">{selected ? <CheckCircle size={20} /> : <i />}</span>
               </span>
-              <span className="skill-loadout-print"><WoodcutCardFace card={card} lang={lang} />{isHoloCard(card) && <CardHolo />}</span>
+              <span className="skill-loadout-print">{appearance === 'retro' ? <RetroSkillIcon id={card.id} size={68} /> : <WoodcutCardFace card={card} lang={lang} />}{appearance !== 'retro' && isHoloCard(card) && <CardHolo />}</span>
               <strong>{card.name[lang]}</strong><span className="skill-loadout-description">{card.description[lang]}</span>
             </button>;
           })}</div>

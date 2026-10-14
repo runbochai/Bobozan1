@@ -23,6 +23,12 @@ import { getMultiplayerMatchSummary, getMultiplayerMode } from './logic/multipla
 import { migrateRoomSkillCatalog } from './logic/roomCatalog';
 import { SKILL_CATALOG_VERSION } from './logic/skillLoadout';
 import MultiplayerOpening from './components/MultiplayerOpening';
+import RetroMenu from './components/RetroMenu';
+import RetroBattle from './components/RetroBattle';
+import RetroControls from './components/RetroControls';
+import RetroRewardReveal from './components/RetroRewardReveal';
+import { readAppearance, saveAppearance, type Appearance } from './logic/appearance';
+import './components/RetroBase.css';
 import './components/MultiplayerModes.css';
 import ExpeditionBriefing, { type ExpeditionRecap } from './components/ExpeditionBriefing';
 import { ExpeditionRewards, ExpeditionShop } from './components/ExpeditionChoices';
@@ -282,6 +288,9 @@ const TopControls = ({
 export default function BobozanOnline() {
   const [user, setUser] = useState<FirebaseUser | null>(null);
   const [view, setView] = useState<'NAME_INPUT' | 'HOME' | 'LOBBY' | 'GAME'>('NAME_INPUT');
+  const [appearance, setAppearance] = useState<Appearance>(readAppearance);
+  const retro = appearance === 'retro';
+  useEffect(() => { saveAppearance(appearance); }, [appearance]);
   useLayoutEffect(() => {
     // Short screens can scroll on the home page; enter battle at its visible top edge.
     if (view === 'GAME') window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -1478,7 +1487,7 @@ export default function BobozanOnline() {
   const skillSelectionOverlay = (view === 'GAME' || view === 'LOBBY') && skillGroups.length > 0
     && gameState.status !== 'SHOWDOWN' && (gameState.status !== 'PLAYING' || !myPlayer?.selectedCardId)
     ? <SkillLoadoutPicker key={skillGroups.map(group => group.cards.map(card => card.id).join(',')).join('|')}
-        groups={skillGroups} lang={lang} limit={SKILL_SLOT_LIMIT} busy={choosingSkills} error={skillChoiceError}
+        groups={skillGroups} lang={lang} limit={SKILL_SLOT_LIMIT} busy={choosingSkills} error={skillChoiceError} appearance={appearance}
         onConfirm={handleKeepSkills} /> : null;
 
   // --- RENDER LOGIC ---
@@ -1500,17 +1509,17 @@ export default function BobozanOnline() {
     }
   };
   const learningOverlay = <>
-    {learningMode === 'tutorial' && <BattleAcademy intro lang={lang} avatar={playerAvatar}
+    {learningMode === 'tutorial' && <BattleAcademy intro lang={lang} avatar={playerAvatar} appearance={appearance}
       onClose={() => setLearningMode(null)} onContinue={handleEnterName}
-      onSolo={openSoloMode}
+      onSolo={retro ? undefined : openSoloMode}
       startLabel={lang === 'zh' ? '多人模式' : 'Multiplayer'} />}
     {learningMode === 'practice' && <LocalPractice lang={lang} avatar={playerAvatar}
       muted={muted} reduceMotion={reduceMotion} onToggleMute={toggleMute} onSolo={openSoloMode}
       onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
       onOpenRules={() => setMoveManualOpen(true)} />}
-    {moveManualOpen && <MoveManual lang={lang} onClose={() => setMoveManualOpen(false)}
+    {moveManualOpen && <MoveManual lang={lang} appearance={appearance} onClose={() => setMoveManualOpen(false)}
       onExercises={() => { setMoveManualOpen(false); setAcademyFromManual(true); setAcademyTab('lessons'); }} />}
-    {academyTab && <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab}
+    {academyTab && <BattleAcademy lang={lang} avatar={playerAvatar} initialTab={academyTab} appearance={appearance}
       startLabel={academyFromManual ? (lang === 'zh' ? '返回招式手册' : 'Back to move manual')
         : inMatch ? (lang === 'zh' ? '返回对局' : 'Return to game')
         : learningMode === 'practice' ? (lang === 'zh' ? '返回练习局' : 'Return to practice')
@@ -1525,6 +1534,48 @@ export default function BobozanOnline() {
       onStory={expHelp === 'intro' && !inMatch ? openSoloMode : undefined}
       onStart={expHelp === 'intro' && !(isExpedition && view === 'GAME') ? () => startExpedition() : undefined} />}
   </>;
+
+  const changeAppearance = (next: Appearance) => {
+    playSound('click', muted);
+    setAppearance(next);
+    setIsAvatarMenuOpen(false);
+    setLearningMode(null);
+    setAcademyTab(null);
+    setMoveManualOpen(false);
+  };
+  const retroControls = <RetroControls lang={lang} muted={muted} reduceMotion={reduceMotion} volume={musicVolume}
+    onToggleMute={toggleMute} onToggleMotion={toggleReduceMotion} onToggleLanguage={toggleLang} onVolumeChange={setMusicVolume}
+    onHome={view === 'NAME_INPUT' ? undefined : goNameInput} onBack={view === 'NAME_INPUT' ? undefined : goBackPage} />;
+  const multiplayerOpening = <MultiplayerOpening key={`${roomCode}:${isCrownFinalBattle}`} gameKey={`${roomCode}:${multiplayerMode}:${isCrownFinalBattle ? 'final' : 'opening'}`} mode={multiplayerMode} lang={lang} reduceMotion={reduceMotion} finalBattle={isCrownFinalBattle}
+    atStart={(gameState.matchCount === 1 || isCrownFinalBattle) && gameState.turn === 1 && (gameState.status === 'PLAYING' || gameState.status === 'SHOWDOWN')}
+    finished={gameState.status === 'GAMEOVER' || (gameState.matchCount !== 1 && !isCrownFinalBattle)} />;
+
+  if (retro && !isExpedition) {
+    const overlays = <>{learningOverlay}{skillSelectionOverlay}</>;
+    if (view !== 'GAME') return <RetroMenu view={view} lang={lang} game={gameState} playerId={user?.uid}
+      name={playerName} avatar={playerAvatar} roomCode={roomCode} loading={loading} onlineReady={!!user && firebaseConfigured}
+      connectionMessage={connectionMessage || undefined} error={errorMsg || undefined} invited={!!invitedRoom} modePending={modePending}
+      reduceMotion={reduceMotion} controls={retroControls} overlays={overlays} toast={toastMsg}
+      onNameChange={setPlayerName} onAvatarChange={setPlayerAvatar} onRoomCodeChange={setRoomCode}
+      onEnter={handleEnterName} onCreate={createRoom} onJoin={joinRoom} onLeave={leaveRoom} onStart={startGameHost}
+      onAddBot={addBot} onRemoveBot={removeBot} onModeChange={chooseMultiplayerMode} onToggleRevenge={toggleRevengeMode}
+      onCopyInvite={copyGameInvite} onCopyCode={() => copyToClipboard(roomCode, t.codeCopied)}
+      onTutorial={() => setLearningMode('tutorial')} onModern={() => changeAppearance('current')} onEditProfile={() => setView('NAME_INPUT')} />;
+    return <RetroBattle lang={lang} game={gameState} playerId={user?.uid} roomCode={roomCode}
+      knownCards={knownCards} cards={orderedHand} category={handCategory} viewMode={handViewMode}
+      submitting={submittingMove || skillOverflow.length > 0} reduceMotion={reduceMotion} roundKey={battleRoundKey}
+      roundStartedAt={battleRoundRef.current?.startedAt} revealPlayers={battleRoundRef.current?.snapshot.players ?? gameState.players}
+      controls={retroControls} overlays={<>{overlays}{multiplayerOpening}{revengeCardId && SKILL_DB.find(card => card.id === revengeCardId) && <RetroRewardReveal
+        card={SKILL_DB.find(card => card.id === revengeCardId)!} lang={lang} reduceMotion={reduceMotion}
+        onClose={() => { setRevengeCardId(null); playSound('confirm', muted); }} />}</>} toast={toastMsg}
+      results={!academyTab && !moveManualOpen && gameState.status === 'GAMEOVER' && showBattleResult ? <MultiplayerResults
+        lang={lang} game={gameState} playerId={user?.uid} appearance="retro"
+        onNextMatch={nextMatchHost} onExit={() => { void leaveRoom(); }} onOpenRules={() => setMoveManualOpen(true)}
+        pendingSkills={!!myPlayer && hasSkillOverflow(myPlayer)} nextDisabled={gameState.players.some(player => !player.isBot && hasSkillOverflow(player))} /> : null}
+      onPlay={submitMove} onCategory={selectCategory} onBack={goBackToCategories} onExit={() => { void leaveRoom(); }}
+      onOpenRules={() => setMoveManualOpen(true)} onEmoji={sendEmoji} onShare={toggleShare}
+      canShare={!!myPlayer && isAcquiredSkill(myPlayer, SKILL_DB.find(card => card.id === 'dragondef')!)} />;
+  }
 
   // The original comic belongs to the solo entry; multiplayer and the optional tutorial open directly.
   if (crownPrologue) return <div className="pixel-app crown-opening-screen">
@@ -1661,6 +1712,7 @@ export default function BobozanOnline() {
               <button type="button" className="title-menu-button" onClick={() => setLearningMode('practice')}><Target size={18} /><span className="title-menu-label">{lang === 'zh' ? '自由对练' : 'Free sparring'}</span></button>
               <button type="button" className="title-menu-button" onClick={() => setMoveManualOpen(true)}><Scroll size={18} /><span className="title-menu-label">{lang === 'zh' ? '招式手册' : 'Move manual'}</span></button>
             </div>
+            <button type="button" className="retro-edition-switch" onClick={() => changeAppearance('retro')}>{lang === 'zh' ? '怀旧版' : 'Classic edition'}</button>
             {expBest > 0 && (
               <div className="mt-2 text-xs text-amber-300/80 font-bold tracking-widest">
                 {lang === 'zh' ? `🏆 ${expDifficultyConfig.label[lang]}最佳：第 ${expBest} 关` : `🏆 ${expDifficultyConfig.label[lang]} best: Stage ${expBest}`}
@@ -2034,9 +2086,7 @@ export default function BobozanOnline() {
       `}</style>
 
       <PixelBackdrop scene="battle" themeId={campaignTheme?.id} />
-      {!isExpedition && <MultiplayerOpening key={`${roomCode}:${isCrownFinalBattle}`} gameKey={`${roomCode}:${multiplayerMode}:${isCrownFinalBattle ? 'final' : 'opening'}`} mode={multiplayerMode} lang={lang} reduceMotion={reduceMotion} finalBattle={isCrownFinalBattle}
-        atStart={(gameState.matchCount === 1 || isCrownFinalBattle) && gameState.turn === 1 && (gameState.status === 'PLAYING' || gameState.status === 'SHOWDOWN')}
-        finished={gameState.status === 'GAMEOVER' || (gameState.matchCount !== 1 && !isCrownFinalBattle)} />}
+      {!isExpedition && multiplayerOpening}
 
       <TopControls 
        muted={muted} 

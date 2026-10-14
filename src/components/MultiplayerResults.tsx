@@ -6,10 +6,12 @@ import { getMultiplayerMatchSummary } from '../logic/multiplayerMatch';
 import { getRetainedSkillIds } from '../logic/skillLoadout';
 import { Crown, Skull, Star } from './PixelIcons';
 import PixelCardArt from './PixelCardArt';
+import { RetroSkillIcon } from './RetroCard';
 import MultiplayerHelp from './MultiplayerHelp';
 import './MultiplayerResults.css';
 
 interface Props {
+  appearance?: 'current' | 'retro';
   lang: Lang;
   game: GameState;
   playerId?: string;
@@ -21,7 +23,7 @@ interface Props {
 }
 
 /** Both modes reach the crown battle; their final victory conditions differ. */
-export default function MultiplayerResults({ lang, game, playerId, onNextMatch, onExit, onOpenRules, nextDisabled = false, pendingSkills = false }: Props) {
+export default function MultiplayerResults({ appearance = 'current', lang, game, playerId, onNextMatch, onExit, onOpenRules, nextDisabled = false, pendingSkills = false }: Props) {
   const zh = lang === 'zh';
   const summary = getMultiplayerMatchSummary(game);
   const { mode, matchNumber, totalMatches, remainingMatches, isFinalBattle, isSeriesOver, roundWinner, champions, leaders, standings } = summary;
@@ -52,7 +54,7 @@ export default function MultiplayerResults({ lang, game, playerId, onNextMatch, 
     };
   }, [pendingSkills]);
 
-  return createPortal(<dialog ref={dialogRef} className="multiplayer-results" aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`}
+  return createPortal(<dialog ref={dialogRef} className={`multiplayer-results${appearance === 'retro' ? ' retro-overlay multiplayer-results-retro' : ''}`} aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`}
     onCancel={event => event.preventDefault()}>
     <div className="multiplayer-results-body">
       <header className="multiplayer-results-header">
@@ -88,8 +90,8 @@ export default function MultiplayerResults({ lang, game, playerId, onNextMatch, 
           : (zh ? '本局不发放胜者技能，继续下一局。' : 'No winner skill is awarded. Continue to the next match.')}</p>
         {rewardCards.length > 0 && <div className="multiplayer-results-reward">
           <h3><Star size={15} />{zh ? `本局保留的奖励 · Lv.${matchNumber}` : `Retained reward · Lv.${matchNumber}`}</h3>
-          <ul className="multiplayer-results-reward-cards">{rewardCards.map(card => <li key={card.id}>
-            <PixelCardArt id={card.id} />
+          <ul className="multiplayer-results-reward-cards">{rewardCards.map(card => <li key={card.id} data-card-type={card.type}>
+            {appearance === 'retro' ? <RetroSkillIcon id={card.id} size={52} /> : <PixelCardArt id={card.id} />}
             <strong>{card.name[lang]}</strong>
             <span>{zh ? `${card.cost} 能量` : `${card.cost} energy`}</span>
           </li>)}</ul>

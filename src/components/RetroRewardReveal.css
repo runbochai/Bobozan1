@@ -1,0 +1,40 @@
+.retro-reward-reveal {
+  box-sizing: border-box;
+  width: min(400px, calc(100vw - 24px));
+  max-height: calc(100dvh - 24px);
+  margin: auto;
+  padding: 26px 22px 18px;
+  overflow-y: auto;
+  border: 1px solid #fb923c80;
+  border-radius: 24px;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 0 70px #ea580c26, 0 24px 80px #020617b3;
+  font: 14px/1.5 system-ui, Avenir, Helvetica, Arial, sans-serif;
+  text-align: center;
+  cursor: pointer;
+}
+.retro-reward-reveal::backdrop { background: #020617e6; backdrop-filter: blur(6px); }
+.retro-reward-reveal h2 { margin: 0; color: #fb923c; font-size: clamp(25px, 7vw, 34px); font-weight: 900; }
+.retro-reward-reveal header p { margin: 5px 0 20px; color: #94a3b8; }
+.retro-reward-reveal-card { width: 190px; height: 260px; margin: 0 auto 20px; animation: retro-reward-turn 650ms ease-out; }
+.retro-reward-reveal-card .retro-card { border-width: 3px; box-shadow: 0 0 28px #ef444433; }
+.retro-reward-reveal-card .retro-card-art { margin-top: 28px; min-height: 90px; }
+.retro-reward-reveal-card .retro-card-art .retro-skill-icon { width: 68px; height: 68px; font-size: 68px; }
+.retro-reward-reveal-card .retro-card-name { font-size: 20px; }
+.retro-reward-reveal-card .retro-card-description { padding: 10px 12px; font-size: 12px; }
+.retro-reward-reveal > button { min-height: 44px; padding: 8px 18px; border: 0; border-radius: 10px; background: linear-gradient(135deg, #f97316, #ef4444); color: #fff; font: inherit; font-weight: 700; cursor: pointer; }
+.retro-reward-reveal > button:focus-visible { outline: 3px solid #fdba74; outline-offset: 4px; }
+.retro-reward-reveal[data-reduced-motion="true"] .retro-reward-reveal-card,
+html.reduce-motion .retro-reward-reveal-card { animation: none; }
+@keyframes retro-reward-turn {
+  from { opacity: 0; transform: perspective(700px) rotateY(-360deg) scale(.75); }
+  to { opacity: 1; transform: perspective(700px) rotateY(0) scale(1); }
+}
+@media (max-height: 520px) {
+  .retro-reward-reveal { padding-block: 16px; }
+  .retro-reward-reveal header p { margin-bottom: 10px; }
+  .retro-reward-reveal-card { width: 165px; height: 220px; margin-bottom: 12px; }
+  .retro-reward-reveal-card .retro-card-art { min-height: 60px; margin-top: 24px; }
+}
+@media (prefers-reduced-motion: reduce) { .retro-reward-reveal-card { animation: none; } }

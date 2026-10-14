@@ -174,3 +174,106 @@
 }
 @media (prefers-reduced-motion: reduce) { .academy-result { animation: none; } .academy-play:hover:not(:disabled) { translate: none; } }
 .reduce-motion .academy-result { animation: none; }
+
+/* The academy is portalled to body, so its appearance travels on the dialog. */
+.battle-academy.retro-academy {
+  color: #f1f5f9; background: #0f172af5; border: 1px solid #475569; border-radius: 24px;
+  box-shadow: 0 24px 70px #020617b3; font-family: system-ui, sans-serif;
+}
+.retro-academy::backdrop { background: #020617bf; backdrop-filter: blur(8px); }
+.retro-academy button { border-radius: 12px; box-shadow: none; }
+.retro-academy :focus-visible { outline-color: #fb923c !important; }
+.retro-academy :is(h2, h3, h4)[tabindex='-1']:focus { outline: none !important; }
+.retro-academy .academy-heading h2, .retro-academy .academy-practice-heading h3,
+.retro-academy .academy-scenario-prompt, .retro-academy .academy-intent strong { color: #fdba74; }
+.retro-academy .academy-heading p, .retro-academy .academy-footer p,
+.retro-academy .academy-rules-intro, .retro-academy .academy-rule-body { color: #cbd5e1; }
+.retro-academy .academy-close, .retro-academy .academy-button,
+.retro-academy .academy-tabs button, .retro-academy .academy-multiplayer-lessons button,
+.retro-academy .academy-scenario-choices button {
+  color: #e2e8f0; background: #1e293b; border: 1px solid #475569;
+}
+.retro-academy .academy-tabs { border-bottom: 1px solid #334155; }
+.retro-academy .academy-tabs button[aria-selected='true'],
+.retro-academy .academy-multiplayer-lessons button[aria-pressed='true'],
+.retro-academy .academy-scenario-choices button[aria-pressed='true'] {
+  color: #fed7aa; background: #7c2d124d; border-color: #f97316; box-shadow: none;
+}
+.retro-academy .academy-button-primary {
+  color: #fff; background: linear-gradient(110deg, #ea580c, #dc2626); border-color: #fb923c;
+}
+.retro-academy .academy-progress-row strong { color: #86efac; }
+.retro-academy .academy-progress-track { border: 0; border-radius: 99px; background: #334155; overflow: hidden; }
+.retro-academy .academy-progress-track span { border-radius: inherit; background: #f97316; }
+.retro-academy .academy-lesson {
+  color: #f1f5f9; background: #1e293b; border: 1px solid #334155; box-shadow: none;
+}
+.retro-academy .academy-lesson:hover { background: #253449; border-color: #fb923c; }
+.retro-academy .academy-lesson[data-completed='true'] { border-color: #22c55e80; }
+.retro-academy .academy-lesson small { color: #cbd5e1; }
+.retro-academy .academy-lesson-number {
+  color: #fdba74; background: #7c2d124d; border: 0; border-radius: 50%;
+}
+.retro-academy .academy-lesson[data-completed='true'] .academy-lesson-number {
+  color: #86efac; background: #14532d80; border: 0;
+}
+.retro-academy .academy-footer { border-top: 1px solid #334155; }
+.retro-academy .academy-arena {
+  min-height: 150px; border: 1px solid #334155; border-radius: 20px; background: #02061780; box-shadow: none;
+}
+.retro-academy .academy-model { width: 84px; height: 84px; flex-basis: 84px; }
+.retro-academy .academy-retro-avatar {
+  display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover;
+  border: 3px solid #64748b; background: #1e293b; box-shadow: 0 6px 20px #02061780;
+}
+.retro-academy .academy-actor[data-actor='hero'] .academy-retro-avatar { border-color: #f97316; }
+.retro-academy .academy-actor-stats strong { color: #f1f5f9; }
+.retro-academy .academy-hp { color: #f87171; }
+.retro-academy .academy-energy, .retro-academy .academy-card-cost { color: #facc15; }
+.retro-academy .academy-vs { color: #64748b; font-family: system-ui, sans-serif; font-weight: 900; }
+.retro-academy .academy-play { color: #fff; background: linear-gradient(#064e3b, #0f172a); border: 2px solid #10b981; border-radius: 16px; box-shadow: 0 6px 18px #02061780; }
+.retro-academy .academy-play[data-card-type='CHARGE'] { color: #fff; background: linear-gradient(#713f12, #0f172a); border-color: #eab308; }
+.retro-academy .academy-play[data-card-type='ATTACK'] { color: #fff; background: linear-gradient(#7f1d1d, #0f172a); border-color: #ef4444; }
+.retro-academy .academy-play[data-card-type='DEFEND'] { color: #fff; background: linear-gradient(#1e3a8a, #0f172a); border-color: #3b82f6; }
+.retro-academy .academy-play[data-card-type='ULTIMATE'] { color: #fff; background: linear-gradient(#581c87, #0f172a); border-color: #a855f7; }
+.retro-academy .academy-play[data-card-type='SPECIAL'] { color: #fff; background: linear-gradient(#064e3b, #0f172a); border-color: #10b981; }
+.retro-academy .academy-play:hover:not(:disabled) { border-color: #fff; }
+.retro-academy .academy-card-level { color: #cbd5e1; }
+.retro-academy .academy-comparison-card {
+  color: #f1f5f9; border: 1px solid #475569; border-radius: 16px; background: #0f172a;
+  --academy-slam-angle: -8deg; animation: academy-retro-slam .36s cubic-bezier(.2, .8, .3, 1);
+}
+.retro-academy .academy-comparison-card:last-child { --academy-slam-angle: 8deg; }
+.retro-academy .academy-result { border: 1px solid #22c55e80; border-radius: 16px; background: #052e1680; }
+.retro-academy .academy-result[data-passed='false'] { border-color: #f8717180; background: #450a0a80; }
+.retro-academy .academy-result-actions { border-top: 1px solid #22c55e50; border-radius: 0 0 15px 15px; background: #0d261b; box-shadow: none; }
+.retro-academy .academy-result[data-passed='false'] .academy-result-actions { border-color: #f8717150; background: #30171c; }
+.retro-academy .academy-scenario-scoreboard { border: 1px solid #334155; border-radius: 16px; background: #02061780; }
+.retro-academy .academy-scenario-scoreboard > p { color: #fdba74; }
+.retro-academy .academy-scenario-scoreboard th, .retro-academy .academy-scenario-scoreboard td { border-bottom-color: #334155; }
+.retro-academy .academy-rule { border: 1px solid #334155; border-radius: 14px; background: #1e293b; overflow: hidden; }
+.retro-academy .academy-rule > button { color: #e2e8f0; border-radius: 0; }
+.retro-academy .academy-rule > button[aria-expanded='true'] { color: #fdba74; background: #293548; }
+
+/* Tips are their own native dialogs and need an explicit retro marker too. */
+.tutorial-popup:has(.academy-retro-popup-copy) { color: #e2e8f0; font-family: system-ui, sans-serif; }
+.tutorial-popup:has(.academy-retro-popup-copy)::backdrop { background: #020617bf; backdrop-filter: blur(8px); }
+.tutorial-popup:has(.academy-retro-popup-copy) .tutorial-popup-panel {
+  border: 1px solid #475569; border-radius: 20px; background: #0f172af5; box-shadow: 0 24px 70px #020617b3;
+}
+.tutorial-popup:has(.academy-retro-popup-copy) h2 { color: #fdba74; }
+.tutorial-popup:has(.academy-retro-popup-copy) .tutorial-popup-hint { color: #94a3b8; border-top-color: #334155; }
+@keyframes academy-retro-slam {
+  from { opacity: 0; transform: translateY(-36px) scale(1.25) rotate(var(--academy-slam-angle)); }
+  65% { opacity: 1; transform: translateY(2px) scale(.96); }
+  to { opacity: 1; transform: none; }
+}
+.reduce-motion .retro-academy .academy-comparison-card { animation: none; }
+@media (prefers-reduced-motion: reduce) { .retro-academy .academy-comparison-card { animation: none; } }
+@media (max-width: 560px) {
+  .battle-academy.retro-academy { border-radius: 18px; }
+  .retro-academy .academy-model { width: 66px; height: 66px; flex-basis: auto; }
+}
+@media (max-height: 500px) and (min-width: 561px) {
+  .retro-academy .academy-model { width: 60px; height: 60px; flex-basis: 60px; }
+}

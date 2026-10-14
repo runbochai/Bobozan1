@@ -5,10 +5,12 @@ import type { Card, Lang } from '../types';
 import { SKILL_DB } from '../data/skills';
 import { TEXT } from '../data/translations';
 import WoodcutCardFace from './WoodcutCardFace';
+import { RetroSkillIcon } from './RetroCard';
 import { X, Zap } from './PixelIcons';
 import './MoveManual.css';
 
 interface MoveManualProps {
+  appearance?: 'current' | 'retro';
   lang: Lang;
   onClose: () => void;
   onExercises?: () => void;
@@ -25,7 +27,7 @@ const inGroup = (card: Card, group: Group) => group === 'ALL' || (group === 'BAS
   : group === 'SPECIAL' ? card.type === 'SPECIAL' || card.type === 'ABSORB' : card.type === group);
 
 /** Browsing a card only inspects it; the manual never submits a move. */
-export default function MoveManual({ lang, onClose, onExercises }: MoveManualProps) {
+export default function MoveManual({ appearance = 'current', lang, onClose, onExercises }: MoveManualProps) {
   const zh = lang === 'zh';
   const id = useId();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -83,7 +85,7 @@ export default function MoveManual({ lang, onClose, onExercises }: MoveManualPro
     galleryRef.current?.scrollTo({ top: 0 });
   };
 
-  return createPortal(<dialog ref={dialogRef} className="move-manual" aria-labelledby={`${id}-title`}
+  return createPortal(<dialog ref={dialogRef} className={`move-manual${appearance === 'retro' ? ' retro-overlay move-manual-retro' : ''}`} aria-labelledby={`${id}-title`}
     onKeyDown={event => event.stopPropagation()}
     onCancel={event => { event.preventDefault(); event.stopPropagation(); close(); }}
     onPointerDown={event => {
@@ -122,10 +124,10 @@ export default function MoveManual({ lang, onClose, onExercises }: MoveManualPro
     <div className="move-manual-content" data-empty={!selected}>
       <div className="move-manual-gallery" ref={galleryRef} role="group" aria-label={zh ? '招式列表' : 'Moves'}>
         {cards.length ? <div className="move-manual-grid">{cards.map(card => <button type="button" key={card.id}
-          className="move-manual-card" aria-pressed={selected?.id === card.id} aria-controls={`${id}-detail`}
+          className="move-manual-card" data-card-type={card.type} aria-pressed={selected?.id === card.id} aria-controls={`${id}-detail`}
           aria-label={zh ? `${card.name.zh}，${card.cost} 能量` : `${card.name.en}, ${card.cost} energy`}
           onClick={() => setSelectedId(card.id)}>
-          <span className="move-manual-print" aria-hidden="true"><WoodcutCardFace card={card} lang={lang} /></span>
+          <span className="move-manual-print" aria-hidden="true">{appearance === 'retro' ? <RetroSkillIcon id={card.id} size={76} /> : <WoodcutCardFace card={card} lang={lang} />}</span>
           <span className="move-manual-card-caption"><strong>{card.name[lang]}</strong><span><Zap size={12} />{card.cost}</span></span>
         </button>)}</div> : <div className="move-manual-empty">
           <p>{zh ? '没找到这招' : 'No moves found'}</p>
@@ -133,8 +135,8 @@ export default function MoveManual({ lang, onClose, onExercises }: MoveManualPro
         </div>}
       </div>
 
-      {selected && <section className="move-manual-detail" id={`${id}-detail`} aria-live="polite" aria-atomic="true" aria-labelledby={`${id}-move`}>
-        <div className="move-manual-detail-print" aria-hidden="true"><WoodcutCardFace card={selected} lang={lang} /></div>
+      {selected && <section className="move-manual-detail" data-card-type={selected.type} id={`${id}-detail`} aria-live="polite" aria-atomic="true" aria-labelledby={`${id}-move`}>
+        <div className="move-manual-detail-print" aria-hidden="true">{appearance === 'retro' ? <RetroSkillIcon id={selected.id} size={120} /> : <WoodcutCardFace card={selected} lang={lang} />}</div>
         <div className="move-manual-detail-copy">
           <span className="move-manual-kind">{TEXT[lang].skillType[selected.type]}{selected.tags?.includes('combo') ? ` · ${zh ? '联合技' : 'Combo'}` : selected.levelRequired > 0 ? ` · Lv.${selected.levelRequired}` : ''}</span>
           <h3 id={`${id}-move`}>{selected.name[lang]}</h3>

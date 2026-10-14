@@ -40,3 +40,38 @@
   .skill-loadout-description { font-size: 12px; }
   .skill-loadout-footer { padding: 10px 14px 12px; }
 }
+
+.skill-loadout-picker-retro {
+  color-scheme: dark;
+  border: 1px solid #475569;
+  border-radius: 20px;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow: 0 24px 80px #020617b3;
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+.skill-loadout-picker-retro::backdrop { background: #020617d9; backdrop-filter: blur(4px); }
+.skill-loadout-picker-retro .skill-loadout-header { border-color: #334155; }
+.skill-loadout-picker-retro .skill-loadout-header p,
+.skill-loadout-picker-retro .skill-loadout-description,
+.skill-loadout-picker-retro .skill-loadout-footer > small { color: #cbd5e1; }
+.skill-loadout-picker-retro .skill-loadout-count { border-color: #475569; border-radius: 8px; color: #cbd5e1; }
+.skill-loadout-picker-retro .skill-loadout-count[data-over-limit="true"] { border-color: #fb7185; color: #fda4af; }
+.skill-loadout-picker-retro .skill-loadout-card { border: 2px solid #475569; border-radius: 14px; background: #1e293b; color: #f8fafc; box-shadow: 0 4px 8px #02061766; }
+.skill-loadout-picker-retro .skill-loadout-card[aria-pressed="true"] { border-color: #fb923c; background: #7c2d122b; }
+.skill-loadout-picker-retro .skill-loadout-card[data-new="true"] { box-shadow: 0 4px 8px #02061766, inset 0 0 0 1px #f973164d; }
+.skill-loadout-picker-retro .skill-loadout-card-top { color: #fbbf24; }
+.skill-loadout-picker-retro .skill-loadout-card-top > b { background: #f97316; color: #fff; border-radius: 4px; }
+.skill-loadout-picker-retro .skill-loadout-rank { border-color: #64748b; border-radius: 5px; background: #0f172a; color: #cbd5e1; }
+.skill-loadout-picker-retro .skill-loadout-check { color: #fb923c; }
+.skill-loadout-picker-retro .skill-loadout-check > i { border-color: #64748b; border-radius: 50%; }
+.skill-loadout-picker.skill-loadout-picker-retro .skill-loadout-print { display: grid; place-items: center; height: 92px; aspect-ratio: auto; }
+.skill-loadout-picker-retro [data-card-type="ATTACK"] .retro-skill-icon { color: #f87171; }
+.skill-loadout-picker-retro [data-card-type="DEFEND"] .retro-skill-icon { color: #60a5fa; }
+.skill-loadout-picker-retro [data-card-type="ULTIMATE"] .retro-skill-icon { color: #c084fc; }
+.skill-loadout-picker-retro .skill-loadout-warning,
+.skill-loadout-picker-retro .skill-loadout-footer > p { color: #fda4af; }
+.skill-loadout-picker-retro .skill-loadout-footer { border-color: #334155; background: #0f172af5; }
+.skill-loadout-picker-retro .skill-loadout-footer > button { border: 0; border-radius: 10px; background: linear-gradient(135deg, #f97316, #ef4444); color: #fff; box-shadow: 0 4px 12px #ea580c33; }
+.skill-loadout-picker-retro .skill-loadout-card:focus-visible,
+.skill-loadout-picker-retro .skill-loadout-footer button:focus-visible { outline-color: #fdba74; }

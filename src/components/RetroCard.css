@@ -1,0 +1,21 @@
+.retro-skill-icon{display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;width:var(--retro-icon-size,48px);height:var(--retro-icon-size,48px);font-size:var(--retro-icon-size,48px);line-height:1;filter:drop-shadow(0 4px 5px #0008)}
+.retro-skill-icon>svg{max-width:100%;max-height:100%;flex-shrink:1}
+.retro-card{--retro-card-color:#64748b;position:relative;display:flex;box-sizing:border-box;width:100%;height:100%;min-height:130px;flex-direction:column;align-items:center;justify-content:center;overflow:hidden;border:2px solid var(--retro-card-color);border-radius:12px;background:linear-gradient(150deg,color-mix(in srgb,var(--retro-card-color) 24%,#0f172a),#0f172a 72%);box-shadow:0 9px 24px #0008,inset 0 1px #ffffff16;color:#f8fafc;font-family:system-ui,sans-serif;text-align:center;isolation:isolate}
+.retro-card[data-card-type=CHARGE]{--retro-card-color:#eab308}
+.retro-card[data-card-type=ATTACK]{--retro-card-color:#ef4444}
+.retro-card[data-card-type=DEFEND]{--retro-card-color:#3b82f6}
+.retro-card[data-card-type=ULTIMATE]{--retro-card-color:#a855f7}
+.retro-card[data-card-type=SPECIAL],.retro-card[data-card-type=ABSORB]{--retro-card-color:#34d399}
+.retro-card[data-combo=true]{--retro-card-color:#fde047;box-shadow:0 0 18px #eab30840,0 9px 24px #0008}
+.retro-card-cost{position:absolute;top:0;left:0;min-width:30px;padding:3px 6px;border-radius:0 0 12px 0;border-right:1px solid #93c5fd;border-bottom:1px solid #93c5fd;background:#2563eb;font:900 18px/1.3 ui-monospace,monospace;color:#fff;z-index:1}
+.retro-card-cost s{font-size:11px;color:#bfdbfe}
+.retro-card-rank{position:absolute;top:7px;right:6px;font:700 10px/1.4 ui-monospace,monospace;color:#fde047;background:#0007;padding:1px 4px;border:1px solid #eab30855;border-radius:4px;z-index:1}
+.retro-card-art{display:flex;align-items:center;justify-content:center;min-height:66px;margin-top:24px;color:var(--retro-card-color)}
+.retro-card-name{display:block;padding:4px 7px;font-size:14px;line-height:1.25;font-weight:800;overflow-wrap:anywhere;max-width:100%}
+.retro-card-description{display:flex;align-items:center;justify-content:center;align-self:stretch;flex:1;min-height:38px;margin-top:5px;padding:7px 8px;background:#050810bb;border-top:1px solid #ffffff16;font-size:10px;line-height:1.4;color:#cbd5e1}
+.retro-card-borrowed{display:block;align-self:stretch;padding:3px 5px;margin-top:auto;background:#052e26dd;color:#6ee7b7;font:800 10px/1.4 system-ui,sans-serif}
+.retro-card-compact{min-height:105px;border-radius:9px}
+.retro-card-compact .retro-card-cost{min-width:23px;font-size:13px;padding:2px 4px}
+.retro-card-compact .retro-card-rank{font-size:8px;right:3px;top:4px;padding:1px 2px}
+.retro-card-compact .retro-card-art{min-height:44px;margin-top:20px}
+.retro-card-compact .retro-card-name{font-size:10px;padding:2px 3px}

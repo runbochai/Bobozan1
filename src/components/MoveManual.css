@@ -111,3 +111,54 @@
 @media (prefers-reduced-motion: reduce) {
   .move-manual *, .move-manual *::before, .move-manual *::after { animation: none !important; transition: none !important; }
 }
+
+.move-manual-retro { border-color: #475569; border-radius: 20px; background: #0f172a; color: #f8fafc; font-family: system-ui, Avenir, Helvetica, Arial, sans-serif; }
+.move-manual-retro::backdrop { background: #020617d9; backdrop-filter: blur(4px); }
+.move-manual-retro button:focus-visible,
+.move-manual-retro input:focus-visible { outline-color: #fdba74; }
+.move-manual-retro .move-manual-header h2,
+.move-manual-retro .move-manual-detail h3 { color: #f8fafc; font-family: inherit; }
+.move-manual-retro .move-manual-close { color: #94a3b8; }
+.move-manual-retro .move-manual-close:hover { color: #fff; background: #334155; }
+.move-manual-retro .move-manual-controls,
+.move-manual-retro .move-manual-footer { border-color: #334155; }
+.move-manual-retro .move-manual-search { border-color: #475569; border-radius: 10px; background: #02061766; color: #94a3b8; }
+.move-manual-retro .move-manual-search:focus-within { border-color: #f97316; }
+.move-manual-retro .move-manual-search input { color: #f8fafc; }
+.move-manual-retro .move-manual-search input::placeholder { color: #94a3b8; }
+.move-manual-retro .move-manual-filters button { border-radius: 8px; color: #94a3b8; }
+.move-manual-retro .move-manual-filters button:hover { color: #e2e8f0; background: #1e293b; }
+.move-manual-retro .move-manual-filters button[aria-pressed='true'] { color: #fdba74; background: #f9731626; }
+.move-manual-retro .move-manual-gallery,
+.move-manual-retro .move-manual-detail { scrollbar-color: #475569 #0f172a; }
+.move-manual-retro .move-manual-card { border-radius: 12px; color: #f8fafc; background: #1e293b; }
+.move-manual-retro .move-manual-card:hover { background: #334155; }
+.move-manual-retro .move-manual-card[aria-pressed='true'] { border-color: #f97316; background: #7c2d122b; }
+.move-manual-retro .move-manual-print { display: grid; place-items: center; width: 100%; height: 94px; aspect-ratio: auto; box-shadow: none; }
+.move-manual-retro .move-manual-card-caption > span,
+.move-manual-retro .move-manual-energy { color: #fbbf24; }
+.move-manual-retro .move-manual-detail { border-color: #334155; background: #02061740; }
+.move-manual-retro .move-manual-detail-print { display: grid; place-items: center; width: 150px; height: 150px; aspect-ratio: auto; box-shadow: none; }
+.move-manual-retro .retro-skill-icon { color: #34d399; }
+.move-manual-retro [data-card-type="CHARGE"] .retro-skill-icon { color: #fbbf24; }
+.move-manual-retro [data-card-type="ATTACK"] .retro-skill-icon { color: #f87171; }
+.move-manual-retro [data-card-type="DEFEND"] .retro-skill-icon { color: #60a5fa; }
+.move-manual-retro [data-card-type="ULTIMATE"] .retro-skill-icon { color: #c084fc; }
+.move-manual-retro .move-manual-kind,
+.move-manual-retro .move-manual-footer > span { color: #94a3b8; }
+.move-manual-retro .move-manual-description { color: #cbd5e1; }
+.move-manual-retro .move-manual-footer button { color: #fdba74; }
+.move-manual-retro .move-manual-footer button:hover { color: #ffedd5; }
+.move-manual-retro .move-manual-empty { color: #94a3b8; }
+.move-manual-retro .move-manual-empty button { border-color: #f97316; border-radius: 8px; background: #f9731626; color: #fdba74; }
+@media (max-width: 620px) {
+  .move-manual-retro { border-radius: 16px; }
+  .move-manual-retro .move-manual-detail-print { width: 62px; height: 62px; }
+  .move-manual-retro .move-manual-detail-print > .retro-skill-icon { width: 56px; height: 56px; font-size: 56px; }
+  .move-manual-retro .move-manual-print { height: 82px; }
+}
+@media (max-height: 500px) and (min-width: 621px) {
+  .move-manual-retro .move-manual-detail-print { display: none; }
+  .move-manual-retro .move-manual-print { height: 72px; }
+  .move-manual-retro .move-manual-print > .retro-skill-icon { width: 60px; height: 60px; font-size: 60px; }
+}

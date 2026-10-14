@@ -1,14 +1,16 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import type { Lang, Player } from '../types';
+import type { Lang, LocalizedText, Player } from '../types';
 import { ACADEMY_LESSONS, MULTIPLAYER_ACADEMY_LESSONS, RULE_TOPICS, type AcademyLesson } from '../data/academy';
 import { SKILL_DB } from '../data/skills';
+import { avatarUrl } from '../assets';
 import {
   getPracticePlayers, resolvePracticeRound, readCompletedAcademyLessons,
   writeCompletedAcademyLessons, PRACTICE_HERO_ID, PRACTICE_ENEMY_ID,
   getMultiplayerPractice, resolveMultiplayerPractice,
 } from '../logic/academy';
 import PixelCardArt from './PixelCardArt';
+import { RetroSkillIcon } from './RetroCard';
 import BattleSprite from './BattleSprite';
 import TutorialPopup from './TutorialPopup';
 import { ArrowLeft, CheckCircle, Heart, Play, Scroll, Swords, X, Zap } from './PixelIcons';
@@ -23,6 +25,7 @@ interface Props {
   intro?: boolean;
   initialTab?: AcademyTab;
   startLabel?: string;
+  appearance?: 'current' | 'retro';
 }
 
 type AcademyTab = 'lessons' | 'multiplayer' | 'rules';
@@ -34,25 +37,56 @@ const brief = (value: string, lang: Lang, sentences = 1) => (lang === 'zh'
   ? value.match(/[^。！？]+[。！？]?/g)?.slice(0, sentences).join('') ?? value
   : value.split(/(?<=[.!?])\s+/).slice(0, sentences).join(' ')).trim();
 
-function PracticeCard({ id, lang, owner }: { id: string; lang: Lang; owner: string }) {
+/** Keep multiplayer portions of mixed tips without changing the shared lesson data. */
+function multiplayerText(value: LocalizedText): LocalizedText {
+  const trim = (copy: string, lang: Lang) => {
+    const sentences = lang === 'zh' ? copy.match(/[^。！？]+[。！？]?/g) ?? [copy] : copy.split(/(?<=[.!?])\s+/);
+    return sentences.flatMap(sentence => {
+      const clauses = sentence.split(/[；;]/).filter(clause => !/远征|无尽|expedition|endless/i.test(clause));
+      if (!clauses.length) return [];
+      const remaining = clauses.join(lang === 'zh' ? '；' : '; ').trim();
+      return /[。！？.!?]$/.test(remaining) ? remaining : `${remaining}${lang === 'zh' ? '。' : '.'}`;
+    }).join(lang === 'zh' ? '' : ' ');
+  };
+  return { zh: trim(value.zh, 'zh'), en: trim(value.en, 'en') };
+}
+
+const RETRO_LESSONS: AcademyLesson[] = ACADEMY_LESSONS.map(item => ({
+  ...item,
+  title: item.id === 'upgrade-reset' ? { zh: '升级获得新牌', en: 'Unlock new cards' } : item.title,
+  intro: item.id === 'upgrade-reset'
+    ? { zh: '试试升级后得到的新牌。', en: 'Try a newly unlocked card.' }
+    : multiplayerText(item.intro),
+  opponentHint: multiplayerText(item.opponentHint),
+  rounds: (item.id === 'upgrade-reset' ? item.rounds.slice(0, 1) : item.rounds).map(round => ({
+    ...round, prompt: multiplayerText(round.prompt), explanation: multiplayerText(round.explanation),
+    opponentHint: round.opponentHint ? multiplayerText(round.opponentHint) : undefined,
+  })),
+}));
+const RETRO_RULE_TOPICS = RULE_TOPICS.filter(topic => !['expedition', 'endless'].includes(topic.id))
+  .map(topic => ({ ...topic, items: topic.items.map(multiplayerText) }));
+
+function PracticeCard({ id, lang, owner, retro }: { id: string; lang: Lang; owner: string; retro: boolean }) {
   const card = SKILL_DB.find(item => item.id === id);
   if (!card) return null;
   return <div className="academy-comparison-card" data-card-id={id}>
     <small>{owner}</small>
-    <div className="academy-card-art" aria-hidden="true"><PixelCardArt id={card.id} /></div>
+    <div className="academy-card-art" aria-hidden="true">{retro ? <RetroSkillIcon id={card.id} size={54} /> : <PixelCardArt id={card.id} />}</div>
     <strong>{card.name[lang]}</strong>
     <span className="academy-card-cost"><span><Zap size={16} />{card.cost}</span><small className="academy-card-level">Lv.{card.levelRequired}</small></span>
   </div>;
 }
 
-function PracticeActor({ player, before, avatar, lang, hero }: {
-  player: Player; before: Player; avatar: string; lang: Lang; hero: boolean;
+function PracticeActor({ player, before, avatar, lang, hero, retro }: {
+  player: Player; before: Player; avatar: string; lang: Lang; hero: boolean; retro: boolean;
 }) {
   const hpDelta = player.hp - before.hp;
   const energyDelta = player.energy - before.energy;
   const name = hero ? (lang === 'zh' ? '你' : 'You') : (lang === 'zh' ? '练习机器人' : 'Training bot');
   return <div className="academy-actor" data-actor={hero ? 'hero' : 'enemy'}>
-    <div className="academy-model"><BattleSprite avatar={avatar} name={name} direction={hero ? 'se' : 'sw'} /></div>
+    <div className="academy-model">{retro
+      ? <img className="academy-retro-avatar" src={avatarUrl(avatar)} alt={name} draggable={false} />
+      : <BattleSprite avatar={avatar} name={name} direction={hero ? 'se' : 'sw'} />}</div>
     <div className="academy-actor-stats">
       <strong>{name}</strong>
       <span className="academy-hp" aria-label={`${lang === 'zh' ? '血量' : 'HP'} ${player.hp}`}>
@@ -68,7 +102,7 @@ function PracticeActor({ player, before, avatar, lang, hero }: {
 }
 
 /** An isolated practice room: only completed lesson IDs are kept between visits. */
-export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSolo, intro = false, initialTab = 'lessons', startLabel }: Props) {
+export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSolo, intro = false, initialTab = 'lessons', startLabel, appearance = 'current' }: Props) {
   const [tab, setTab] = useState<AcademyTab>(initialTab);
   const [completed, setCompleted] = useState<string[]>(readCompletedAcademyLessons);
   const [lessonId, setLessonId] = useState<string | null>(null);
@@ -90,16 +124,19 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
   const multiplayerHeadingRef = useRef<HTMLHeadingElement>(null);
   const id = useId();
   const zh = lang === 'zh';
-  const lesson = ACADEMY_LESSONS.find(item => item.id === lessonId);
+  const retro = appearance === 'retro';
+  const lessons = retro ? RETRO_LESSONS : ACADEMY_LESSONS;
+  const ruleTopics = retro ? RETRO_RULE_TOPICS : RULE_TOPICS;
+  const lesson = lessons.find(item => item.id === lessonId);
   const round = lesson?.rounds[roundIndex];
-  const completedCount = ACADEMY_LESSONS.filter(item => completed.includes(item.id)).length;
-  const nextLesson = ACADEMY_LESSONS.find(item => !completed.includes(item.id));
+  const completedCount = lessons.filter(item => completed.includes(item.id)).length;
+  const nextLesson = lessons.find(item => !completed.includes(item.id));
   const startText = startLabel ?? (zh ? '多人对战' : 'Multiplayer');
   const multiplayerLesson = MULTIPLAYER_ACADEMY_LESSONS[multiplayerIndex];
   const multiplayerPractice = getMultiplayerPractice(multiplayerLesson.id, lang);
   const multiplayerResult = multiplayerChoice ? resolveMultiplayerPractice(multiplayerLesson.id, multiplayerChoice, lang) : null;
   const modeButtons = <>
-    {intro && onSolo && <button type="button" className="academy-button" onClick={onSolo}><Play size={18} />{zh ? '单人远征' : 'Solo expedition'}</button>}
+    {intro && !retro && onSolo && <button type="button" className="academy-button" onClick={onSolo}><Play size={18} />{zh ? '单人远征' : 'Solo expedition'}</button>}
     <button type="button" className="academy-button academy-button-primary" onClick={onContinue}><Swords size={18} />{startText}</button>
   </>;
 
@@ -209,7 +246,7 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
     requestAnimationFrame(() => multiplayerHeadingRef.current?.focus({ preventScroll: true }));
   };
 
-  return <>{createPortal(<dialog ref={dialogRef} className="battle-academy" aria-labelledby={`${id}-heading`}
+  return <>{createPortal(<dialog ref={dialogRef} className={`battle-academy${retro ? ' retro-academy' : ''}`} aria-labelledby={`${id}-heading`}
     onCancel={event => { event.preventDefault(); onClose(); }}>
     <header className="academy-heading">
       <div><h2 id={`${id}-heading`} ref={headingRef} tabIndex={-1}>{intro ? (zh ? '新手上桌' : 'Take a seat') : (zh ? '练习与规则' : 'Practice & rules')}</h2>
@@ -234,19 +271,19 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
 
     <section className="academy-content" id={`${id}-panel-lessons`} role="tabpanel" aria-labelledby={`${id}-tab-lessons`} hidden={tab !== 'lessons'}>
       {!lesson || !round ? <>
-        {intro && <figure className="academy-story-scene">
+        {intro && !retro && <figure className="academy-story-scene">
           <img src={`${import.meta.env.BASE_URL}story/lantern-origin-v1/p20-first-duel.webp`} alt={zh ? '漫画里的第一张灯纹牌桌' : 'The first lantern-card table from the comic'} />
           <figcaption><strong>{zh ? '第一桌，就从这里开始。' : 'Your first table starts here.'}</strong>
             <p>{zh ? '你把灯纹牌放上桌。先试出牌，再去远征，或叫上朋友开一场。' : 'You place the lantern cards on the table. Try them, then head out on an expedition or invite friends to play.'}</p></figcaption>
         </figure>}
         <div className="academy-progress-row">
-          <strong>{zh ? `已完成 ${completedCount} / ${ACADEMY_LESSONS.length} 课` : `${completedCount} / ${ACADEMY_LESSONS.length} lessons complete`}</strong>
+          <strong>{zh ? `已完成 ${completedCount} / ${lessons.length} 课` : `${completedCount} / ${lessons.length} lessons complete`}</strong>
           {nextLesson && <button type="button" className="academy-button academy-button-primary" onClick={() => openLesson(nextLesson)}>
             <Play size={18} />{completedCount > 0 ? (zh ? '继续练习' : 'Continue lessons') : (zh ? '开始练习' : 'Start learning')}
           </button>}
-          <div className="academy-progress-track" aria-hidden="true"><span style={{ width: `${ACADEMY_LESSONS.length ? completedCount / ACADEMY_LESSONS.length * 100 : 0}%` }} /></div>
+          <div className="academy-progress-track" aria-hidden="true"><span style={{ width: `${lessons.length ? completedCount / lessons.length * 100 : 0}%` }} /></div>
         </div>
-        <div className="academy-lessons">{ACADEMY_LESSONS.map((item, index) => {
+        <div className="academy-lessons">{lessons.map((item, index) => {
           const done = completed.includes(item.id);
           return <button type="button" className="academy-lesson" key={item.id} data-lesson-id={item.id} data-completed={done} onClick={() => openLesson(item)}>
             <span className="academy-lesson-number" aria-hidden="true">{done ? <CheckCircle size={22} /> : index + 1}</span>
@@ -254,7 +291,9 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
               <small>{done ? (zh ? '已完成 · 再练一次' : 'Complete · Practice again') : (zh ? `${item.rounds.length} 个小练习` : `${item.rounds.length} short challenges`)}</small></span>
           </button>;
         })}</div>
-        <footer className="academy-footer"><p>{zh ? '练出牌，也练多人结算。随时可以选择单人或多人模式。' : 'Practice cards and multiplayer results. Choose either mode whenever you’re ready.'}</p>
+        <footer className="academy-footer"><p>{retro
+          ? (zh ? '练出牌，也练多人结算。准备好了就和朋友开一场。' : 'Practice cards and multiplayer results, then invite friends to play.')
+          : (zh ? '练出牌，也练多人结算。随时可以选择单人或多人模式。' : 'Practice cards and multiplayer results. Choose either mode whenever you’re ready.')}</p>
           <button type="button" className="academy-button" onClick={openMultiplayer}>{zh ? '看看多人怎么玩' : 'Learn multiplayer'}</button>
           {modeButtons}</footer>
       </> : <>
@@ -265,9 +304,9 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
         <div className="academy-goal-row"><p className="academy-prompt">{brief(round.prompt[lang], lang)}</p>
           <button type="button" className="academy-button academy-explain-button" onClick={() => result ? showCombatResult(result, lesson, roundIndex) : showCombatInstruction(lesson, roundIndex)}><Scroll size={16} />{zh ? '查看说明' : 'Show tip'}</button></div>
         {hero && heroBefore && enemy && enemyBefore && <div className="academy-arena" aria-label={zh ? '练习战场' : 'Practice battle'}>
-          <PracticeActor player={hero} before={heroBefore} avatar={avatar || 'avatars/bdrag.png'} lang={lang} hero />
+          <PracticeActor player={hero} before={heroBefore} avatar={avatar || 'avatars/bdrag.png'} lang={lang} hero retro={retro} />
           <span className="academy-vs" aria-hidden="true">VS</span>
-          <PracticeActor player={enemy} before={enemyBefore} avatar="avatars/robot.webp" lang={lang} hero={false} />
+          <PracticeActor player={enemy} before={enemyBefore} avatar="avatars/robot.webp" lang={lang} hero={false} retro={retro} />
         </div>}
 
         {!result && <>
@@ -281,7 +320,7 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
             return <button type="button" className="academy-play" key={move} data-card-id={move} data-card-type={card.type}
               disabled={shortage > 0} onClick={() => chooseMove(move)} aria-label={`${card.name[lang]} · ${card.cost} ${zh ? '能量' : 'Energy'}${shortage ? (zh ? `，还差 ${shortage} 能量` : `, need ${shortage} more Energy`) : ''}`}>
               <span className="academy-card-cost"><span><Zap size={18} />{card.cost}</span><small className="academy-card-level">Lv.{card.levelRequired}</small></span>
-              <span className="academy-card-art" aria-hidden="true"><PixelCardArt id={move} /></span><strong>{card.name[lang]}</strong>
+              <span className="academy-card-art" aria-hidden="true">{retro ? <RetroSkillIcon id={move} size={60} /> : <PixelCardArt id={move} />}</span><strong>{card.name[lang]}</strong>
               <small>{shortage ? (zh ? `还差 ${shortage} 能量` : `Need ${shortage} Energy`) : (zh ? '出这张' : 'Play this')}</small>
             </button>;
           })}</div>
@@ -290,9 +329,9 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
         {result && chosenMove && <div className="academy-result" data-passed={result.passed}>
           <h4 ref={resultRef} tabIndex={-1}>{result.passed ? (lastRound ? (zh ? '本课完成' : 'Lesson complete') : (zh ? '这一招对了' : 'Well played')) : (zh ? '再试一种选择' : 'Try another move')}</h4>
           <div className="academy-comparison">
-            <PracticeCard id={chosenMove} lang={lang} owner={zh ? '你的出牌' : 'Your card'} />
+            <PracticeCard id={chosenMove} lang={lang} owner={zh ? '你的出牌' : 'Your card'} retro={retro} />
             <span className="academy-vs" aria-hidden="true">VS</span>
-            <PracticeCard id={round.enemyMove} lang={lang} owner={zh ? '机器人的出牌' : 'Bot card'} />
+            <PracticeCard id={round.enemyMove} lang={lang} owner={zh ? '机器人的出牌' : 'Bot card'} retro={retro} />
           </div>
           <p className="academy-sr-only" aria-live="polite">{zh ? `你的血量变化 ${signed(result.heroHpDelta)}，能量变化 ${signed(result.heroEnergyDelta)}` : `Your HP changed by ${signed(result.heroHpDelta)}, Energy by ${signed(result.heroEnergyDelta)}`}</p>
           <details className="academy-logs"><summary>{zh ? '查看实际战报' : 'Show combat log'}</summary>
@@ -366,7 +405,7 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
 
     <section className="academy-content" id={`${id}-panel-rules`} role="tabpanel" aria-labelledby={`${id}-tab-rules`} hidden={tab !== 'rules'}>
       <p className="academy-rules-intro">{zh ? '点开一个问题，随用随看。' : 'Open a topic when you need it.'}</p>
-      {RULE_TOPICS.map(topic => <article className="academy-rule" key={topic.id}>
+      {ruleTopics.map(topic => <article className="academy-rule" key={topic.id}>
         <button type="button" id={`${id}-rule-${topic.id}`} aria-expanded={ruleId === topic.id} aria-controls={`${id}-rule-body-${topic.id}`} onClick={() => { setRuleId(ruleId === topic.id ? null : topic.id); setRulePage(0); }}>
           {topic.title[lang]}<span aria-hidden="true">{ruleId === topic.id ? '−' : '+'}</span>
         </button>
@@ -382,6 +421,6 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
       <footer className="academy-footer"><button type="button" className="academy-button" onClick={onClose}>{zh ? '关闭手册' : 'Close rulebook'}</button></footer>
     </section>
   </dialog>, document.body)}
-    {popup && <TutorialPopup title={popup.title} onDismiss={() => setPopup(null)}>{popup.paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>)}</TutorialPopup>}
+    {popup && <TutorialPopup title={popup.title} onDismiss={() => setPopup(null)}>{popup.paragraphs.map((paragraph, index) => <p className={retro ? 'academy-retro-popup-copy' : undefined} key={index}>{paragraph}</p>)}</TutorialPopup>}
   </>;
 }

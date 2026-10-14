@@ -1,0 +1,52 @@
+.retro-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  isolation: isolate;
+  background: linear-gradient(180deg, #0f172a 0%, #0b1021 48%, #020617 100%);
+}
+.retro-backdrop-grid {
+  position: absolute;
+  inset: 14% -50% -20%;
+  opacity: .3;
+  background-image: linear-gradient(#ea580c42 1px, transparent 1px), linear-gradient(90deg, #ea580c42 1px, transparent 1px);
+  background-size: 42px 42px;
+  transform: perspective(520px) rotateX(60deg) translateY(80px) scale(1.5);
+  mask-image: linear-gradient(transparent 0%, #000 42%);
+}
+.retro-backdrop-glow { position: absolute; width: 65%; height: 65%; border-radius: 50%; filter: blur(90px); opacity: .14; }
+.retro-backdrop-glow-one { top: -20%; left: -20%; background: #ea580c; }
+.retro-backdrop-glow-two { bottom: -25%; right: -15%; background: #dc2626; }
+.retro-backdrop-cards { position: absolute; inset: 0; perspective: 1200px; }
+.retro-backdrop-card {
+  --retro-float-color: #10b981;
+  position: absolute;
+  display: grid;
+  place-items: center;
+  width: clamp(70px, 10vw, 128px);
+  aspect-ratio: 2/3;
+  color: var(--retro-float-color);
+  border: 2px solid var(--retro-float-color);
+  border-radius: 12px;
+  opacity: .28;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--retro-float-color) 30%, #0f172a), #0f172a 85%);
+  box-shadow: 0 12px 35px #0008;
+  transform: translate(-50%, -50%) rotateX(var(--retro-float-pitch)) rotateZ(var(--retro-float-tilt)) scale(var(--retro-float-scale));
+  animation: retro-card-float var(--retro-float-duration) ease-in-out var(--retro-float-delay) infinite alternate;
+}
+.retro-backdrop-card[data-retro-type="CHARGE"] { --retro-float-color: #eab308; }
+.retro-backdrop-card[data-retro-type="ATTACK"] { --retro-float-color: #ef4444; }
+.retro-backdrop-card[data-retro-type="DEFEND"] { --retro-float-color: #3b82f6; }
+.retro-backdrop-card[data-retro-type="ULTIMATE"] { --retro-float-color: #a855f7; }
+.retro-backdrop-card > * { opacity: .75; }
+.retro-backdrop-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 8%, #02061782 95%); }
+.retro-backdrop-battle .retro-backdrop-card { opacity: .11; }
+.retro-backdrop-battle .retro-backdrop-grid { opacity: .15; }
+@keyframes retro-card-float {
+  to { transform: translate(calc(-50% + 12px), calc(-50% - 22px)) rotateX(var(--retro-float-pitch)) rotateZ(calc(var(--retro-float-tilt) + 8deg)) scale(var(--retro-float-scale)); }
+}
+.retro-backdrop[data-reduced="true"] .retro-backdrop-card,
+.reduce-motion .retro-backdrop-card { animation: none; }
+@media (prefers-reduced-motion: reduce) { .retro-backdrop-card { animation: none; } }
