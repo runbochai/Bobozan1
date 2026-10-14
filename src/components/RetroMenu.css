@@ -84,14 +84,6 @@
 .retro-mode-picker label:focus-within { outline: 2px solid #facc15; outline-offset: 3px; }
 .retro-mode-picker input { width: 15px; height: 15px; min-width: 15px; min-height: 15px; padding: 0; margin: 0; box-shadow: none; accent-color: #f97316; }
 .retro-mode-picker:disabled label { cursor: default; }
-.retro-revenge-setting { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid #ffffff08; border-radius: 16px; background: #1e293b80; margin-bottom: 22px; }
-.retro-revenge-icon { width: 44px; height: 44px; display: grid; place-items: center; flex: none; border-radius: 12px; color: #64748b; background: #33415566; }
-.retro-revenge-icon[data-enabled="true"] { color: #f87171; background: #ef444422; }
-.retro-revenge-setting > span:nth-child(2) { min-width: 0; flex: 1; }
-.retro-revenge-setting strong { display: block; font-size: 13px; }
-.retro-revenge-setting small { display: block; color: #64748b; font-size: 11px; line-height: 1.5; margin-top: 3px; }
-.retro-menu .retro-revenge-setting button { min-height: 36px; padding: 7px 12px; border-radius: 9px; font-size: 10px; }
-.retro-menu .retro-revenge-setting button[aria-pressed="true"] { background: #b91c1c; border-color: #ef4444; color: #fff; }
 .retro-lobby-players { display: grid; grid-template-columns: repeat(4,minmax(0,1fr)); gap: 12px; }
 .retro-lobby-player { display: flex; align-items: center; min-width: 0; gap: 11px; padding: 13px; border: 1px solid #334155; border-radius: 16px; background: #1e293b; }
 .retro-lobby-player[data-self="true"] { border-color: #f9731666; }
@@ -132,10 +124,6 @@
   .retro-menu .retro-invite-button svg { display: none; }
   .retro-menu .retro-room-code { font-size: 36px; gap: 7px; }
   .retro-room-code svg { width: 18px; }
-  .retro-revenge-setting { gap: 8px; padding: 10px; }
-  .retro-revenge-icon { display: none; }
-  .retro-revenge-setting strong { font-size: 12px; }
-  .retro-revenge-setting small { font-size: 9px; }
   .retro-lobby-players { gap: 8px; }
   .retro-lobby-player { gap: 8px; padding: 10px 7px; border-radius: 12px; }
   .retro-menu .retro-lobby-avatar .retro-portrait { width: 34px; height: 34px; }

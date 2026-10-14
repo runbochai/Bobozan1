@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { ArrowLeft, Check, Copy, Crown, Edit3, Flame, LoaderCircle, Minus, Play, Plus, Share2, Target, User, Users } from 'lucide-react';
+import { ArrowLeft, Check, Copy, Crown, Edit3, LoaderCircle, Minus, Play, Plus, Share2, Target, User, Users } from 'lucide-react';
 import { assetUrl, avatarUrl } from '../assets';
 import CharacterChoice from './CharacterChoice';
 import EditionSwitch from './EditionSwitch';
@@ -9,6 +9,8 @@ import { getMultiplayerMode } from '../logic/multiplayerMatch';
 import type { GameState, Lang, MultiplayerMode } from '../types';
 import RetroBackdrop from './RetroBackdrop';
 import './RetroMenu.css';
+import RevengeModeSetting from './RevengeModeSetting';
+import { isRevengeModeEnabled } from '../logic/revenge';
 
 export interface RetroMenuProps {
   view: 'NAME_INPUT' | 'HOME' | 'LOBBY';
@@ -24,6 +26,7 @@ export interface RetroMenuProps {
   error?: string;
   invited: boolean;
   modePending: boolean;
+  revengePending: boolean;
   reduceMotion?: boolean;
   controls?: ReactNode;
   overlays?: ReactNode;
@@ -56,13 +59,13 @@ function Portrait({ avatar, name, className = '' }: { avatar?: string; name: str
 /** A second presentation of the same room, actions, catalogue and rules. */
 export default function RetroMenu(props: RetroMenuProps) {
   const { view, lang, game, playerId, name, avatar, roomCode, loading, onlineReady, connectionMessage, error,
-    invited, modePending, reduceMotion, controls, overlays, toast, onNameChange, onChooseCharacter,
+    invited, modePending, revengePending, reduceMotion = false, controls, overlays, toast, onNameChange, onChooseCharacter,
     onRoomCodeChange, onEnter, onPractice, onCreate, onJoin, onLeave, onStart, onAddBot, onRemoveBot,
     onModeChange, onToggleRevenge, onCopyInvite, onCopyCode, onModern, onEditProfile } = props;
   const zh = lang === 'zh';
   const host = game.hostId === playerId;
   const mode = getMultiplayerMode(game);
-  const busy = loading || modePending;
+  const busy = loading || modePending || revengePending;
   const ready = onlineReady && !loading;
   const notice = connectionMessage || error;
   return <div className={`retro-app retro-menu retro-menu-${view.toLowerCase()}`} data-retro-view={view}>
@@ -134,13 +137,8 @@ export default function RetroMenu(props: RetroMenuProps) {
           <span>{value === 'kills' ? (zh ? '杀敌赛' : 'Kill race') : (zh ? '生存赛' : 'Survival')}</span>
         </label>)}</div>
       </fieldset>
-      <div className="retro-revenge-setting">
-        <span className="retro-revenge-icon" data-enabled={game.revengeMode}><Flame size={24} /></span>
-        <span><strong>{zh ? '复仇模式' : 'Revenge mode'}</strong><small>{zh ? '连败者获得随机强力卡牌' : 'Losing streaks grant bonus cards'}</small></span>
-        <button type="button" className="retro-menu-secondary" aria-pressed={!!game.revengeMode} disabled={!host || busy || game.status !== 'LOBBY'} onClick={onToggleRevenge}>
-          {game.revengeMode ? (zh ? '已开启' : 'Enabled') : (zh ? '已关闭' : 'Disabled')}
-        </button>
-      </div>
+      <RevengeModeSetting enabled={isRevengeModeEnabled(game.revengeMode)} lang={lang} appearance="retro"
+        reduceMotion={reduceMotion} disabled={!host || busy || game.status !== 'LOBBY'} pending={revengePending} onToggle={onToggleRevenge} />
       <div className="retro-lobby-players" aria-label={zh ? '房间玩家' : 'Players in room'}>
         {game.players.map(player => <div className="retro-lobby-player" key={player.id} data-self={player.id === playerId}>
           <span className="retro-lobby-avatar"><Portrait avatar={playerAvatar(player)} name={player.name} />

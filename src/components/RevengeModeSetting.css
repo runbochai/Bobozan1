@@ -1,0 +1,61 @@
+/* This selector also beats the old .retro-revenge-setting skin, in any load order. */
+.revenge-setting[data-appearance] {
+  --revenge-radius: 0px;
+  position: relative; isolation: isolate; display: grid; grid-template-columns: 44px minmax(0, 1fr) 92px;
+  align-items: center; gap: 12px; width: 100%; min-width: 0; padding: 14px;
+  margin: 0 0 22px; overflow: hidden; border: 1px solid #52636e; border-radius: var(--revenge-radius);
+  color: #f2e0bd; background: #162735eb; box-shadow: inset 0 1px #d6d3ba0d;
+}
+.revenge-setting[data-appearance='retro'] { --revenge-radius: 14px; background: #192333e8; }
+.revenge-setting[data-appearance][data-enabled='true'] { border-color: #b9713b; background: #30251eea; box-shadow: inset 0 0 0 1px #ebaa5429, 0 0 20px #b64c1724; }
+.revenge-setting .revenge-setting__glow { position: absolute; inset: 0; z-index: -1; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 0 75%, #ee7d2638, transparent 65%); }
+.revenge-setting[data-enabled='true'] .revenge-setting__glow { opacity: .7; animation: revenge-setting-glow 2.8s steps(5) infinite; }
+.revenge-setting .revenge-setting__icon { position: relative; display: grid; place-items: center; width: 44px; height: 44px; flex: none; border: 1px solid #596975; border-radius: calc(var(--revenge-radius) * .7); color: #8e9ba5; background: #2a3b4866; }
+.revenge-setting .revenge-setting__icon > svg { position: relative; z-index: 1; width: 26px; height: 26px; transform-origin: 50% 90%; }
+.revenge-setting[data-appearance='current'][data-enabled='false'] .revenge-setting__icon > svg path { fill: none; stroke: currentColor; stroke-width: .7; }
+.revenge-setting[data-enabled='true'] .revenge-setting__icon { color: #ffcb6e; border-color: #cb8b45; background: #8b371d66; }
+.revenge-setting[data-enabled='true'] .revenge-setting__icon > svg { filter: drop-shadow(0 0 5px #fb933f88); animation: revenge-setting-flame 1.8s steps(4) infinite; }
+.revenge-setting .revenge-setting__aura { position: absolute; inset: -8px; pointer-events: none; opacity: 0; background: radial-gradient(ellipse at 50% 65%, #ffb65748, transparent 65%); }
+.revenge-setting[data-enabled='true'] .revenge-setting__aura { opacity: 1; }
+.revenge-setting[data-appearance] .revenge-setting__copy { position: relative; min-width: 0; }
+.revenge-setting[data-appearance] .revenge-setting__title { display: block; color: #f3e4ca; font-size: 13px; font-weight: 800; line-height: 1.35; }
+.revenge-setting[data-enabled='true'] .revenge-setting__title { color: #ffe2aa; }
+.revenge-setting[data-appearance] .revenge-setting__description { display: block; margin-top: 3px; color: #acb7bd; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
+.revenge-setting[data-appearance] .revenge-setting__toggle {
+  position: relative; display: inline-flex; align-items: center; justify-content: center; flex: none;
+  width: 92px; min-width: 0; min-height: 44px; margin: 0; padding: 8px 10px;
+  border: 1px solid #6b7b88; border-radius: calc(var(--revenge-radius) * .6);
+  color: #d5dce0; background: #263644; box-shadow: 2px 3px #09121b8c;
+  font-family: inherit; font-size: 11px; font-weight: 800; line-height: 1.2; white-space: nowrap; cursor: pointer;
+  transition: background-color .15s, border-color .15s, color .15s;
+}
+.revenge-setting[data-appearance] .revenge-setting__toggle[aria-pressed='true'] { color: #fff0cf; border-color: #e19b54; background: #9b422b; }
+.revenge-setting[data-appearance] .revenge-setting__toggle:hover:not(:disabled) { border-color: #ffda8d; color: #fff3d8; background: #45505a; }
+.revenge-setting[data-appearance] .revenge-setting__toggle[aria-pressed='true']:hover:not(:disabled) { background: #b15130; }
+.revenge-setting[data-appearance] .revenge-setting__toggle:focus-visible { outline: 3px solid #ffe2a3; outline-offset: 3px; }
+.revenge-setting[data-appearance] .revenge-setting__toggle:disabled { opacity: .7; filter: none; cursor: not-allowed; }
+.revenge-setting[data-appearance] .revenge-setting__toggle[aria-busy='true'] { cursor: wait; }
+
+/* A single local ignition follows a confirmed off-to-on change; it never captures input. */
+.revenge-setting__ignition { position: absolute; inset: -6px; z-index: 2; pointer-events: none; animation: revenge-setting-ignition-life .9s linear both; }
+.revenge-setting__ignition-ring { position: absolute; inset: 9px; border: 2px solid #ffe7a7; border-radius: 50%; opacity: 0; animation: revenge-setting-ignite .55s ease-out both; }
+.revenge-setting__ember { position: absolute; left: 50%; top: 60%; width: 3px; height: 3px; background: #ffd98b; box-shadow: 0 0 0 1px #b75825, 0 0 5px #ff9b3d; opacity: 0; animation: revenge-setting-ember .65s steps(7) var(--ember-delay) both; }
+@keyframes revenge-setting-flame { 0%, 100% { transform: scale(1, 1); } 35% { transform: scale(.97, 1.05) rotate(-2deg); } 65% { transform: scale(1.02, .97) rotate(1deg); } }
+@keyframes revenge-setting-glow { 0%, 100% { opacity: .55; } 50% { opacity: .85; } }
+@keyframes revenge-setting-ignition-life { 0%, 99% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes revenge-setting-ignite { 0% { opacity: 0; transform: scale(.45); } 25% { opacity: .75; } 100% { opacity: 0; transform: scale(1.9); } }
+@keyframes revenge-setting-ember { 0% { opacity: 0; transform: translate(-50%, 0) scale(.5); } 20% { opacity: 1; } 100% { opacity: 0; transform: translate(var(--ember-x), var(--ember-y)) scale(.35); } }
+@media (max-width: 420px) {
+  .revenge-setting[data-appearance] { grid-template-columns: 32px minmax(0, 1fr) 80px; gap: 8px; padding: 10px; }
+  .revenge-setting .revenge-setting__icon { width: 32px; height: 36px; }
+  .revenge-setting .revenge-setting__icon > svg { width: 23px; height: 23px; }
+  .revenge-setting[data-appearance] .revenge-setting__title { font-size: 11px; }
+  .revenge-setting[data-appearance] .revenge-setting__description { font-size: 9px; line-height: 1.4; }
+  .revenge-setting[data-appearance] .revenge-setting__toggle { width: 80px; min-height: 44px; padding-inline: 6px; font-size: 10px; }
+}
+.revenge-setting[data-reduced-motion='true'] *, .reduce-motion .revenge-setting * { animation: none !important; transition: none !important; }
+.revenge-setting[data-reduced-motion='true'] .revenge-setting__ignition, .reduce-motion .revenge-setting__ignition { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .revenge-setting * { animation: none !important; transition: none !important; }
+  .revenge-setting__ignition { display: none; }
+}

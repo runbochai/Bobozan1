@@ -1,0 +1,9 @@
+.revenge-announcement { position: fixed; z-index: 95; inset: max(80px, env(safe-area-inset-top)) 12px auto; display: flex; justify-content: center; pointer-events: none; }
+.revenge-announcement-banner { display: flex; align-items: center; gap: 12px; width: max-content; max-width: min(600px, 100%); padding: 14px 22px; border: 1px solid #fb923caa; border-radius: 14px; background: linear-gradient(110deg, #431b20f5, #111827f5); box-shadow: 0 0 30px #ef444433, 0 8px 28px #02061788; color: #ffedd5; font: 14px/1.45 system-ui, sans-serif; animation: revenge-notice var(--revenge-notice-time) ease-out both; }
+.revenge-announcement-banner > svg { flex: none; color: #fb923c; filter: drop-shadow(0 0 8px #ef4444aa); }
+.revenge-announcement-banner strong { color: #fdba74; font-weight: 900; font-size: 17px; }
+.revenge-announcement-banner p { margin: 2px 0 0; overflow-wrap: anywhere; }
+.revenge-announcement[data-reduced-motion="true"] .revenge-announcement-banner { animation: none; }
+@keyframes revenge-notice { 0% { opacity: 0; transform: translateY(-12px); } 12%, 82% { opacity: 1; transform: translateY(0); } 100% { opacity: 0; transform: translateY(-5px); } }
+@media (max-width: 420px) { .revenge-announcement-banner { padding: 10px 13px; gap: 9px; font-size: 12px; } }
+@media (prefers-reduced-motion: reduce) { .revenge-announcement-banner { animation: none; } }
