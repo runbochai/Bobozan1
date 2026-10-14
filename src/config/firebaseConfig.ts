@@ -25,7 +25,7 @@ export function readFirebaseConfig(env: FirebaseEnvironment) {
 export function firebaseErrorMessage(error: unknown, lang: 'zh' | 'en') {
   const code = typeof error === 'object' && error && 'code' in error ? String(error.code) : '';
   const messages: Record<string, [string, string]> = {
-    'config/missing': ['联机服务尚未配置，暂时无法创建或加入房间。你仍可体验教程。', 'Online play is not configured yet. You can still try the tutorial.'],
+    'config/missing': ['联机服务尚未配置，暂时无法创建或加入房间。你仍可进行自由对练。', 'Online play is not configured yet. You can still try free sparring.'],
     'auth/not-ready': ['尚未连接联机服务，请稍后重试。', 'Connecting to online play. Please try again shortly.'],
     'auth/invalid-api-key': ['Firebase API key 无效，请检查网站的构建配置。', 'The Firebase API key is invalid. Check the site build configuration.'],
     'auth/operation-not-allowed': ['此 Firebase 项目未启用匿名登录。', 'Anonymous sign-in is not enabled for this Firebase project.'],

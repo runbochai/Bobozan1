@@ -366,7 +366,7 @@ export default function BobozanOnline() {
   const [expPhase, setExpPhase] = useState<'battle' | 'journey' | 'reward' | 'shop' | 'runover' | 'clear'>('battle');
   const [expNextStage, setExpNextStage] = useState(0);
   const [crownPrologue, setCrownPrologue] = useState(false);
-  const [learningMode, setLearningMode] = useState<'tutorial' | 'practice' | null>(null);
+  const [learningMode, setLearningMode] = useState<'practice' | null>(null);
   const [expRewards, setExpRewards] = useState<RewardOption[]>([]);
   const [expShop, setExpShop] = useState<ShopItem[]>([]);
   const [expGold, setExpGold] = useState(0);
@@ -1547,10 +1547,6 @@ export default function BobozanOnline() {
     {characterPickerOpen && <CharacterPicker avatar={playerAvatar} lang={lang} appearance={appearance} reduceMotion={reduceMotion}
       onSelect={path => { setPlayerAvatar(playerCharacterOption(path).path); playSound('confirm', muted); }}
       onClose={() => setCharacterPickerOpen(false)} />}
-    {learningMode === 'tutorial' && <BattleAcademy intro lang={lang} avatar={playerAvatar} appearance={appearance}
-      onClose={() => setLearningMode(null)} onContinue={handleEnterName}
-      onSolo={retro ? undefined : openSoloMode}
-      startLabel={lang === 'zh' ? '多人模式' : 'Multiplayer'} />}
     {learningMode === 'practice' && <LocalPractice lang={lang} avatar={playerAvatar}
       muted={muted} reduceMotion={reduceMotion} onToggleMute={toggleMute} onSolo={openSoloMode}
       onClose={() => setLearningMode(null)} onPlayFriends={handleEnterName}
@@ -1598,7 +1594,7 @@ export default function BobozanOnline() {
       onEnter={handleEnterName} onCreate={createRoom} onJoin={joinRoom} onLeave={leaveRoom} onStart={startGameHost}
       onAddBot={addBot} onRemoveBot={removeBot} onModeChange={chooseMultiplayerMode} onToggleRevenge={toggleRevengeMode}
       onCopyInvite={copyGameInvite} onCopyCode={() => copyToClipboard(roomCode, t.codeCopied)}
-      onTutorial={() => setLearningMode('tutorial')} onModern={() => changeAppearance('current')} onEditProfile={() => setView('NAME_INPUT')} />;
+      onModern={() => changeAppearance('current')} onEditProfile={() => setView('NAME_INPUT')} />;
     return <RetroBattle lang={lang} game={gameState} playerId={user?.uid} roomCode={roomCode}
       knownCards={knownCards} cards={orderedHand} category={handCategory} viewMode={handViewMode}
       submitting={submittingMove || skillOverflow.length > 0} reduceMotion={reduceMotion} roundKey={battleRoundKey}
@@ -1615,7 +1611,7 @@ export default function BobozanOnline() {
       canShare={!!myPlayer && isAcquiredSkill(myPlayer, SKILL_DB.find(card => card.id === 'dragondef')!)} />;
   }
 
-  // The original comic belongs to the solo entry; multiplayer and the optional tutorial open directly.
+  // The original comic belongs to the solo entry; multiplayer opens directly.
   if (crownPrologue) return <div className="pixel-app crown-opening-screen">
     <CrownTitleScene />
     <CrownPrologue lang={lang} reduceMotion={reduceMotion} onToggleLang={toggleLang}
@@ -1694,7 +1690,6 @@ export default function BobozanOnline() {
               </button>
             </div>
             <div className="title-menu-secondary">
-              <button type="button" className="title-menu-button" onClick={() => setLearningMode('tutorial')}><Play size={18} /><span className="title-menu-label">{lang === 'zh' ? '新手教程' : 'How to play'}</span></button>
               <button type="button" className="title-menu-button" onClick={() => setLearningMode('practice')}><Target size={18} /><span className="title-menu-label">{lang === 'zh' ? '自由对练' : 'Free sparring'}</span></button>
               <button type="button" className="title-menu-button" onClick={() => setMoveManualOpen(true)}><Scroll size={18} /><span className="title-menu-label">{lang === 'zh' ? '招式手册' : 'Move manual'}</span></button>
             </div>

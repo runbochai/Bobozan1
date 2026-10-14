@@ -21,8 +21,6 @@ interface Props {
   avatar?: string;
   onClose: () => void;
   onContinue: () => void;
-  onSolo?: () => void;
-  intro?: boolean;
   initialTab?: AcademyTab;
   startLabel?: string;
   appearance?: 'current' | 'retro';
@@ -102,7 +100,7 @@ function PracticeActor({ player, before, avatar, lang, hero, retro }: {
 }
 
 /** An isolated practice room: only completed lesson IDs are kept between visits. */
-export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSolo, intro = false, initialTab = 'lessons', startLabel, appearance = 'current' }: Props) {
+export default function BattleAcademy({ lang, avatar, onClose, onContinue, initialTab = 'lessons', startLabel, appearance = 'current' }: Props) {
   const [tab, setTab] = useState<AcademyTab>(initialTab);
   const [completed, setCompleted] = useState<string[]>(readCompletedAcademyLessons);
   const [lessonId, setLessonId] = useState<string | null>(null);
@@ -136,7 +134,6 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
   const multiplayerPractice = getMultiplayerPractice(multiplayerLesson.id, lang);
   const multiplayerResult = multiplayerChoice ? resolveMultiplayerPractice(multiplayerLesson.id, multiplayerChoice, lang) : null;
   const modeButtons = <>
-    {intro && !retro && onSolo && <button type="button" className="academy-button" onClick={onSolo}><Play size={18} />{zh ? '单人远征' : 'Solo expedition'}</button>}
     <button type="button" className="academy-button academy-button-primary" onClick={onContinue}><Swords size={18} />{startText}</button>
   </>;
 
@@ -249,8 +246,8 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
   return <>{createPortal(<dialog ref={dialogRef} className={`battle-academy${retro ? ' retro-academy' : ''}`} aria-labelledby={`${id}-heading`}
     onCancel={event => { event.preventDefault(); onClose(); }}>
     <header className="academy-heading">
-      <div><h2 id={`${id}-heading`} ref={headingRef} tabIndex={-1}>{intro ? (zh ? '新手上桌' : 'Take a seat') : (zh ? '练习与规则' : 'Practice & rules')}</h2>
-        <p>{intro ? (zh ? '先试出牌，再看看一整场是怎么结束的。' : 'Try the cards, then see how a full game ends.') : (zh ? '出牌、多人玩法和规则，随时回来查。' : 'Return for card practice, multiplayer situations, or a rule reminder.')}</p></div>
+      <div><h2 id={`${id}-heading`} ref={headingRef} tabIndex={-1}>{zh ? '练习与规则' : 'Practice & rules'}</h2>
+        <p>{zh ? '出牌、多人玩法和规则，随时回来查。' : 'Return for card practice, multiplayer situations, or a rule reminder.'}</p></div>
       <button type="button" className="academy-close" aria-label={zh ? '关闭练习与规则' : 'Close practice and rules'} onClick={onClose}><X size={22} /></button>
     </header>
     <div className="academy-tabs" role="tablist" aria-label={zh ? '练习与规则' : 'Practice and rules'}>
@@ -271,11 +268,6 @@ export default function BattleAcademy({ lang, avatar, onClose, onContinue, onSol
 
     <section className="academy-content" id={`${id}-panel-lessons`} role="tabpanel" aria-labelledby={`${id}-tab-lessons`} hidden={tab !== 'lessons'}>
       {!lesson || !round ? <>
-        {intro && !retro && <figure className="academy-story-scene">
-          <img src={`${import.meta.env.BASE_URL}story/lantern-origin-v1/p20-first-duel.webp`} alt={zh ? '漫画里的第一张灯纹牌桌' : 'The first lantern-card table from the comic'} />
-          <figcaption><strong>{zh ? '第一桌，就从这里开始。' : 'Your first table starts here.'}</strong>
-            <p>{zh ? '你把灯纹牌放上桌。先试出牌，再去远征，或叫上朋友开一场。' : 'You place the lantern cards on the table. Try them, then head out on an expedition or invite friends to play.'}</p></figcaption>
-        </figure>}
         <div className="academy-progress-row">
           <strong>{zh ? `已完成 ${completedCount} / ${lessons.length} 课` : `${completedCount} / ${lessons.length} lessons complete`}</strong>
           {nextLesson && <button type="button" className="academy-button academy-button-primary" onClick={() => openLesson(nextLesson)}>

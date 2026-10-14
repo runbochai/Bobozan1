@@ -19,7 +19,7 @@ if (!missing.length) {
     auth = getAuth(app);
     db = getFirestore(app);
   } catch (error) {
-    // Keep the tutorial usable; online actions report the actual initialization error.
+    // Keep local modes usable; online actions report the actual initialization error.
     firebaseInitError = error;
     console.error('Firebase initialization failed', error);
   }

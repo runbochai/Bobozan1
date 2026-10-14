@@ -1,9 +1,9 @@
-/* The five title actions share one brass frame and ink-blue surface. */
+/* Title actions share one brass frame and ink-blue surface. */
 .pixel-app.crown-title-screen :is(.title-menu-primary,.title-menu-secondary) {
   display:grid; width:100%; gap:10px; align-items:stretch;
 }
 .pixel-app.crown-title-screen .title-menu-primary { grid-template-columns:repeat(2,minmax(0,1fr)); }
-.pixel-app.crown-title-screen .title-menu-secondary { grid-template-columns:repeat(3,minmax(0,1fr)); }
+.pixel-app.crown-title-screen .title-menu-secondary { grid-template-columns:repeat(2,minmax(0,1fr)); }
 .pixel-app.crown-title-screen .title-menu-button {
   display:flex; align-items:center; justify-content:center; gap:8px;
   position:relative; min-width:0; min-height:48px; margin:0; padding:10px 9px;
