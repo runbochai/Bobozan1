@@ -33,7 +33,7 @@ export function battleCardSlamPositions(winners: readonly SlamWinner[], bounds: 
   const regionWidth = bounds.width * .72, regionHeight = bounds.height * .5;
   const gap = 10, labelHeight = compact ? 28 : 32;
   const desiredWidth = Math.min(compact ? 104 : 150,
-    Math.max(compact ? 80 : 120, ...winners.map(winner => winner.width * 1.75)));
+    Math.max(compact ? 80 : 120, ...winners.map(winner => winner.width * 1.8)));
   let best: { columns: number; rows: number; width: number } | undefined;
   for (let columns = 1; columns <= winners.length; columns++) {
     const rows = Math.ceil(winners.length / columns);
@@ -56,7 +56,7 @@ export function battleCardSlamPositions(winners: readonly SlamWinner[], bounds: 
       index: winner.index,
       x: centerX + (column - (rowCount - 1) / 2) * (width + gap),
       y: centerY + (row - (rows - 1) / 2) * (blockHeight + gap),
-      width, cardHeight, labelHeight, scale: 1.75,
+      width, cardHeight, labelHeight, scale: 1.8,
     };
   });
 }

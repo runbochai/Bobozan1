@@ -15,7 +15,7 @@ test('every winner has a distinct visible showcase on phone, tablet, and desktop
         for (const value of Object.values(position)) assert.ok(Number.isFinite(value), context);
         assert.ok(position.width > 0 && position.cardHeight > 0 && position.labelHeight >= 28, context);
         assert.equal(position.cardHeight, position.width * 1.5, context);
-        assert.equal(position.scale, 1.75, context);
+        assert.equal(position.scale, 1.8, context);
         const fullHeight = position.cardHeight + position.labelHeight;
         return { left: position.x - position.width / 2, right: position.x + position.width / 2,
           top: position.y - fullHeight / 2, bottom: position.y + fullHeight / 2 };

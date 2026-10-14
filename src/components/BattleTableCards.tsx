@@ -126,7 +126,7 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
             '--slam-from-x': `${position.x * bounds.width / 100 - slam.x}px`,
             '--slam-from-y': `${sourceCenterY - targetCenterY}px`,
             '--slam-from-scale': position.width / (slam.width / slam.scale),
-            '--slam-lift': `${bounds.width < 768 ? 48 : 68}px`,
+            '--slam-lift': '65px',
             '--slam-tilt': `${slamPositions.length > 1 ? 0 : slam.index % 2 ? 6 : -6}deg`,
           } as CSSProperties}>
           <div className="table-slam-journey">
