@@ -1590,7 +1590,7 @@ export default function BobozanOnline() {
       connectionMessage={connectionMessage || undefined} error={errorMsg || undefined} invited={!!invitedRoom} modePending={modePending}
       reduceMotion={reduceMotion} controls={retroControls} overlays={overlays} toast={toastMsg}
       onNameChange={setPlayerName} onChooseCharacter={() => { playSound('click', muted); setCharacterPickerOpen(true); }} onRoomCodeChange={setRoomCode}
-      onEnter={handleEnterName} onCreate={createRoom} onJoin={joinRoom} onLeave={leaveRoom} onStart={startGameHost}
+      onEnter={handleEnterName} onPractice={() => setLearningMode('practice')} onCreate={createRoom} onJoin={joinRoom} onLeave={leaveRoom} onStart={startGameHost}
       onAddBot={addBot} onRemoveBot={removeBot} onModeChange={chooseMultiplayerMode} onToggleRevenge={toggleRevengeMode}
       onCopyInvite={copyGameInvite} onCopyCode={() => copyToClipboard(roomCode, t.codeCopied)}
       onModern={() => changeAppearance('current')} onEditProfile={() => setView('NAME_INPUT')} />;
