@@ -171,7 +171,7 @@ export default function LocalPractice({
       style={{ '--local-arena-image': `url("${assetUrl('themes/woodcut-v1/woodcut-tavern.webp')}")` } as CSSProperties}>
       <div className="local-practice-shell">
         <header className="local-practice-header">
-          <div><span className="local-practice-eyebrow">{say('随时开打 · 无需联网', 'Jump in · Play offline')}</span>
+          <div><span className="local-practice-eyebrow">{say('一对一对练', 'One-on-one sparring')}</span>
             <h1 ref={titleRef} tabIndex={-1} id="local-practice-title">{say('自由对练', 'Free sparring')}</h1></div>
           <div className="local-practice-header-actions">
             <button ref={tipsToggleRef} type="button" className="local-practice-text-button" onClick={() => { sound(); setTipsEnabled(enabled => !enabled); }} aria-pressed={tipsEnabled}>
