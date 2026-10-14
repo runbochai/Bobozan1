@@ -4,13 +4,12 @@ import { ArrowLeft, ArrowUp, CheckCircle, Crown, Ghost, Heart, Loader, LogOut, S
 import type { Card, GameState, HandCategory, HandViewMode, Lang, Player } from '../types';
 import { avatarUrl } from '../assets';
 import { MAX_HP } from '../data/constants';
-import { CARD_COMPARE_IMPACT_MS } from '../data/battleTiming';
 import { TEXT } from '../data/translations';
 import { getShowdownWinner, isOffensiveCard } from '../logic/combat';
 import { getEffectiveLevel, getPlayerCard, getPlayerLevel } from '../logic/cardLevels';
 import { getHandCategory } from '../logic/skillLoadout';
 import { getMultiplayerMatchSummary } from '../logic/multiplayerMatch';
-import { retroRoundTiming, retroSeat, retroSlamTilt } from '../logic/retroBattle';
+import { retroRoundTiming, retroSeat, retroSlamTargets, retroSlamTilt } from '../logic/retroBattle';
 import RetroBackdrop from './RetroBackdrop';
 import RetroCard, { RetroSkillIcon } from './RetroCard';
 import './RetroBattle.css';
@@ -120,23 +119,42 @@ function RevealedRound({ players, playerId, turn, lang, startedAt, reduced }: {
     return () => preference.removeEventListener('change', stop);
   }, []);
   const winners = new Set(getShowdownWinner(players));
+  const layer = useRef<HTMLDivElement>(null);
+  const measure = () => {
+    const board = document.querySelector('.retro-battle-board')?.getBoundingClientRect();
+    const phone = window.innerWidth <= 700, small = window.innerWidth <= 380;
+    return { width: board?.width || window.innerWidth, height: board?.height || 340,
+      card: { width: small ? 46 : phone ? 54 : 78, height: small ? 75 : phone ? 84 : 118 } };
+  };
+  const [bounds, setBounds] = useState(measure);
+  useEffect(() => {
+    const element = layer.current;
+    if (!element) return;
+    const observer = new ResizeObserver(() => setBounds(measure()));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+  const targets = retroSlamTargets(winners.size, bounds, bounds.card);
+  const winnerOrder = players.filter(player => winners.has(player.id)).map(player => player.id);
   const viewer = players.findIndex(player => player.id === playerId);
-  return <div className={`retro-revealed-layer ${reduced || stopped ? 'retro-reveal-still' : ''}`} aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'}>
+  return <div ref={layer} className={`retro-revealed-layer ${reduced || stopped ? 'retro-reveal-still' : ''}`}
+    data-multi-slam={winners.size > 1} aria-label={lang === 'zh' ? '本回合出牌' : 'Played cards'}>
     {players.map((player, index) => {
       const card = getPlayerCard(player, player.selectedCardId);
       if (!card || player.isDead) return null;
       const seat = retroSeat(index, players.length, viewer);
       const mini = retroSeat(index, players.length, viewer, true);
       const winner = winners.has(player.id);
+      const target = targets[winnerOrder.indexOf(player.id)] ?? { x: 50, y: 45, scale: 1.8 };
       return <div key={player.id} className={`retro-revealed-position ${winner ? 'retro-slam-winner' : ''}`} data-player-id={player.id} data-slam-winner={winner}
         role="img" aria-label={`${player.name}: ${card.name[lang]}`} style={{
           left: `${mini.x}%`, top: `${mini.y}%`,
           '--retro-flight-x': `${seat.x - mini.x}cqw`, '--retro-flight-y': `${seat.y - mini.y}cqh`,
-          '--retro-slam-x': `${50 - mini.x}cqw`, '--retro-slam-y': `${45 - mini.y}cqh`,
-          '--retro-slam-tilt': `${retroSlamTilt(player.id, turn)}deg`,
+          '--retro-slam-x': `${target.x - mini.x}cqw`, '--retro-slam-y': `${target.y - mini.y}cqh`,
+          '--retro-slam-scale': target.scale, '--retro-slam-tilt': `${winners.size > 1 ? 0 : retroSlamTilt(player.id, turn)}deg`,
           '--retro-flight-delay': `${clock.timing.flightDelay}ms`, '--retro-flight-duration': `${clock.timing.flightDuration}ms`,
           '--retro-slam-delay': `${clock.timing.slamDelay}ms`, '--retro-slam-duration': `${clock.timing.slamDuration}ms`,
-          '--retro-impact-delay': `${CARD_COMPARE_IMPACT_MS - clock.timing.elapsed}ms`,
+          '--retro-impact-delay': `${clock.timing.impactDelay}ms`, '--retro-impact-duration': `${clock.timing.impactDuration}ms`,
         } as CSSProperties}>
         <div className="retro-card-flight"><div className="retro-card-slam">
           {winner && <span className="retro-slam-flash" aria-hidden="true" />}

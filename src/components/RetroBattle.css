@@ -39,7 +39,7 @@
 .retro-card-slam{position:relative;display:block;width:100%;height:100%;transform-origin:center;perspective:1000px}
 .retro-slam-winner .retro-card-slam{animation:retro-card-slam var(--retro-slam-duration) both var(--retro-slam-delay)}
 .retro-revealed-owner{display:block;position:absolute;top:calc(100% + 3px);left:50%;transform:translateX(-50%);max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border-radius:6px;background:#000b;padding:2px 5px;font:700 9px system-ui,sans-serif;color:#cbd5e1}
-.retro-slam-flash{position:absolute;inset:-20%;border:2px solid #fef08a;border-radius:50%;background:#fef9c344;filter:blur(3px);z-index:-1;opacity:0;animation:retro-slam-impact .36s ease-out var(--retro-impact-delay) both}
+.retro-slam-flash{position:absolute;inset:-20%;border:2px solid #fef08a;border-radius:50%;background:#fef9c344;filter:blur(3px);z-index:-1;opacity:0;animation:retro-slam-impact var(--retro-impact-duration) ease-out var(--retro-impact-delay) both}
 .retro-reveal-still .retro-card-flight,.retro-reveal-still .retro-card-slam{animation:none;transform:none;opacity:1}
 .retro-reveal-still .retro-slam-flash{display:none}
 /* Reserve one toolbar row and a card rail with room for card hover and a native horizontal scrollbar in every hand state. */
@@ -84,7 +84,7 @@
 .retro-card-dialog>p{font-size:13px;line-height:1.8;margin:10px 0 0}
 .retro-card-dialog>.retro-detail-meta{font:700 11px/1.6 ui-monospace,monospace;color:#fde047;text-align:center}
 @keyframes retro-card-flight{from{opacity:0;transform:translate(var(--retro-flight-x),var(--retro-flight-y)) scale(.05)}to{opacity:1;transform:translate(0,0) scale(1)}}
-@keyframes retro-card-slam{0%{transform:translate(0,0) scale(1) rotateX(0) rotate(0)}28%{transform:translate(var(--retro-slam-x),calc(var(--retro-slam-y) - 65px)) scale(1.6) rotateX(-60deg) rotate(var(--retro-slam-tilt));animation-timing-function:cubic-bezier(.25,1,.5,1)}40%{transform:translate(var(--retro-slam-x),var(--retro-slam-y)) scale(1.8) rotateX(0) rotate(var(--retro-slam-tilt))}65%{transform:translate(var(--retro-slam-x),var(--retro-slam-y)) scale(1.72) rotate(var(--retro-slam-tilt))}100%{transform:translate(var(--retro-slam-x),var(--retro-slam-y)) scale(1.8) rotate(var(--retro-slam-tilt))}}
+@keyframes retro-card-slam{0%{transform:translate(0,0) scale(1) rotateX(0) rotate(0)}28%{transform:translate(var(--retro-slam-x),calc(var(--retro-slam-y) - 65px)) scale(calc(var(--retro-slam-scale,1.8) * .88889)) rotateX(-60deg) rotate(var(--retro-slam-tilt));animation-timing-function:cubic-bezier(.25,1,.5,1)}40%{transform:translate(var(--retro-slam-x),var(--retro-slam-y)) scale(var(--retro-slam-scale,1.8)) rotateX(0) rotate(var(--retro-slam-tilt))}65%{transform:translate(var(--retro-slam-x),var(--retro-slam-y)) scale(calc(var(--retro-slam-scale,1.8) * .95556)) rotate(var(--retro-slam-tilt))}100%{transform:translate(var(--retro-slam-x),var(--retro-slam-y)) scale(var(--retro-slam-scale,1.8)) rotate(var(--retro-slam-tilt))}}
 @keyframes retro-slam-impact{0%{opacity:.8;transform:scale(.65)}100%{opacity:0;transform:scale(1.7)}}
 @keyframes retro-emoji-life{0%{opacity:0;transform:translate(-50%,12px) scale(.5)}10%,80%{opacity:1;transform:translate(-50%,0) scale(1)}100%{opacity:0;transform:translate(-50%,-15px) scale(.8)}}
 @media(min-width:1500px){.retro-battle{--retro-board-min-height:480px}.retro-avatar-ring{width:104px;height:104px}}
@@ -93,3 +93,5 @@
 .retro-motion-reduced .retro-player-emoji{animation:none}.retro-motion-reduced .retro-category-card,.retro-motion-reduced .retro-hand-slot,.retro-motion-reduced .retro-hp-track>i{transition:none}
 @media(max-width:380px){.retro-battle[data-player-count="2"]{--retro-board-min-height:250px}}
 @media(prefers-reduced-motion:reduce){.retro-card-flight,.retro-slam-winner .retro-card-slam{animation:none;transform:none;opacity:1}.retro-slam-flash{display:none}.retro-player-emoji{animation:none}.retro-category-card,.retro-hand-slot,.retro-hp-track>i{transition:none}}
+
+.retro-revealed-layer[data-multi-slam="true"] .retro-slam-winner .retro-revealed-owner{width:100%;max-width:100%;box-sizing:border-box}

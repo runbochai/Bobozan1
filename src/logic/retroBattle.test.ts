@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { retroRoundTiming, retroSeat, retroSlamTilt } from './retroBattle';
-import { CARD_COMPARE_END_MS, CARD_COMPARE_START_MS, CARD_LAND_MS, CARD_RELEASE_MS } from '../data/battleTiming';
+import { retroRoundTiming, retroSeat, retroSlamTargets, retroSlamTilt } from './retroBattle';
+import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS,
+  CARD_LAND_MS, CARD_RELEASE_MS, SOLO_MOTION_SCALE, showdownDurationMs } from '../data/battleTiming';
 
 test('retro seats rotate around the viewer and all eight avatars stay in the board', () => {
   for (const count of [2, 3, 4, 5, 6, 7, 8]) {
@@ -37,13 +38,30 @@ test('seven and eight full phone status panels fit without overlap for every vie
 
 test('late mounting uses the shared reveal deadline instead of replaying the slam', () => {
   const first = retroRoundTiming(1000, 1000);
-  assert.equal(first.flightDelay, CARD_RELEASE_MS);
-  assert.equal(first.flightDuration, CARD_LAND_MS - CARD_RELEASE_MS);
-  assert.equal(first.slamDelay, CARD_COMPARE_START_MS);
-  const late = retroRoundTiming(1000, 1000 + CARD_COMPARE_END_MS + 200);
+  assert.equal(first.flightDelay, CARD_RELEASE_MS * SOLO_MOTION_SCALE);
+  assert.equal(first.flightDuration, (CARD_LAND_MS - CARD_RELEASE_MS) * SOLO_MOTION_SCALE);
+  assert.equal(first.slamDelay, CARD_COMPARE_START_MS * SOLO_MOTION_SCALE);
+  assert.equal(first.impactDelay, CARD_COMPARE_IMPACT_MS * SOLO_MOTION_SCALE);
+  const late = retroRoundTiming(1000, 1000 + CARD_COMPARE_END_MS * SOLO_MOTION_SCALE + 200);
   assert.ok(late.flightDelay < -late.flightDuration);
   assert.ok(late.slamDelay < -late.slamDuration);
+  assert.ok(late.impactDelay < -late.impactDuration);
   assert.equal(retroRoundTiming(1000, 900).elapsed, 0);
+});
+
+test('retro flight and the full winning slam finish on the shared fast multiplayer deadline', () => {
+  const timing = retroRoundTiming(1000, 1000);
+  assert.equal(timing.flightDelay + timing.flightDuration, 252);
+  assert.equal(timing.slamDelay + timing.slamDuration, 588);
+  assert.equal(timing.impactDelay + timing.impactDuration, 588);
+  assert.ok(timing.impactDelay > timing.slamDelay);
+  assert.ok(timing.slamDelay + timing.slamDuration < showdownDurationMs(false, 'room'));
+  for (const now of [1100, 1500, 1800]) {
+    const late = retroRoundTiming(1000, now);
+    assert.equal(now + late.flightDelay + late.flightDuration, 1252);
+    assert.equal(now + late.slamDelay + late.slamDuration, 1588);
+    assert.equal(now + late.impactDelay + late.impactDuration, 1588);
+  }
 });
 
 test('slam tilt is deterministic for room snapshots and changes with each turn', () => {
@@ -51,4 +69,22 @@ test('slam tilt is deterministic for room snapshots and changes with each turn',
   assert.notEqual(retroSlamTilt('host', 5), retroSlamTilt('host', 6));
   assert.ok(retroSlamTilt('opponent', 45) >= -40);
   assert.ok(retroSlamTilt('opponent', 45) < 40);
+});
+
+test('simultaneous retro winners retain distinct faces and owner labels on every board size', () => {
+  assert.deepEqual(retroSlamTargets(1, { width: 320, height: 325 }, { width: 46, height: 75 }), [{ x: 50, y: 45, scale: 1.8 }]);
+  for (const width of [320, 390, 701, 1440]) for (const height of [250, 325, 390, 720]) {
+    const card = width <= 380 ? { width: 46, height: 75 } : width <= 700 ? { width: 54, height: 84 } : { width: 78, height: 118 };
+    for (let count = 2; count <= 8; count++) {
+      const targets = retroSlamTargets(count, { width, height }, card);
+      const boxes = targets.map(({ x, y, scale }) => ({ left: x * width / 100 - card.width * scale / 2,
+        right: x * width / 100 + card.width * scale / 2, top: y * height / 100 - card.height * scale / 2,
+        bottom: y * height / 100 + card.height * scale / 2 + 18 * scale }));
+      boxes.forEach((box, index) => {
+        assert.ok(box.left >= 0 && box.right <= width && box.top >= 0 && box.bottom <= height);
+        for (const other of boxes.slice(index + 1)) assert.ok(box.right <= other.left || box.left >= other.right
+          || box.bottom <= other.top || box.top >= other.bottom, `${count} winners overlap on ${width}×${height}`);
+      });
+    }
+  }
 });
