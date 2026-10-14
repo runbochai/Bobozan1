@@ -13,5 +13,3 @@
 .retro-volume-slider label { display:block; margin-bottom:8px; font-size:12px; }
 .retro-volume-slider input { width:100%; accent-color:#f97316; }
 @media(max-width:420px) { .retro-controls { top:10px; right:10px; gap:5px; } .retro-controls > button, .retro-controls-volume > button { width:36px; height:36px; min-width:36px; } }
-/* Leave space for the level labels above the top row of a small crowded table. */
-@media(max-width:700px) { .retro-battle:not([data-player-count="2"]) .retro-battle-board { margin-top:14px; } }

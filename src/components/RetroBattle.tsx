@@ -158,14 +158,14 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
   const canChoose = !!player && !player.isDead && !player.selectedCardId && !submitting && status === 'PLAYING';
   const blocked = (card: Card) => !canChoose || !!player?.disabledSkills?.includes(card.id) || (!player?.freeSkills?.includes(card.id) && (player?.energy ?? 0) < card.cost);
   return <section className="retro-hand" aria-label={lang === 'zh' ? '手牌' : 'Your hand'}>
+    {player && !player.isDead && !player.selectedCardId && viewMode === 'CARDS' ? <nav className="retro-hand-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
+      <button type="button" onClick={onBack} aria-label={lang === 'zh' ? '返回全部分类' : 'Back to categories'}><ArrowLeft size={17} /></button>
+      {categories.map(cat => <button type="button" key={cat} onClick={() => onCategory(cat)} aria-current={category === cat ? 'true' : undefined}>{TEXT[lang].categories[cat]}</button>)}
+    </nav> : <div className="retro-hand-nav" aria-hidden="true" />}
     {!player || player.isDead ? <div className="retro-hand-rest"><Ghost size={32} /><p>{TEXT[lang].dead}</p></div> : player.selectedCardId ? <div className="retro-locked-hand">
       {locked && <div className="retro-locked-face"><RetroCard card={locked} lang={lang} free={player.freeSkills?.includes(locked.id)} compact /></div>}
       <span><CheckCircle size={26} /><strong>{status === 'SHOWDOWN' ? (lang === 'zh' ? '招式释放中' : 'Casting') : (lang === 'zh' ? '已出牌，等待对手' : 'Locked in. Waiting…')}</strong></span>
     </div> : <>
-      {viewMode === 'CARDS' && <nav className="retro-hand-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
-        <button type="button" onClick={onBack} aria-label={lang === 'zh' ? '返回全部分类' : 'Back to categories'}><ArrowLeft size={17} /></button>
-        {categories.map(cat => <button type="button" key={cat} onClick={() => onCategory(cat)} aria-current={category === cat ? 'true' : undefined}>{TEXT[lang].categories[cat]}</button>)}
-      </nav>}
       <div className={`retro-hand-cards ${viewMode === 'CATEGORIES' ? 'retro-category-cards' : 'retro-skill-cards'}`}>
         {viewMode === 'CATEGORIES' ? categories.map(cat => {
           const charge = knownCards.find(card => card.id === 'charge');
@@ -222,7 +222,7 @@ export default function RetroBattle({ lang, game, playerId, roomCode, knownCards
       {game.logs.map((log, index) => <p key={`${index}-${log.turn}`} data-type={log.type}><small>T{log.turn}</small>{log.text}</p>)}
     </aside>}
     <div className="retro-battle-board">
-      <div className="retro-ellipse-table" aria-hidden="true"><span>{game.status === 'SHOWDOWN' ? 'CLASH!' : 'VS'}</span></div>
+      <div className="retro-ellipse-table" aria-hidden="true" />
       {game.players.map((fighter, index) => <AvatarPlayer key={fighter.id} player={fighter} index={index} total={game.players.length} viewer={viewer}
         self={fighter.id === playerId} highest={highest} lang={lang} status={game.status} />)}
       {game.status === 'SHOWDOWN' && <RevealedRound key={roundKey} players={revealPlayers} playerId={playerId} turn={game.turn} lang={lang} startedAt={roundStartedAt} reduced={reduceMotion} />}
