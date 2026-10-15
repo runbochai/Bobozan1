@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState, type CSSProperties } from 'react';
 import { createPortal } from 'react-dom';
 import type { BattleSpeed, Card, Lang } from '../types';
 import { battleTimeMs, normalizeBattleSpeed } from '../logic/battleSpeed';
+import { ORIGINAL_REWARD_REVEAL_MS } from '../data/battleTiming';
 import { Flame } from './PixelIcons';
 import RetroCard from './RetroCard';
 import './RetroRewardReveal.css';
@@ -54,7 +55,7 @@ export default function RetroRewardReveal({ card, lang, onClose, reduceMotion = 
 
   return createPortal(<dialog ref={dialogRef} className="retro-reward-reveal" data-reduced-motion={reduceMotion || motionStopped}
     data-appearance={appearance} data-battle-speed={revealSpeed} style={{
-      '--revenge-reveal-duration': `${battleTimeMs(900, revealSpeed)}ms`,
+      '--revenge-reveal-duration': `${battleTimeMs(ORIGINAL_REWARD_REVEAL_MS, revealSpeed)}ms`,
       '--revenge-ember-duration': `${battleTimeMs(720, revealSpeed)}ms`,
     } as CSSProperties}
     aria-labelledby={`${id}-title`} aria-describedby={`${id}-description`}

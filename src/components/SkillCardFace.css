@@ -1,0 +1,38 @@
+/* Independent family colors keep old wrapper themes from tinting the shared face. */
+.skill-card-face { --skill-card-color:#ef4444; }
+.skill-card-face[data-family="CHARGE"] { --skill-card-color:#eab308; }
+.skill-card-face[data-family="ATTACK"] { --skill-card-color:#ef4444; }
+.skill-card-face[data-family="DEFEND"] { --skill-card-color:#3b82f6; }
+.skill-card-face[data-family="ULTIMATE"] { --skill-card-color:#a855f7; }
+:root .skill-card-face.retro-card {
+  --retro-card-color:var(--skill-card-color);
+  position:relative; display:flex; flex-direction:column; align-items:center; box-sizing:border-box;
+  width:100%; height:100%; min-width:0; min-height:0; padding-top:clamp(12px,17%,34px);
+  overflow:hidden; isolation:isolate; container-type:inline-size; pointer-events:none;
+  border:2px solid var(--skill-card-color); border-color:var(--skill-card-color) !important; border-radius:12px;
+  color:#f8fafc; background:linear-gradient(155deg,color-mix(in srgb,var(--skill-card-color) 19%,#101b2e),#0b1425 75%) !important;
+  box-shadow:0 7px 18px #02061788,inset 0 1px #ffffff1a !important;
+  font-family:system-ui,sans-serif; text-shadow:none; text-align:center;
+}
+:root .skill-card-face.retro-card::after { content:none; }
+.skill-card-face::before { content:''; position:absolute; z-index:0; inset:4px; border:1px solid var(--skill-card-color); border-radius:8px; opacity:.18; pointer-events:none; }
+.skill-card-face .skill-card-cost { position:absolute; z-index:2; top:0; left:0; min-width:clamp(15px,23cqw,35px); padding:2px 5px; border:0; border-right:1px solid var(--skill-card-color); border-bottom:1px solid var(--skill-card-color); border-radius:0 0 9px 0; background:color-mix(in srgb,var(--skill-card-color) 32%,#0f1d34); color:#fff4db; font:900 clamp(9px,13cqw,20px)/1.2 ui-monospace,monospace; }
+.skill-card-face .skill-card-cost s { font-size:.65em; color:#b8c6d7; }
+.skill-card-face .skill-card-rank { position:absolute; z-index:2; top:5px; right:5px; max-width:65%; padding:1px 3px; border:1px solid color-mix(in srgb,var(--skill-card-color) 60%,transparent); border-radius:4px; color:#f7dc96; background:#050c1dd9; font:800 clamp(6px,7.5cqw,12px)/1.2 ui-monospace,monospace; white-space:nowrap; }
+.skill-card-face .skill-card-rank[data-wide="true"] { font-size:clamp(5px,6cqw,10px); }
+.skill-card-face .skill-card-art { position:relative; z-index:1; display:flex; flex:1 1 auto; align-items:center; justify-content:center; align-self:stretch; width:auto; min-height:0; margin:0; padding:2% 9% 0; color:var(--skill-card-color); }
+.skill-card-face .skill-card-art > .parchment-skill-art { width:100%; height:100%; max-height:100%; }
+.skill-card-face .skill-card-tags { position:relative; z-index:1; flex:none; max-width:100%; padding:1px 3px; color:color-mix(in srgb,var(--skill-card-color) 45%,#f0e6dc); font:700 clamp(5px,5.8cqw,10px)/1.1 system-ui,sans-serif; white-space:nowrap; }
+.skill-card-face .skill-card-name { position:relative; z-index:1; display:block; flex:none; max-width:100%; margin:0; padding:5px 6px 8px; color:#f8fafc; font:800 clamp(6px,10cqw,18px)/1.18 system-ui,sans-serif; overflow-wrap:anywhere; }
+.skill-card-face .skill-card-name[data-long="true"] { font-size:clamp(6px,8.5cqw,16px); }
+.skill-card-face .skill-card-description { position:relative; z-index:1; display:block; flex:none; align-self:stretch; min-height:0; margin:0; padding:7px 8px; border-top:1px solid #ffffff1a; background:#020617a8; color:#cad3e0; font:400 clamp(8px,7cqw,12px)/1.4 system-ui,sans-serif; }
+.skill-card-face .skill-card-borrowed { position:relative; z-index:1; display:block; flex:none; align-self:stretch; margin:0; padding:3px 4px; background:#062f28eb; color:#8ce7bd; font:800 clamp(6px,6.7cqw,11px)/1.25 system-ui,sans-serif; }
+:root .skill-card-face.retro-card-compact { border-radius:8px; }
+.skill-card-compact .skill-card-name { padding:2px 3px 4px; }
+.skill-card-compact .skill-card-tags { padding-block:0; }
+@container (max-width:63px) {
+  .skill-card-face .skill-card-cost { padding:1px 2px; border-radius:0 0 5px 0; }
+  .skill-card-face .skill-card-rank { top:3px; right:2px; padding:1px 2px; }
+  .skill-card-face .skill-card-name { padding:1px 3px 4px; }
+  .skill-card-face .skill-card-tags { font-size:5px; }
+}

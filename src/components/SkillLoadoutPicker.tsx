@@ -4,10 +4,9 @@ import type { Card, HandCategory, Lang } from '../types';
 import { TEXT } from '../data/translations';
 import { isHoloCard } from '../data/cardFinish';
 import { getEffectiveLevel, isOffensiveCard } from '../logic/combat';
-import WoodcutCardFace from './WoodcutCardFace';
-import { RetroSkillIcon } from './RetroCard';
+import SkillCardFace from './SkillCardFace';
 import CardHolo from './CardHolo';
-import { CheckCircle, Zap } from './PixelIcons';
+import { CheckCircle } from './PixelIcons';
 import './SkillLoadoutPicker.css';
 
 export interface SkillLoadoutGroup {
@@ -70,11 +69,11 @@ export default function SkillLoadoutPicker({ appearance = 'current', groups, lan
               data-card-id={card.id} data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}
               aria-pressed={selected} disabled={busy} onClick={() => toggle(card.id)} title={`${zh ? '技能等级' : 'Skill level'} ${rank} · ${card.description[lang]}`}>
 
-              <span className="skill-loadout-card-top"><span><Zap size={14} />{card.cost}</span><span className="skill-loadout-rank" aria-label={`${zh ? '技能等级' : 'Skill level'} Lv.${getEffectiveLevel(card)}`}>Lv.{getEffectiveLevel(card)}</span>{isNew && <b>{zh ? '新' : 'NEW'}</b>}
+              <span className="skill-loadout-card-top">{isNew && <b>{zh ? '新' : 'NEW'}</b>}
                 <span className="skill-loadout-check" aria-hidden="true">{selected ? <CheckCircle size={20} /> : <i />}</span>
               </span>
-              <span className="skill-loadout-print">{appearance === 'retro' ? <RetroSkillIcon id={card.id} size={68} /> : <WoodcutCardFace card={card} lang={lang} />}{appearance !== 'retro' && isHoloCard(card) && <CardHolo />}</span>
-              <strong>{card.name[lang]}</strong><span className="skill-loadout-description">{card.description[lang]}</span>
+              <span className="skill-loadout-print"><SkillCardFace card={card} lang={lang} />{isHoloCard(card) && <CardHolo />}</span>
+              <span className="skill-loadout-description">{card.description[lang]}</span>
             </button>;
           })}</div>
           {count > limit && <p className="skill-loadout-warning" role="status">{zh ? `再少选 ${count - limit} 张` : `Unselect ${count - limit} more`}</p>}

@@ -14,12 +14,14 @@ const symbols: Record<string, typeof Star> = {
 };
 
 /** The same cropped, inked illustration serves printed cards and small move icons. */
-export default function ParchmentSkillArt({ id }: { id: string }) {
+export default function ParchmentSkillArt({ id, tone = 'parchment' }: { id: string; tone?: 'parchment' | 'family' | 'color' }) {
   const filterId = `parchment-ink-${useId().replace(/:/g, '')}`;
+  const cropId = `${filterId}-crop`;
   const [failedId, setFailedId] = useState<string | null>(null);
   const art = WOODCUT_CARDS[id];
-  if (id === 'charge') return <svg className="parchment-skill-art parchment-lantern" viewBox="0 0 160 200" aria-hidden="true" focusable="false">
-    <g fill="#553516">
+  const lanternInk = tone === 'family' ? 'currentColor' : tone === 'color' ? '#eab86d' : '#553516';
+  if (id === 'charge') return <svg className="parchment-skill-art parchment-lantern" data-tone={tone} viewBox="0 0 160 200" aria-hidden="true" focusable="false">
+    <g fill={lanternInk}>
       <path fillRule="evenodd" d="M80 8a17 17 0 1 1 0 34 17 17 0 0 1 0-34m0 10a7 7 0 1 0 0 14 7 7 0 0 0 0-14" />
       <path d="M51 54q4-16 29-20 25 4 29 20l12 9H39z" />
       <path d="M33 64h94v12H33z M40 76h11v83H40z M109 76h11v83h-11z M35 159h90v13H35z M47 173h66l-10 12H57z" />
@@ -28,20 +30,28 @@ export default function ParchmentSkillArt({ id }: { id: string }) {
     <path d="M59 80h8v75h-8z M94 80h8v75h-8z" fill="#f0c46d" />
     <path d="m80 87 16 34-16 26-16-26z" fill="#ffdc80" />
     <path d="m80 104 8 18-8 15-8-15z" fill="#fff0bb" />
-    <path d="M48 77h5v81h-5z M107 77h5v81h-5z M73 77h5v13l-5 10z" fill="#553516" />
+    <path d="M48 77h5v81h-5z M107 77h5v81h-5z M73 77h5v13l-5 10z" fill={lanternInk} />
     <path d="M42 69h77v3H42z M43 163h72v3H43z" fill="#a1692d" opacity=".8" />
   </svg>;
 
-  if (art?.startsWith('cards/woodcut-') && failedId !== id) return <svg className="parchment-skill-art" viewBox="42 168 428 476" aria-hidden="true" focusable="false" data-engraved-skill={id}>
+  if (art?.startsWith('cards/woodcut-') && failedId !== id) return <svg className="parchment-skill-art" data-tone={tone} viewBox="42 168 428 476" aria-hidden="true" focusable="false" data-engraved-skill={id}>
     <defs>
-      <filter id={filterId} colorInterpolationFilters="sRGB" filterUnits="userSpaceOnUse" x="0" y="0" width="512" height="768">
+      {/* An explicit clip also excludes printed values in a narrow icon's letterbox. */}
+      <clipPath id={cropId} clipPathUnits="userSpaceOnUse"><rect x="42" y="168" width="428" height="476" /></clipPath>
+      {tone !== 'color' && <filter id={filterId} colorInterpolationFilters="sRGB" filterUnits="userSpaceOnUse" x="0" y="0" width="512" height="768">
         {/* The original dark field becomes transparent; every skill keeps its own woodcut lines. */}
-        <feColorMatrix type="matrix" values="0 0 0 0 .333333  0 0 0 0 .207843  0 0 0 0 .086275  .29764 1.00128 .10108 0 -.15" />
-      </filter>
+        <feColorMatrix type="matrix" values={`0 0 0 0 .333333  0 0 0 0 .207843  0 0 0 0 .086275  .29764 1.00128 .10108 0 ${tone === 'family' ? '-.34' : '-.15'}`} result="engraved-ink" />
+        {tone === 'family' && <>
+          <feFlood floodColor="currentColor" result="family-ink" />
+          <feComposite in="family-ink" in2="engraved-ink" operator="in" />
+        </>}
+      </filter>}
     </defs>
-    <image href={assetUrl(art)} x="0" y="0" width="512" height="768" filter={`url(#${filterId})`} onError={() => setFailedId(id)} />
+    {/* Full colour keeps the original dark linework and small eye highlights intact. */}
+    <image href={assetUrl(art)} x="0" y="0" width="512" height="768" clipPath={`url(#${cropId})`}
+      filter={tone === 'color' ? undefined : `url(#${filterId})`} onError={() => setFailedId(id)} />
   </svg>;
 
   const Symbol = symbols[id] ?? Scroll;
-  return <span className="parchment-skill-art parchment-skill-fallback" aria-hidden="true" data-engraved-skill={id} data-art-fallback="true"><Symbol size="100%" /></span>;
+  return <span className="parchment-skill-art parchment-skill-fallback" data-tone={tone} aria-hidden="true" data-engraved-skill={id} data-art-fallback="true"><Symbol size="100%" /></span>;
 }

@@ -113,6 +113,7 @@ import {
   withPlayerCardLevel,
 } from './logic/combat';
 import { initAudio, playSound } from './audio/sound';
+import { retroRoundTiming } from './logic/retroBattle';
 import { auth, db, firebaseConfigured, firebaseInitError } from './firebase';
 import { firebaseErrorMessage } from './config/firebaseConfig';
 import { useBackgroundMusic } from './audio/useBackgroundMusic';
@@ -741,8 +742,12 @@ export default function BobozanOnline() {
     const played = presentation.snapshot.players.filter(player => !player.isDead && player.selectedCardId);
     if (!played.length) return;
     const motionScale = battleTimeMs(SOLO_MOTION_SCALE, presentation.snapshot.speed);
-    const beats = [{ at: CARD_LAND_MS * motionScale, sound: 'card_slam' as const },
-      ...(played.length > 1 ? [{ at: CARD_COMPARE_IMPACT_MS * motionScale, sound: 'card_clash' as const }] : [])];
+    const classicTiming = retroRoundTiming(presentation.startedAt, presentation.startedAt, presentation.snapshot.speed);
+    const beats = retro
+      ? [{ at: classicTiming.flightDelay, sound: 'card_flip' as const },
+        { at: classicTiming.impactDelay, sound: played.length > 1 ? 'card_clash' as const : 'card_slam' as const }]
+      : [{ at: CARD_LAND_MS * motionScale, sound: 'card_slam' as const },
+        ...(played.length > 1 ? [{ at: CARD_COMPARE_IMPACT_MS * motionScale, sound: 'card_clash' as const }] : [])];
     const timers = beats.flatMap(({ at, sound }) => {
       const wait = remainingBattleTime(presentation.startedAt, at, Date.now());
       if (!wait || presentation.snapshot.soundsPlayed.includes(at)) return [];
@@ -752,7 +757,7 @@ export default function BobozanOnline() {
       }, wait)];
     });
     return () => timers.forEach(clearTimeout);
-  }, [muted, gameState.status, battleRoundKey]);
+  }, [muted, gameState.status, battleRoundKey, retro]);
 
   useEffect(() => {
     const settled = prevShowdownRef.current && gameState.status !== 'SHOWDOWN';
@@ -1452,6 +1457,7 @@ export default function BobozanOnline() {
     return <RetroBattle lang={lang} game={gameState} playerId={user?.uid} roomCode={roomCode}
       knownCards={knownCards} cards={orderedHand} category={handCategory} viewMode={handViewMode}
       submitting={submittingMove || skillOverflow.length > 0} reduceMotion={reduceMotion} speed={presentedBattleSpeed} roundKey={battleRoundKey}
+      damageEvents={damageNumbers}
       roundStartedAt={battleRoundRef.current?.startedAt} revealPlayers={battleRoundRef.current?.snapshot.players ?? gameState.players}
       controls={retroControls} overlays={<>{overlays}{multiplayerOpening}{ultCutinOverlay}</>} toast={toastMsg}
       results={!academyTab && !moveManualOpen && gameState.status === 'GAMEOVER' && showBattleResult ? <MultiplayerResults

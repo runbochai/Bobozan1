@@ -9,6 +9,7 @@ import { getMultiplayerMode } from '../logic/multiplayerMatch';
 import type { GameState, Lang, MultiplayerMode } from '../types';
 import RetroBackdrop from './RetroBackdrop';
 import './RetroMenu.css';
+import './RetroOriginalEffects.css';
 import RevengeModeSetting from './RevengeModeSetting';
 import MultiplayerModePicker from './MultiplayerModePicker';
 import { isRevengeModeEnabled } from '../logic/revenge';

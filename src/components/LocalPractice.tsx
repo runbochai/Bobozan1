@@ -182,7 +182,7 @@ export default function LocalPractice({
       aria-disabled={unavailable || phase !== 'choose'} onClick={event => { if (!isRepeatedMouseClick(event)) play(card); }}
       aria-label={`${card.name[lang]} · ${card.cost} ${say('能量', 'energy')} · ${cardSummary(card)}${unavailable ? ` · ${say(`还需 ${Math.max(0, card.cost - hero.energy)} 能量`, `Need ${Math.max(0, card.cost - hero.energy)} more energy`)}` : ''}`}>
       <span className="local-practice-card-face" aria-hidden="true"><WoodcutCardFace card={card} lang={lang} /></span>
-      <span className="local-practice-card-description">{index !== undefined && <kbd aria-hidden="true">{index + 1}</kbd>}{cardSummary(card)}</span>
+      <span className="local-practice-card-description">{index !== undefined && <kbd aria-hidden="true">{index + 1}</kbd>}{card.id !== 'charge' && cardSummary(card)}</span>
       <span className={`local-practice-card-locked${unavailable ? '' : ' is-available'}`} aria-hidden={!unavailable}>
         {unavailable ? say(`还需 ${Math.max(0, card.cost - hero.energy)} 能量`, `${Math.max(0, card.cost - hero.energy)} more energy`) : '\u00a0'}
       </span>

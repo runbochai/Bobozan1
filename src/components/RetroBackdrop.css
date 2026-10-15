@@ -27,26 +27,53 @@
   place-items: center;
   width: clamp(70px, 10vw, 128px);
   aspect-ratio: 2/3;
+  opacity: .28;
+  transform: translate(-50%, -50%) rotateX(var(--retro-float-pitch)) rotateZ(var(--retro-float-tilt)) scale(var(--retro-float-scale));
+  animation: retro-card-float var(--retro-float-duration) ease-in-out var(--retro-float-delay) infinite alternate;
+}
+.retro-backdrop-card-face {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
   color: var(--retro-float-color);
   border: 2px solid var(--retro-float-color);
   border-radius: 12px;
-  opacity: .28;
   background: linear-gradient(180deg, color-mix(in srgb, var(--retro-float-color) 30%, #0f172a), #0f172a 85%);
   box-shadow: 0 12px 35px #0008;
-  transform: translate(-50%, -50%) rotateX(var(--retro-float-pitch)) rotateZ(var(--retro-float-tilt)) scale(var(--retro-float-scale));
-  animation: retro-card-float var(--retro-float-duration) ease-in-out var(--retro-float-delay) infinite alternate;
 }
 .retro-backdrop-card[data-retro-type="CHARGE"] { --retro-float-color: #eab308; }
 .retro-backdrop-card[data-retro-type="ATTACK"] { --retro-float-color: #ef4444; }
 .retro-backdrop-card[data-retro-type="DEFEND"] { --retro-float-color: #3b82f6; }
 .retro-backdrop-card[data-retro-type="ULTIMATE"] { --retro-float-color: #a855f7; }
-.retro-backdrop-card > * { opacity: .75; }
+.retro-backdrop-card-face > * { opacity: .75; }
+.retro-backdrop-card-face[data-original-effect="spin"] { animation: retro-original-spin 10s linear infinite; }
+.retro-backdrop-card-face[data-original-effect="flip"] { animation: retro-original-flip 6s ease-in-out infinite; transform-style: preserve-3d; }
+.retro-backdrop-card-face[data-original-effect="shine"] { overflow: hidden; }
+.retro-backdrop-card-face[data-original-effect="shine"]::after {
+  content: ''; position: absolute; top: 0; left: -150%; width: 100%; height: 100%;
+  background: linear-gradient(to right, #ffffff00 0%, #ffffffcc 50%, #ffffff00 100%);
+  transform: skewX(-20deg); animation: retro-original-shine 4s infinite;
+}
+.retro-backdrop-card-face[data-original-effect="glow"] { animation: retro-original-glow 3s ease-in-out infinite; }
 .retro-backdrop-vignette { position: absolute; inset: 0; background: radial-gradient(ellipse at center, transparent 8%, #02061782 95%); }
 .retro-backdrop-battle .retro-backdrop-card { opacity: .11; }
 .retro-backdrop-battle .retro-backdrop-grid { opacity: .15; }
 @keyframes retro-card-float {
-  to { transform: translate(calc(-50% + 12px), calc(-50% - 22px)) rotateX(var(--retro-float-pitch)) rotateZ(calc(var(--retro-float-tilt) + 8deg)) scale(var(--retro-float-scale)); }
+  to { transform: translate(calc(-50% + 10px), calc(-50% + 20px)) rotateX(var(--retro-float-pitch)) rotateZ(var(--retro-float-tilt)) scale(var(--retro-float-scale)); }
 }
-.retro-backdrop[data-reduced="true"] .retro-backdrop-card,
-.reduce-motion .retro-backdrop-card { animation: none; }
-@media (prefers-reduced-motion: reduce) { .retro-backdrop-card { animation: none; } }
+@keyframes retro-original-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+@keyframes retro-original-flip { 0% { transform: perspective(600px) rotateY(0deg); } 50% { transform: perspective(600px) rotateY(180deg); } 100% { transform: perspective(600px) rotateY(360deg); } }
+@keyframes retro-original-shine { 0% { left: -150%; } 20%, 100% { left: 150%; } }
+@keyframes retro-original-glow {
+  0%, 100% { box-shadow: 0 0 5px #ffffff1a; filter: brightness(1); }
+  50% { box-shadow: 0 0 30px #ffffff99; filter: brightness(1.3); border-color: #ffffffcc; }
+}
+.retro-backdrop[data-reduced="true"] :is(.retro-backdrop-card, .retro-backdrop-card-face),
+.retro-backdrop[data-reduced="true"] .retro-backdrop-card-face::after,
+.reduce-motion :is(.retro-backdrop-card, .retro-backdrop-card-face),
+.reduce-motion .retro-backdrop-card-face::after { animation: none; }
+@media (prefers-reduced-motion: reduce) {
+  .retro-backdrop-card, .retro-backdrop-card-face[data-original-effect], .retro-backdrop-card-face::after { animation: none; }
+}

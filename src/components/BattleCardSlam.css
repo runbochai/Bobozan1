@@ -1,4 +1,4 @@
-/* The classic slam: travel up, tilt at 28%, strike at 40%, then rebound.
+/* d7da6556: lift to 60%, strike at 70%, recoil at 85%, then settle.
    Separate named showcases preserve each player's original slot. */
 .table-card-slam { position: relative; }
 .table-card-flight[data-slam-winner="true"] { z-index: 2; }
@@ -95,14 +95,14 @@
 @keyframes table-slam-travel {
   0% { opacity: 0; transform: translate(var(--slam-from-x), var(--slam-from-y)); }
   1% { opacity: 1; }
-  28% { opacity: 1; transform: translate(0, calc(var(--slam-lift) * -1)); animation-timing-function: cubic-bezier(.25,1,.5,1); }
-  40%, 100% { opacity: 1; transform: translate(0, 0); }
+  60% { opacity: 1; transform: translate(0, calc(var(--slam-lift) * -1)); animation-timing-function: cubic-bezier(.25,1,.5,1); }
+  70%, 100% { opacity: 1; transform: translate(0, 0); }
 }
 @keyframes table-slam-flip {
-  0% { transform: perspective(1000px) rotateX(0) rotate(0) scale(var(--slam-from-scale)); }
-  28% { transform: perspective(1000px) rotateX(-60deg) rotate(var(--slam-tilt)) scale(calc(var(--slam-scale) * .88889)); animation-timing-function: cubic-bezier(.25,1,.5,1); }
-  40% { transform: perspective(1000px) rotateX(0) rotate(var(--slam-tilt)) scale(var(--slam-scale)); }
-  65% { transform: perspective(1000px) rotateX(0) rotate(var(--slam-tilt)) scale(calc(var(--slam-scale) * .95556)); }
+  0% { transform: perspective(1000px) rotateX(0) rotate(0) scale(calc(var(--slam-from-scale) * .5)); }
+  60% { transform: perspective(1000px) rotateX(-60deg) rotate(var(--slam-tilt)) scale(calc(var(--slam-scale) * .88889)); animation-timing-function: cubic-bezier(.25,1,.5,1); }
+  70% { transform: perspective(1000px) rotateX(0) rotate(var(--slam-tilt)) scale(var(--slam-scale)); }
+  85% { transform: perspective(1000px) rotateX(0) rotate(var(--slam-tilt)) scale(calc(var(--slam-scale) * .972222)); }
   100% { transform: perspective(1000px) rotateX(0) rotate(var(--slam-tilt)) scale(var(--slam-scale)); }
 }
 @keyframes table-slam-shockwave {

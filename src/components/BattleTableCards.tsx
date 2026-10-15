@@ -96,7 +96,8 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
               <div className="pixel-showdown-card table-played-card" data-card-type={card.type} data-card-id={card.id}
                 data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}>
                 {isHoloCard(card) && <CardHolo />}
-                <WoodcutCardFace card={card} lang={lang} free={cost === 0} />
+                <WoodcutCardFace card={card} lang={lang} freeCount={player.freeSkills?.filter(id => id === card.id).length}
+                  tempCount={player.tempSkills?.filter(id => id === card.id).length} />
               </div>
               {winner && <span className="table-slam-outline" aria-hidden="true" />}
             </div>
@@ -115,7 +116,6 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
         const position = positions[slam.index];
         if (!play || !position) return null;
         const { player, card } = play;
-        const free = player.freeSkills?.includes(card.id) || card.cost === 0;
         const sourceCenterY = position.y * bounds.height / 100 - (position.ownerHeight + position.ownerGap) / 2;
         const targetCenterY = slam.y - slam.labelHeight / 2;
         return <div className="table-slam-showcase" key={player.id} data-slam-player-id={player.id}
@@ -129,7 +129,7 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
             '--slam-from-x': `${position.x * bounds.width / 100 - slam.x}px`,
             '--slam-from-y': `${sourceCenterY - targetCenterY}px`,
             '--slam-from-scale': position.width / (slam.width / slam.scale),
-            '--slam-lift': '65px',
+            '--slam-lift': `${Math.max(0, Math.min(slam.cardHeight / slam.scale * 1.3, targetCenterY - slam.cardHeight * .5 - 8))}px`,
             '--slam-tilt': `${slamPositions.length > 1 ? 0 : slam.index % 2 ? 6 : -6}deg`,
           } as CSSProperties}>
           <div className="table-slam-journey">
@@ -138,7 +138,8 @@ export default function BattleTableCards({ players, lang, seatFor, reduced, boun
               <div className="pixel-showdown-card table-played-card table-slam-big-card" data-card-type={card.type}
                 data-slam-card-id={card.id} data-card-finish={isHoloCard(card) ? 'gold-holo' : undefined}>
                 {isHoloCard(card) && <CardHolo />}
-                <WoodcutCardFace card={card} lang={lang} free={free} />
+                <WoodcutCardFace card={card} lang={lang} freeCount={player.freeSkills?.filter(id => id === card.id).length}
+                  tempCount={player.tempSkills?.filter(id => id === card.id).length} />
                 <span className="table-slam-large-outline" />
               </div>
               <strong className="table-slam-impact-word">SLAM!</strong>

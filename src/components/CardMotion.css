@@ -1,0 +1,11 @@
+.card-motion-face { transform:perspective(1000px) rotateX(var(--card-motion-rx,0deg)) rotateY(var(--card-motion-ry,0deg)) scale(var(--card-motion-scale,1)); transform-origin:center; transition:transform .1s ease-out; }
+.card-motion-glare { position:absolute; z-index:4; inset:0; border-radius:inherit; pointer-events:none; opacity:var(--card-motion-glare,0); background:radial-gradient(circle at var(--card-motion-x,50%) var(--card-motion-y,50%),color-mix(in srgb,var(--skill-card-color,var(--skill-category-color,#eab308)) 55%,transparent),transparent 60%); mix-blend-mode:hard-light; transition:opacity .2s; }
+.card-motion-glare::after { content:''; position:absolute; inset:-15%; background:linear-gradient(90deg,transparent,#ffffff1a,transparent); transform:translateX(-150%) skewX(-12deg); }
+.card-motion-face[data-card-motion-active="true"] .card-motion-glare::after { animation:card-face-sheen .7s ease-out both; }
+.card-motion-face .skill-category-icon,.card-motion-face .skill-card-art > .parchment-skill-art { transition:transform .3s ease; }
+.card-motion-face[data-card-motion-active="true"] .skill-category-icon,.card-motion-face[data-card-motion-active="true"] .skill-card-art > .parchment-skill-art { transform:scale(1.1); }
+@keyframes card-face-sheen { to { transform:translateX(150%) skewX(-12deg); } }
+.reduce-motion .card-motion-face,.retro-motion-reduced .card-motion-face { transform:none !important; transition:none !important; }
+.reduce-motion .card-motion-glare,.retro-motion-reduced .card-motion-glare { display:none; }
+.reduce-motion .card-motion-face .skill-category-icon,.reduce-motion .card-motion-face .skill-card-art > .parchment-skill-art,.retro-motion-reduced .card-motion-face .skill-category-icon,.retro-motion-reduced .card-motion-face .skill-card-art > .parchment-skill-art { transform:none !important; transition:none; }
+@media(prefers-reduced-motion:reduce) { .card-motion-face { transform:none !important; transition:none !important; } .card-motion-glare { display:none; } .card-motion-face .skill-category-icon,.card-motion-face .skill-card-art > .parchment-skill-art { transform:none !important; transition:none; } }
