@@ -6,14 +6,18 @@ import { MAX_HP } from '../data/constants';
 import { TEXT } from '../data/translations';
 import { getShowdownWinner } from '../logic/combat';
 import { getEffectiveLevel, getPlayerCard, getPlayerLevel } from '../logic/cardLevels';
-import { getHandCategory } from '../logic/skillLoadout';
 import { getMultiplayerMatchSummary } from '../logic/multiplayerMatch';
 import { retroRoundTiming, retroSeat, retroSlamTargets, retroSlamTilt } from '../logic/retroBattle';
 import { normalizeBattleSpeed } from '../logic/battleSpeed';
 import RetroBackdrop from './RetroBackdrop';
-import RetroCard, { RetroSkillIcon } from './RetroCard';
+import RetroCard from './RetroCard';
+import RetroHitEffect from './RetroHitEffect';
+import CategoryCardFace from './CategoryCardFace';
 import { useCardTooltip } from './useCardTooltip';
 import './RetroBattle.css';
+import './RetroOriginalEffects.css';
+
+interface DamageEvent { amount: number; eventKey: number; speed: BattleSpeed }
 
 export interface RetroBattleProps {
   lang: Lang;
@@ -30,6 +34,7 @@ export interface RetroBattleProps {
   roundStartedAt?: number;
   revealPlayers: Player[];
   speed?: BattleSpeed;
+  damageEvents?: Record<string, DamageEvent>;
   controls?: ReactNode;
   overlays?: ReactNode;
   results?: ReactNode;
@@ -45,7 +50,6 @@ export interface RetroBattleProps {
 }
 
 const categories: HandCategory[] = ['CHARGE', 'ATTACK', 'DEFEND', 'ULTIMATE'];
-const categoryIcon = { CHARGE: 'charge', ATTACK: 'hong', DEFEND: 'defend', ULTIMATE: 'kajifen' };
 const emojis = ['😎', '😂', '😱', '🔥', '💀', '👑', '🤔', '👍'];
 
 function PlayerEmoji({ emoji, timestamp, name }: { emoji: string; timestamp: number; name: string }) {
@@ -59,13 +63,14 @@ function PlayerEmoji({ emoji, timestamp, name }: { emoji: string; timestamp: num
   return <span className="retro-player-emoji" style={{ animationDelay: `${remaining - 2000}ms` }} aria-label={`${name}: ${emoji}`}>{emoji}</span>;
 }
 
-function AvatarPlayer({ player, index, total, viewer, self, highest, lang, status }: {
+function AvatarPlayer({ player, index, total, viewer, self, highest, lang, status, damage, reduced }: {
   player: Player; index: number; total: number; viewer: number; self: boolean; highest: number; lang: Lang; status: GameState['status'];
+  damage?: DamageEvent; reduced: boolean;
 }) {
   const seat = retroSeat(index, total, viewer);
   const level = getPlayerLevel(player);
   const leading = level > 0 && level === highest;
-  return <div className={`retro-fighter ${self ? 'retro-fighter-self' : ''} ${player.isDead ? 'retro-fighter-dead' : ''}`} data-player-id={player.id}
+  return <div className={`retro-fighter ${self ? 'retro-fighter-self' : ''} ${player.isDead ? 'retro-fighter-dead' : ''}`} data-player-id={player.id} data-leading={leading}
     style={{ left: `${seat.x}%`, top: `${seat.y}%` }}>
     <div className="retro-fighter-level">{leading && <Crown size={14} />}<span>Lv.{level}</span></div>
     {player.emoji && player.emojiAt && <PlayerEmoji key={player.emojiAt} emoji={player.emoji} timestamp={player.emojiAt} name={player.name} />}
@@ -74,6 +79,7 @@ function AvatarPlayer({ player, index, total, viewer, self, highest, lang, statu
       {!player.isDead && status !== 'SHOWDOWN' && status !== 'GAMEOVER' && <span className={`retro-ready ${player.selectedCardId ? 'retro-ready-yes' : ''}`} aria-label={player.selectedCardId ? (lang === 'zh' ? '已出牌' : 'Ready') : (lang === 'zh' ? '选牌中' : 'Choosing')}>
         {player.selectedCardId ? <CheckCircle size={13} /> : <Loader size={12} />}
       </span>}
+      <RetroHitEffect amount={damage?.amount} eventKey={damage?.eventKey} speed={damage?.speed} reduced={reduced} />
     </div>
     <strong className="retro-fighter-name" title={player.name}>{player.name}</strong>
     <div className="retro-fighter-stats">
@@ -136,6 +142,7 @@ function RevealedRound({ players, playerId, turn, lang, startedAt, reduced, spee
           left: `${mini.x}%`, top: `${mini.y}%`,
           '--retro-flight-x': `${seat.x - mini.x}cqw`, '--retro-flight-y': `${seat.y - mini.y}cqh`,
           '--retro-slam-x': `${target.x - mini.x}cqw`, '--retro-slam-y': `${target.y - mini.y}cqh`,
+          '--retro-slam-lift': `${Math.max(0, Math.min(bounds.card.height * 1.3, target.y * bounds.height / 100 - bounds.card.height * target.scale * .5 - 8))}px`,
           '--retro-slam-scale': target.scale, '--retro-slam-tilt': `${winners.size > 1 ? 0 : retroSlamTilt(player.id, turn)}deg`,
           '--retro-flight-delay': `${clock.timing.flightDelay}ms`, '--retro-flight-duration': `${clock.timing.flightDuration}ms`,
           '--retro-slam-delay': `${clock.timing.slamDelay}ms`, '--retro-slam-duration': `${clock.timing.slamDuration}ms`,
@@ -143,7 +150,8 @@ function RevealedRound({ players, playerId, turn, lang, startedAt, reduced, spee
         } as CSSProperties}>
         <div className="retro-card-flight"><div className="retro-card-slam">
           {winner && <span className="retro-slam-flash" aria-hidden="true" />}
-          <RetroCard card={card} lang={lang} free={player.freeSkills?.includes(card.id)} compact />
+          <RetroCard card={card} lang={lang} freeCount={player.freeSkills?.filter(id => id === card.id).length}
+            tempCount={player.tempSkills?.filter(id => id === card.id).length} compact />
           <span className="retro-revealed-owner">{player.name}</span>
         </div></div>
       </div>;
@@ -166,7 +174,8 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
       {categories.map(cat => <button type="button" key={cat} onClick={() => onCategory(cat)} aria-current={category === cat ? 'true' : undefined}>{TEXT[lang].categories[cat]}</button>)}
     </nav> : <div className="retro-hand-nav" aria-hidden="true" />}
     {!player || player.isDead ? <div className="retro-hand-rest"><Ghost size={32} /><p>{TEXT[lang].dead}</p></div> : player.selectedCardId ? <div className="retro-locked-hand">
-      {locked && <div className="retro-locked-face"><RetroCard card={locked} lang={lang} free={player.freeSkills?.includes(locked.id)} compact /></div>}
+      {locked && <div className="retro-locked-face"><RetroCard card={locked} lang={lang}
+        freeCount={player.freeSkills?.filter(id => id === locked.id).length} tempCount={player.tempSkills?.filter(id => id === locked.id).length} compact /></div>}
       <span><CheckCircle size={26} /><strong>{status === 'SHOWDOWN' ? (lang === 'zh' ? '招式释放中' : 'Casting') : (lang === 'zh' ? '已出牌，等待对手' : 'Locked in. Waiting…')}</strong></span>
     </div> : <>
       <div className={`retro-hand-cards ${viewMode === 'CATEGORIES' ? 'retro-category-cards' : 'retro-skill-cards'}`}>
@@ -175,8 +184,7 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
           const disabled = cat === 'CHARGE' && (!charge || blocked(charge));
           return <button {...(cat === 'CHARGE' && charge ? bind(charge) : {})} type="button" key={cat} className="retro-category-card" data-category={cat} aria-disabled={disabled}
             onClick={() => { if (cat === 'CHARGE') { if (charge && !blocked(charge)) onPlay(charge.id); } else onCategory(cat); }}>
-            <RetroSkillIcon id={categoryIcon[cat]} /><strong>{TEXT[lang].categories[cat]}</strong>
-            <small>{cat === 'CHARGE' && charge ? charge.description[lang] : `${knownCards.filter(card => getHandCategory(card) === cat).length} ${lang === 'zh' ? '张招式' : 'skills'}`}</small>
+            <CategoryCardFace category={cat} lang={lang} />
           </button>;
         }) : cards.length === 0 ? <div className="retro-hand-rest"><Shield size={28} /><p>{lang === 'zh' ? '还没有这一类招式' : 'No skills in this category yet'}</p></div> : cards.map(card => {
           const freeCount = player.freeSkills?.filter(id => id === card.id).length ?? 0;
@@ -188,7 +196,7 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
             <button {...bind(card)} type="button" className="retro-play-card" aria-disabled={blocked(card)} data-card-id={card.id}
               aria-label={`${card.name[lang]} · ${lang === 'zh' ? '费用' : 'Cost'} ${freeCount ? 0 : card.cost} · Lv.${getEffectiveLevel(card)}${hint ? ` · ${hint}` : ''}`}
               onClick={() => { if (!blocked(card)) onPlay(card.id); }}>
-              <RetroCard card={card} lang={lang} freeCount={freeCount} tempCount={tempCount} description />
+              <RetroCard card={card} lang={lang} freeCount={freeCount} tempCount={tempCount} />
               {hint && <span className="retro-card-blocked">{hint}</span>}
             </button>
           </div>;
@@ -199,7 +207,7 @@ function RetroHand({ player, knownCards, cards, lang, category, viewMode, status
   </section>;
 }
 
-export default function RetroBattle({ lang, game, playerId, roomCode, knownCards, cards, category, viewMode, submitting, reduceMotion, roundKey, roundStartedAt, revealPlayers, speed = 1, controls, overlays, results, toast, onPlay, onCategory, onBack, onExit, onOpenRules, onEmoji, onShare, canShare }: RetroBattleProps) {
+export default function RetroBattle({ lang, game, playerId, roomCode, knownCards, cards, category, viewMode, submitting, reduceMotion, roundKey, roundStartedAt, revealPlayers, speed = 1, damageEvents, controls, overlays, results, toast, onPlay, onCategory, onBack, onExit, onOpenRules, onEmoji, onShare, canShare }: RetroBattleProps) {
   const [logsOpen, setLogsOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const player = game.players.find(item => item.id === playerId);
@@ -226,7 +234,7 @@ export default function RetroBattle({ lang, game, playerId, roomCode, knownCards
     <div className="retro-battle-board">
       <div className="retro-ellipse-table" aria-hidden="true" />
       {game.players.map((fighter, index) => <AvatarPlayer key={fighter.id} player={fighter} index={index} total={game.players.length} viewer={viewer}
-        self={fighter.id === playerId} highest={highest} lang={lang} status={game.status} />)}
+        self={fighter.id === playerId} highest={highest} lang={lang} status={game.status} damage={damageEvents?.[fighter.id]} reduced={reduceMotion} />)}
       {game.status === 'SHOWDOWN' && <RevealedRound key={roundKey} players={revealPlayers} playerId={playerId} turn={game.turn} lang={lang} startedAt={roundStartedAt} reduced={reduceMotion} speed={speed} />}
     </div>
     <RetroHand player={player} knownCards={knownCards} cards={cards} lang={lang} category={category} viewMode={viewMode} status={game.status} submitting={submitting}

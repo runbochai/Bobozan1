@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { CARD_RAISE_MS, CARD_RELEASE_MS, CARD_LAND_MS, CARD_RECOVER_MS,
   CARD_COMPARE_START_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_END_MS, CARD_REVEAL_MS,
-  ULT_CUTIN_MS, SOLO_MOTION_SCALE, SOLO_SHOWDOWN_MS, SOLO_REDUCED_SHOWDOWN_MS,
+  ULT_CUTIN_MS, ORIGINAL_SLAM_MS, ORIGINAL_SLAM_IMPACT, SOLO_MOTION_SCALE, SOLO_SHOWDOWN_MS, SOLO_REDUCED_SHOWDOWN_MS,
   SOLO_CUTIN_START_MS, SOLO_CUTIN_MS, SOLO_CUTIN_SCALE, SOLO_ULT_SHOWDOWN_MS,
   captureBattleRound, remainingBattleTime, showdownDurationMs } from '../data/battleTiming';
 import { BATTLE_SPEEDS, battleTimeMs } from './battleSpeed';
@@ -15,8 +15,8 @@ test('cards leave after the raised pose and land before comparison on the source
 
 test('multiplayer shares the fast battle clock without shortening other viewers for a reduced-motion host', () => {
   for (const reduced of [false, true]) {
-    assert.equal(showdownDurationMs(false, 'room', reduced), 700);
-    assert.equal(showdownDurationMs(true, 'room', reduced), 1450);
+    assert.equal(showdownDurationMs(false, 'room', reduced), 800);
+    assert.equal(showdownDurationMs(true, 'room', reduced), 1550);
     assert.equal(showdownDurationMs(false, 'room', reduced), showdownDurationMs(false, 'expedition'));
     assert.equal(showdownDurationMs(true, 'room', reduced), showdownDurationMs(true, 'expedition'));
   }
@@ -27,7 +27,7 @@ test('multiplayer shares the fast battle clock without shortening other viewers 
 test('solo cards land, compare and recover before the next move', () => {
   const duration = showdownDurationMs(false, 'expedition');
   assert.equal(duration, SOLO_SHOWDOWN_MS);
-  assert.equal(duration, 700);
+  assert.equal(duration, 800);
   const milestones = [CARD_RAISE_MS, CARD_RELEASE_MS, CARD_LAND_MS, CARD_RECOVER_MS,
     CARD_COMPARE_START_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_END_MS, CARD_REVEAL_MS]
     .map(at => at * SOLO_MOTION_SCALE);
@@ -44,7 +44,7 @@ test('solo ultimates finish comparison, their full cut-in, and a readable settle
   const finish = SOLO_CUTIN_START_MS + SOLO_CUTIN_MS;
   const duration = showdownDurationMs(true, 'expedition');
   assert.equal(duration, SOLO_ULT_SHOWDOWN_MS);
-  assert.ok(duration >= 1300 && duration <= 1500);
+  assert.ok(duration >= 1300 && duration <= 1600);
   assert.ok(duration - finish >= 100, 'the cut-in finishes before the settled hit');
   assert.ok(2700 * SOLO_CUTIN_SCALE < SOLO_CUTIN_MS, 'the original cut-in exit animation fits without truncation');
   assert.ok(1150 * SOLO_CUTIN_SCALE < SOLO_CUTIN_MS, 'the cut-in impact sound fits within its animation');
@@ -65,17 +65,29 @@ test('an emoji or language update cannot replace moves or extend a showdown dead
 test('all presentation beats and settlement deadlines follow the inverse speed ratio', () => {
   for (const speed of BATTLE_SPEEDS) {
     for (const mode of ['room', 'expedition'] as const) {
-      assert.equal(showdownDurationMs(false, mode, false, speed), 700 / speed);
-      assert.equal(showdownDurationMs(true, mode, false, speed), 1450 / speed);
+      assert.equal(showdownDurationMs(false, mode, false, speed), 800 / speed);
+      assert.equal(showdownDurationMs(true, mode, false, speed), 1550 / speed);
       assert.ok(battleTimeMs(CARD_COMPARE_END_MS * SOLO_MOTION_SCALE, speed) < showdownDurationMs(false, mode, false, speed));
       assert.ok(battleTimeMs(SOLO_CUTIN_START_MS + SOLO_CUTIN_MS, speed) < showdownDurationMs(true, mode, false, speed));
     }
-    assert.equal(showdownDurationMs(false, 'room', true, speed), 700 / speed);
-    assert.equal(showdownDurationMs(true, 'room', true, speed), 1450 / speed);
+    assert.equal(showdownDurationMs(false, 'room', true, speed), 800 / speed);
+    assert.equal(showdownDurationMs(true, 'room', true, speed), 1550 / speed);
     assert.equal(showdownDurationMs(false, 'expedition', true, speed), 450 / speed);
   }
   const round = captureBattleRound(null, 'room:1:4', { speed: .75 }, 1000);
   const changed = captureBattleRound(round, 'room:1:4', { speed: 2 }, 1200);
   assert.equal(changed.snapshot.speed, .75);
   assert.equal(changed.startedAt, 1000);
+});
+
+test('the authored 750 ms slam strikes at 70% and finishes before every quick settlement', () => {
+  assert.equal(ORIGINAL_SLAM_MS, 750);
+  assert.equal(ORIGINAL_SLAM_IMPACT, .7);
+  assert.equal(CARD_COMPARE_END_MS - CARD_COMPARE_START_MS, 750);
+  assert.equal(CARD_COMPARE_IMPACT_MS - CARD_COMPARE_START_MS, 525);
+  for (const speed of BATTLE_SPEEDS) {
+    const impact = battleTimeMs(CARD_COMPARE_IMPACT_MS * SOLO_MOTION_SCALE, speed);
+    const finish = battleTimeMs(CARD_COMPARE_END_MS * SOLO_MOTION_SCALE, speed);
+    assert.ok(impact < finish && finish < showdownDurationMs(false, 'room', false, speed));
+  }
 });

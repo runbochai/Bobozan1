@@ -1,8 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { retroRoundTiming, retroSeat, retroSlamTargets, retroSlamTilt } from './retroBattle';
-import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS,
-  CARD_LAND_MS, CARD_RELEASE_MS, SOLO_MOTION_SCALE, showdownDurationMs } from '../data/battleTiming';
+import { SOLO_MOTION_SCALE, showdownDurationMs } from '../data/battleTiming';
 import { BATTLE_SPEEDS } from './battleSpeed';
 
 test('retro seats rotate around the viewer and all eight avatars stay in the board', () => {
@@ -39,11 +38,11 @@ test('seven and eight full phone status panels fit without overlap for every vie
 
 test('late mounting uses the shared reveal deadline instead of replaying the slam', () => {
   const first = retroRoundTiming(1000, 1000);
-  assert.equal(first.flightDelay, CARD_RELEASE_MS * SOLO_MOTION_SCALE);
-  assert.equal(first.flightDuration, (CARD_LAND_MS - CARD_RELEASE_MS) * SOLO_MOTION_SCALE);
-  assert.equal(first.slamDelay, CARD_COMPARE_START_MS * SOLO_MOTION_SCALE);
-  assert.equal(first.impactDelay, CARD_COMPARE_IMPACT_MS * SOLO_MOTION_SCALE);
-  const late = retroRoundTiming(1000, 1000 + CARD_COMPARE_END_MS * SOLO_MOTION_SCALE + 200);
+  assert.equal(first.flightDelay, 50 * SOLO_MOTION_SCALE);
+  assert.equal(first.flightDuration, 1200 * SOLO_MOTION_SCALE);
+  assert.equal(first.slamDelay, 550 * SOLO_MOTION_SCALE);
+  assert.equal(first.impactDelay, 1075 * SOLO_MOTION_SCALE);
+  const late = retroRoundTiming(1000, 1000 + 1300 * SOLO_MOTION_SCALE + 200);
   assert.ok(late.flightDelay < -late.flightDuration);
   assert.ok(late.slamDelay < -late.slamDuration);
   assert.ok(late.impactDelay < -late.impactDuration);
@@ -52,31 +51,31 @@ test('late mounting uses the shared reveal deadline instead of replaying the sla
 
 test('retro flight and the full winning slam finish on the shared fast multiplayer deadline', () => {
   const timing = retroRoundTiming(1000, 1000);
-  assert.equal(timing.flightDelay + timing.flightDuration, 252);
-  assert.equal(timing.slamDelay + timing.slamDuration, 588);
-  assert.equal(timing.impactDelay + timing.impactDuration, 588);
+  assert.equal(timing.flightDelay + timing.flightDuration, 525);
+  assert.equal(timing.slamDelay + timing.slamDuration, 546);
+  assert.equal(timing.impactDelay + timing.impactDuration, 546);
   assert.ok(timing.impactDelay > timing.slamDelay);
   assert.ok(timing.slamDelay + timing.slamDuration < showdownDurationMs(false, 'room'));
   for (const now of [1100, 1500, 1800]) {
     const late = retroRoundTiming(1000, now);
-    assert.equal(now + late.flightDelay + late.flightDuration, 1252);
-    assert.equal(now + late.slamDelay + late.slamDuration, 1588);
-    assert.equal(now + late.impactDelay + late.impactDuration, 1588);
+    assert.equal(now + late.flightDelay + late.flightDuration, 1525);
+    assert.equal(now + late.slamDelay + late.slamDuration, 1546);
+    assert.equal(now + late.impactDelay + late.impactDuration, 1546);
   }
 });
 
 test('retro scaled and late-mounted animation keeps the original round deadline at every speed', () => {
   for (const speed of BATTLE_SPEEDS) {
     const first = retroRoundTiming(1000, 1000, speed);
-    assert.ok(Math.abs(first.flightDelay + first.flightDuration - 252 / speed) < 1e-6);
-    assert.ok(Math.abs(first.slamDelay + first.slamDuration - 588 / speed) < 1e-6);
+    assert.ok(Math.abs(first.flightDelay + first.flightDuration - 525 / speed) < 1e-6);
+    assert.ok(Math.abs(first.slamDelay + first.slamDuration - 546 / speed) < 1e-6);
     assert.ok(first.slamDelay + first.slamDuration < showdownDurationMs(false, 'room', false, speed));
     const now = 1000 + showdownDurationMs(false, 'room', false, speed) + 50;
     const late = retroRoundTiming(1000, now, speed);
     for (const [delay, duration] of [[late.flightDelay, late.flightDuration], [late.slamDelay, late.slamDuration], [late.impactDelay, late.impactDuration]]) {
       assert.ok(delay + duration < 0, 'a completed animation does not replay after remounting');
     }
-    assert.ok(Math.abs(now + late.slamDelay + late.slamDuration - 1000 - 588 / speed) < 1e-6);
+    assert.ok(Math.abs(now + late.slamDelay + late.slamDuration - 1000 - 546 / speed) < 1e-6);
   }
 });
 

@@ -139,7 +139,8 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
 
     {!player || player.isDead ? <div className="hand-rest"><Ghost size={42} /><p>{t.dead}</p></div> : player.selectedCardId && !quickHand ? <div className="hand-committed">
       {locked && <div className="hand-locked-card" data-card-type={locked.type} data-card-id={locked.id} data-card-finish={isHoloCard(locked) ? 'gold-holo' : undefined}>
-        {isHoloCard(locked) && <CardHolo />}<WoodcutCardFace card={locked} lang={lang} free={player.freeSkills?.includes(locked.id)} /></div>}
+        {isHoloCard(locked) && <CardHolo />}<WoodcutCardFace card={locked} lang={lang} free={player.freeSkills?.includes(locked.id)}
+          freeCount={player.freeSkills?.filter(id => id === locked.id).length} tempCount={player.tempSkills?.filter(id => id === locked.id).length} /></div>}
       <div className="hand-committed-copy"><CheckCircle size={26} /><strong>{status === 'SHOWDOWN' ? (lang === 'zh' ? '招式释放中' : 'CASTING') : (lang === 'zh' ? '已出牌，等待对手' : 'Locked in. Waiting…')}</strong><small>{lang === 'zh' ? '下一回合，再出新招' : 'Your hand returns next round'}</small></div>
     </div> : <>
       {showFolders && viewMode === 'CARDS' && <nav className="hand-category-nav" aria-label={lang === 'zh' ? '招式分类' : 'Skill categories'}>
@@ -161,7 +162,6 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
           const charge = knownCards.find(c => c.id === 'charge');
           const disabled = cat === 'CHARGE' && (!charge || isBlocked(charge)) || quickHand && !canChoose;
           const highlighted = tutorialCategory === cat;
-          const count = knownCards.filter(c => getHandCategory(c) === cat).length;
           const tooltipProps = cat === 'CHARGE' && charge ? bind(charge) : undefined;
           const describedBy = [tooltipProps?.['aria-describedby'], tutorialHighlight ? 'tutorial-instruction' : undefined].filter(Boolean).join(' ') || undefined;
           return <div className="hand-category-slot" key={cat} style={fanPosition(index, categories.length)}>
@@ -174,7 +174,7 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
               aria-label={`${t.categories[cat]}${cat === 'ULTIMATE' && ultimateReady ? ` · ${lang === 'zh' ? '可以释放' : 'Ready to play'}` : ''}`} aria-disabled={disabled} aria-keyshortcuts={quickHand && cat === 'CHARGE' ? '1' : undefined} aria-describedby={describedBy}
               onClick={e => { if (quickHand && (!canChoose || isRepeatedMouseClick(e))) return; if (cat === 'CHARGE') play(charge); else { keyboardCategory.current = e.detail === 0; onCategory(cat); } }}>
               <FolderFinish category={cat} />
-              {cat === 'CHARGE' && charge ? <WoodcutCardFace card={charge} lang={lang} /> : cat !== 'CHARGE' ? <WoodcutCardFace folder={cat} count={count} lang={lang} /> : null}
+              <WoodcutCardFace folder={cat} lang={lang} />
             </button>
             </div>
           </div>;
@@ -199,9 +199,8 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
               aria-describedby={describedBy} onClick={event => { if (!quickHand || !isRepeatedMouseClick(event)) play(card); }}>
               {holo && <CardHolo />}
               {acquired && !holo && <span className="hand-acquired-sparkles" aria-hidden="true"><i /><i /><i /></span>}
-              <WoodcutCardFace card={card} lang={lang} free={freeCount > 0} />
-              <span className="hand-card-action" data-free-pop={!!poppingFree[card.id]}>{blocked || freeCount > 0 ? label : ''}</span>
-              {tempCount > 0 && <span className="hand-temp">{lang === 'zh' ? '限次' : 'Temp'} ×{tempCount}</span>}
+              <WoodcutCardFace card={card} lang={lang} free={freeCount > 0} freeCount={freeCount} tempCount={tempCount} />
+              <span className="hand-card-action" data-free-pop={!!poppingFree[card.id]}>{blocked ? label : ''}</span>
             </button>
             </div>
             {!!shortcut && <kbd className="solo-quick-key" aria-hidden="true">{shortcut}</kbd>}
@@ -210,10 +209,11 @@ export default function BattleHand({ player, knownCards, cards, lang, category, 
       </div>
     </>}
     {categoryView && <UltimateAura selector='.hand-category-card[data-card-type="ULTIMATE"]' host={handRef} active={ultimateReady}
-      layoutKey={lang} face={<WoodcutCardFace folder="ULTIMATE" lang={lang} count={knownCards.filter(c => getHandCategory(c) === 'ULTIMATE').length} />} />}
+      layoutKey={lang} face={<WoodcutCardFace folder="ULTIMATE" lang={lang} />} />}
     {!categoryView && visibleCards.filter(card => card.type === 'ULTIMATE').map(card => <UltimateAura key={card.id}
       selector={'.hand-skill-card[data-card-id="' + card.id + '"]'} host={handRef} active={!isBlocked(card)} holo={isHoloCard(card)}
-      layoutKey={(quickHand && !quickFolders ? 'quick-play' : category) + ':' + visibleCards.length + ':' + lang} face={<WoodcutCardFace card={card} lang={lang} free={player?.freeSkills?.includes(card.id)} />} />)}
+      layoutKey={(quickHand && !quickFolders ? 'quick-play' : category) + ':' + visibleCards.length + ':' + lang} face={<WoodcutCardFace card={card} lang={lang} free={player?.freeSkills?.includes(card.id)}
+        freeCount={player?.freeSkills?.filter(id => id === card.id).length} tempCount={player?.tempSkills?.filter(id => id === card.id).length} />} />)}
     {tooltip}
   </section>;
 }

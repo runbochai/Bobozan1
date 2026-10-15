@@ -21,7 +21,7 @@
 .retro-reward-reveal header p { margin: 5px 0 16px; color: #c9b0a3; }
 .retro-reward-reveal-stage { position: relative; isolation: isolate; width: 100%; margin: 0 auto 18px; perspective: 900px; }
 .retro-reward-reveal-card { position: relative; width: 190px; height: 270px; margin: auto; perspective: 900px; }
-.retro-reward-reveal-flipper { position: absolute; inset: 0; transform-style: preserve-3d; animation: retro-reward-turn var(--revenge-reveal-duration) cubic-bezier(.22,.78,.3,1) both; }
+.retro-reward-reveal-flipper { position: absolute; inset: 0; transform-style: preserve-3d; animation: retro-reward-turn var(--revenge-reveal-duration) cubic-bezier(.34,1.56,.64,1) both; }
 .retro-reward-card-front, .retro-reward-card-back { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
 .retro-reward-card-front { transform: rotateY(0deg); }
 .retro-reward-card-back {
@@ -49,10 +49,10 @@
 .retro-reward-reveal[data-appearance="current"] > button { border-radius: 0; }
 .retro-reward-reveal > button:focus-visible { outline: 3px solid #fdba74; outline-offset: 4px; }
 @keyframes retro-reward-turn {
-  0% { transform: translateY(16px) rotateY(180deg) scale(.76); }
-  22% { transform: translateY(0) rotateY(180deg) scale(.9); }
-  76% { transform: rotateY(720deg) scale(1.04); }
-  100% { transform: rotateY(720deg) scale(1); }
+  0% { opacity: 0; transform: rotateY(180deg) scale(0); }
+  20% { opacity: 1; transform: rotateY(180deg) scale(.8); }
+  50% { opacity: 1; transform: rotateY(720deg) scale(1.1); }
+  100% { opacity: 1; transform: rotateY(1080deg) scale(1); }
 }
 @keyframes retro-reward-flare {
   0% { opacity: 0; transform: scale(.6); }

@@ -1,5 +1,4 @@
-import { CARD_COMPARE_END_MS, CARD_COMPARE_IMPACT_MS, CARD_COMPARE_START_MS,
-  CARD_LAND_MS, CARD_RELEASE_MS, SOLO_MOTION_SCALE } from '../data/battleTiming';
+import { ORIGINAL_SLAM_MS, ORIGINAL_SLAM_IMPACT, SOLO_MOTION_SCALE } from '../data/battleTiming';
 import type { BattleSpeed } from '../types';
 import { battleTimeMs } from './battleSpeed';
 
@@ -17,13 +16,17 @@ export function retroSeat(index: number, total: number, viewer: number, mini = f
 /** CSS receives the elapsed shared clock, so a remount never restarts a revealed round. */
 export function retroRoundTiming(startedAt: number, now: number, speed: BattleSpeed = 1) {
   const elapsed = Math.max(0, now - startedAt);
+  // Original App.tsx: reveal after 50 ms, fly for 1200 ms, start the 750 ms
+  // slam 500 ms after revealing. Retain the shared quick clock and speed setting.
+  const release = 50, flight = 1200, slam = release + 500;
+  const impact = slam + ORIGINAL_SLAM_MS * ORIGINAL_SLAM_IMPACT;
   return {
-    flightDelay: battleTimeMs(CARD_RELEASE_MS * SOLO_MOTION_SCALE, speed) - elapsed,
-    flightDuration: battleTimeMs((CARD_LAND_MS - CARD_RELEASE_MS) * SOLO_MOTION_SCALE, speed),
-    slamDelay: battleTimeMs(CARD_COMPARE_START_MS * SOLO_MOTION_SCALE, speed) - elapsed,
-    slamDuration: battleTimeMs((CARD_COMPARE_END_MS - CARD_COMPARE_START_MS) * SOLO_MOTION_SCALE, speed),
-    impactDelay: battleTimeMs(CARD_COMPARE_IMPACT_MS * SOLO_MOTION_SCALE, speed) - elapsed,
-    impactDuration: battleTimeMs((CARD_COMPARE_END_MS - CARD_COMPARE_IMPACT_MS) * SOLO_MOTION_SCALE, speed),
+    flightDelay: battleTimeMs(release * SOLO_MOTION_SCALE, speed) - elapsed,
+    flightDuration: battleTimeMs(flight * SOLO_MOTION_SCALE, speed),
+    slamDelay: battleTimeMs(slam * SOLO_MOTION_SCALE, speed) - elapsed,
+    slamDuration: battleTimeMs(ORIGINAL_SLAM_MS * SOLO_MOTION_SCALE, speed),
+    impactDelay: battleTimeMs(impact * SOLO_MOTION_SCALE, speed) - elapsed,
+    impactDuration: battleTimeMs(ORIGINAL_SLAM_MS * (1 - ORIGINAL_SLAM_IMPACT) * SOLO_MOTION_SCALE, speed),
     elapsed,
   };
 }

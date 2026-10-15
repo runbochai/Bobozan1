@@ -34,6 +34,8 @@ function cardGeometry(button: HTMLButtonElement, rect: DOMRect) {
 }
 
 const transitionTime = (value: string) => Math.max(0, ...value.split(',').map(part => Number.parseFloat(part) * (part.trim().endsWith('ms') ? 1 : 1000)));
+const cardMotionProperties = ['--card-motion-rx', '--card-motion-ry', '--card-motion-scale',
+  '--card-motion-x', '--card-motion-y', '--card-motion-glare'] as const;
 
 /** Decoration lives outside the scrolling tray; only its own coordinates are updated. */
 export default function UltimateAura({ selector, host, active, layoutKey, face, holo = false }: Props) {
@@ -52,12 +54,34 @@ export default function UltimateAura({ selector, host, active, layoutKey, face, 
     const context = surface?.getContext('2d');
     if (!surface || !context) return;
     let frame = 0;
+    let faceFrame = 0;
     let animation = 0;
     let lastPaint = -Infinity;
     let disposed = false;
     let visible = false;
     let bounds: FlameBounds = { x: 0, y: 0, width: 0, height: 0 };
     const moving = new Map<Element, number>();
+    const sourceFace = button.querySelector<HTMLElement>('.card-motion-face');
+    const cloneFace = element.querySelector<HTMLElement>('.ultimate-aura-anchor .card-motion-face');
+    // The duplicate sits above the scroller. Give it the exact inner-face pose
+    // without adding that perspective transform to the button's table geometry.
+    const mirrorFace = () => {
+      faceFrame = 0;
+      if (disposed || !sourceFace || !cloneFace) return;
+      for (const property of cardMotionProperties) {
+        const value = sourceFace.style.getPropertyValue(property);
+        if (value) cloneFace.style.setProperty(property, value);
+        else cloneFace.style.removeProperty(property);
+      }
+      if (sourceFace.dataset.cardMotionActive === 'true') cloneFace.dataset.cardMotionActive = 'true';
+      else delete cloneFace.dataset.cardMotionActive;
+    };
+    const scheduleFace = () => { if (!disposed && !faceFrame) faceFrame = requestAnimationFrame(mirrorFace); };
+    const faceObserver = new MutationObserver(scheduleFace);
+    if (sourceFace && cloneFace) {
+      faceObserver.observe(sourceFace, { attributes: true, attributeFilter: ['style', 'data-card-motion-active'] });
+      mirrorFace();
+    }
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     const reduced = () => motion.matches || document.documentElement.classList.contains('reduce-motion');
     const phase = [...selector].reduce((sum, c) => sum + c.charCodeAt(0), 0) % 8;
@@ -197,7 +221,13 @@ export default function UltimateAura({ selector, host, active, layoutKey, face, 
     return () => {
       disposed = true;
       cancelAnimationFrame(frame);
+      cancelAnimationFrame(faceFrame);
       cancelAnimationFrame(animation);
+      faceObserver.disconnect();
+      if (cloneFace) {
+        for (const property of cardMotionProperties) cloneFace.style.removeProperty(property);
+        delete cloneFace.dataset.cardMotionActive;
+      }
       observer.disconnect();
       preferenceObserver.disconnect();
       motion.removeEventListener('change', refreshPreference);
